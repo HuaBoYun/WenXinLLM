@@ -1307,7 +1307,7 @@
         this.$iFrameDialog({ iframeUrl: url }) // iframe弹框预览形式
       },
       /**
-       * @description: 引迈流程提交
+       * @description: 流程提交
        * @return {*}
        */      
       async ymsubmit() {

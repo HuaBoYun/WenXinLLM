@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.mapper.TblProjectConfigMapper">
+
+    <select id="selectByProjectCode" resultType="com.financial.sharing.entity.TblProjectConfig">
+        SELECT * FROM TBL_PROJECT_CONFIG WHERE PROJECT_CODE = #{projectCode}
+    </select>
+
+    <select id="selectByProjectManagerId" resultType="com.financial.sharing.entity.TblProjectConfig">
+        SELECT * FROM TBL_PROJECT_CONFIG WHERE PROJECT_MANAGER_ID = #{projectManagerId} ORDER BY CREATE_TIME DESC
+    </select>
+
+    <select id="selectByDepartmentId" resultType="com.financial.sharing.entity.TblProjectConfig">
+        SELECT * FROM TBL_PROJECT_CONFIG WHERE DEPARTMENT_ID = #{departmentId} ORDER BY CREATE_TIME DESC
+    </select>
+
+    <select id="selectByProjectStatus" resultType="com.financial.sharing.entity.TblProjectConfig">
+        SELECT * FROM TBL_PROJECT_CONFIG WHERE PROJECT_STATUS = #{projectStatus} ORDER BY CREATE_TIME DESC
+    </select>
+
+</mapper>
+

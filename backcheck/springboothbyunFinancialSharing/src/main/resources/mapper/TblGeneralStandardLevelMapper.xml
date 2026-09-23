@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.mapper.TblGeneralStandardLevelMapper">
+
+    <select id="selectByStandardId" resultType="com.financial.sharing.entity.TblGeneralStandardLevel">
+        SELECT * FROM TBL_GENERAL_STANDARD_LEVEL WHERE STANDARD_ID = #{standardId} ORDER BY CREATE_TIME DESC
+    </select>
+
+    <select id="selectByLevelCode" resultType="com.financial.sharing.entity.TblGeneralStandardLevel">
+        SELECT * FROM TBL_GENERAL_STANDARD_LEVEL WHERE LEVEL_CODE = #{levelCode}
+    </select>
+
+    <select id="selectByStandardIdOrderBySort" resultType="com.financial.sharing.entity.TblGeneralStandardLevel">
+        SELECT * FROM TBL_GENERAL_STANDARD_LEVEL
+        WHERE STANDARD_ID = #{standardId}
+        ORDER BY SORT_ORDER ASC
+    </select>
+
+    <select id="selectByStandardIdAndLevelCode" resultType="com.financial.sharing.entity.TblGeneralStandardLevel">
+        SELECT * FROM TBL_GENERAL_STANDARD_LEVEL
+        WHERE STANDARD_ID = #{standardId} AND LEVEL_CODE = #{levelCode}
+    </select>
+
+    <select id="selectMaxSortOrderByStandardId" resultType="java.lang.Integer">
+        SELECT MAX(SORT_ORDER) FROM TBL_GENERAL_STANDARD_LEVEL WHERE STANDARD_ID = #{standardId}
+    </select>
+
+</mapper>

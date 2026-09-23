@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.cybermonitor.mapper.SystemParameterMapper">
+
+    <!-- 基础结果映射 -->
+    <resultMap id="BaseResultMap" type="com.huabo.cybermonitor.entity.SystemParameter">
+        <id column="PARAMETER_ID" property="parameterId" />
+        <result column="PARAMETER_KEY" property="parameterKey" />
+        <result column="PARAMETER_NAME" property="parameterName" />
+        <result column="PARAMETER_VALUE" property="parameterValue" />
+        <result column="PARAMETER_TYPE" property="parameterType" />
+        <result column="PARAMETER_GROUP" property="parameterGroup" />
+        <result column="PARAMETER_DESCRIPTION" property="parameterDescription" />
+        <result column="IS_SYSTEM" property="isSystem" />
+        <result column="ENABLED" property="enabled" />
+        <result column="SORT_ORDER" property="sortOrder" />
+        <result column="DEFAULT_VALUE" property="defaultValue" />
+        <result column="VALUE_OPTIONS" property="valueOptions" />
+        <result column="VALIDATION_RULE" property="validationRule" />
+        <result column="CREATE_BY" property="createBy" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_TIME" property="updateTime" />
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        PARAMETER_ID, PARAMETER_KEY, PARAMETER_NAME, PARAMETER_VALUE, PARAMETER_TYPE,
+        PARAMETER_GROUP, PARAMETER_DESCRIPTION, IS_SYSTEM, ENABLED, SORT_ORDER,
+        DEFAULT_VALUE, VALUE_OPTIONS, VALIDATION_RULE, CREATE_BY, CREATE_TIME, UPDATE_TIME
+    </sql>
+
+    <!-- 分页查询系统参数列表 -->
+    <select id="selectParameterList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM SYS_PARAMETER
+        <where>
+            <if test="queryVO.parameterKey != null and queryVO.parameterKey != ''">
+                AND PARAMETER_KEY LIKE CONCAT('%', #{queryVO.parameterKey}, '%')
+            </if>
+            <if test="queryVO.parameterName != null and queryVO.parameterName != ''">
+                AND PARAMETER_NAME LIKE CONCAT('%', #{queryVO.parameterName}, '%')
+            </if>
+            <if test="queryVO.parameterType != null and queryVO.parameterType != ''">
+                AND PARAMETER_TYPE = #{queryVO.parameterType}
+            </if>
+            <if test="queryVO.parameterGroup != null and queryVO.parameterGroup != ''">
+                AND PARAMETER_GROUP = #{queryVO.parameterGroup}
+            </if>
+            <if test="queryVO.enabled != null">
+                AND ENABLED = #{queryVO.enabled}
+            </if>
+            <if test="queryVO.isSystem != null">
+                AND IS_SYSTEM = #{queryVO.isSystem}
+            </if>
+            <if test="queryVO.createBy != null and queryVO.createBy != ''">
+                AND CREATE_BY LIKE CONCAT('%', #{queryVO.createBy}, '%')
+            </if>
+            <if test="queryVO.startDate != null and queryVO.startDate != ''">
+                <choose>
+                    <when test="_databaseId == 'mysql'">
+                        AND DATE(CREATE_TIME) >= #{queryVO.startDate}
+                    </when>
+                    <when test="_databaseId == 'dm'">
+                        AND TRUNC(CREATE_TIME) >= TO_DATE(#{queryVO.startDate}, 'YYYY-MM-DD')
+                    </when>
+                </choose>
+            </if>
+            <if test="queryVO.endDate != null and queryVO.endDate != ''">
+                <choose>
+                    <when test="_databaseId == 'mysql'">
+                        AND DATE(CREATE_TIME) &lt;= #{queryVO.endDate}
+                    </when>
+                    <when test="_databaseId == 'dm'">
+                        AND TRUNC(CREATE_TIME) &lt;= TO_DATE(#{queryVO.endDate}, 'YYYY-MM-DD')
+                    </when>
+                </choose>
+            </if>
+        </where>
+        ORDER BY SORT_ORDER ASC, CREATE_TIME DESC
+    </select>
+
+    <!-- 根据参数键名查询参数（排除指定ID） -->
+    <select id="selectByParameterKey" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM SYS_PARAMETER
+        WHERE PARAMETER_KEY = #{parameterKey}
+        <if test="excludeId != null and excludeId != ''">
+            AND PARAMETER_ID != #{excludeId}
+        </if>
+        LIMIT 1
+    </select>
+
+    <!-- 根据参数分组查询参数列表 -->
+    <select id="selectParametersByGroup" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM SYS_PARAMETER
+        WHERE PARAMETER_GROUP = #{parameterGroup}
+        AND ENABLED = 1
+        ORDER BY SORT_ORDER ASC, PARAMETER_NAME ASC
+    </select>
+
+    <!-- 根据参数类型查询参数列表 -->
+    <select id="selectParametersByType" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM SYS_PARAMETER
+        WHERE PARAMETER_TYPE = #{parameterType}
+        AND ENABLED = 1
+        ORDER BY SORT_ORDER ASC, PARAMETER_NAME ASC
+    </select>
+
+    <!-- 查询启用的参数列表 -->
+    <select id="selectEnabledParameters" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM SYS_PARAMETER
+        WHERE ENABLED = 1
+        ORDER BY SORT_ORDER ASC, PARAMETER_NAME ASC
+    </select>
+
+    <!-- 查询系统参数列表 -->
+    <select id="selectSystemParameters" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM SYS_PARAMETER
+        WHERE IS_SYSTEM = 1
+        ORDER BY SORT_ORDER ASC, PARAMETER_NAME ASC
+    </select>
+
+    <!-- 根据参数键名获取参数值 -->
+    <select id="selectParameterValue" resultType="java.lang.String">
+        SELECT PARAMETER_VALUE
+        FROM SYS_PARAMETER
+        WHERE PARAMETER_KEY = #{parameterKey}
+        AND ENABLED = 1
+        LIMIT 1
+    </select>
+
+    <!-- 更新参数状态 -->
+    <update id="updateParameterStatus">
+        UPDATE SYS_PARAMETER
+        SET ENABLED = #{enabled},
+            UPDATE_TIME = <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <when test="_databaseId == 'dm'">SYSDATE</when>
+            </choose>
+        WHERE PARAMETER_ID = #{parameterId}
+    </update>
+
+    <!-- 批量更新参数状态 -->
+    <update id="batchUpdateParameterStatus">
+        UPDATE SYS_PARAMETER
+        SET ENABLED = #{enabled},
+            UPDATE_TIME = <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <when test="_databaseId == 'dm'">SYSDATE</when>
+            </choose>
+        WHERE PARAMETER_ID IN
+        <foreach collection="parameterIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 根据参数键名更新参数值 -->
+    <update id="updateParameterValue">
+        UPDATE SYS_PARAMETER
+        SET PARAMETER_VALUE = #{parameterValue},
+            UPDATE_TIME = <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <when test="_databaseId == 'dm'">SYSDATE</when>
+            </choose>
+        WHERE PARAMETER_KEY = #{parameterKey}
+        AND ENABLED = 1
+    </update>
+
+    <!-- 批量更新参数值 -->
+    <update id="batchUpdateParameterValues">
+        <foreach collection="parameters" item="value" index="key" separator=";">
+            UPDATE SYS_PARAMETER
+            SET PARAMETER_VALUE = #{value},
+                UPDATE_TIME = <choose>
+                    <when test="_databaseId == 'mysql'">NOW()</when>
+                    <when test="_databaseId == 'dm'">SYSDATE</when>
+                </choose>
+            WHERE PARAMETER_KEY = #{key}
+            AND ENABLED = 1
+        </foreach>
+    </update>
+
+    <!-- 重置参数为默认值 -->
+    <update id="resetParameterToDefault">
+        UPDATE SYS_PARAMETER
+        SET PARAMETER_VALUE = DEFAULT_VALUE,
+            UPDATE_TIME = <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <when test="_databaseId == 'dm'">SYSDATE</when>
+            </choose>
+        WHERE PARAMETER_ID = #{parameterId}
+    </update>
+
+    <!-- 批量重置参数为默认值 -->
+    <update id="batchResetParametersToDefault">
+        UPDATE SYS_PARAMETER
+        SET PARAMETER_VALUE = DEFAULT_VALUE,
+            UPDATE_TIME = <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <when test="_databaseId == 'dm'">SYSDATE</when>
+            </choose>
+        WHERE PARAMETER_ID IN
+        <foreach collection="parameterIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 更新参数排序 -->
+    <update id="updateParameterSortOrder">
+        UPDATE SYS_PARAMETER
+        SET SORT_ORDER = #{sortOrder},
+            UPDATE_TIME = <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <when test="_databaseId == 'dm'">SYSDATE</when>
+            </choose>
+        WHERE PARAMETER_ID = #{parameterId}
+    </update>
+
+    <!-- 批量更新参数排序 -->
+    <update id="batchUpdateParameterSortOrder">
+        <foreach collection="sortOrders" item="sortOrder" index="parameterId" separator=";">
+            UPDATE SYS_PARAMETER
+            SET SORT_ORDER = #{sortOrder},
+                UPDATE_TIME = <choose>
+                    <when test="_databaseId == 'mysql'">NOW()</when>
+                    <when test="_databaseId == 'dm'">SYSDATE</when>
+                </choose>
+            WHERE PARAMETER_ID = #{parameterId}
+        </foreach>
+    </update>
+
+    <!-- 获取参数统计信息 -->
+    <select id="selectParameterStatistics" resultType="java.util.Map">
+        SELECT
+            COUNT(*) as totalCount,
+            COUNT(CASE WHEN ENABLED = 1 THEN 1 END) as enabledCount,
+            COUNT(CASE WHEN ENABLED = 0 THEN 1 END) as disabledCount,
+            COUNT(CASE WHEN IS_SYSTEM = 1 THEN 1 END) as systemCount,
+            COUNT(CASE WHEN IS_SYSTEM = 0 THEN 1 END) as customCount,
+            COUNT(DISTINCT PARAMETER_GROUP) as groupCount,
+            COUNT(DISTINCT PARAMETER_TYPE) as typeCount
+        FROM SYS_PARAMETER
+    </select>
+
+    <!-- 获取参数分组分布统计 -->
+    <select id="selectParameterGroupDistribution" resultType="java.util.Map">
+        SELECT
+            PARAMETER_GROUP as groupName,
+            COUNT(*) as count,
+            COUNT(CASE WHEN ENABLED = 1 THEN 1 END) as enabledCount
+        FROM SYS_PARAMETER
+        GROUP BY PARAMETER_GROUP
+        ORDER BY count DESC
+    </select>
+
+    <!-- 获取参数类型分布统计 -->
+    <select id="selectParameterTypeDistribution" resultType="java.util.Map">
+        SELECT
+            PARAMETER_TYPE as typeName,
+            COUNT(*) as count,
+            COUNT(CASE WHEN ENABLED = 1 THEN 1 END) as enabledCount
+        FROM SYS_PARAMETER
+        GROUP BY PARAMETER_TYPE
+        ORDER BY count DESC
+    </select>
+
+    <!-- 导出参数列表 -->
+    <select id="selectParameterListForExport" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM SYS_PARAMETER
+        <where>
+            <if test="parameterKey != null and parameterKey != ''">
+                AND PARAMETER_KEY LIKE CONCAT('%', #{parameterKey}, '%')
+            </if>
+            <if test="parameterName != null and parameterName != ''">
+                AND PARAMETER_NAME LIKE CONCAT('%', #{parameterName}, '%')
+            </if>
+            <if test="parameterType != null and parameterType != ''">
+                AND PARAMETER_TYPE = #{parameterType}
+            </if>
+            <if test="parameterGroup != null and parameterGroup != ''">
+                AND PARAMETER_GROUP = #{parameterGroup}
+            </if>
+            <if test="enabled != null">
+                AND ENABLED = #{enabled}
+            </if>
+            <if test="isSystem != null">
+                AND IS_SYSTEM = #{isSystem}
+            </if>
+        </where>
+        ORDER BY SORT_ORDER ASC, CREATE_TIME DESC
+    </select>
+
+</mapper>

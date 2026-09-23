@@ -1,0 +1,118 @@
+spring:
+ application:
+  name: hbyunSystemSetting #应用名称
+ datasource:
+  type: com.alibaba.druid.pool.DruidDataSource
+  #Mysql数据库配置
+  mysql:
+   url: jdbc:mysql://127.0.0.1:3306/hbgrctest?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&serverTimezone=GMT%2B8
+   username: root
+   password: HBGRC
+   driverClassName: com.mysql.cj.jdbc.Driver
+  #Oracle数据库配置
+  oracle:
+   url: jdbc:oracle:thin:@127.0.0.1:1521/ORCL
+   username: HBGRCTEST
+   password: HBGRCTEST
+   driverClassName: oracle.jdbc.driver.OracleDriver
+ activiti:
+  check-process-definitions: false
+  database-schema-update: false
+ druid:
+  oracle:
+   initialSize: 5
+   minIdle: 5
+   maxActive: 20
+   maxWait: 60000
+   timeBetweenEvictionRunsMillis: 60000
+   minEvictableIdleTimeMillis: 300000
+   validationQuery: SELECT 1 FROM DUAL
+   testWhileIdle: true
+   testOnBorrow: false
+   testOnReturn: false
+   poolPreparedStatement: true
+   maxPoolPreparedStatementPerConnectionSize: 20
+   filters: stat,wall,log4j
+   connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+  mysql:
+   initialSize: 5
+   minIdle: 5
+   maxActive: 20
+   maxWait: 60000
+   timeBetweenEvictionRunsMillis: 60000
+   minEvictableIdleTimeMillis: 300000
+   validationQuery: SELECT 1 FROM DUAL
+   testWhileIdle: true
+   testOnBorrow: false
+   testOnReturn: false
+   poolPreparedStatement: true
+   maxPoolPreparedStatementPerConnectionSize: 20
+   filters: stat,wall,log4j
+   connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+ redis:
+  host: 127.0.0.1
+  port: 6379
+  password: 123456
+
+
+#通用mapper配置
+mapper:
+ mappers: tk.mybatis.mapper.common.Mapper
+ not-empty: false
+ identity: oracle
+ before: true
+
+mysqlmapper:
+ mappers: tk.mybatis.mapper.common.MySqlMapper
+ not-empty: false
+ identity: mysql
+ before: true
+
+#日志配置
+logging:
+ level:
+  org:
+   springframework: WARN
+   spring:
+    springboot:
+     dao: info
+  com:
+   dc:
+    pcasweb:
+     mapper: debug
+ file: logs/spring-boot-logging.log
+ 
+#eureka服务注册中心配置
+eureka:
+ instance:
+  ip-address: 127.0.0.1
+  instance-id: hbyunSystemSetting-8763
+  prefer-ip-address: true
+  hostname: hbyun-systemSetting-service
+ client:
+  register-with-eureka: false
+  fetch-registry: false
+  serviceUrl:
+   defaultZone: http://hbyunadmin:hbEureka12345@127.0.0.1:8761/eureka
+security:
+  basic:
+    enabled: false
+
+acurl : http://192.0.2.200:8003
+formurl : http://192.0.2.200:8001
+activitiModelerUrl : http://192.0.2.200:8137
+getOrgChildrenUrl : http://192.0.2.200:8379
+insertOrgOneUrl : http://192.0.2.200:8379
+redisurl : http://192.0.2.200:8379
+
+mybatis:
+ configuration:
+  map-underscore-to-camel-case: true
+application:
+ #文件上传
+ file-upload:
+  base-dir: D:\nginx-1.20.2\html\hbfk
+  #base-url: http://192.0.2.200/hbfk
+  base-url: http://192.0.2.200/hbfk
+
+

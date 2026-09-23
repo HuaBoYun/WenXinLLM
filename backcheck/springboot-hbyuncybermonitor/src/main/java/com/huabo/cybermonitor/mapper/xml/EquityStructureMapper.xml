@@ -1,0 +1,433 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.cybermonitor.mapper.EquityStructureMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.huabo.cybermonitor.entity.EquityStructure">
+        <id column="EQUITY_ID" property="equityId" />
+        <result column="INVESTEE_ENTERPRISE_ID" property="investeeEnterpriseId" />
+        <result column="INVESTEE_ENTERPRISE_NAME" property="investeeEnterpriseName" />
+        <result column="INVESTOR_ENTERPRISE_ID" property="investorEnterpriseId" />
+        <result column="INVESTOR_ENTERPRISE_NAME" property="investorEnterpriseName" />
+        <result column="INVESTOR_TYPE" property="investorType" />
+        <result column="INVESTMENT_METHOD" property="investmentMethod" />
+        <result column="SHAREHOLDING_RATIO" property="shareholdingRatio" />
+        <result column="INDIRECT_SHAREHOLDING_RATIO" property="indirectShareholdingRatio" />
+        <result column="TOTAL_SHAREHOLDING_RATIO" property="totalShareholdingRatio" />
+        <result column="VOTING_RIGHT_RATIO" property="votingRightRatio" />
+        <result column="INVESTMENT_AMOUNT" property="investmentAmount" />
+        <result column="INVESTMENT_DATE" property="investmentDate" />
+        <result column="INVESTMENT_LEVEL" property="investmentLevel" />
+        <result column="EQUITY_PATH" property="equityPath" />
+        <result column="EQUITY_NATURE" property="equityNature" />
+        <result column="EQUITY_STATUS" property="equityStatus" />
+        <result column="EQUITY_SOURCE" property="equitySource" />
+        <result column="IS_CONTROLLING" property="isControlling" />
+        <result column="IS_ACTUAL_CONTROLLER" property="isActualController" />
+        <result column="IS_PLEDGED" property="isPledged" />
+        <result column="PLEDGE_RATIO" property="pledgeRatio" />
+        <result column="PLEDGE_AMOUNT" property="pledgeAmount" />
+        <result column="PLEDGEE" property="pledgee" />
+        <result column="PLEDGE_START_DATE" property="pledgeStartDate" />
+        <result column="PLEDGE_END_DATE" property="pledgeEndDate" />
+        <result column="RISK_LEVEL" property="riskLevel" />
+        <result column="RISK_DESCRIPTION" property="riskDescription" />
+        <result column="NEED_REGULATORY_ATTENTION" property="needRegulatoryAttention" />
+        <result column="REGULATORY_ATTENTION_REASON" property="regulatoryAttentionReason" />
+        <result column="DATA_SOURCE" property="dataSource" />
+        <result column="DATA_UPDATE_TIME" property="dataUpdateTime" />
+        <result column="REMARKS" property="remarks" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="CREATE_BY" property="createBy" />
+        <result column="UPDATE_BY" property="updateBy" />
+    </resultMap>
+
+    <!-- 基础查询条件 -->
+    <sql id="BaseWhere">
+        <where>
+            <if test="investeeEnterpriseId != null and investeeEnterpriseId != ''">
+                AND INVESTEE_ENTERPRISE_ID = #{investeeEnterpriseId}
+            </if>
+            <if test="investorEnterpriseId != null and investorEnterpriseId != ''">
+                AND INVESTOR_ENTERPRISE_ID = #{investorEnterpriseId}
+            </if>
+            <if test="investorType != null and investorType != ''">
+                AND INVESTOR_TYPE = #{investorType}
+            </if>
+            <if test="equityNature != null and equityNature != ''">
+                AND EQUITY_NATURE = #{equityNature}
+            </if>
+            <if test="equityStatus != null and equityStatus != ''">
+                AND EQUITY_STATUS = #{equityStatus}
+            </if>
+            <if test="isControlling != null">
+                AND IS_CONTROLLING = #{isControlling}
+            </if>
+            <if test="isActualController != null">
+                AND IS_ACTUAL_CONTROLLER = #{isActualController}
+            </if>
+            <if test="isPledged != null">
+                AND IS_PLEDGED = #{isPledged}
+            </if>
+            <if test="riskLevel != null and riskLevel != ''">
+                AND RISK_LEVEL = #{riskLevel}
+            </if>
+            <if test="needRegulatoryAttention != null">
+                AND NEED_REGULATORY_ATTENTION = #{needRegulatoryAttention}
+            </if>
+            <if test="minShareholdingRatio != null">
+                AND SHAREHOLDING_RATIO >= #{minShareholdingRatio}
+            </if>
+            <if test="maxShareholdingRatio != null">
+                AND SHAREHOLDING_RATIO &lt;= #{maxShareholdingRatio}
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND INVESTMENT_DATE >= #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND INVESTMENT_DATE &lt;= #{endDate}
+            </if>
+        </where>
+    </sql>
+
+    <!-- 分页查询股权结构列表 -->
+    <select id="selectEquityStructureList" resultMap="BaseResultMap">
+        SELECT * FROM EQUITY_STRUCTURE
+        <include refid="BaseWhere" />
+        ORDER BY UPDATE_TIME DESC
+        <if test="pageNumber != null and pageSize != null">
+            <if test="_databaseId == 'mysql'">
+                LIMIT #{pageSize} OFFSET #{pageNumber}
+            </if>
+            <if test="_databaseId == 'dm'">
+                OFFSET #{pageNumber} ROWS FETCH NEXT #{pageSize} ROWS ONLY
+            </if>
+        </if>
+    </select>
+
+    <!-- 根据被投资企业ID查询 -->
+    <select id="selectByInvesteeEnterpriseId" resultMap="BaseResultMap">
+        SELECT * FROM EQUITY_STRUCTURE
+        WHERE INVESTEE_ENTERPRISE_ID = #{investeeEnterpriseId}
+        ORDER BY SHAREHOLDING_RATIO DESC
+    </select>
+
+    <!-- 根据投资方企业ID查询 -->
+    <select id="selectByInvestorEnterpriseId" resultMap="BaseResultMap">
+        SELECT * FROM EQUITY_STRUCTURE
+        WHERE INVESTOR_ENTERPRISE_ID = #{investorEnterpriseId}
+        ORDER BY SHAREHOLDING_RATIO DESC
+    </select>
+
+    <!-- 查询控股股权结构 -->
+    <select id="selectControllingEquity" resultMap="BaseResultMap">
+        SELECT * FROM EQUITY_STRUCTURE
+        WHERE INVESTEE_ENTERPRISE_ID = #{investeeEnterpriseId}
+        AND IS_CONTROLLING = 1
+        ORDER BY SHAREHOLDING_RATIO DESC
+    </select>
+
+    <!-- 查询实际控制人股权结构 -->
+    <select id="selectActualControllerEquity" resultMap="BaseResultMap">
+        SELECT * FROM EQUITY_STRUCTURE
+        WHERE INVESTEE_ENTERPRISE_ID = #{investeeEnterpriseId}
+        AND IS_ACTUAL_CONTROLLER = 1
+        ORDER BY TOTAL_SHAREHOLDING_RATIO DESC
+    </select>
+
+    <!-- 股权穿透查询（向上穿透） -->
+    <select id="selectEquityPenetrationUp" resultMap="BaseResultMap">
+        <if test="_databaseId == 'mysql'">
+            WITH RECURSIVE equity_tree AS (
+                SELECT *, 1 as level FROM EQUITY_STRUCTURE
+                WHERE INVESTEE_ENTERPRISE_ID = #{investeeEnterpriseId}
+                UNION ALL
+                SELECT e.*, et.level + 1 FROM EQUITY_STRUCTURE e
+                INNER JOIN equity_tree et ON e.INVESTEE_ENTERPRISE_ID = et.INVESTOR_ENTERPRISE_ID
+                WHERE et.level &lt; #{maxLevel}
+            )
+            SELECT * FROM equity_tree ORDER BY level, SHAREHOLDING_RATIO DESC
+        </if>
+        <if test="_databaseId == 'dm'">
+            SELECT * FROM EQUITY_STRUCTURE
+            WHERE INVESTEE_ENTERPRISE_ID = #{investeeEnterpriseId}
+            ORDER BY SHAREHOLDING_RATIO DESC
+        </if>
+    </select>
+
+    <!-- 股权穿透查询（向下穿透） -->
+    <select id="selectEquityPenetrationDown" resultMap="BaseResultMap">
+        <if test="_databaseId == 'mysql'">
+            WITH RECURSIVE equity_tree AS (
+                SELECT *, 1 as level FROM EQUITY_STRUCTURE
+                WHERE INVESTOR_ENTERPRISE_ID = #{investorEnterpriseId}
+                UNION ALL
+                SELECT e.*, et.level + 1 FROM EQUITY_STRUCTURE e
+                INNER JOIN equity_tree et ON e.INVESTOR_ENTERPRISE_ID = et.INVESTEE_ENTERPRISE_ID
+                WHERE et.level &lt; #{maxLevel}
+            )
+            SELECT * FROM equity_tree ORDER BY level, SHAREHOLDING_RATIO DESC
+        </if>
+        <if test="_databaseId == 'dm'">
+            SELECT * FROM EQUITY_STRUCTURE
+            WHERE INVESTOR_ENTERPRISE_ID = #{investorEnterpriseId}
+            ORDER BY SHAREHOLDING_RATIO DESC
+        </if>
+    </select>
+
+    <!-- 查询股权路径 -->
+    <select id="selectEquityPath" resultMap="BaseResultMap">
+        SELECT * FROM EQUITY_STRUCTURE
+        WHERE EQUITY_PATH LIKE CONCAT('%', #{startEnterpriseId}, '%', #{endEnterpriseId}, '%')
+        ORDER BY INVESTMENT_LEVEL
+    </select>
+
+    <!-- 计算间接持股比例 -->
+    <select id="calculateIndirectShareholdingRatio" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(INDIRECT_SHAREHOLDING_RATIO), 0) as indirectRatio
+        FROM EQUITY_STRUCTURE
+        WHERE INVESTOR_ENTERPRISE_ID = #{investorEnterpriseId}
+        AND INVESTEE_ENTERPRISE_ID = #{investeeEnterpriseId}
+        AND INVESTMENT_LEVEL > 1
+    </select>
+
+    <!-- 计算综合持股比例 -->
+    <select id="calculateTotalShareholdingRatio" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(TOTAL_SHAREHOLDING_RATIO), 0) as totalRatio
+        FROM EQUITY_STRUCTURE
+        WHERE INVESTOR_ENTERPRISE_ID = #{investorEnterpriseId}
+        AND INVESTEE_ENTERPRISE_ID = #{investeeEnterpriseId}
+    </select>
+
+    <!-- 查询质押股权 -->
+    <select id="selectPledgedEquity" resultMap="BaseResultMap">
+        SELECT * FROM EQUITY_STRUCTURE
+        WHERE INVESTEE_ENTERPRISE_ID = #{investeeEnterpriseId}
+        AND IS_PLEDGED = 1
+        ORDER BY PLEDGE_RATIO DESC
+    </select>
+
+    <!-- 按投资方类型统计股权分布 -->
+    <select id="selectEquityDistributionByInvestorType" resultType="java.util.Map">
+        SELECT 
+            INVESTOR_TYPE as investorType,
+            COUNT(*) as count,
+            SUM(SHAREHOLDING_RATIO) as totalRatio,
+            AVG(SHAREHOLDING_RATIO) as avgRatio
+        FROM EQUITY_STRUCTURE
+        WHERE INVESTEE_ENTERPRISE_ID = #{investeeEnterpriseId}
+        GROUP BY INVESTOR_TYPE
+        ORDER BY totalRatio DESC
+    </select>
+
+    <!-- 按股权性质统计股权分布 -->
+    <select id="selectEquityDistributionByNature" resultType="java.util.Map">
+        SELECT 
+            EQUITY_NATURE as equityNature,
+            COUNT(*) as count,
+            SUM(SHAREHOLDING_RATIO) as totalRatio,
+            AVG(SHAREHOLDING_RATIO) as avgRatio
+        FROM EQUITY_STRUCTURE
+        WHERE INVESTEE_ENTERPRISE_ID = #{investeeEnterpriseId}
+        GROUP BY EQUITY_NATURE
+        ORDER BY totalRatio DESC
+    </select>
+
+    <!-- 按投资层级统计股权分布 -->
+    <select id="selectEquityDistributionByLevel" resultType="java.util.Map">
+        SELECT 
+            INVESTMENT_LEVEL as investmentLevel,
+            COUNT(*) as count,
+            SUM(SHAREHOLDING_RATIO) as totalRatio,
+            AVG(SHAREHOLDING_RATIO) as avgRatio
+        FROM EQUITY_STRUCTURE
+        WHERE INVESTEE_ENTERPRISE_ID = #{investeeEnterpriseId}
+        GROUP BY INVESTMENT_LEVEL
+        ORDER BY investmentLevel
+    </select>
+
+    <!-- 查询股权集中度 -->
+    <select id="selectEquityConcentration" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as totalInvestors,
+            SUM(CASE WHEN SHAREHOLDING_RATIO >= 50 THEN 1 ELSE 0 END) as controllingInvestors,
+            SUM(CASE WHEN SHAREHOLDING_RATIO >= 5 THEN 1 ELSE 0 END) as majorInvestors,
+            MAX(SHAREHOLDING_RATIO) as maxRatio,
+            SUM(SHAREHOLDING_RATIO) as totalRatio,
+            (SELECT SUM(SHAREHOLDING_RATIO) FROM EQUITY_STRUCTURE 
+             WHERE INVESTEE_ENTERPRISE_ID = #{investeeEnterpriseId} 
+             ORDER BY SHAREHOLDING_RATIO DESC 
+             <if test="_databaseId == 'mysql'">LIMIT 5</if>
+             <if test="_databaseId == 'dm'">AND ROWNUM &lt;= 5</if>
+            ) as top5Ratio
+        FROM EQUITY_STRUCTURE
+        WHERE INVESTEE_ENTERPRISE_ID = #{investeeEnterpriseId}
+    </select>
+
+    <!-- 查询股权变动趋势 -->
+    <select id="selectEquityChangeTrend" resultType="java.util.Map">
+        SELECT 
+            <if test="_databaseId == 'mysql'">
+                DATE_FORMAT(INVESTMENT_DATE, '%Y-%m') as period,
+            </if>
+            <if test="_databaseId == 'dm'">
+                TO_CHAR(INVESTMENT_DATE, 'YYYY-MM') as period,
+            </if>
+            COUNT(*) as count,
+            SUM(INVESTMENT_AMOUNT) as totalAmount,
+            AVG(SHAREHOLDING_RATIO) as avgRatio
+        FROM EQUITY_STRUCTURE
+        WHERE INVESTEE_ENTERPRISE_ID = #{investeeEnterpriseId}
+        <if test="startDate != null and startDate != ''">
+            AND INVESTMENT_DATE >= #{startDate}
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND INVESTMENT_DATE &lt;= #{endDate}
+        </if>
+        GROUP BY 
+            <if test="_databaseId == 'mysql'">
+                DATE_FORMAT(INVESTMENT_DATE, '%Y-%m')
+            </if>
+            <if test="_databaseId == 'dm'">
+                TO_CHAR(INVESTMENT_DATE, 'YYYY-MM')
+            </if>
+        ORDER BY period
+    </select>
+
+    <!-- 查询股权风险预警 -->
+    <select id="selectEquityRiskWarning" resultMap="BaseResultMap">
+        SELECT * FROM EQUITY_STRUCTURE
+        WHERE RISK_LEVEL = #{riskLevel}
+        AND NEED_REGULATORY_ATTENTION = 1
+        ORDER BY UPDATE_TIME DESC
+    </select>
+
+    <!-- 批量更新股权状态 -->
+    <update id="batchUpdateEquityStatus">
+        UPDATE EQUITY_STRUCTURE 
+        SET EQUITY_STATUS = #{equityStatus},
+            UPDATE_TIME = 
+            <if test="_databaseId == 'mysql'">NOW()</if>
+            <if test="_databaseId == 'dm'">SYSDATE</if>
+        WHERE EQUITY_ID IN
+        <foreach collection="equityIds" item="equityId" open="(" separator="," close=")">
+            #{equityId}
+        </foreach>
+    </update>
+
+    <!-- 批量更新间接持股比例 -->
+    <update id="batchUpdateIndirectShareholdingRatio">
+        <foreach collection="list" item="item" separator=";">
+            UPDATE EQUITY_STRUCTURE 
+            SET INDIRECT_SHAREHOLDING_RATIO = #{item.indirectShareholdingRatio},
+                TOTAL_SHAREHOLDING_RATIO = #{item.totalShareholdingRatio},
+                UPDATE_TIME = 
+                <if test="_databaseId == 'mysql'">NOW()</if>
+                <if test="_databaseId == 'dm'">SYSDATE</if>
+            WHERE EQUITY_ID = #{item.equityId}
+        </foreach>
+    </update>
+
+    <!-- 删除过期股权记录 -->
+    <delete id="deleteExpiredEquityRecords">
+        DELETE FROM EQUITY_STRUCTURE 
+        WHERE EQUITY_STATUS = 'CANCELLED'
+        AND UPDATE_TIME &lt; 
+        <if test="_databaseId == 'mysql'">
+            DATE_SUB(NOW(), INTERVAL #{days} DAY)
+        </if>
+        <if test="_databaseId == 'dm'">
+            SYSDATE - #{days}
+        </if>
+    </delete>
+
+    <!-- 获取股权统计概览 -->
+    <select id="selectEquityStatisticsOverview" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as totalEquities,
+            COUNT(DISTINCT INVESTEE_ENTERPRISE_ID) as totalInvestees,
+            COUNT(DISTINCT INVESTOR_ENTERPRISE_ID) as totalInvestors,
+            SUM(CASE WHEN IS_CONTROLLING = 1 THEN 1 ELSE 0 END) as controllingEquities,
+            SUM(CASE WHEN IS_ACTUAL_CONTROLLER = 1 THEN 1 ELSE 0 END) as actualControllerEquities,
+            SUM(CASE WHEN IS_PLEDGED = 1 THEN 1 ELSE 0 END) as pledgedEquities,
+            SUM(CASE WHEN NEED_REGULATORY_ATTENTION = 1 THEN 1 ELSE 0 END) as attentionEquities,
+            SUM(INVESTMENT_AMOUNT) as totalInvestmentAmount,
+            AVG(SHAREHOLDING_RATIO) as avgShareholdingRatio
+        FROM EQUITY_STRUCTURE
+    </select>
+
+    <!-- 获取投资方类型分布 -->
+    <select id="selectInvestorTypeDistribution" resultType="java.util.Map">
+        SELECT 
+            INVESTOR_TYPE as type,
+            COUNT(*) as count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM EQUITY_STRUCTURE), 2) as percentage
+        FROM EQUITY_STRUCTURE
+        GROUP BY INVESTOR_TYPE
+        ORDER BY count DESC
+    </select>
+
+    <!-- 获取股权性质分布 -->
+    <select id="selectEquityNatureDistribution" resultType="java.util.Map">
+        SELECT 
+            EQUITY_NATURE as nature,
+            COUNT(*) as count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM EQUITY_STRUCTURE), 2) as percentage
+        FROM EQUITY_STRUCTURE
+        GROUP BY EQUITY_NATURE
+        ORDER BY count DESC
+    </select>
+
+    <!-- 获取投资层级分布 -->
+    <select id="selectInvestmentLevelDistribution" resultType="java.util.Map">
+        SELECT 
+            INVESTMENT_LEVEL as level,
+            COUNT(*) as count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM EQUITY_STRUCTURE), 2) as percentage
+        FROM EQUITY_STRUCTURE
+        GROUP BY INVESTMENT_LEVEL
+        ORDER BY level
+    </select>
+
+    <!-- 获取控股情况统计 -->
+    <select id="selectControllingStatistics" resultType="java.util.Map">
+        SELECT 
+            SUM(CASE WHEN IS_CONTROLLING = 1 THEN 1 ELSE 0 END) as controllingCount,
+            SUM(CASE WHEN IS_CONTROLLING = 0 THEN 1 ELSE 0 END) as nonControllingCount,
+            ROUND(SUM(CASE WHEN IS_CONTROLLING = 1 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) as controllingPercentage
+        FROM EQUITY_STRUCTURE
+    </select>
+
+    <!-- 获取质押情况统计 -->
+    <select id="selectPledgeStatistics" resultType="java.util.Map">
+        SELECT 
+            SUM(CASE WHEN IS_PLEDGED = 1 THEN 1 ELSE 0 END) as pledgedCount,
+            SUM(CASE WHEN IS_PLEDGED = 0 THEN 1 ELSE 0 END) as unpledgedCount,
+            ROUND(SUM(CASE WHEN IS_PLEDGED = 1 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) as pledgedPercentage,
+            SUM(CASE WHEN IS_PLEDGED = 1 THEN PLEDGE_AMOUNT ELSE 0 END) as totalPledgeAmount
+        FROM EQUITY_STRUCTURE
+    </select>
+
+    <!-- 导出股权结构列表 -->
+    <select id="exportEquityStructureList" resultType="java.util.Map">
+        SELECT 
+            EQUITY_ID as equityId,
+            INVESTEE_ENTERPRISE_NAME as investeeEnterpriseName,
+            INVESTOR_ENTERPRISE_NAME as investorEnterpriseName,
+            INVESTOR_TYPE as investorType,
+            SHAREHOLDING_RATIO as shareholdingRatio,
+            TOTAL_SHAREHOLDING_RATIO as totalShareholdingRatio,
+            INVESTMENT_AMOUNT as investmentAmount,
+            INVESTMENT_DATE as investmentDate,
+            EQUITY_NATURE as equityNature,
+            EQUITY_STATUS as equityStatus,
+            IS_CONTROLLING as isControlling,
+            IS_PLEDGED as isPledged,
+            RISK_LEVEL as riskLevel
+        FROM EQUITY_STRUCTURE
+        <include refid="BaseWhere" />
+        ORDER BY UPDATE_TIME DESC
+    </select>
+
+</mapper>

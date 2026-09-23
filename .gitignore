@@ -1,0 +1,39 @@
+# ============================================================
+# 敏感档案 / 脱敏档案 / 安装包 —— 绝对禁止提交（含真实 IP、邮箱、原始配置、部署包）
+# ============================================================
+/_sensitive-backup/
+/_masking-report.json
+/_masking-spec.md
+/脱敏处理说明.md
+/resources/_masking-report.json
+/resources/_masking-report-backend.json
+/resources/_masking-report-backend-round2.json
+/resources/_masking-spec.md
+/resources/脱敏处理说明.md
+/install20260922.zip
+/install20260922/
+
+# ============================================================
+# 文档源文件（仓库内使用 doc/*.md，.doc/.docx 仅本地保留）
+# ============================================================
+/doc/*.doc
+/前端项目启动说明.docx
+/后端服务启动说明.docx
+
+# ============================================================
+# 构建产物 / IDE / 日志（resources/node_modules 是要提交的离线包，勿加全局 node_modules 规则）
+# ============================================================
+hby-admin/node_modules/
+hby-admin/dist/
+target/
+bin/
+logs/
+*.log
+*.class
+.idea/
+*.iml
+.vscode/
+*.jar.tmp
+.buildlogs/
+*.tar
+*.tar.gz

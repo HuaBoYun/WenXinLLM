@@ -1,0 +1,43 @@
+spring:
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    use: oracle
+    sqlserver:
+      url: jdbc:sqlserver://192.0.2.200:1433;databaseName=master
+      username: sa
+      password: "'YourStrong#Passw0rd123'"
+      driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    dm:
+      url: jdbc:dm://127.0.0.1:5236/REDACTED?zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+      username: REDACTED
+      password: zhDM@135246
+      driverClassName: dm.jdbc.driver.DmDriver
+    #Oracle数据库配置
+    oracle:
+      url: jdbc:oracle:thin:@192.0.2.200:1521:orcl
+      username: DQYTSJ
+      password: DQYTSJ
+      driverClassName: oracle.jdbc.driver.OracleDriver
+    #Mysql数据库配置
+    mysql:
+      url: jdbc:mysql://192.0.2.200/cctcxbom?characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowMultiQueries=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true
+      username: cbim
+      password: Cbim!123456
+      driverClassName: com.mysql.cj.jdbc.Driver
+    druid:
+      min-idle: 5
+      max-active: 50
+      max-wait: 120000
+      initialSize: 5
+      timeBetweenEvictionRunsMillis: 60000
+      minEvictableIdleTimeMillis: 300000
+      testWhileIdle: true
+      validationQuery: SELECT 1
+      testOnBorrow: false
+      testOnReturn: false
+      poolPreparedStatement: true
+      maxPoolPreparedStatementPerConnectionSize: 20
+      filters: stat,wall,log4j
+      connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000

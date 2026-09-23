@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.monitor.mapper.TblAssessMarkMapper">
+
+	<resultMap type="com.huabo.monitor.entity.TblAssessMarkVo"
+		id="markResult" autoMapping="true">
+		<result property="assmarkid" column="assmarkid" />
+		<collection property="canpingrens" column="assmarkid"
+			ofType="com.huabo.monitor.entity.TblAssessStaffVo"
+			javaType="java.util.List" select="getStaffsBymarkid"></collection>
+	</resultMap>
+
+
+	<select id="findAssessMarkIpage" resultMap="markResult">
+		select t.*,TS.REALNAME,ta2.ELEMENTNAME from TBL_ASSESS_MARK t
+		inner
+		join TBL_ASSESSELEMENT TA2 on t.ASSELEID = TA2.ASSELEID
+		inner join
+		TBL_STAFF TS on t.STAFFID = TS.STAFFID where 1=1
+		<if test="queryParam.assid!=null">
+			and t.ASSID=#{queryParam.assid}
+		</if>
+		<if test="queryParam.assorgid!=null">
+			and t.assorgid=#{queryParam.assorgid}
+		</if>
+	</select>
+
+	<select id="getStaffsBymarkid"
+		resultType="com.huabo.monitor.entity.TblAssessStaffVo">
+		select t.*,ts.REALNAME,ts.USERNAME from TBL_ASSESS_STAFF t
+		inner join
+		TBL_STAFF ts on t.STAFFID=ts.STAFFID where
+		t.ASSMARKID=#{assmarkid}
+		order by t.STAFFID
+	</select>
+
+	<select id="findMarkByOrgGroupNew" resultMap="markResult">
+		select lin.*,
+		ts.REALNAME,ts.USERNAME,T.ORGNAME from (
+		select * from TBL_ASSESS_MARK
+		o where o.assmarkid in (select
+		max(t.assmarkid)
+		from TBL_ASSESS_MARK t
+		where t.ASSID = #{assId}
+		group by assorgid)) lin
+		inner join
+		TBL_ORGANIZATION T on lin.ASSORGID=T.ORGID
+		inner join TBL_ASSESS TA on
+		TA.ASSID=lin.ASSID
+		inner join TBL_STAFF TS on TS.STAFFID=TA.LEADERID
+	</select>
+
+	<select id="findBypersonNew" resultType="java.util.Map">
+		SELECT DISTINCT ASS.ASSESSID,ASS.ASSESSNAME,ST.REALNAME,(CASE when
+		STA.STATUS =1 then 0 else STA.STATUS END) status from tbl_assess ass
+		LEFT JOIN TBL_ASSESS_MARK mar on ASS.ASSID=MAR.ASSID
+		LEFT JOIN TBL_ASSESS_STAFF sta on MAR.ASSMARKID=STA.ASSMARKID
+		LEFT JOIN TBL_STAFF st on STA.STAFFID=ST.STAFFID where ASS.ASSID=#{assid}
+		and STA.ORGID= #{orgid} ORDER BY ASS.ASSESSID
+	</select>
+</mapper>

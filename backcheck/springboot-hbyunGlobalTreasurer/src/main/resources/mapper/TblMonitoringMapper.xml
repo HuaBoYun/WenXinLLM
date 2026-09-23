@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.TblMonitoringMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TblMonitoring">
+        <id column="MONITORING_ID" property="monitoringId" />
+        <result column="MONITOR_TYPE" property="monitorType" />
+        <result column="MONITOR_NAME" property="monitorName" />
+        <result column="ALERT_LEVEL" property="alertLevel" />
+        <result column="ALERT_MESSAGE" property="alertMessage" />
+        <result column="TRANSACTION_COUNT" property="transactionCount" />
+        <result column="SUCCESS_COUNT" property="successCount" />
+        <result column="FAILED_COUNT" property="failedCount" />
+        <result column="AVG_PROCESSING_TIME" property="avgProcessingTime" />
+        <result column="MONITOR_TIME" property="monitorTime" />
+        <result column="MONITOR_DESCRIPTION" property="monitorDescription" />
+        <result column="REMARK" property="remark" />
+        <result column="DELETE_FLAG" property="deleteFlag" />
+        <result column="CREATE_BY" property="createdBy" />
+        <result column="CREATE_BY_NAME" property="createdByName" />
+        <result column="CREATE_TIME" property="createdTime" />
+        <result column="UPDATE_BY" property="updatedBy" />
+        <result column="UPDATE_BY_NAME" property="updatedByName" />
+        <result column="UPDATE_TIME" property="updatedTime" />
+        <result column="ORG_ID" property="orgId" />
+        <result column="ORG_NAME" property="orgName" />
+    </resultMap>
+
+    <!-- 分页查询监控数据 -->
+    <select id="selectMonitoringPage" parameterType="map" resultMap="BaseResultMap">
+        SELECT * FROM TBL_MONITORING
+        <where>
+            DELETE_FLAG = 0
+            <if test="monitorType != null and monitorType != ''">
+                AND MONITOR_TYPE = #{monitorType}
+            </if>
+            <if test="alertLevel != null and alertLevel != ''">
+                AND ALERT_LEVEL = #{alertLevel}
+            </if>
+            <if test="orgId != null">
+                AND ORG_ID = #{orgId}
+            </if>
+            <if test="beginTime != null and beginTime != ''">
+                AND MONITOR_TIME >= #{beginTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                AND MONITOR_TIME &lt;= #{endTime}
+            </if>
+        </where>
+        ORDER BY MONITOR_TIME DESC
+        <if test="offset != null and limit != null">
+            LIMIT #{limit} OFFSET #{offset}
+        </if>
+    </select>
+
+    <!-- 统计监控数据数量 -->
+    <select id="countMonitoringList" parameterType="map" resultType="int">
+        SELECT COUNT(*) FROM TBL_MONITORING
+        <where>
+            DELETE_FLAG = 0
+            <if test="monitorType != null and monitorType != ''">
+                AND MONITOR_TYPE = #{monitorType}
+            </if>
+            <if test="alertLevel != null and alertLevel != ''">
+                AND ALERT_LEVEL = #{alertLevel}
+            </if>
+            <if test="orgId != null">
+                AND ORG_ID = #{orgId}
+            </if>
+            <if test="beginTime != null and beginTime != ''">
+                AND MONITOR_TIME >= #{beginTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                AND MONITOR_TIME &lt;= #{endTime}
+            </if>
+        </where>
+    </select>
+
+    <!-- 查询告警记录 -->
+    <select id="selectAlerts" resultMap="BaseResultMap">
+        SELECT * FROM TBL_MONITORING
+        WHERE DELETE_FLAG = 0
+        AND ORG_ID = #{orgId}
+        AND ALERT_LEVEL IN ('HIGH', 'MEDIUM', 'LOW', 'CRITICAL')
+        AND ALERT_MESSAGE IS NOT NULL
+        AND ALERT_MESSAGE != ''
+        ORDER BY
+            CASE ALERT_LEVEL
+                WHEN 'CRITICAL' THEN 1
+                WHEN 'HIGH' THEN 2
+                WHEN 'MEDIUM' THEN 3
+                WHEN 'LOW' THEN 4
+                ELSE 5
+            END,
+            MONITOR_TIME DESC
+        LIMIT 100
+    </select>
+
+    <!-- 查询严重告警 -->
+    <select id="selectCriticalAlerts" resultMap="BaseResultMap">
+        SELECT * FROM TBL_MONITORING
+        WHERE DELETE_FLAG = 0
+        AND ORG_ID = #{orgId}
+        AND ALERT_LEVEL = 'CRITICAL'
+        ORDER BY MONITOR_TIME DESC
+        LIMIT 50
+    </select>
+
+    <!-- 查询系统健康状态 -->
+    <select id="selectHealthStatus" parameterType="long" resultType="map">
+        SELECT
+            COALESCE(AVG(CASE
+                WHEN FAILED_COUNT = 0 THEN 100
+                WHEN FAILED_COUNT IS NULL THEN 100
+                ELSE (SUCCESS_COUNT * 100.0 / (SUCCESS_COUNT + FAILED_COUNT))
+            END), 0) AS avgHealthScore,
+            COALESCE(AVG(CASE
+                WHEN TRANSACTION_COUNT IS NULL OR TRANSACTION_COUNT = 0 THEN 0
+                ELSE (SUCCESS_COUNT * 100.0 / TRANSACTION_COUNT)
+            END), 0) AS avgSuccessRate,
+            COALESCE(AVG(AVG_PROCESSING_TIME), 0) AS avgProcessingTime,
+            COALESCE(SUM(CASE WHEN FAILED_COUNT > 0 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 0) AS avgSystemLoad,
+            COUNT(*) AS totalMonitors,
+            SUM(COALESCE(TRANSACTION_COUNT, 0)) AS totalTransactions,
+            SUM(COALESCE(SUCCESS_COUNT, 0)) AS totalSuccess,
+            SUM(COALESCE(FAILED_COUNT, 0)) AS totalFailed
+        FROM TBL_MONITORING
+        WHERE DELETE_FLAG = 0
+        AND ORG_ID = #{orgId}
+        AND MONITOR_TIME >= SYSDATE - INTERVAL '1' HOUR
+    </select>
+
+    <!-- 查询监控仪表板数据 -->
+    <select id="selectDashboardData" parameterType="long" resultType="map">
+        SELECT
+            COUNT(CASE WHEN ALERT_LEVEL = 'CRITICAL' THEN 1 END) AS criticalAlerts,
+            COUNT(CASE WHEN ALERT_LEVEL = 'HIGH' THEN 1 END) AS highAlerts,
+            COUNT(CASE WHEN ALERT_LEVEL = 'MEDIUM' THEN 1 END) AS mediumAlerts,
+            COUNT(CASE WHEN ALERT_LEVEL = 'LOW' THEN 1 END) AS lowAlerts,
+            COUNT(*) AS totalAlerts,
+            COALESCE(SUM(TRANSACTION_COUNT), 0) AS totalTransactions,
+            COALESCE(SUM(SUCCESS_COUNT), 0) AS totalSuccess,
+            COALESCE(SUM(FAILED_COUNT), 0) AS totalFailed,
+            COALESCE(AVG(AVG_PROCESSING_TIME), 0) AS avgProcessingTime
+        FROM TBL_MONITORING
+        WHERE DELETE_FLAG = 0
+        AND ORG_ID = #{orgId}
+        AND MONITOR_TIME >= SYSDATE - INTERVAL '24' HOUR
+    </select>
+
+    <!-- 查询监控趋势 -->
+    <select id="selectMonitoringTrend" parameterType="map" resultType="map">
+        SELECT
+            DATE_FORMAT(MONITOR_TIME, '%Y-%m-%d %H:00:00') AS timePoint,
+            SUM(COALESCE(TRANSACTION_COUNT, 0)) AS transactionCount,
+            SUM(COALESCE(SUCCESS_COUNT, 0)) AS successCount,
+            SUM(COALESCE(FAILED_COUNT, 0)) AS failedCount,
+            COALESCE(AVG(AVG_PROCESSING_TIME), 0) AS avgProcessingTime
+        FROM TBL_MONITORING
+        WHERE DELETE_FLAG = 0
+        <if test="orgId != null">
+            AND ORG_ID = #{orgId}
+        </if>
+        <if test="beginTime != null and beginTime != ''">
+            AND MONITOR_TIME >= #{beginTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+            AND MONITOR_TIME &lt;= #{endTime}
+        </if>
+        GROUP BY DATE_FORMAT(MONITOR_TIME, '%Y-%m-%d %H:00:00')
+        ORDER BY timePoint ASC
+    </select>
+
+</mapper>

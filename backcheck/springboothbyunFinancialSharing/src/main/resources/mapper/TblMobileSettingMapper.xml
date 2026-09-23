@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.mapper.TblMobileSettingMapper">
+
+    <select id="selectBySettingCode" resultType="com.financial.sharing.entity.TblMobileSetting">
+        SELECT * FROM TBL_MOBILE_SETTING WHERE SETTING_CODE = #{settingCode}
+    </select>
+
+    <select id="selectBySettingType" resultType="com.financial.sharing.entity.TblMobileSetting">
+        SELECT * FROM TBL_MOBILE_SETTING WHERE SETTING_TYPE = #{settingType} ORDER BY PRIORITY ASC, CREATE_TIME DESC
+    </select>
+
+    <select id="selectByPlatform" resultType="com.financial.sharing.entity.TblMobileSetting">
+        SELECT * FROM TBL_MOBILE_SETTING WHERE PLATFORM = #{platform} ORDER BY PRIORITY ASC, CREATE_TIME DESC
+    </select>
+
+    <select id="selectByVersion" resultType="com.financial.sharing.entity.TblMobileSetting">
+        SELECT * FROM TBL_MOBILE_SETTING WHERE VERSION = #{version} ORDER BY PRIORITY ASC, CREATE_TIME DESC
+    </select>
+
+    <select id="selectByIsEnabled" resultType="com.financial.sharing.entity.TblMobileSetting">
+        SELECT * FROM TBL_MOBILE_SETTING WHERE IS_ENABLED = #{isEnabled} ORDER BY PRIORITY ASC, CREATE_TIME DESC
+    </select>
+
+</mapper>

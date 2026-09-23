@@ -1,0 +1,186 @@
+spring:
+ application:
+  name: HBYUNGLOBALTREASURER #应用名称
+ datasource:
+  type: com.alibaba.druid.pool.DruidDataSource
+  # 使用与hbyun-systemModule相同的URL配置(包含MySQL参数但DM驱动可以兼容)
+  url: jdbc:dm://127.0.0.1:5236/SYSDBA?zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+  username: SYSDBA
+  password: REDACTED
+  driverClassName: dm.jdbc.driver.DmDriver
+  # Oracle数据源配置 (实际使用DM8数据库,因为DataSourceOracleConfig需要此配置节点)
+  # oracle:
+  #  url: jdbc:dm://127.0.0.1:5236/SYSDBA
+  #  username: SYSDBA
+  #  password: SYSDBA
+  #  driverClassName: dm.jdbc.driver.DmDriver
+  #Mysql数据库配置
+#  mysql:
+#   url: jdbc:mysql://127.0.0.1:3306/SYSDBA?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&serverTimezone=GMT%2B8
+#   username: SYSDBA
+#   password: SYSDBA
+#   driverClassName: com.mysql.cj.jdbc.Driver
+ druid:
+  # DM8达梦数据库连接池配置 - 与正常工作的hbyun-systemModule保持一致
+  dm:
+   initialSize: 5
+   minIdle: 5
+   maxActive: 20
+   maxWait: 60000
+   timeBetweenEvictionRunsMillis: 60000
+   minEvictableIdleTimeMillis: 300000
+   # DM8数据库验证查询语句 (兼容Oracle语法)
+   validationQuery: SELECT 1 FROM DUAL
+   testWhileIdle: true
+   testOnBorrow: false
+   testOnReturn: false
+   poolPreparedStatement: true
+   maxPoolPreparedStatementPerConnectionSize: 20
+   filters: stat,wall,log4j
+   connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+  # Oracle数据库连接池配置 (保留备用)
+  oracle:
+   initialSize: 5
+   minIdle: 5
+   maxActive: 20
+   maxWait: 60000
+   timeBetweenEvictionRunsMillis: 60000
+   minEvictableIdleTimeMillis: 300000
+   validationQuery: SELECT 1 FROM DUAL
+   testWhileIdle: true
+   testOnBorrow: false
+   testOnReturn: false
+   poolPreparedStatement: true
+   maxPoolPreparedStatementPerConnectionSize: 20
+   filters: stat,wall,log4j
+   connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+  mysql:
+   initialSize: 5
+   minIdle: 5
+   maxActive: 20
+   maxWait: 60000
+   timeBetweenEvictionRunsMillis: 60000
+   minEvictableIdleTimeMillis: 300000
+   validationQuery: SELECT 1 FROM DUAL
+   testWhileIdle: true
+   testOnBorrow: false
+   testOnReturn: false
+   poolPreparedStatement: true
+   maxPoolPreparedStatementPerConnectionSize: 20
+   filters: stat,wall,log4j
+   connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+ activiti:
+  check-process-definitions: false
+  database-schema-update: false
+ redis:
+   host: 127.0.0.1
+   port: 6379
+   password:
+# 移除tk.mybatis配置，使用MyBatis-Plus
+# mapper配置已删除，避免与MyBatis-Plus冲突
+
+#日志配置
+logging:
+ level:
+  org:
+   springframework: WARN
+   spring:
+    springboot:
+     dao: info
+  com:
+   global:
+    treasurer:
+     resolver: DEBUG  # FlexibleRequestBody 解析器日志
+   dc:
+    pcasweb:
+     mapper: debug
+ file: logs/spring-boot-logging.log
+ 
+#eureka服务注册中心配置
+eureka:
+ instance:
+  ip-address: 127.0.0.1
+  instance-id: hbyunGlobalTreasurer
+  prefer-ip-address: true
+  hostname: hbyun-GlobalTreasurer-service
+ client:
+  service-url:
+  #  defaultZone: http://hbyunadmin:REDACTED@127.0.0.1:8761/eureka
+   defaultZone: http://hbyunadmin:REDACTED@127.0.0.1:8761/eureka
+security:
+  basic:
+    enabled: false
+
+#redis配置
+redisAddressIp: 127.0.0.1
+redisAddressPort: 6379
+redisPwd: REDACTED
+redisMaxTotal: 512
+redisMaxIdle: 100
+redisMaxWait: 10000
+redisTimeOut: 1000
+redisTextonBorrow: true
+
+
+mybatis: 
+ configuration:
+  map-underscore-to-camel-case: true
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    cache-enabled: true
+    use-generated-keys: true
+    default-executor-type: simple
+    # 达梦数据库分页配置
+    db-config:
+      id-type: assign_id
+    # 尝试使用 MySQL 方言配置来触发不同的分页处理
+      # 注意：这可能不正确，但可以测试是否有帮助
+      # pagination-dialect: mysql
+      # 禁用逻辑删除功能
+      logic-delete-field: ""
+      logic-not-delete-value: ""
+  # 注意: 移除config-location配置，避免覆盖MyBatis-Plus的自动配置
+  # config-location: classpath:mybatis-config.xml
+  # 恢复mapper-locations配置,XML文件需要被扫描
+  mapper-locations:
+    - classpath:mapper/*.xml
+    - classpath:oracle/mapper/*.xml
+    - classpath:oracle_backup/mapper/*.xml
+    - classpath:mapper/financialProductDefinition/*.xml
+  # 扫描mapper接口包
+  type-aliases-package: com.global.treasurer.entity
+  global-config:
+    db-config:
+      banner: false
+      # 表名前缀（空）
+      table-prefix: ""
+      # 表名是否使用下划线命名
+      table-underline: true
+      # 禁用逻辑删除配置,因为数据库表中没有DEL_FLAG字段
+      # logic-delete-field: delFlag
+      # logic-delete-value: "1"
+      # logic-not-delete-value: "0"
+  
+# Swagger配置
+swagger:
+ enabled: true
+ # 是否开启swagger
+ # 请求前缀
+ pathMapping:
+application:
+ #文件上传
+ file-upload:
+  base-dir: D:\nginx-1.20.2\html\hbfk
+  #base-url: http://127.0.0.1/hbfk
+  base-url: http://127.0.0.1/hbfk
+
+file:
+ path: C:\HBFK\PRO\www\apache-tomcat-7.0.65\webapps\ROOT\WEB-INF\
+
+pagehelper:
+# helperDialect: postgresql
+# helperDialect: oracle  # 注意: 系统使用的是DM8数据库,不是Oracle!
+ helperDialect: dm  # DM8达梦数据库方言配置

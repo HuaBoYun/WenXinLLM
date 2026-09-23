@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.audit.oracle.mapper.TblYqnsSjzgWtzgMapper">
+    <select id="selectWtzgAuditResultsStatistics" resultType="com.huabo.audit.oracle.dto.TblYqnsWtzgAuditResultsStatisticsDto">
+        SELECT TYI.PROJECTID,
+               TYI.PROJECTNAME,
+               count(1)          NUMBERCOUNT,
+               sum(TYI.MONEY)    SUMMONEY,
+               sum(TYI.ZJJJCGJE) SUMZJJJCGJE,
+               sum(YSNR.YSCLR)   SUMYSCLR
+
+        FROM TBL_YQNS_ISSUE_LIST TYI
+                     LEFT JOIN
+                     (
+                             SELECT TYIR.RECORDID,
+                                    TYIR.ISSUESID,
+                                    TYIR.VERSION,
+                                    TYIR.WTZGID
+                             FROM TBL_YQNS_ISSUESRECORD TYIR
+                                          JOIN
+                                          (
+                                                  SELECT ISSUESID,
+                                                         MAX(VERSION) AS VERSION
+                                                  FROM TBL_YQNS_ISSUESRECORD
+                                                  GROUP BY ISSUESID
+                                                  ) TYIRV
+                                                  ON TYIR.ISSUESID = TYIRV.ISSUESID
+                                                          AND TYIR.VERSION = TYIRV.VERSION
+                             ) TYIRR
+                             ON TYIRR.ISSUESID = TYI.ID
+                     LEFT JOIN
+                     TBL_YQNS_SJZG_WTZG TYSW
+                             ON TYIRR.WTZGID = TYSW.WTZGID
+                     LEFT JOIN TBL_YQNS_SJZG_YSNR YSNR ON TYSW.YSNRID = YSNR.YSNRID
+        WHERE 1 = 1
+        AND   TO_CHAR(TYI.ADDTIME,'YYYY-MM-DD')  LIKE '${queryYear}%'
+        GROUP BY TYI.PROJECTID,
+                 TYI.PROJECTNAME
+    </select>
+</mapper>

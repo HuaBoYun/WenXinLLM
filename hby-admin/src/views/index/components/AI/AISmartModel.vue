@@ -431,7 +431,7 @@
   })
 
   // 如果需要在浏览器中获取 cookie，需要：
-  // 1. Dify 后端在响应体中返回 token
+  // 1. wenxinAgent 后端在响应体中返回 token
   // 2. 或者使用后端代理，通过后端转发请求
   // 3. 或者使用同源 iframe + postMessage 通信
 
@@ -575,11 +575,11 @@
         )
         return match ? decodeURIComponent(match[1]) : null
       },
-      // 统一的 Dify 登录方法，登录成功后从响应头读取 x-csrf-token
-      async difyLogin() {
+      // 统一的 wenxinAgent 登录方法，登录成功后从响应头读取 x-csrf-token
+      async wenxinAgentLogin() {
         // 使用原生 axios 实例直接请求，以便获取完整的响应头
         const response = await axiosInstance({
-          url: `/console/dify/login`,
+          url: `/console/wenxinAgent/login`,
           method: 'post',
           headers: { 'Content-Type': 'application/json;charset=UTF-8' },
           data: {
@@ -593,7 +593,7 @@
 
         // 从响应头中获取 x-csrf-token（已在 access-control-expose-headers 中暴露）
         const csrfToken = response?.headers?.['x-csrf-token']
-        console.log('difyLogin 完成，从响应头获取的 x-csrf-token:', csrfToken)
+        console.log('wenxinAgentLogin 完成，从响应头获取的 x-csrf-token:', csrfToken)
         return { csrfToken }
       },
       changeTab() {
@@ -618,15 +618,15 @@
             this.loading = false
           })
       },
-      // 调用 Dify 获取应用列表
-      async fetchDifyApps() {
+      // 调用 wenxinAgent 获取应用列表
+      async fetchWenxinAgentApps() {
         this.loading = true
         try {
-          const { csrfToken } = await this.difyLogin()
+          const { csrfToken } = await this.wenxinAgentLogin()
           // access_token 在 HttpOnly cookie 中，浏览器请求时自动携带
           // 只需在请求头中附加 csrf_token 完成鉴权
           const appsRes = await request({
-            url: `/console/dify/apps`,
+            url: `/console/wenxinAgent/apps`,
             method: 'get',
             headers: {
               'Content-Type': 'application/json',
@@ -634,10 +634,10 @@
             },
             withCredentials: true,
           })
-          console.log('Dify应用列表响应:', appsRes)
+          console.log('wenxinAgent应用列表响应:', appsRes)
           return appsRes
         } catch (error) {
-          console.error('获取Dify应用列表失败:', error)
+          console.error('获取wenxinAgent应用列表失败:', error)
           throw error
         } finally {
           this.loading = false
@@ -687,7 +687,7 @@
           .then(() => {
             // 调用登录接口获取 cookie
             axios({
-              url: `/dify-api/login`,
+              url: `/wenxinAgent-api/login`,
               method: 'post',
               headers: {
                 'Content-Type': 'application/json',
@@ -769,7 +769,7 @@
           return this.$message.error('请选择智能体分类！')
 
         try {
-          const { csrfToken } = await this.difyLogin()
+          const { csrfToken } = await this.wenxinAgentLogin()
 
           if (agentId) {
             const skipUrl = `https://www.huabao.example.com/app/${agentId}/configuration`
@@ -780,7 +780,7 @@
 
           // 通过后端代理调用创建应用接口
           const res = await request({
-            url: `/console/dify/apps`,
+            url: `/console/wenxinAgent/apps`,
             method: 'post',
             headers: {
               'Content-Type': 'application/json',
@@ -803,7 +803,7 @@
             let jumpAddress = ''
             try {
               const detailRes = await request({
-                url: `/console/dify/apps/${appId}`,
+                url: `/console/wenxinAgent/apps/${appId}`,
                 method: 'get',
                 headers: { 'X-Csrf-Token': csrfToken || undefined },
                 withCredentials: true,

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.fxgl.mapper.WorksheetMapper">
+
+    <select id="findByTblWorkSheetnumber" resultType="Worksheet">
+        select * from TBL_WORKSHEET where WORKSHEETNUMBER = #{num}
+        <if test="type!=null">
+            AND WORKSHEETBYSYSTEM = #{type}
+        </if>
+        and USERID IN (
+            SELECT STAFFID FROM TBL_STAFF
+            WHERE ORGID IN(
+                SELECT TO_CHAR(ORGID) FROM TBL_ORGANIZATION
+                    WHERE ORGTYPE = 0 START WITH FATHERORGID = #{orgId} CONNECT BY PRIOR FATHERORGID = ORGID
+                UNION ALL
+                SELECT TO_CHAR(ORGID) FROM TBL_ORGANIZATION
+                    WHERE ORGID = #{orgId}
+                UNION ALL
+                SELECT TO_CHAR(ORGID) FROM TBL_ORGANIZATION
+                    WHERE ORGTYPE >=100 START WITH FATHERORGID = -1 CONNECT BY PRIOR ORGID = FATHERORGID
+            )
+        )
+    </select>
+</mapper>

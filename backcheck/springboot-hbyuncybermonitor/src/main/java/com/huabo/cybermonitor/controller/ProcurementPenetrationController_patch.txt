@@ -1,0 +1,18 @@
+需要在 biddingMonitorList 方法约第1099行，将：
+
+            if (collusionRisk != null) wrapper.eq(GzctBiddingMonitor::getCollusionRisk, collusionRisk);
+            wrapper.orderByDesc(GzctBiddingMonitor::getCreateTime);
+
+替换为：
+
+            if (collusionRisk != null) wrapper.eq(GzctBiddingMonitor::getCollusionRisk, collusionRisk);
+            // 时间范围过滤
+            String startDate = getStr(params, "startDate");
+            String endDate = getStr(params, "endDate");
+            if (startDate != null) {
+                wrapper.ge(GzctBiddingMonitor::getBiddingDate, LocalDate.parse(startDate));
+            }
+            if (endDate != null) {
+                wrapper.le(GzctBiddingMonitor::getBiddingDate, LocalDate.parse(endDate));
+            }
+            wrapper.orderByDesc(GzctBiddingMonitor::getCreateTime);

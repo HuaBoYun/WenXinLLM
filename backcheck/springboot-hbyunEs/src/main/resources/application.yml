@@ -1,0 +1,180 @@
+server:
+  port: 8018
+sqltype: mysql
+
+# spring
+spring:
+  devtools:
+    restart:
+      enabled: true
+  # 应用名称
+  application:
+    name: hbyunEs
+  # 定时任务
+  task:
+    scheduling:
+      # 任务调度线程池大小，默认:1
+      pool:
+        size: 10
+      #调度线程名称的前缀(方便日志调试和观察日志)
+      thread-name-prefix: DataTran_
+      shutdown:
+        #线程池关闭时等待所有任务完成
+        await-termination: false
+        #调度线程关闭前最大等待时间，确保最后一定被关闭
+        await-termination-period: 10s
+  main:
+    allow-circular-references: true
+  springdoc:
+    swagger-ui:
+      enabled: true
+    api-docs:
+      enabled: true
+  redis: 
+    host: 192.0.2.12
+    port: 6379
+    password:
+  # 数据源
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      #Oracle数据库配置
+      oracle:
+        url: jdbc:oracle:thin:@192.0.2.12:1521:orcl
+        username: HBGRCTEST
+        password: REDACTED
+        driverClassName: oracle.jdbc.driver.OracleDriver
+      #Mysql数据库配置
+      mysql:
+        url: jdbc:mysql://192.0.2.13:3306/etlhb?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&serverTimezone=GMT%2B8
+        username: root
+        password: REDACTED
+        driverClassName: com.mysql.cj.jdbc.Driver
+      initialSize: 5
+      minIdle: 10
+      maxActive: 20
+      maxWait: 60000
+      timeBetweenEvictionRunsMillis: 60000
+      minEvictableIdleTimeMillis: 300000
+      maxEvictableIdleTimeMillis: 900000
+      validationQuery: SELECT 1 FROM DUAL
+      testWhileIdle: true
+      testOnBorrow: false
+      testOnReturn: false
+  # elasticsearch 配置
+  elasticsearch:
+    bboss:
+      # x-pack认证账号和口令
+      elasticUser: elastic
+      elasticPassword: REDACTED
+      elasticsearch:
+        #es服务器地址配置
+        rest:
+          hostNames: 192.0.2.200:9200
+        #动态索引表名称日期格式配置
+        dateFormat: yyyy.MM.dd
+        timeZone: Asia/Shanghai
+        #在控制台输出脚本调试开关showTemplate,false关闭，true打开，同时log4j至少是info级别
+        showTemplate: false
+        #客户端动态发现es集群节点控制开关
+        discoverHost: false
+      # dsl配置文件热加载扫描时间间隔，毫秒为单位，默认5秒扫描一次，<= 0时关闭扫描机制
+      dslfile:
+        refreshInterval: 50
+      #http链接池配置
+      http:
+        timeoutConnection: 5000
+        timeoutSocket: 5000
+        connectionRequestTimeout: 5000
+        retryTime: 1
+        maxLineLength: -1
+        maxHeaderCount: 200
+        maxTotal: 400
+        defaultMaxPerRoute: 200
+        soReuseAddress: false
+        soKeepAlive: false
+        timeToLive: 3600000
+        keepAlive: 3600000
+        keystore:
+        keyPassword:
+        hostnameVerifier:
+      db:
+        name: ${sqltype}
+        url: ${spring.datasource.druid.${sqltype}.url}
+        driver: ${spring.datasource.druid.${sqltype}.driverClassName}
+        user: ${spring.datasource.druid.${sqltype}.username}
+        password: ${spring.datasource.druid.${sqltype}.password}
+        usePool: true
+        initSize: 5
+        minIdleSize: 6
+        maxSize: 5
+
+# MyBatisPlus配置
+mybatis-plus:
+  # 不支持多包, 如有需要可在注解配置 或 提升扫包等级
+  mapperPackage: com.huabo.es.**.mapper
+  # 对应的 XML 文件位置
+  mapperLocations: classpath*:mapper/**/*Mapper.xml
+  # 实体扫描，多个package用逗号或者分号分隔
+  typeAliasesPackage: com.huabo.es.**.domain
+  configuration:
+    # 自动驼峰命名规则（camel case）映射
+    mapUnderscoreToCamelCase: true
+    # MyBatis 自动映射策略
+    # NONE：不启用 PARTIAL：只对非嵌套 resultMap 自动映射 FULL：对所有 resultMap 自动映射
+    autoMappingBehavior: PARTIAL
+    # MyBatis 自动映射时未知列或未知属性处理策
+    # NONE：不做处理 WARNING：打印相关警告 FAILING：抛出异常和详细信息
+    autoMappingUnknownColumnBehavior: NONE
+    # 更详细的日志输出 会有性能损耗 org.apache.ibatis.logging.stdout.StdOutImpl
+    # 关闭日志记录 (可单纯使用 p6spy 分析) org.apache.ibatis.logging.nologging.NoLoggingImpl
+    # 默认日志输出 org.apache.ibatis.logging.slf4j.Slf4jImpl
+    logImpl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+  global-config:
+    dbConfig:
+      # 主键类型
+      # AUTO 自增 NONE 空 INPUT 用户输入 ASSIGN_ID 雪花 ASSIGN_UUID 唯一 UUID
+      idType: ASSIGN_ID
+      # 字段验证策略之 insert,在 insert 的时候的字段验证策略
+      # IGNORED 忽略 NOT_NULL 非NULL NOT_EMPTY 非空 DEFAULT 默认 NEVER 不加入 SQL
+      insertStrategy: NOT_NULL
+      # 字段验证策略之 update,在 update 的时候的字段验证策略
+      updateStrategy: NOT_NULL
+      # 字段验证策略之 select,在 select 的时候的字段验证策略既 wrapper 根据内部 entity 生成的 where 条件
+      where-strategy: NOT_NULL
+
+# PageHelper分页插件
+pagehelper:
+  helperDialect: ${sqltype}
+  supportMethodsArguments: true
+  params: count=countSql
+
+#eureka服务注册中心配置
+eureka:
+  instance:
+    ip-address: 192.0.2.11
+    instance-id: hbyunEtlModule-8017
+    prefer-ip-address: true
+    hostname: hbyun-etl-service
+  client:
+    serviceUrl:
+      defaultZone: http://hbyunadmin:REDACTED@192.0.2.11:8761/eureka
+
+#日志
+logging:
+  level:
+    com:
+      huabo:
+        es:
+          mapper: error
+          
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+  show-actuator: true
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json

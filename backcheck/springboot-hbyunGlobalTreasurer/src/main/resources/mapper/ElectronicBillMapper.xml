@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.ElectronicBillMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="ElectronicBillVOResult" type="com.global.treasurer.vo.ElectronicBillVO">
+        <id property="billId" column="E_BILL_ID"/>
+        <result property="billNumber" column="E_BILL_NO"/>
+        <result property="billType" column="BILL_TYPE"/>
+        <result property="billAmount" column="BILL_AMOUNT"/>
+        <result property="currency" column="CURRENCY"/>
+        <result property="drawerName" column="DRAWER_NAME"/>
+        <result property="drawerAccount" column="DRAWER_ACCOUNT"/>
+        <result property="drawerBank" column="DRAWER_BANK"/>
+        <result property="acceptorName" column="ACCEPTOR_NAME"/>
+        <result property="acceptorAccount" column="ACCEPTOR_ACCOUNT"/>
+        <result property="acceptorBank" column="ACCEPTOR_BANK"/>
+        <result property="payeeName" column="PAYEE_NAME"/>
+        <result property="payeeAccount" column="PAYEE_ACCOUNT"/>
+        <result property="issueDate" column="ISSUE_DATE"/>
+        <result property="maturityDate" column="MATURITY_DATE"/>
+        <result property="billStatus" column="BILL_STATUS"/>
+        <result property="digitalSignature" column="DIGITAL_SIGNATURE"/>
+        <result property="signatureStatus" column="SIGNATURE_STATUS"/>
+        <result property="verificationStatus" column="VERIFICATION_STATUS"/>
+        <result property="electronicStatus" column="ELECTRONIC_STATUS"/>
+        <result property="billPurpose" column="BILL_PURPOSE"/>
+        <result property="contractNumber" column="CONTRACT_NUMBER"/>
+        <result property="remark" column="REMARK"/>
+        <result property="createTime" column="CREATE_TIME"/>
+        <result property="updateTime" column="UPDATE_TIME"/>
+    </resultMap>
+
+    <!-- 查询电子票据列表 -->
+    <select id="selectElectronicBillList" parameterType="com.global.treasurer.dto.ElectronicBillQueryDTO"
+            resultMap="ElectronicBillVOResult">
+        SELECT
+            E_BILL_ID,
+            E_BILL_NO,
+            BILL_TYPE,
+            BILL_AMOUNT,
+            CURRENCY,
+            DRAWER_NAME,
+            DRAWER_ACCOUNT,
+            DRAWER_BANK,
+            ACCEPTOR_NAME,
+            ACCEPTOR_ACCOUNT,
+            ACCEPTOR_BANK,
+            PAYEE_NAME,
+            PAYEE_ACCOUNT,
+            ISSUE_DATE,
+            MATURITY_DATE,
+            BILL_STATUS,
+            DIGITAL_SIGNATURE,
+            SIGNATURE_STATUS,
+            VERIFICATION_STATUS,
+            ELECTRONIC_STATUS,
+            BILL_PURPOSE,
+            CONTRACT_NUMBER,
+            REMARK,
+            CREATE_TIME,
+            UPDATE_TIME
+        FROM TBL_ELECTRONIC_BILL
+        WHERE DELETE_FLAG = 0
+        <if test="query != null and query.billNumber != null and query.billNumber != ''">
+            AND E_BILL_NO LIKE CONCAT('%', #{query.billNumber}, '%')
+        </if>
+        <if test="query != null and query.billType != null and query.billType != ''">
+            AND BILL_TYPE = #{query.billType}
+        </if>
+        <if test="query != null and query.billStatus != null and query.billStatus != ''">
+            AND BILL_STATUS = #{query.billStatus}
+        </if>
+        <if test="query != null and query.issueDateStart != null">
+            AND ISSUE_DATE &gt;= #{query.issueDateStart}
+        </if>
+        <if test="query != null and query.issueDateEnd != null">
+            AND ISSUE_DATE &lt;= #{query.issueDateEnd}
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据ID查询电子票据详情 -->
+    <select id="selectElectronicBillById" parameterType="Long" resultMap="ElectronicBillVOResult">
+        SELECT
+            E_BILL_ID,
+            E_BILL_NO,
+            BILL_TYPE,
+            BILL_AMOUNT,
+            CURRENCY,
+            DRAWER_NAME,
+            DRAWER_ACCOUNT,
+            DRAWER_BANK,
+            ACCEPTOR_NAME,
+            ACCEPTOR_ACCOUNT,
+            ACCEPTOR_BANK,
+            PAYEE_NAME,
+            PAYEE_ACCOUNT,
+            ISSUE_DATE,
+            MATURITY_DATE,
+            BILL_STATUS,
+            DIGITAL_SIGNATURE,
+            SIGNATURE_STATUS,
+            VERIFICATION_STATUS,
+            ELECTRONIC_STATUS,
+            BILL_PURPOSE,
+            CONTRACT_NUMBER,
+            REMARK,
+            CREATE_TIME,
+            UPDATE_TIME
+        FROM TBL_ELECTRONIC_BILL
+        WHERE E_BILL_ID = #{billId} AND DELETE_FLAG = 0
+    </select>
+
+    <!-- 根据票据号码查询 -->
+    <select id="selectByBillNumber" parameterType="String" resultType="com.global.treasurer.entity.TblElectronicBill">
+        SELECT * FROM TBL_ELECTRONIC_BILL
+        WHERE E_BILL_NO = #{billNumber} AND DELETE_FLAG = 0
+    </select>
+
+    <!-- 批量删除电子票据(逻辑删除) -->
+    <update id="deleteElectronicBillByIds">
+        UPDATE TBL_ELECTRONIC_BILL
+        SET DELETE_FLAG = 1,
+            UPDATE_TIME = CURRENT_TIMESTAMP
+        WHERE E_BILL_ID IN
+        <foreach collection="billIds" item="billId" open="(" separator="," close=")">
+            #{billId}
+        </foreach>
+    </update>
+
+    <!-- 更新签名状态 -->
+    <update id="updateSignatureStatus">
+        UPDATE TBL_ELECTRONIC_BILL
+        SET SIGNATURE_STATUS = #{signatureStatus},
+            DIGITAL_SIGNATURE = #{digitalSignature},
+            SIGNER_NAME = #{signerName},
+            UPDATE_TIME = CURRENT_TIMESTAMP
+        WHERE E_BILL_ID = #{electronicBillId}
+    </update>
+
+    <!-- 更新验证状态 -->
+    <update id="updateVerificationStatus">
+        UPDATE TBL_ELECTRONIC_BILL
+        SET VERIFICATION_STATUS = #{verificationStatus},
+            VERIFICATION_TIME = CURRENT_TIMESTAMP,
+            UPDATE_TIME = CURRENT_TIMESTAMP
+        WHERE E_BILL_ID = #{electronicBillId}
+    </update>
+
+    <!-- 更新电子票据状态 -->
+    <update id="updateElectronicStatus">
+        UPDATE TBL_ELECTRONIC_BILL
+        SET ELECTRONIC_STATUS = #{electronicStatus},
+            UPDATE_TIME = CURRENT_TIMESTAMP
+        WHERE E_BILL_ID = #{electronicBillId}
+    </update>
+
+    <!-- 更新票据状态 -->
+    <update id="updateBillStatus">
+        UPDATE TBL_ELECTRONIC_BILL
+        SET BILL_STATUS = #{billStatus},
+            UPDATE_TIME = CURRENT_TIMESTAMP
+        WHERE E_BILL_ID = #{electronicBillId}
+    </update>
+
+</mapper>

@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.AccountInfoMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.AccountInfo">
+        <id column="ACCOUNTID" property="accountId" />
+        <result column="ACCOUNTNUMBER" property="accountNumber" />
+        <result column="ACCOUNTNAME" property="accountName" />
+        <result column="ACCOUNTNAMEENG" property="accountNameEng" />
+        <result column="ACCOUNTTYPE" property="accountType" />
+        <result column="BANKCODE" property="bankCode" />
+        <result column="BANKNAME" property="bankName" />
+        <result column="BRANCHCODE" property="branchCode" />
+        <result column="BRANCHNAME" property="branchName" />
+        <result column="CURRENCYCODE" property="currencyCode" />
+        <result column="BALANCE" property="balance" />
+        <result column="AVAILABLEBALANCE" property="availableBalance" />
+        <result column="FROZENBALANCE" property="frozenBalance" />
+        <result column="ACCOUNTSTATUS" property="accountStatus" />
+        <result column="OPENDATE" property="openDate" />
+        <result column="CLOSEDATE" property="closeDate" />
+        <result column="ISDEFAULT" property="isDefault" />
+        <result column="ISDIRECTCONNECT" property="isDirectConnect" />
+        <result column="DIRECTCONNECTTYPE" property="directConnectType" />
+        <result column="REMARK" property="remark" />
+        <result column="ISDELETED" property="isDeleted" />
+        <result column="ORGID" property="orgId" />
+        <result column="CREATETIME" property="createTime" />
+        <result column="CREATEUSER" property="createUser" />
+        <result column="UPDATETIME" property="updateTime" />
+        <result column="UPDATEUSER" property="updateUser" />
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="Base_Column_List">
+        ACCOUNTID, ACCOUNTNUMBER, ACCOUNTNAME, ACCOUNTNAMEENG, ACCOUNTTYPE,
+        BANKCODE, BANKNAME, BRANCHCODE, BRANCHNAME, CURRENCYCODE,
+        BALANCE, AVAILABLEBALANCE, FROZENBALANCE, ACCOUNTSTATUS,
+        OPENDATE, CLOSEDATE, ISDEFAULT, ISDIRECTCONNECT, DIRECTCONNECTTYPE,
+        REMARK, ISDELETED, ORGID, CREATETIME, CREATEUSER, UPDATETIME, UPDATEUSER
+    </sql>
+
+    <!-- 分页查询账户信息 -->
+    <select id="selectAccountInfoPage" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_ACCOUNT_INFO
+        WHERE ISDELETED = 0
+        <if test="params.orgId != null">
+            AND ORGID = #{params.orgId}
+        </if>
+        <if test="params.accountNumber != null and params.accountNumber != ''">
+            AND ACCOUNTNUMBER LIKE CONCAT('%', #{params.accountNumber}, '%')
+        </if>
+        <if test="params.accountName != null and params.accountName != ''">
+            AND ACCOUNTNAME LIKE CONCAT('%', #{params.accountName}, '%')
+        </if>
+        <if test="params.accountType != null and params.accountType != ''">
+            AND ACCOUNTTYPE = #{params.accountType}
+        </if>
+        <if test="params.bankCode != null and params.bankCode != ''">
+            AND BANKCODE = #{params.bankCode}
+        </if>
+        <if test="params.currencyCode != null and params.currencyCode != ''">
+            AND CURRENCYCODE = #{params.currencyCode}
+        </if>
+        <if test="params.accountStatus != null and params.accountStatus != ''">
+            AND ACCOUNTSTATUS = #{params.accountStatus}
+        </if>
+        ORDER BY CREATETIME DESC
+    </select>
+
+    <!-- 根据账户号码查询账户信息 -->
+    <select id="selectByAccountNumber" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_ACCOUNT_INFO
+        WHERE ACCOUNTNUMBER = #{accountNumber}
+        AND ORGID = #{orgId}
+        AND ISDELETED = 0
+    </select>
+
+    <!-- 根据银行编码查询账户列表 -->
+    <select id="selectByBankCode" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_ACCOUNT_INFO
+        WHERE BANKCODE = #{bankCode}
+        AND ORGID = #{orgId}
+        AND ISDELETED = 0
+        ORDER BY CREATETIME DESC
+    </select>
+
+    <!-- 根据币种查询账户列表 -->
+    <select id="selectByCurrencyCode" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_ACCOUNT_INFO
+        WHERE CURRENCYCODE = #{currencyCode}
+        AND ORGID = #{orgId}
+        AND ISDELETED = 0
+        ORDER BY CREATETIME DESC
+    </select>
+
+    <!-- 查询默认账户 -->
+    <select id="selectDefaultAccount" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_ACCOUNT_INFO
+        WHERE CURRENCYCODE = #{currencyCode}
+        AND ORGID = #{orgId}
+        AND ISDEFAULT = 1
+        AND ISDELETED = 0
+        LIMIT 1
+    </select>
+
+    <!-- 查询直联账户列表 -->
+    <select id="selectDirectConnectAccounts" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_ACCOUNT_INFO
+        WHERE ISDIRECTCONNECT = 1
+        AND ORGID = #{orgId}
+        AND ISDELETED = 0
+        ORDER BY CREATETIME DESC
+    </select>
+
+    <!-- 统计账户数量 -->
+    <select id="countAccounts" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM TBL_ACCOUNT_INFO
+        WHERE ISDELETED = 0
+        <if test="params.orgId != null">
+            AND ORGID = #{params.orgId}
+        </if>
+        <if test="params.accountType != null and params.accountType != ''">
+            AND ACCOUNTTYPE = #{params.accountType}
+        </if>
+        <if test="params.bankCode != null and params.bankCode != ''">
+            AND BANKCODE = #{params.bankCode}
+        </if>
+        <if test="params.currencyCode != null and params.currencyCode != ''">
+            AND CURRENCYCODE = #{params.currencyCode}
+        </if>
+        <if test="params.accountStatus != null and params.accountStatus != ''">
+            AND ACCOUNTSTATUS = #{params.accountStatus}
+        </if>
+    </select>
+
+    <!-- 批量更新账户状态 -->
+    <update id="batchUpdateStatus">
+        UPDATE TBL_ACCOUNT_INFO
+        SET ACCOUNTSTATUS = #{status},
+            UPDATEUSER = #{updateUser},
+            UPDATETIME = CURRENT_TIMESTAMP
+        WHERE ACCOUNTID IN
+        <foreach collection="accountIds" item="accountId" open="(" separator="," close=")">
+            #{accountId}
+        </foreach>
+    </update>
+
+    <!-- 更新账户余额 -->
+    <update id="updateBalance">
+        UPDATE TBL_ACCOUNT_INFO
+        SET BALANCE = #{balance},
+            AVAILABLEBALANCE = #{availableBalance},
+            FROZENBALANCE = #{frozenBalance},
+            UPDATEUSER = #{updateUser},
+            UPDATETIME = CURRENT_TIMESTAMP
+        WHERE ACCOUNTID = #{accountId}
+    </update>
+
+    <!-- 查询账户列表（不分页） -->
+    <select id="selectAccountInfoList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_ACCOUNT_INFO
+        WHERE ISDELETED = 0
+        <if test="params.orgId != null">
+            AND ORGID = #{params.orgId}
+        </if>
+        <if test="params.accountNumber != null and params.accountNumber != ''">
+            AND ACCOUNTNUMBER LIKE CONCAT('%', #{params.accountNumber}, '%')
+        </if>
+        <if test="params.accountName != null and params.accountName != ''">
+            AND ACCOUNTNAME LIKE CONCAT('%', #{params.accountName}, '%')
+        </if>
+        <if test="params.accountType != null and params.accountType != ''">
+            AND ACCOUNTTYPE = #{params.accountType}
+        </if>
+        <if test="params.bankCode != null and params.bankCode != ''">
+            AND BANKCODE = #{params.bankCode}
+        </if>
+        <if test="params.currencyCode != null and params.currencyCode != ''">
+            AND CURRENCYCODE = #{params.currencyCode}
+        </if>
+        <if test="params.accountStatus != null and params.accountStatus != ''">
+            AND ACCOUNTSTATUS = #{params.accountStatus}
+        </if>
+        ORDER BY CREATETIME DESC
+    </select>
+
+    <!-- 获取银行分布统计 -->
+    <select id="selectBankDistribution" resultType="java.util.Map">
+        SELECT
+            BANKCODE as bankCode,
+            BANKNAME as bankName,
+            COUNT(*) as accountCount
+        FROM TBL_ACCOUNT_INFO
+        WHERE ISDELETED = 0
+        <if test="orgId != null">
+            AND ORGID = #{orgId}
+        </if>
+        GROUP BY BANKCODE, BANKNAME
+        ORDER BY accountCount DESC
+    </select>
+
+</mapper>

@@ -284,7 +284,7 @@
         const tokenXG = localStorage.getItem('admin-pro-token')
         SSOToJNFD()
           .then((result) => {
-            //判断是否引迈平台
+            //判断是否第三方流程平台
             if (info.otherNo) {
               window.open(
                 `${url}/home?token=` +

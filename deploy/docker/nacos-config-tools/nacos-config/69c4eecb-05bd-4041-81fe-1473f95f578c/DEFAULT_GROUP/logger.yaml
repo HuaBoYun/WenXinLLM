@@ -1,0 +1,33 @@
+logging:
+  config: classpath:logback-spring.xml
+  level: #自定义第三方包名日志等级
+    com.alibaba.nacos: ERROR
+    com.alibaba.cloud.nacos: ERROR
+    io.seata: ERROR
+    org.apache.dubbo: ERROR
+    # 解除注释后Druid连接池打印SQL语句
+    druid.sql.Statement: debug
+#    druid.sql.DataSource: debug
+#    druid.sql.Connection: debug
+#    druid.sql.ResultSet: debug
+    org.redisson.cluster: ERROR
+log:
+  level:
+    root: ERROR
+    #自定义服务的日志等级, 名称是服务中的spring.application.name: 等级 TRACE,DEBUG,INFO,WARN,ERROR
+    # jnpf-oauth: ERROR
+    # jnpf-system: ERROR
+    # jnpf-example: ERROR
+    # jnpf-extend: ERROR
+    # jnpf-datareport: ERROR
+    # jnpf-visualdev: ERROR
+    # jnpf-workflow: ERROR
+    # jnpf-file: ERROR
+    # jnpf-tenant: ERROR
+    # jnpf-message: ERROR
+    # jnpf-scheduletask: ERROR
+    # jnpf-permission: ERROR
+    # jnpf-visualdata: ERROR
+    # jnpf-app: ERROR
+    # jnpf-gateway: ERROR
+  path: log/${spring.application.name}

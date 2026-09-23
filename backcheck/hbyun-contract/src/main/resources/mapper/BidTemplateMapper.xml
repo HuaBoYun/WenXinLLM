@@ -1,0 +1,561 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.contract.mapper.BidTemplateMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.huabo.contract.entity.BidTemplate">
+        <id column="id" property="id" />
+        <result column="template_no" property="templateNo" />
+        <result column="template_name" property="templateName" />
+        <result column="template_type" property="templateType" />
+        <result column="template_category" property="templateCategory" />
+        <result column="template_version" property="templateVersion" />
+        <result column="template_description" property="templateDescription" />
+        <result column="template_content" property="templateContent" />
+        <result column="template_structure" property="templateStructure" />
+        <result column="required_sections" property="requiredSections" />
+        <result column="optional_sections" property="optionalSections" />
+        <result column="template_format" property="templateFormat" />
+        <result column="file_size" property="fileSize" />
+        <result column="file_path" property="filePath" />
+        <result column="preview_path" property="previewPath" />
+        <result column="template_status" property="templateStatus" />
+        <result column="is_default" property="isDefault" />
+        <result column="is_enabled" property="isEnabled" />
+        <result column="usage_count" property="usageCount" />
+        <result column="download_count" property="downloadCount" />
+        <result column="rating_score" property="ratingScore" />
+        <result column="rating_count" property="ratingCount" />
+        <result column="applicable_projects" property="applicableProjects" />
+        <result column="industry_scope" property="industryScope" />
+        <result column="complexity_level" property="complexityLevel" />
+        <result column="estimated_completion_time" property="estimatedCompletionTime" />
+        <result column="template_tags" property="templateTags" />
+        <result column="keywords" property="keywords" />
+        <result column="author_id" property="authorId" />
+        <result column="author_name" property="authorName" />
+        <result column="reviewer_id" property="reviewerId" />
+        <result column="reviewer_name" property="reviewerName" />
+        <result column="review_date" property="reviewDate" />
+        <result column="review_comments" property="reviewComments" />
+        <result column="approval_status" property="approvalStatus" />
+        <result column="approver_id" property="approverId" />
+        <result column="approver_name" property="approverName" />
+        <result column="approval_date" property="approvalDate" />
+        <result column="approval_comments" property="approvalComments" />
+        <result column="last_used_date" property="lastUsedDate" />
+        <result column="maintenance_date" property="maintenanceDate" />
+        <result column="expiry_date" property="expiryDate" />
+        <result column="backup_path" property="backupPath" />
+        <result column="change_log" property="changeLog" />
+        <result column="usage_instructions" property="usageInstructions" />
+        <result column="related_templates" property="relatedTemplates" />
+        <result column="remarks" property="remarks" />
+        <result column="create_by" property="createBy" />
+        <result column="create_time" property="createTime" />
+        <result column="update_by" property="updateBy" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="Base_Column_List">
+        id, template_no, template_name, template_type, template_category, template_version,
+        template_description, template_content, template_structure, required_sections,
+        optional_sections, template_format, file_size, file_path, preview_path, template_status,
+        is_default, is_enabled, usage_count, download_count, rating_score, rating_count,
+        applicable_projects, industry_scope, complexity_level, estimated_completion_time,
+        template_tags, keywords, author_id, author_name, reviewer_id, reviewer_name,
+        review_date, review_comments, approval_status, approver_id, approver_name,
+        approval_date, approval_comments, last_used_date, maintenance_date, expiry_date,
+        backup_path, change_log, usage_instructions, related_templates, remarks,
+        create_by, create_time, update_by, update_time
+    </sql>
+
+    <!-- 分页查询标书模板列表 -->
+    <select id="selectBidTemplateList" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM bid_template
+        WHERE 1=1
+        <if test="param.templateNo != null and param.templateNo != ''">
+            AND template_no LIKE CONCAT('%', #{param.templateNo}, '%')
+        </if>
+        <if test="param.templateName != null and param.templateName != ''">
+            AND template_name LIKE CONCAT('%', #{param.templateName}, '%')
+        </if>
+        <if test="param.templateType != null">
+            AND template_type = #{param.templateType}
+        </if>
+        <if test="param.templateCategory != null">
+            AND template_category = #{param.templateCategory}
+        </if>
+        <if test="param.templateStatus != null">
+            AND template_status = #{param.templateStatus}
+        </if>
+        <if test="param.approvalStatus != null">
+            AND approval_status = #{param.approvalStatus}
+        </if>
+        <if test="param.isDefault != null">
+            AND is_default = #{param.isDefault}
+        </if>
+        <if test="param.isEnabled != null">
+            AND is_enabled = #{param.isEnabled}
+        </if>
+        <if test="param.authorId != null">
+            AND author_id = #{param.authorId}
+        </if>
+        <if test="param.authorName != null and param.authorName != ''">
+            AND author_name LIKE CONCAT('%', #{param.authorName}, '%')
+        </if>
+        <if test="param.reviewerId != null">
+            AND reviewer_id = #{param.reviewerId}
+        </if>
+        <if test="param.approverId != null">
+            AND approver_id = #{param.approverId}
+        </if>
+        <if test="param.complexityLevel != null">
+            AND complexity_level = #{param.complexityLevel}
+        </if>
+        <if test="param.minUsageCount != null">
+            AND usage_count >= #{param.minUsageCount}
+        </if>
+        <if test="param.maxUsageCount != null">
+            AND usage_count &lt;= #{param.maxUsageCount}
+        </if>
+        <if test="param.minRatingScore != null">
+            AND rating_score >= #{param.minRatingScore}
+        </if>
+        <if test="param.maxRatingScore != null">
+            AND rating_score &lt;= #{param.maxRatingScore}
+        </if>
+        <if test="param.reviewStartDate != null">
+            AND review_date >= #{param.reviewStartDate}
+        </if>
+        <if test="param.reviewEndDate != null">
+            AND review_date &lt;= #{param.reviewEndDate}
+        </if>
+        <if test="param.approvalStartDate != null">
+            AND approval_date >= #{param.approvalStartDate}
+        </if>
+        <if test="param.approvalEndDate != null">
+            AND approval_date &lt;= #{param.approvalEndDate}
+        </if>
+        <if test="param.lastUsedStartDate != null">
+            AND last_used_date >= #{param.lastUsedStartDate}
+        </if>
+        <if test="param.lastUsedEndDate != null">
+            AND last_used_date &lt;= #{param.lastUsedEndDate}
+        </if>
+        <if test="param.createStartTime != null">
+            AND create_time >= #{param.createStartTime}
+        </if>
+        <if test="param.createEndTime != null">
+            AND create_time &lt;= #{param.createEndTime}
+        </if>
+        <if test="param.createBy != null">
+            AND create_by = #{param.createBy}
+        </if>
+        <if test="param.keyword != null and param.keyword != ''">
+            AND (template_no LIKE CONCAT('%', #{param.keyword}, '%')
+                 OR template_name LIKE CONCAT('%', #{param.keyword}, '%')
+                 OR template_description LIKE CONCAT('%', #{param.keyword}, '%')
+                 OR author_name LIKE CONCAT('%', #{param.keyword}, '%')
+                 OR template_tags LIKE CONCAT('%', #{param.keyword}, '%')
+                 OR keywords LIKE CONCAT('%', #{param.keyword}, '%')
+                 OR remarks LIKE CONCAT('%', #{param.keyword}, '%'))
+        </if>
+        ORDER BY create_time DESC, id DESC
+    </select>
+
+    <!-- 根据模板编号查询标书模板 -->
+    <select id="selectByTemplateNo" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM bid_template
+        WHERE template_no = #{templateNo}
+        LIMIT 1
+    </select>
+
+    <!-- 根据模板类型查询标书模板列表 -->
+    <select id="selectByTemplateType" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM bid_template
+        WHERE template_type = #{templateType}
+        ORDER BY usage_count DESC, create_time DESC
+    </select>
+
+    <!-- 检查模板编号是否存在 -->
+    <select id="existsTemplateNo" resultType="boolean">
+        SELECT COUNT(1) > 0
+        FROM bid_template
+        WHERE template_no = #{templateNo}
+        <if test="excludeId != null">
+            AND id != #{excludeId}
+        </if>
+    </select>
+
+    <!-- 获取启用的模板列表 -->
+    <select id="selectEnabledTemplates" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM bid_template
+        WHERE is_enabled = 1
+        AND template_status = 2
+        ORDER BY usage_count DESC, create_time DESC
+    </select>
+
+    <!-- 获取默认模板列表 -->
+    <select id="selectDefaultTemplates" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM bid_template
+        WHERE is_default = 1
+        AND is_enabled = 1
+        ORDER BY template_type, create_time DESC
+    </select>
+
+    <!-- 获取常用模板列表 -->
+    <select id="selectPopularTemplates" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM bid_template
+        WHERE usage_count >= #{minUsageCount}
+        AND is_enabled = 1
+        ORDER BY usage_count DESC, rating_score DESC
+    </select>
+
+    <!-- 获取新模板列表 -->
+    <select id="selectNewTemplates" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM bid_template
+        WHERE create_time >= DATE_SUB(SYSDATE, INTERVAL #{days} DAY)
+        AND is_enabled = 1
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据模板状态查询标书模板列表 -->
+    <select id="selectByTemplateStatus" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM bid_template
+        WHERE template_status = #{templateStatus}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据审批状态查询标书模板列表 -->
+    <select id="selectByApprovalStatus" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM bid_template
+        WHERE approval_status = #{approvalStatus}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据作者ID查询标书模板列表 -->
+    <select id="selectByAuthorId" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM bid_template
+        WHERE author_id = #{authorId}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据审核人ID查询标书模板列表 -->
+    <select id="selectByReviewerId" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM bid_template
+        WHERE reviewer_id = #{reviewerId}
+        ORDER BY review_date DESC
+    </select>
+
+    <!-- 根据批准人ID查询标书模板列表 -->
+    <select id="selectByApproverId" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM bid_template
+        WHERE approver_id = #{approverId}
+        ORDER BY approval_date DESC
+    </select>
+
+    <!-- 获取高评分模板列表 -->
+    <select id="selectHighRatedTemplates" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM bid_template
+        WHERE rating_score >= #{minRatingScore}
+        AND rating_count >= 5
+        AND is_enabled = 1
+        ORDER BY rating_score DESC, rating_count DESC
+    </select>
+
+    <!-- 获取最近使用的模板列表 -->
+    <select id="selectRecentlyUsedTemplates" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM bid_template
+        WHERE last_used_date >= DATE_SUB(SYSDATE, INTERVAL #{days} DAY)
+        AND is_enabled = 1
+        ORDER BY last_used_date DESC
+    </select>
+
+    <!-- 获取即将过期的模板列表 -->
+    <select id="selectExpiringSoonTemplates" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM bid_template
+        WHERE expiry_date IS NOT NULL
+        AND expiry_date BETWEEN SYSDATE AND SYSDATE + #{days}
+        ORDER BY expiry_date ASC
+    </select>
+
+    <!-- 获取需要维护的模板列表 -->
+    <select id="selectMaintenanceRequiredTemplates" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM bid_template
+        WHERE maintenance_date IS NOT NULL
+        AND maintenance_date &lt;= SYSDATE
+        ORDER BY maintenance_date ASC
+    </select>
+
+    <!-- 根据复杂度级别查询标书模板列表 -->
+    <select id="selectByComplexityLevel" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM bid_template
+        WHERE complexity_level = #{complexityLevel}
+        AND is_enabled = 1
+        ORDER BY usage_count DESC
+    </select>
+
+    <!-- 根据行业范围查询标书模板列表 -->
+    <select id="selectByIndustryScope" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM bid_template
+        WHERE industry_scope LIKE CONCAT('%', #{industryScope}, '%')
+        AND is_enabled = 1
+        ORDER BY usage_count DESC
+    </select>
+
+    <!-- 模糊搜索标书模板 -->
+    <select id="searchBidTemplates" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM bid_template
+        WHERE (template_no LIKE CONCAT('%', #{keyword}, '%')
+               OR template_name LIKE CONCAT('%', #{keyword}, '%')
+               OR template_description LIKE CONCAT('%', #{keyword}, '%')
+               OR template_tags LIKE CONCAT('%', #{keyword}, '%')
+               OR keywords LIKE CONCAT('%', #{keyword}, '%'))
+        AND is_enabled = 1
+        ORDER BY usage_count DESC, rating_score DESC
+        <if test="limit != null">
+            LIMIT #{limit}
+        </if>
+    </select>
+
+    <!-- 统计标书模板数据 -->
+    <select id="selectBidTemplateStatistics" resultType="map">
+        SELECT
+            COUNT(*) as totalCount,
+            COUNT(CASE WHEN template_status = 1 THEN 1 END) as draftCount,
+            COUNT(CASE WHEN template_status = 2 THEN 1 END) as publishedCount,
+            COUNT(CASE WHEN template_status = 3 THEN 1 END) as archivedCount,
+            COUNT(CASE WHEN is_enabled = 1 THEN 1 END) as enabledCount,
+            COUNT(CASE WHEN is_default = 1 THEN 1 END) as defaultCount,
+            COUNT(CASE WHEN approval_status = 1 THEN 1 END) as pendingApprovalCount,
+            COUNT(CASE WHEN approval_status = 2 THEN 1 END) as approvedCount,
+            COUNT(CASE WHEN approval_status = 3 THEN 1 END) as rejectedCount,
+            COALESCE(SUM(usage_count), 0) as totalUsageCount,
+            COALESCE(SUM(download_count), 0) as totalDownloadCount,
+            COALESCE(AVG(rating_score), 0) as avgRatingScore,
+            COALESCE(AVG(usage_count), 0) as avgUsageCount
+        FROM bid_template
+        WHERE 1=1
+        <if test="param.templateType != null">
+            AND template_type = #{param.templateType}
+        </if>
+        <if test="param.templateStatus != null">
+            AND template_status = #{param.templateStatus}
+        </if>
+        <if test="param.authorId != null">
+            AND author_id = #{param.authorId}
+        </if>
+        <if test="param.createStartTime != null">
+            AND create_time >= #{param.createStartTime}
+        </if>
+        <if test="param.createEndTime != null">
+            AND create_time &lt;= #{param.createEndTime}
+        </if>
+    </select>
+
+    <!-- 获取模板类型分布统计 -->
+    <select id="selectTemplateTypeDistribution" resultType="map">
+        SELECT
+            template_type as templateType,
+            COUNT(*) as count,
+            COALESCE(SUM(usage_count), 0) as totalUsageCount,
+            COALESCE(AVG(rating_score), 0) as avgRatingScore,
+            COUNT(CASE WHEN is_enabled = 1 THEN 1 END) as enabledCount
+        FROM bid_template
+        WHERE 1=1
+        <if test="param.templateStatus != null">
+            AND template_status = #{param.templateStatus}
+        </if>
+        <if test="param.authorId != null">
+            AND author_id = #{param.authorId}
+        </if>
+        <if test="param.createStartTime != null">
+            AND create_time >= #{param.createStartTime}
+        </if>
+        <if test="param.createEndTime != null">
+            AND create_time &lt;= #{param.createEndTime}
+        </if>
+        GROUP BY template_type
+        ORDER BY count DESC
+    </select>
+
+    <!-- 获取模板状态分布统计 -->
+    <select id="selectTemplateStatusDistribution" resultType="map">
+        SELECT
+            template_status as templateStatus,
+            COUNT(*) as count,
+            COALESCE(SUM(usage_count), 0) as totalUsageCount,
+            COALESCE(AVG(rating_score), 0) as avgRatingScore
+        FROM bid_template
+        WHERE 1=1
+        <if test="param.templateType != null">
+            AND template_type = #{param.templateType}
+        </if>
+        <if test="param.authorId != null">
+            AND author_id = #{param.authorId}
+        </if>
+        <if test="param.createStartTime != null">
+            AND create_time >= #{param.createStartTime}
+        </if>
+        <if test="param.createEndTime != null">
+            AND create_time &lt;= #{param.createEndTime}
+        </if>
+        GROUP BY template_status
+        ORDER BY template_status
+    </select>
+
+    <!-- 获取作者分布统计 -->
+    <select id="selectAuthorDistribution" resultType="map">
+        SELECT
+            author_id as authorId,
+            author_name as authorName,
+            COUNT(*) as count,
+            COALESCE(SUM(usage_count), 0) as totalUsageCount,
+            COALESCE(AVG(rating_score), 0) as avgRatingScore,
+            COUNT(CASE WHEN is_enabled = 1 THEN 1 END) as enabledCount
+        FROM bid_template
+        WHERE 1=1
+        <if test="param.templateType != null">
+            AND template_type = #{param.templateType}
+        </if>
+        <if test="param.templateStatus != null">
+            AND template_status = #{param.templateStatus}
+        </if>
+        <if test="param.createStartTime != null">
+            AND create_time >= #{param.createStartTime}
+        </if>
+        <if test="param.createEndTime != null">
+            AND create_time &lt;= #{param.createEndTime}
+        </if>
+        GROUP BY author_id, author_name
+        ORDER BY count DESC
+    </select>
+
+    <!-- 获取月度使用趋势 -->
+    <select id="selectMonthlyUsageTrend" resultType="map">
+        SELECT
+            DATE_FORMAT(last_used_date, '%Y-%m') as month,
+            COUNT(DISTINCT id) as templateCount,
+            COALESCE(SUM(usage_count), 0) as totalUsageCount,
+            COALESCE(SUM(download_count), 0) as totalDownloadCount
+        FROM bid_template
+        WHERE last_used_date >= DATE_SUB(SYSDATE, INTERVAL 12 MONTH)
+        <if test="param.templateType != null">
+            AND template_type = #{param.templateType}
+        </if>
+        <if test="param.templateStatus != null">
+            AND template_status = #{param.templateStatus}
+        </if>
+        GROUP BY DATE_FORMAT(last_used_date, '%Y-%m')
+        ORDER BY month
+    </select>
+
+    <!-- 更新使用次数 -->
+    <update id="incrementUsageCount">
+        UPDATE bid_template
+        SET usage_count = usage_count + 1,
+            last_used_date = SYSDATE,
+            update_time = SYSDATE
+        WHERE id = #{id}
+    </update>
+
+    <!-- 更新下载次数 -->
+    <update id="incrementDownloadCount">
+        UPDATE bid_template
+        SET download_count = download_count + 1,
+            update_time = SYSDATE
+        WHERE id = #{id}
+    </update>
+
+    <!-- 更新评分 -->
+    <update id="updateRating">
+        UPDATE bid_template
+        SET rating_score = #{ratingScore},
+            rating_count = rating_count + 1,
+            update_time = SYSDATE
+        WHERE id = #{id}
+    </update>
+
+    <!-- 批量更新模板状态 -->
+    <update id="batchUpdateTemplateStatus">
+        UPDATE bid_template
+        SET template_status = #{templateStatus},
+            update_time = SYSDATE
+        <if test="updateBy != null">
+            , update_by = #{updateBy}
+        </if>
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 批量更新启用状态 -->
+    <update id="batchUpdateEnabledStatus">
+        UPDATE bid_template
+        SET is_enabled = #{isEnabled},
+            update_time = SYSDATE
+        <if test="updateBy != null">
+            , update_by = #{updateBy}
+        </if>
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 批量更新审批状态 -->
+    <update id="batchUpdateApprovalStatus">
+        UPDATE bid_template
+        SET approval_status = #{approvalStatus},
+            update_time = SYSDATE
+        <if test="updateBy != null">
+            , update_by = #{updateBy}
+        </if>
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+</mapper>

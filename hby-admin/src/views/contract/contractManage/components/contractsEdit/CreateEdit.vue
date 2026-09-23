@@ -2161,7 +2161,7 @@
         this.tableDataProject[c].budgetname = info.budgetname
         this.tableDataProject[c].bugetId = info.budgetid
       },
-      //提交引迈
+      //提交流程
       async ymsubmit() {
         this.$refs['form'].validate(async (valid) => {
           if (valid) {

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.legal.oracle.mapper.TblFwglExamineTopicOracleMapper">
+    <select id="getList" resultType="com.huabo.legal.oracle.entity.TblFwglExamineTopicOracle">
+        select distinct a.SCORETRANSACTION,a.EXAMINETYPE,a.TOPICNAME,max(a.id) as max
+        from TBL_FWGL_EXAMINE_TOPIC a
+        where 1=1
+        <if test="param.examineType != null">
+            and a.examineType = #{param.examineType}
+        </if>
+        <if test="param.belongGroup != null">
+            and a.BELONGGROUP = #{param.belongGroup}
+        </if>
+        <if test="param.creator != null">
+            and a.CREATOR = #{param.creator}
+        </if>
+        <if test="param.workUnit != null">
+            and a.WORKUNIT = #{param.workUnit}
+        </if>
+        group by a.SCORETRANSACTION,a.EXAMINETYPE,a.TOPICNAME
+        order by max desc
+    </select>
+
+    <select id="findTblFwglExamineTopicList" resultType="com.huabo.legal.oracle.entity.TblFwglExamineTopicOracle">
+        select * from TBL_FWGL_EXAMINE_TOPIC
+    </select>
+</mapper>

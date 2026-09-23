@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.LetterOfCreditMapper">
+
+    <!-- 结果映射 - 完全匹配数据库表TBL_LETTERS_OF_CREDIT结构 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.LetterOfCredit">
+        <!-- 主键 -->
+        <id column="LCID" property="lcId" jdbcType="BIGINT"/>
+        
+        <!-- 信用证表字段 -->
+        <result column="INSTRUMENTID" property="instrumentId" jdbcType="BIGINT"/>
+        <result column="LCNO" property="lcNo" jdbcType="VARCHAR"/>
+        <result column="LCTYPE" property="lcType" jdbcType="VARCHAR"/>
+        <result column="APPLICANT" property="applicant" jdbcType="VARCHAR"/>
+        <result column="BENEFICIARY" property="beneficiary" jdbcType="VARCHAR"/>
+        <result column="ISSUINGBANK" property="issuingBank" jdbcType="VARCHAR"/>
+        <result column="ADVISINGBANK" property="advisingBank" jdbcType="VARCHAR"/>
+        <result column="CONFIRMINGBANK" property="confirmingBank" jdbcType="VARCHAR"/>
+        <result column="NEGOTIATINGBANK" property="negotiatingBank" jdbcType="VARCHAR"/>
+        <result column="LCAMOUNT" property="lcAmount" jdbcType="DECIMAL"/>
+        <result column="AVAILABLEAMOUNT" property="availableAmount" jdbcType="DECIMAL"/>
+        <result column="TOLERANCE" property="tolerance" jdbcType="DECIMAL"/>
+        <result column="PARTIALSHIPMENT" property="partialShipment" jdbcType="VARCHAR"/>
+        <result column="TRANSSHIPMENT" property="transshipment" jdbcType="VARCHAR"/>
+        <result column="SHIPMENTDATE" property="shipmentDate" jdbcType="DATE"/>
+        <result column="EXPIRYDATE" property="expiryDate" jdbcType="DATE"/>
+        <result column="EXPIRYPLACE" property="expiryPlace" jdbcType="VARCHAR"/>
+        <result column="PRESENTATIONPERIOD" property="presentationPeriod" jdbcType="INTEGER"/>
+        <result column="DOCUMENTREQUIREMENTS" property="documentRequirements" jdbcType="CLOB"/>
+        <result column="SPECIALCONDITIONS" property="specialConditions" jdbcType="CLOB"/>
+        <result column="LCSTATUS" property="lcStatus" jdbcType="VARCHAR"/>
+        <result column="MARGINREQUIRED" property="marginRequired" jdbcType="INTEGER"/>
+        <result column="MARGINAMOUNT" property="marginAmount" jdbcType="DECIMAL"/>
+        <result column="COMMISSIONAMOUNT" property="commissionAmount" jdbcType="DECIMAL"/>
+        <result column="REMARK" property="remark" jdbcType="CLOB"/>
+        <result column="ORGID" property="orgId" jdbcType="BIGINT"/>
+        <result column="CREATETIME" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="CREATEUSER" property="createUser" jdbcType="BIGINT"/>
+        <result column="UPDATETIME" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="UPDATEUSER" property="updateUser" jdbcType="BIGINT"/>
+        
+        <!-- 关联票据基础信息表字段 - 通过LEFT JOIN获取 -->
+        <result column="INSTRUMENTNO" property="instrumentNo" jdbcType="VARCHAR"/>
+        <result column="CURRENCYCODE" property="currencyCode" jdbcType="VARCHAR"/>
+        <result column="BUSINESSPURPOSE" property="businessPurpose" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 基础字段列表 - 包含信用证表和关联的票据基础信息表字段 -->
+    <sql id="Base_Column_List">
+        lc.LCID, lc.INSTRUMENTID, lc.LCNO, lc.LCTYPE, lc.APPLICANT, lc.BENEFICIARY,
+        lc.ISSUINGBANK, lc.ADVISINGBANK, lc.CONFIRMINGBANK, lc.NEGOTIATINGBANK,
+        lc.LCAMOUNT, lc.AVAILABLEAMOUNT, lc.TOLERANCE, lc.PARTIALSHIPMENT, lc.TRANSSHIPMENT,
+        lc.SHIPMENTDATE, lc.EXPIRYDATE, lc.EXPIRYPLACE, lc.PRESENTATIONPERIOD,
+        lc.DOCUMENTREQUIREMENTS, lc.SPECIALCONDITIONS, lc.LCSTATUS,
+        lc.MARGINREQUIRED, lc.MARGINAMOUNT, lc.COMMISSIONAMOUNT, lc.REMARK, lc.ORGID,
+        lc.CREATETIME, lc.CREATEUSER, lc.UPDATETIME, lc.UPDATEUSER,
+        ib.INSTRUMENTNO, ib.CURRENCYCODE, ib.BUSINESSPURPOSE
+    </sql>
+
+    <!-- 根据条件查询信用证列表 - 支持分页 -->
+    <select id="selectByCondition" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM TBL_LETTERS_OF_CREDIT lc
+        LEFT JOIN TBL_INSTRUMENT_BASIC_INFO ib ON lc.INSTRUMENTID = ib.INSTRUMENTID
+        <where>
+            <if test="lcNo != null and lcNo != ''">
+                AND lc.LCNO LIKE CONCAT('%', #{lcNo}, '%')
+            </if>
+            <if test="lcType != null and lcType != ''">
+                AND lc.LCTYPE = #{lcType}
+            </if>
+            <if test="lcStatus != null and lcStatus != ''">
+                AND lc.LCSTATUS = #{lcStatus}
+            </if>
+            <if test="applicant != null and applicant != ''">
+                AND lc.APPLICANT LIKE CONCAT('%', #{applicant}, '%')
+            </if>
+            <if test="beneficiary != null and beneficiary != ''">
+                AND lc.BENEFICIARY LIKE CONCAT('%', #{beneficiary}, '%')
+            </if>
+            <if test="issuingBank != null and issuingBank != ''">
+                AND lc.ISSUINGBANK LIKE CONCAT('%', #{issuingBank}, '%')
+            </if>
+            <if test="expiryDateStart != null">
+                AND lc.EXPIRYDATE &gt;= #{expiryDateStart}
+            </if>
+            <if test="expiryDateEnd != null">
+                AND lc.EXPIRYDATE &lt;= #{expiryDateEnd}
+            </if>
+            <if test="orgId != null">
+                AND lc.ORGID = #{orgId}
+            </if>
+        </where>
+        ORDER BY lc.CREATETIME DESC
+    </select>
+
+</mapper>
+

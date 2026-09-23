@@ -428,7 +428,7 @@
         disabled: false,
         getcontracttype: '',
         flowtaskinfoflowid: '', //我发起的提交时前置所需
-        ymFromId: '', //我发起的获取的引迈表单id
+        ymFromId: '', //我发起的获取的流程表单id
         XDFWHformData: {
           flowId: 622322,
           counterpartno: undefined,

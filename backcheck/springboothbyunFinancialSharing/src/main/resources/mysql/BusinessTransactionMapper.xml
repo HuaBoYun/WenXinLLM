@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.mysql.mapper.BusinessTransactionMapper">
+
+    <!-- 分页查询业务事项（配合 PageHelper 使用） -->
+    <select id="selectBusinessTransactionPage" resultType="com.financial.sharing.vo.result.BusinessTransactionVO">
+        SELECT
+            TRANSACTION_ID as transactionId,
+            TRANSACTION_NO as transactionNo,
+            TRANSACTION_TYPE as transactionType,
+            TRANSACTION_DATE as transactionDate,
+            BUSINESS_DATA as businessData,
+            SOURCE_SYSTEM as sourceSystem,
+            TRANSACTION_STATUS as transactionStatus,
+            BOOK_ID as bookId,
+            TENANT_ID as tenantId,
+            VERSION as version,
+            CREATE_TIME as createTime,
+            UPDATE_TIME as updateTime,
+            CREATOR as creator,
+            UPDATER as updater
+        FROM T_BUSINESS_TRANSACTION
+        WHERE IS_DELETED = 0
+        <if test="param.bookId != null">
+            AND BOOK_ID = #{param.bookId}
+        </if>
+        <if test="param.tenantId != null">
+            AND TENANT_ID = #{param.tenantId}
+        </if>
+        <if test="param.transactionNo != null and param.transactionNo != ''">
+            AND TRANSACTION_NO LIKE CONCAT('%', #{param.transactionNo}, '%')
+        </if>
+        <if test="param.transactionType != null and param.transactionType != ''">
+            AND TRANSACTION_TYPE = #{param.transactionType}
+        </if>
+        <if test="param.transactionDateStart != null">
+            AND TRANSACTION_DATE >= #{param.transactionDateStart}
+        </if>
+        <if test="param.transactionDateEnd != null">
+            AND TRANSACTION_DATE &lt;= #{param.transactionDateEnd}
+        </if>
+        <if test="param.sourceSystem != null and param.sourceSystem != ''">
+            AND SOURCE_SYSTEM = #{param.sourceSystem}
+        </if>
+        <if test="param.transactionStatus != null">
+            AND TRANSACTION_STATUS = #{param.transactionStatus}
+        </if>
+        ORDER BY TRANSACTION_DATE DESC, TRANSACTION_NO ASC
+    </select>
+
+    <!-- 根据事项编号查询业务事项 -->
+    <select id="selectByTransactionNo" resultType="com.financial.sharing.mysql.entity.BusinessTransactionEntity">
+        SELECT * FROM T_BUSINESS_TRANSACTION 
+        WHERE IS_DELETED = 0 
+        AND TRANSACTION_NO = #{transactionNo}
+        AND BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+        <if test="excludeId != null">
+            AND TRANSACTION_ID != #{excludeId}
+        </if>
+        LIMIT 1
+    </select>
+
+    <!-- 根据事项类型查询业务事项列表 -->
+    <select id="selectByTransactionType" resultType="com.financial.sharing.vo.result.BusinessTransactionVO">
+        SELECT 
+            TRANSACTION_ID as transactionId,
+            TRANSACTION_NO as transactionNo,
+            TRANSACTION_TYPE as transactionType,
+            TRANSACTION_DATE as transactionDate,
+            BUSINESS_DATA as businessData,
+            SOURCE_SYSTEM as sourceSystem,
+            TRANSACTION_STATUS as transactionStatus,
+            BOOK_ID as bookId,
+            TENANT_ID as tenantId,
+            VERSION as version,
+            CREATE_TIME as createTime,
+            UPDATE_TIME as updateTime,
+            CREATOR as creator,
+            UPDATER as updater
+        FROM T_BUSINESS_TRANSACTION 
+        WHERE IS_DELETED = 0 
+        AND TRANSACTION_TYPE = #{transactionType}
+        AND BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+        ORDER BY TRANSACTION_DATE DESC
+    </select>
+
+    <!-- 根据日期范围查询业务事项列表 -->
+    <select id="selectByDateRange" resultType="com.financial.sharing.vo.result.BusinessTransactionVO">
+        SELECT 
+            TRANSACTION_ID as transactionId,
+            TRANSACTION_NO as transactionNo,
+            TRANSACTION_TYPE as transactionType,
+            TRANSACTION_DATE as transactionDate,
+            BUSINESS_DATA as businessData,
+            SOURCE_SYSTEM as sourceSystem,
+            TRANSACTION_STATUS as transactionStatus,
+            BOOK_ID as bookId,
+            TENANT_ID as tenantId,
+            VERSION as version,
+            CREATE_TIME as createTime,
+            UPDATE_TIME as updateTime,
+            CREATOR as creator,
+            UPDATER as updater
+        FROM T_BUSINESS_TRANSACTION 
+        WHERE IS_DELETED = 0 
+        AND TRANSACTION_DATE BETWEEN #{startDate} AND #{endDate}
+        AND BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+        ORDER BY TRANSACTION_DATE DESC
+    </select>
+
+    <!-- 根据状态查询业务事项列表 -->
+    <select id="selectByStatus" resultType="com.financial.sharing.vo.result.BusinessTransactionVO">
+        SELECT 
+            TRANSACTION_ID as transactionId,
+            TRANSACTION_NO as transactionNo,
+            TRANSACTION_TYPE as transactionType,
+            TRANSACTION_DATE as transactionDate,
+            BUSINESS_DATA as businessData,
+            SOURCE_SYSTEM as sourceSystem,
+            TRANSACTION_STATUS as transactionStatus,
+            BOOK_ID as bookId,
+            TENANT_ID as tenantId,
+            VERSION as version,
+            CREATE_TIME as createTime,
+            UPDATE_TIME as updateTime,
+            CREATOR as creator,
+            UPDATER as updater
+        FROM T_BUSINESS_TRANSACTION 
+        WHERE IS_DELETED = 0 
+        AND TRANSACTION_STATUS = #{transactionStatus}
+        AND BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+        ORDER BY TRANSACTION_DATE DESC
+    </select>
+
+    <!-- 批量更新事项状态 -->
+    <update id="batchUpdateStatus">
+        UPDATE T_BUSINESS_TRANSACTION 
+        SET TRANSACTION_STATUS = #{transactionStatus}, 
+            UPDATE_TIME = NOW()
+            <if test="updater != null">
+                , UPDATER = #{updater}
+            </if>
+        WHERE TRANSACTION_ID IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND IS_DELETED = 0
+    </update>
+
+    <!-- 批量删除业务事项 -->
+    <update id="batchDelete">
+        UPDATE T_BUSINESS_TRANSACTION 
+        SET IS_DELETED = 1, 
+            UPDATE_TIME = NOW()
+            <if test="updater != null">
+                , UPDATER = #{updater}
+            </if>
+        WHERE TRANSACTION_ID IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND IS_DELETED = 0
+    </update>
+
+    <!-- 获取事项类型列表 -->
+    <select id="selectTransactionTypes" resultType="string">
+        SELECT DISTINCT TRANSACTION_TYPE 
+        FROM T_BUSINESS_TRANSACTION 
+        WHERE IS_DELETED = 0 
+        AND BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+        ORDER BY TRANSACTION_TYPE ASC
+    </select>
+
+    <!-- 获取来源系统列表 -->
+    <select id="selectSourceSystems" resultType="string">
+        SELECT DISTINCT SOURCE_SYSTEM 
+        FROM T_BUSINESS_TRANSACTION 
+        WHERE IS_DELETED = 0 
+        AND SOURCE_SYSTEM IS NOT NULL
+        AND BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+        ORDER BY SOURCE_SYSTEM ASC
+    </select>
+
+    <!-- 统计事项数量按状态分组 -->
+    <select id="countByStatus" resultType="com.financial.sharing.vo.result.BusinessTransactionVO">
+        SELECT 
+            TRANSACTION_STATUS as transactionStatus,
+            COUNT(*) as transactionId
+        FROM T_BUSINESS_TRANSACTION 
+        WHERE IS_DELETED = 0 
+        AND BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+        GROUP BY TRANSACTION_STATUS
+        ORDER BY TRANSACTION_STATUS ASC
+    </select>
+
+    <!-- 统计事项数量按类型分组 -->
+    <select id="countByType" resultType="com.financial.sharing.vo.result.BusinessTransactionVO">
+        SELECT 
+            TRANSACTION_TYPE as transactionType,
+            COUNT(*) as transactionId
+        FROM T_BUSINESS_TRANSACTION 
+        WHERE IS_DELETED = 0 
+        AND BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+        GROUP BY TRANSACTION_TYPE
+        ORDER BY TRANSACTION_TYPE ASC
+    </select>
+
+</mapper>

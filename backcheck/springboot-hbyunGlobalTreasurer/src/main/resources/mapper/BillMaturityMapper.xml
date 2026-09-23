@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.BillMaturityMapper">
+
+    <!-- 结果映射 - 根据实际表结构 REDACTED.TBL_BILL_MATURITY -->
+    <resultMap id="BillMaturityVOResult" type="com.global.treasurer.vo.BillMaturityVO">
+        <id property="maturityId" column="MATURITY_ID"/>
+        <result property="billId" column="BILL_ID"/>
+        <result property="billNumber" column="BILL_NUMBER"/>
+        <result property="billType" column="BILL_TYPE"/>
+        <result property="billAmount" column="BILL_AMOUNT"/>
+        <result property="drawerName" column="DRAWER_NAME"/>
+        <result property="acceptorName" column="ACCEPTOR_NAME"/>
+        <result property="issueDate" column="ISSUE_DATE"/>
+        <result property="maturityDate" column="MATURITY_DATE"/>
+        <result property="remainingDays" column="REMAINING_DAYS"/>
+        <result property="maturityStatus" column="MATURITY_STATUS"/>
+        <result property="reminderStatus" column="REMINDER_STATUS"/>
+        <result property="processType" column="PROCESS_TYPE"/>
+        <result property="processDate" column="PROCESS_DATE"/>
+        <result property="processDescription" column="PROCESS_DESCRIPTION"/>
+        <result property="createTime" column="CREATE_TIME"/>
+        <result property="updateTime" column="UPDATE_TIME"/>
+        <result property="createBy" column="CREATE_BY"/>
+        <result property="updateBy" column="UPDATE_BY"/>
+        <result property="companyId" column="COMPANY_ID"/>
+        <result property="deptId" column="DEPT_ID"/>
+    </resultMap>
+
+    <!-- 查询票据到期列表 -->
+    <select id="selectBillMaturityList" parameterType="com.global.treasurer.dto.BillMaturityQueryDTO"
+            resultMap="BillMaturityVOResult">
+        SELECT * FROM TBL_BILL_MATURITY
+        WHERE DELETE_FLAG = 0
+        <if test="query != null and query.billNumber != null and query.billNumber != ''">
+            AND BILL_NUMBER LIKE '%' || #{query.billNumber} || '%'
+        </if>
+        <if test="query != null and query.billType != null and query.billType != ''">
+            AND BILL_TYPE = #{query.billType}
+        </if>
+        <if test="query != null and query.maturityStatus != null and query.maturityStatus != ''">
+            AND MATURITY_STATUS = #{query.maturityStatus}
+        </if>
+        <if test="query != null and query.maturityDateStart != null">
+            AND MATURITY_DATE &gt;= #{query.maturityDateStart}
+        </if>
+        <if test="query != null and query.maturityDateEnd != null">
+            AND MATURITY_DATE &lt;= #{query.maturityDateEnd}
+        </if>
+        <if test="query != null and query.remainingDaysMin != null">
+            AND REMAINING_DAYS &gt;= #{query.remainingDaysMin}
+        </if>
+        <if test="query != null and query.remainingDaysMax != null">
+            AND REMAINING_DAYS &lt;= #{query.remainingDaysMax}
+        </if>
+        <if test="query != null and query.amountMin != null">
+            AND BILL_AMOUNT &gt;= #{query.amountMin}
+        </if>
+        <if test="query != null and query.amountMax != null">
+            AND BILL_AMOUNT &lt;= #{query.amountMax}
+        </if>
+        <if test="query != null and query.companyId != null">
+            AND COMPANY_ID = #{query.companyId}
+        </if>
+        ORDER BY MATURITY_DATE ASC
+    </select>
+
+    <!-- 根据ID查询票据到期详情 -->
+    <select id="selectBillMaturityById" parameterType="Long" resultMap="BillMaturityVOResult">
+        SELECT * FROM TBL_BILL_MATURITY WHERE MATURITY_ID = #{maturityId} AND DELETE_FLAG = 0
+    </select>
+
+    <!-- 批量更新处理状态 -->
+    <update id="batchUpdateProcessStatus">
+        UPDATE TBL_BILL_MATURITY
+        SET MATURITY_STATUS = 'PROCESSED', PROCESS_TYPE = #{processType},
+            PROCESS_DATE = #{processDate}, PROCESS_DESCRIPTION = #{processDescription}, UPDATE_TIME = SYSTIMESTAMP
+        WHERE MATURITY_ID IN
+        <foreach collection="maturityIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 批量更新提醒状态 -->
+    <update id="batchUpdateReminderStatus">
+        UPDATE TBL_BILL_MATURITY SET REMINDER_STATUS = #{reminderStatus}, UPDATE_TIME = SYSTIMESTAMP
+        WHERE MATURITY_ID IN
+        <foreach collection="maturityIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 获取到期日历数据 -->
+    <select id="selectMaturityCalendarData" resultType="java.util.Map">
+        SELECT MATURITY_DATE as "maturityDate", COUNT(*) as "count", SUM(BILL_AMOUNT) as "totalAmount"
+        FROM TBL_BILL_MATURITY
+        WHERE DELETE_FLAG = 0 AND MATURITY_DATE BETWEEN #{startDate} AND #{endDate}
+        <if test="companyId != null">
+            AND COMPANY_ID = #{companyId}
+        </if>
+        GROUP BY MATURITY_DATE ORDER BY MATURITY_DATE
+    </select>
+
+    <!-- 更新所有记录的剩余天数 (达梦数据库语法) -->
+    <update id="updateAllRemainingDays">
+        UPDATE TBL_BILL_MATURITY
+        SET REMAINING_DAYS = TRUNC(MATURITY_DATE - SYSDATE), UPDATE_TIME = SYSTIMESTAMP
+        WHERE DELETE_FLAG = 0 AND MATURITY_STATUS != 'PROCESSED'
+    </update>
+
+    <!-- 获取票据到期统计数据 -->
+    <select id="selectBillMaturityStatistics" parameterType="com.global.treasurer.dto.BillMaturityQueryDTO"
+            resultType="java.util.Map">
+        SELECT
+            COUNT(*) as totalBills,
+            SUM(CASE WHEN REMAINING_DAYS BETWEEN 0 AND 30 THEN 1 ELSE 0 END) as expiringBills,
+            SUM(CASE WHEN REMAINING_DAYS &lt; 0 AND MATURITY_STATUS != 'PROCESSED' THEN 1 ELSE 0 END) as maturedBills,
+            COALESCE(SUM(CASE WHEN REMAINING_DAYS &lt;= 30 THEN BILL_AMOUNT ELSE 0 END) / 10000, 0) as totalAmount
+        FROM TBL_BILL_MATURITY
+        WHERE DELETE_FLAG = 0
+        <if test="query != null and query.companyId != null">
+            AND COMPANY_ID = #{query.companyId}
+        </if>
+    </select>
+
+    <!-- 获取票据到期趋势数据 -->
+    <select id="selectMaturityTrendData" resultType="java.util.Map">
+        SELECT
+            MATURITY_DATE as maturityDate,
+            COUNT(*) as count,
+            SUM(BILL_AMOUNT) as totalAmount
+        FROM TBL_BILL_MATURITY
+        WHERE DELETE_FLAG = 0
+            AND MATURITY_DATE BETWEEN #{startDate} AND #{endDate}
+        GROUP BY MATURITY_DATE
+        ORDER BY MATURITY_DATE
+    </select>
+</mapper>
+

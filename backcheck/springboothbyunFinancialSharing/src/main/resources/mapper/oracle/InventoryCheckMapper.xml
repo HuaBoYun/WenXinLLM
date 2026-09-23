@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.oracle.mapper.InventoryCheckMapper">
+
+    <!-- 分页查询存货盘点列表 -->
+    <select id="selectCheckPage" resultType="java.util.HashMap">
+        SELECT
+            CHECK_ID AS "checkId",
+            CHECK_NO AS "checkNumber",
+            CHECK_NAME AS "checkName",
+            CHECK_TYPE AS "checkType",
+            CHECK_TYPE_NAME AS "checkTypeName",
+            WAREHOUSE_ID AS "warehouseId",
+            WAREHOUSE_NAME AS "warehouseName",
+            INVENTORY_COUNT AS "inventoryCount",
+            CHECK_PROGRESS AS "checkProgress",
+            VARIANCE_AMOUNT AS "varianceAmount",
+            CASE CHECK_STATUS
+                WHEN 0 THEN 'PLANNING'
+                WHEN 1 THEN 'CHECKING'
+                WHEN 2 THEN 'COMPLETED'
+                WHEN 3 THEN 'APPROVED'
+                WHEN 4 THEN 'CANCELLED'
+                ELSE 'UNKNOWN'
+            END AS "status",
+            TO_CHAR(CHECK_DATE, 'YYYY-MM-DD') AS "checkDate",
+            APPROVER_NAME AS "operatorName",
+            DESCRIPTION AS "description",
+            TO_CHAR(CREATE_TIME, 'YYYY-MM-DD HH24:MI:SS') AS "createTime"
+        FROM TBL_INVENTORY_CHECK
+        WHERE DELETED = 0
+        <if test="param.tenantId != null">
+            AND TENANT_ID = #{param.tenantId}
+        </if>
+        <if test="param.checkNumber != null and param.checkNumber != ''">
+            AND CHECK_NO LIKE '%' || #{param.checkNumber} || '%'
+        </if>
+        <if test="param.checkType != null and param.checkType != ''">
+            AND CHECK_TYPE = #{param.checkType}
+        </if>
+        <if test="param.status != null and param.status != ''">
+            AND CHECK_STATUS = CASE #{param.status}
+                WHEN 'PLANNING' THEN 0
+                WHEN 'CHECKING' THEN 1
+                WHEN 'COMPLETED' THEN 2
+                WHEN 'APPROVED' THEN 3
+                WHEN 'CANCELLED' THEN 4
+                ELSE -1
+            END
+        </if>
+        <if test="param.warehouseId != null and param.warehouseId != ''">
+            AND WAREHOUSE_ID = #{param.warehouseId}
+        </if>
+        <if test="param.startDate != null and param.startDate != ''">
+            AND CHECK_DATE &gt;= TO_DATE(#{param.startDate}, 'YYYY-MM-DD')
+        </if>
+        <if test="param.endDate != null and param.endDate != ''">
+            AND CHECK_DATE &lt;= TO_DATE(#{param.endDate}, 'YYYY-MM-DD')
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 统计盘点数据 -->
+    <select id="countCheckStatistics" resultType="java.util.HashMap">
+        SELECT
+            SUM(CASE WHEN CHECK_STATUS = 0 THEN 1 ELSE 0 END) AS planningCount,
+            SUM(CASE WHEN CHECK_STATUS = 1 THEN 1 ELSE 0 END) AS checkingCount,
+            SUM(CASE WHEN CHECK_STATUS = 2 OR CHECK_STATUS = 3 THEN 1 ELSE 0 END) AS completedCount,
+            NVL(SUM(CASE WHEN CHECK_STATUS IN (2, 3) THEN VARIANCE_AMOUNT ELSE 0 END), 0) AS totalVariance
+        FROM TBL_INVENTORY_CHECK
+        WHERE DELETED = 0
+        <if test="param.tenantId != null">
+            AND TENANT_ID = #{param.tenantId}
+        </if>
+    </select>
+
+    <!-- 根据盘点单号查询盘点记录 -->
+    <select id="selectByCheckNo" resultType="com.financial.sharing.oracle.entity.InventoryCheckEntity">
+        SELECT * FROM TBL_INVENTORY_CHECK
+        WHERE CHECK_NO = #{checkNo}
+        AND TENANT_ID = #{tenantId}
+        AND DELETED = 0
+    </select>
+
+    <!-- 根据盘点类型查询盘点列表 -->
+    <select id="selectByCheckType" resultType="com.financial.sharing.oracle.entity.InventoryCheckEntity">
+        SELECT * FROM TBL_INVENTORY_CHECK
+        WHERE CHECK_TYPE = #{checkType}
+        AND TENANT_ID = #{tenantId}
+        AND DELETED = 0
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据盘点状态查询盘点列表 -->
+    <select id="selectByStatus" resultType="com.financial.sharing.oracle.entity.InventoryCheckEntity">
+        SELECT * FROM TBL_INVENTORY_CHECK
+        WHERE CHECK_STATUS = #{checkStatus}
+        AND TENANT_ID = #{tenantId}
+        AND DELETED = 0
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据仓库ID查询盘点列表 -->
+    <select id="selectByWarehouseId" resultType="com.financial.sharing.oracle.entity.InventoryCheckEntity">
+        SELECT * FROM TBL_INVENTORY_CHECK
+        WHERE WAREHOUSE_ID = #{warehouseId}
+        AND TENANT_ID = #{tenantId}
+        AND DELETED = 0
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 批量执行盘点任务 -->
+    <update id="batchExecuteCheck">
+        UPDATE TBL_INVENTORY_CHECK
+        SET CHECK_STATUS = #{checkStatus},
+            UPDATER_ID = #{updaterId},
+            UPDATE_TIME = SYSDATE
+        WHERE CHECK_ID IN
+        <foreach collection="checkIds" item="checkId" open="(" separator="," close=")">
+            #{checkId}
+        </foreach>
+        AND CHECK_STATUS = 0
+        AND DELETED = 0
+    </update>
+
+</mapper>
+

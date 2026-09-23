@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.cybermonitor.mapper.DataCollaborationRecordMapper">
+
+    <!-- 基础结果映射 -->
+    <resultMap id="BaseResultMap" type="com.huabo.cybermonitor.entity.DataCollaborationRecord">
+        <id column="RECORD_ID" property="recordId" />
+        <result column="COLLABORATION_TYPE" property="collaborationType" />
+        <result column="SOURCE_SYSTEM" property="sourceSystem" />
+        <result column="TARGET_SYSTEM" property="targetSystem" />
+        <result column="DATA_TYPE" property="dataType" />
+        <result column="DATA_CONTENT" property="dataContent" />
+        <result column="COLLABORATION_STATUS" property="collaborationStatus" />
+        <result column="START_TIME" property="startTime" />
+        <result column="END_TIME" property="endTime" />
+        <result column="DURATION" property="duration" />
+        <result column="SUCCESS_COUNT" property="successCount" />
+        <result column="FAILURE_COUNT" property="failureCount" />
+        <result column="TOTAL_COUNT" property="totalCount" />
+        <result column="TRIGGER_TYPE" property="triggerType" />
+        <result column="ERROR_MESSAGE" property="errorMessage" />
+        <result column="RETRY_COUNT" property="retryCount" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_TIME" property="updateTime" />
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        RECORD_ID, COLLABORATION_TYPE, SOURCE_SYSTEM, TARGET_SYSTEM, DATA_TYPE, DATA_CONTENT,
+        COLLABORATION_STATUS, START_TIME, END_TIME, DURATION, SUCCESS_COUNT, FAILURE_COUNT,
+        TOTAL_COUNT, TRIGGER_TYPE, ERROR_MESSAGE, RETRY_COUNT, CREATE_TIME, UPDATE_TIME
+    </sql>
+
+    <!-- 查询条件 -->
+    <sql id="Query_Where_Clause">
+        <where>
+            <if test="collaborationType != null and collaborationType != ''">
+                AND COLLABORATION_TYPE = #{collaborationType}
+            </if>
+            <if test="sourceSystem != null and sourceSystem != ''">
+                AND SOURCE_SYSTEM = #{sourceSystem}
+            </if>
+            <if test="targetSystem != null and targetSystem != ''">
+                AND TARGET_SYSTEM = #{targetSystem}
+            </if>
+            <if test="dataType != null and dataType != ''">
+                AND DATA_TYPE = #{dataType}
+            </if>
+            <if test="collaborationStatus != null and collaborationStatus != ''">
+                AND COLLABORATION_STATUS = #{collaborationStatus}
+            </if>
+            <if test="triggerType != null and triggerType != ''">
+                AND TRIGGER_TYPE = #{triggerType}
+            </if>
+            <if test="startTimeBegin != null">
+                AND START_TIME >= #{startTimeBegin}
+            </if>
+            <if test="startTimeEnd != null">
+                <choose>
+                    <when test="_databaseId == 'mysql'">
+                        AND START_TIME &lt;= DATE_ADD(#{startTimeEnd}, INTERVAL 1 DAY)
+                    </when>
+                    <when test="_databaseId == 'dm'">
+                        AND START_TIME &lt;= #{startTimeEnd} + 1
+                    </when>
+                    <otherwise>
+                        AND START_TIME &lt;= #{startTimeEnd}
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="durationMin != null">
+                AND DURATION >= #{durationMin}
+            </if>
+            <if test="durationMax != null">
+                AND DURATION &lt;= #{durationMax}
+            </if>
+        </where>
+    </sql>
+
+    <!-- 分页查询协同记录列表 -->
+    <select id="selectCollaborationList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM SYS_DATA_COLLABORATION_RECORD
+        <include refid="Query_Where_Clause" />
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据协同类型查询记录列表 -->
+    <select id="selectRecordsByType" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM SYS_DATA_COLLABORATION_RECORD
+        WHERE COLLABORATION_TYPE = #{collaborationType}
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据协同状态查询记录列表 -->
+    <select id="selectRecordsByStatus" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM SYS_DATA_COLLABORATION_RECORD
+        WHERE COLLABORATION_STATUS = #{collaborationStatus}
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据源系统查询记录列表 -->
+    <select id="selectRecordsBySourceSystem" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM SYS_DATA_COLLABORATION_RECORD
+        WHERE SOURCE_SYSTEM = #{sourceSystem}
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据目标系统查询记录列表 -->
+    <select id="selectRecordsByTargetSystem" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM SYS_DATA_COLLABORATION_RECORD
+        WHERE TARGET_SYSTEM = #{targetSystem}
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 查询正在处理的协同记录 -->
+    <select id="selectProcessingRecords" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM SYS_DATA_COLLABORATION_RECORD
+        WHERE COLLABORATION_STATUS IN ('PROCESSING', 'PENDING')
+        ORDER BY START_TIME ASC
+    </select>
+
+    <!-- 查询失败的协同记录 -->
+    <select id="selectFailedRecords" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM SYS_DATA_COLLABORATION_RECORD
+        WHERE COLLABORATION_STATUS = 'FAILED'
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 更新协同状态 -->
+    <update id="updateCollaborationStatus">
+        UPDATE SYS_DATA_COLLABORATION_RECORD
+        SET COLLABORATION_STATUS = #{collaborationStatus},
+            <if test="errorMessage != null">
+            ERROR_MESSAGE = #{errorMessage},
+            </if>
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <when test="_databaseId == 'dm'">SYSDATE</when>
+                <otherwise>NOW()</otherwise>
+            </choose>
+        WHERE RECORD_ID = #{recordId}
+    </update>
+
+    <!-- 更新协同进度 -->
+    <update id="updateCollaborationProgress">
+        UPDATE SYS_DATA_COLLABORATION_RECORD
+        SET SUCCESS_COUNT = #{successCount},
+            FAILURE_COUNT = #{failureCount},
+            TOTAL_COUNT = #{totalCount},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <when test="_databaseId == 'dm'">SYSDATE</when>
+                <otherwise>NOW()</otherwise>
+            </choose>
+        WHERE RECORD_ID = #{recordId}
+    </update>
+
+    <!-- 更新协同结束时间和持续时间 -->
+    <update id="updateCollaborationEndTime">
+        UPDATE SYS_DATA_COLLABORATION_RECORD
+        SET END_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <when test="_databaseId == 'dm'">SYSDATE</when>
+                <otherwise>NOW()</otherwise>
+            </choose>,
+            DURATION = 
+            <choose>
+                <when test="_databaseId == 'mysql'">TIMESTAMPDIFF(SECOND, START_TIME, NOW())</when>
+                <when test="_databaseId == 'dm'">(SYSDATE - START_TIME) * 24 * 60 * 60</when>
+                <otherwise>EXTRACT(EPOCH FROM (NOW() - START_TIME))</otherwise>
+            </choose>,
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <when test="_databaseId == 'dm'">SYSDATE</when>
+                <otherwise>NOW()</otherwise>
+            </choose>
+        WHERE RECORD_ID = #{recordId}
+    </update>
+
+    <!-- 增加重试次数 -->
+    <update id="incrementRetryCount">
+        UPDATE SYS_DATA_COLLABORATION_RECORD
+        SET RETRY_COUNT = RETRY_COUNT + 1,
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <when test="_databaseId == 'dm'">SYSDATE</when>
+                <otherwise>NOW()</otherwise>
+            </choose>
+        WHERE RECORD_ID = #{recordId}
+    </update>
+
+    <!-- 获取协同记录统计信息 -->
+    <select id="selectCollaborationStatistics" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as totalRecords,
+            COUNT(CASE WHEN COLLABORATION_STATUS = 'PENDING' THEN 1 END) as pendingCount,
+            COUNT(CASE WHEN COLLABORATION_STATUS = 'PROCESSING' THEN 1 END) as processingCount,
+            COUNT(CASE WHEN COLLABORATION_STATUS = 'SUCCESS' THEN 1 END) as successCount,
+            COUNT(CASE WHEN COLLABORATION_STATUS = 'FAILED' THEN 1 END) as failedCount,
+            COUNT(CASE WHEN COLLABORATION_STATUS = 'CANCELLED' THEN 1 END) as cancelledCount,
+            AVG(DURATION) as avgDuration,
+            MAX(DURATION) as maxDuration,
+            MIN(DURATION) as minDuration,
+            SUM(SUCCESS_COUNT) as totalSuccessCount,
+            SUM(FAILURE_COUNT) as totalFailureCount,
+            SUM(TOTAL_COUNT) as totalProcessedCount
+        FROM SYS_DATA_COLLABORATION_RECORD
+    </select>
+
+    <!-- 获取协同类型分布统计 -->
+    <select id="selectCollaborationTypeDistribution" resultType="java.util.Map">
+        SELECT 
+            COLLABORATION_TYPE as type,
+            COUNT(*) as count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM SYS_DATA_COLLABORATION_RECORD), 2) as percentage
+        FROM SYS_DATA_COLLABORATION_RECORD
+        GROUP BY COLLABORATION_TYPE
+        ORDER BY count DESC
+    </select>
+
+    <!-- 获取协同状态分布统计 -->
+    <select id="selectCollaborationStatusDistribution" resultType="java.util.Map">
+        SELECT 
+            COLLABORATION_STATUS as status,
+            COUNT(*) as count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM SYS_DATA_COLLABORATION_RECORD), 2) as percentage
+        FROM SYS_DATA_COLLABORATION_RECORD
+        GROUP BY COLLABORATION_STATUS
+        ORDER BY count DESC
+    </select>
+
+    <!-- 获取系统协同统计 -->
+    <select id="selectSystemCollaborationStatistics" resultType="java.util.Map">
+        SELECT 
+            SOURCE_SYSTEM as sourceSystem,
+            TARGET_SYSTEM as targetSystem,
+            COUNT(*) as collaborationCount,
+            COUNT(CASE WHEN COLLABORATION_STATUS = 'SUCCESS' THEN 1 END) as successCount,
+            COUNT(CASE WHEN COLLABORATION_STATUS = 'FAILED' THEN 1 END) as failedCount,
+            ROUND(COUNT(CASE WHEN COLLABORATION_STATUS = 'SUCCESS' THEN 1 END) * 100.0 / COUNT(*), 2) as successRate
+        FROM SYS_DATA_COLLABORATION_RECORD
+        GROUP BY SOURCE_SYSTEM, TARGET_SYSTEM
+        ORDER BY collaborationCount DESC
+    </select>
+
+    <!-- 获取协同性能统计 -->
+    <select id="selectCollaborationPerformanceStatistics" resultType="java.util.Map">
+        SELECT 
+            AVG(DURATION) as avgDuration,
+            MAX(DURATION) as maxDuration,
+            MIN(DURATION) as minDuration,
+            AVG(TOTAL_COUNT) as avgTotalCount,
+            MAX(TOTAL_COUNT) as maxTotalCount,
+            MIN(TOTAL_COUNT) as minTotalCount,
+            SUM(SUCCESS_COUNT) as totalSuccessCount,
+            SUM(FAILURE_COUNT) as totalFailureCount,
+            SUM(TOTAL_COUNT) as totalProcessedCount,
+            ROUND(SUM(SUCCESS_COUNT) * 100.0 / NULLIF(SUM(TOTAL_COUNT), 0), 2) as overallSuccessRate
+        FROM SYS_DATA_COLLABORATION_RECORD
+        WHERE COLLABORATION_STATUS IN ('SUCCESS', 'FAILED')
+    </select>
+
+    <!-- 根据时间范围获取协同趋势 -->
+    <select id="selectCollaborationTrend" resultType="java.util.Map">
+        SELECT 
+            <choose>
+                <when test="_databaseId == 'mysql'">
+                    DATE(START_TIME) as collaborationDate,
+                </when>
+                <when test="_databaseId == 'dm'">
+                    TO_CHAR(START_TIME, 'YYYY-MM-DD') as collaborationDate,
+                </when>
+                <otherwise>
+                    DATE(START_TIME) as collaborationDate,
+                </otherwise>
+            </choose>
+            COUNT(*) as totalCount,
+            COUNT(CASE WHEN COLLABORATION_STATUS = 'SUCCESS' THEN 1 END) as successCount,
+            COUNT(CASE WHEN COLLABORATION_STATUS = 'FAILED' THEN 1 END) as failedCount,
+            AVG(DURATION) as avgDuration
+        FROM SYS_DATA_COLLABORATION_RECORD
+        WHERE START_TIME BETWEEN #{startDate} AND #{endDate}
+        GROUP BY 
+            <choose>
+                <when test="_databaseId == 'mysql'">
+                    DATE(START_TIME)
+                </when>
+                <when test="_databaseId == 'dm'">
+                    TO_CHAR(START_TIME, 'YYYY-MM-DD')
+                </when>
+                <otherwise>
+                    DATE(START_TIME)
+                </otherwise>
+            </choose>
+        ORDER BY collaborationDate ASC
+    </select>
+
+    <!-- 清理过期的协同记录 -->
+    <delete id="deleteExpiredRecords">
+        DELETE FROM SYS_DATA_COLLABORATION_RECORD
+        WHERE COLLABORATION_STATUS IN ('SUCCESS', 'FAILED', 'CANCELLED')
+        AND CREATE_TIME &lt; 
+        <choose>
+            <when test="_databaseId == 'mysql'">DATE_SUB(NOW(), INTERVAL #{days} DAY)</when>
+            <when test="_databaseId == 'dm'">SYSDATE - #{days}</when>
+            <otherwise>NOW() - INTERVAL '#{days}' DAY</otherwise>
+        </choose>
+    </delete>
+
+    <!-- 获取协同效率报告 -->
+    <select id="selectCollaborationEfficiencyReport" resultType="java.util.Map">
+        SELECT 
+            COLLABORATION_TYPE as collaborationType,
+            SOURCE_SYSTEM as sourceSystem,
+            TARGET_SYSTEM as targetSystem,
+            COUNT(*) as totalCollaborations,
+            COUNT(CASE WHEN COLLABORATION_STATUS = 'SUCCESS' THEN 1 END) as successCount,
+            COUNT(CASE WHEN COLLABORATION_STATUS = 'FAILED' THEN 1 END) as failedCount,
+            ROUND(COUNT(CASE WHEN COLLABORATION_STATUS = 'SUCCESS' THEN 1 END) * 100.0 / COUNT(*), 2) as successRate,
+            AVG(DURATION) as avgDuration,
+            AVG(RETRY_COUNT) as avgRetryCount,
+            SUM(SUCCESS_COUNT) as totalSuccessRecords,
+            SUM(FAILURE_COUNT) as totalFailureRecords,
+            SUM(TOTAL_COUNT) as totalProcessedRecords
+        FROM SYS_DATA_COLLABORATION_RECORD
+        WHERE START_TIME BETWEEN #{startDate} AND #{endDate}
+        GROUP BY COLLABORATION_TYPE, SOURCE_SYSTEM, TARGET_SYSTEM
+        ORDER BY totalCollaborations DESC, successRate DESC
+    </select>
+
+    <!-- 导出协同记录列表 -->
+    <select id="selectCollaborationListForExport" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM SYS_DATA_COLLABORATION_RECORD
+        <include refid="Query_Where_Clause" />
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+</mapper>

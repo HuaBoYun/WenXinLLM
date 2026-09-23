@@ -863,7 +863,7 @@ export function getPrivewAttInfo(params) {
     params: transData(params),
   })
 }
-// 引迈 -- 我发起的-撤回处理
+// 我发起的-撤回处理
 export const ymWorkActionsWithdraw = (params) => {
   return request({
     url: '/setting/ymWrok/actionsWithdraw',
@@ -871,7 +871,7 @@ export const ymWorkActionsWithdraw = (params) => {
     params: transData(params),
   })
 }
-// 引迈 -- 办理通过
+// 办理通过
 export const ymWorkAudit = (data) => {
   return request({
     url: '/setting/ymWrok/audit',
@@ -879,7 +879,7 @@ export const ymWorkAudit = (data) => {
     data: transData(data),
   })
 }
-// 引迈 -- 我的待办、我发起的-提交审批
+// 我的待办、我发起的-提交审批
 export const ymWorkSubmit = (params) => {
   return request({
     url: '/setting/ymWrok/submit',
@@ -887,7 +887,7 @@ export const ymWorkSubmit = (params) => {
     params: transData(params),
   })
 }
-// 引迈 -- 我的待办、我发起的-提交、通过时获取下一步审批节点
+// 我的待办、我发起的-提交、通过时获取下一步审批节点
 export const ymWorkCandidates = (params) => {
   return request({
     url: '/setting/ymWrok/candidates',
@@ -905,7 +905,7 @@ export const ymWorkRejectList = (params) => {
   })
 }
 
-// 引迈 -- 拒绝 /ymWrok/reject
+// 拒绝 /ymWrok/reject
 export const ymWorkReject = (data) => {
   return request({
     url: '/setting/ymWrok/reject',
@@ -913,7 +913,7 @@ export const ymWorkReject = (data) => {
     data: transData(data),
   })
 }
-// 引迈 --- 转审 /ymWrok/transfer
+// 转审 /ymWrok/transfer
 export const ymWorkTransfer = (data) => {
   return request({
     url: '/setting/ymWrok/transfer',

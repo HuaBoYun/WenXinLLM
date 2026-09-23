@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.CashReceiptMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.CashReceipt">
+        <id column="RECEIPT_ID" property="receiptId" />
+    <result column="RECEIPT_ID" property="receiptId" />
+    <result column="RECEIPT_NO" property="receiptNo" />
+    <result column="RECEIPT_DATE" property="receiptDate" />
+    <result column="ACCOUNT_ID" property="accountId" />
+    <result column="ACCOUNT_NAME" property="accountName" />
+    <result column="PAYER_NAME" property="payerName" />
+    <result column="PAYER_ACCOUNT" property="payerAccount" />
+    <result column="RECEIPT_AMOUNT" property="receiptAmount" />
+    <result column="CURRENCY_CODE" property="currencyCode" />
+    <result column="RECEIPT_PURPOSE" property="receiptPurpose" />
+    <result column="RECEIPT_STATUS" property="receiptStatus" />
+    <result column="REMARK" property="remark" />
+    <result column="ORG_ID" property="orgId" />
+    <result column="DELETE_FLAG" property="deleteFlag" />
+    <result column="CREATED_BY" property="createdBy" />
+    <result column="CREATED_BY_NAME" property="createdByName" />
+    <result column="CREATED_TIME" property="createdTime" />
+    <result column="UPDATED_BY" property="updatedBy" />
+    <result column="UPDATED_BY_NAME" property="updatedByName" />
+    <result column="UPDATED_TIME" property="updatedTime" />
+    </resultMap>
+
+    <!-- 分页查询列表 -->
+    <select id="selectPage" resultMap="BaseResultMap">
+        SELECT *
+        FROM TBL_CASH_RECEIPT
+        <where>
+            DELETE_FLAG = 0
+            <if test="param.orgId != null">
+                AND ORG_ID = #{param.orgId}
+            </if>
+        </where>
+        ORDER BY CREATED_TIME DESC
+    </select>
+
+    <!-- 批量删除（软删除） -->
+    <update id="batchDelete">
+        UPDATE TBL_CASH_RECEIPT
+        SET DELETE_FLAG = 1,
+            UPDATED_TIME = CURRENT_TIMESTAMP
+        WHERE RECEIPT_ID IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 批量更新状态 -->
+    <update id="batchUpdateStatus">
+        UPDATE TBL_CASH_RECEIPT
+        SET RECEIPT_STATUS = #{status},
+            UPDATED_BY_NAME = #{updateByName},
+            UPDATED_TIME = CURRENT_TIMESTAMP
+        WHERE RECEIPT_ID IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+</mapper>

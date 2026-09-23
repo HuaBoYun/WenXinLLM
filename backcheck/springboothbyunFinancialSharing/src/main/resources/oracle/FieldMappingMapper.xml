@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.oracle.mapper.FieldMappingMapper">
+
+    <!-- 分页查询字段映射 -->
+    <select id="selectFieldMappingPage" resultType="com.financial.sharing.oracle.entity.FieldMappingEntity">
+        SELECT
+            MAPPING_ID,
+            DATA_SOURCE_ID,
+            TARGET_TABLE,
+            SOURCE_FIELD,
+            TARGET_FIELD,
+            FIELD_TYPE,
+            FIELD_LENGTH,
+            IS_NULLABLE,
+            DEFAULT_VALUE,
+            TRANSFORMATION_RULE,
+            VALIDATION_RULE,
+            SORT_ORDER,
+            IS_ENABLED,
+            DESCRIPTION,
+            TENANT_ID,
+            CREATE_TIME,
+            UPDATE_TIME,
+            CREATE_USER,
+            UPDATE_USER
+        FROM TBL_FIELD_MAPPING
+        WHERE TENANT_ID = #{tenantId}
+        <if test="param.dataSourceId != null">
+            AND DATA_SOURCE_ID = #{param.dataSourceId}
+        </if>
+        <if test="param.targetTable != null and param.targetTable != ''">
+            AND TARGET_TABLE LIKE '%' || #{param.targetTable} || '%'
+        </if>
+        <if test="param.sourceField != null and param.sourceField != ''">
+            AND SOURCE_FIELD LIKE '%' || #{param.sourceField} || '%'
+        </if>
+        <if test="param.targetField != null and param.targetField != ''">
+            AND TARGET_FIELD LIKE '%' || #{param.targetField} || '%'
+        </if>
+        <if test="param.isEnabled != null">
+            AND IS_ENABLED = #{param.isEnabled}
+        </if>
+        ORDER BY DATA_SOURCE_ID, SORT_ORDER, CREATE_TIME DESC
+    </select>
+
+    <!-- 根据数据源ID查询字段映射 -->
+    <select id="selectByDataSourceId" resultType="com.financial.sharing.oracle.entity.FieldMappingEntity">
+        SELECT
+            MAPPING_ID,
+            DATA_SOURCE_ID,
+            TARGET_TABLE,
+            SOURCE_FIELD,
+            TARGET_FIELD,
+            FIELD_TYPE,
+            FIELD_LENGTH,
+            IS_NULLABLE,
+            DEFAULT_VALUE,
+            TRANSFORMATION_RULE,
+            VALIDATION_RULE,
+            SORT_ORDER,
+            IS_ENABLED,
+            DESCRIPTION,
+            TENANT_ID,
+            CREATE_TIME,
+            UPDATE_TIME,
+            CREATE_USER,
+            UPDATE_USER
+        FROM TBL_FIELD_MAPPING
+        WHERE DATA_SOURCE_ID = #{dataSourceId}
+        AND TENANT_ID = #{tenantId}
+        ORDER BY SORT_ORDER, CREATE_TIME ASC
+    </select>
+
+    <!-- 根据目标表查询字段映射 -->
+    <select id="selectByTargetTable" resultType="com.financial.sharing.oracle.entity.FieldMappingEntity">
+        SELECT
+            MAPPING_ID,
+            DATA_SOURCE_ID,
+            TARGET_TABLE,
+            SOURCE_FIELD,
+            TARGET_FIELD,
+            FIELD_TYPE,
+            FIELD_LENGTH,
+            IS_NULLABLE,
+            DEFAULT_VALUE,
+            TRANSFORMATION_RULE,
+            VALIDATION_RULE,
+            SORT_ORDER,
+            IS_ENABLED,
+            DESCRIPTION,
+            TENANT_ID,
+            CREATE_TIME,
+            UPDATE_TIME,
+            CREATE_USER,
+            UPDATE_USER
+        FROM TBL_FIELD_MAPPING
+        WHERE TARGET_TABLE = #{targetTable}
+        AND TENANT_ID = #{tenantId}
+        ORDER BY SORT_ORDER, CREATE_TIME ASC
+    </select>
+
+    <!-- 批量保存字段映射 -->
+    <insert id="batchInsert">
+        INSERT INTO TBL_FIELD_MAPPING (
+            DATA_SOURCE_ID,
+            TARGET_TABLE,
+            SOURCE_FIELD,
+            TARGET_FIELD,
+            FIELD_TYPE,
+            FIELD_LENGTH,
+            IS_NULLABLE,
+            DEFAULT_VALUE,
+            TRANSFORMATION_RULE,
+            VALIDATION_RULE,
+            SORT_ORDER,
+            IS_ENABLED,
+            DESCRIPTION,
+            TENANT_ID,
+            CREATE_TIME,
+            CREATE_USER
+        )
+        <foreach collection="mappings" item="mapping" separator="UNION ALL">
+            SELECT
+                #{mapping.dataSourceId},
+                #{mapping.targetTable},
+                #{mapping.sourceField},
+                #{mapping.targetField},
+                #{mapping.fieldType},
+                #{mapping.fieldLength},
+                #{mapping.isNullable},
+                #{mapping.defaultValue},
+                #{mapping.transformationRule},
+                #{mapping.validationRule},
+                #{mapping.sortOrder},
+                #{mapping.isEnabled},
+                #{mapping.description},
+                #{mapping.tenantId},
+                SYSDATE,
+                #{mapping.createUser}
+            FROM DUAL
+        </foreach>
+    </insert>
+
+    <!-- 批量更新状态 -->
+    <update id="batchUpdateStatus">
+        UPDATE TBL_FIELD_MAPPING
+        SET IS_ENABLED = #{isEnabled},
+            UPDATE_TIME = SYSDATE,
+            UPDATE_USER = #{updateUser}
+        WHERE MAPPING_ID IN
+        <foreach collection="mappingIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete">
+        DELETE FROM TBL_FIELD_MAPPING
+        WHERE MAPPING_ID IN
+        <foreach collection="mappingIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND TENANT_ID = #{tenantId}
+    </delete>
+
+    <!-- 根据数据源ID删除 -->
+    <delete id="deleteByDataSourceId">
+        DELETE FROM TBL_FIELD_MAPPING
+        WHERE DATA_SOURCE_ID = #{dataSourceId}
+        AND TENANT_ID = #{tenantId}
+    </delete>
+
+    <!-- 查询最大排序号 -->
+    <select id="selectMaxSortOrder" resultType="java.lang.Integer">
+        SELECT COALESCE(MAX(SORT_ORDER), 0)
+        FROM TBL_FIELD_MAPPING
+        WHERE DATA_SOURCE_ID = #{dataSourceId}
+        AND TENANT_ID = #{tenantId}
+    </select>
+
+    <!-- 更新排序 -->
+    <update id="updateSortOrder">
+        UPDATE TBL_FIELD_MAPPING
+        SET SORT_ORDER = #{sortOrder},
+            UPDATE_TIME = SYSDATE,
+            UPDATE_USER = #{updateUser}
+        WHERE MAPPING_ID = #{mappingId}
+    </update>
+
+    <!-- 复制字段映射 -->
+    <insert id="copyFieldMappings">
+        INSERT INTO TBL_FIELD_MAPPING (
+            DATA_SOURCE_ID,
+            TARGET_TABLE,
+            SOURCE_FIELD,
+            TARGET_FIELD,
+            FIELD_TYPE,
+            FIELD_LENGTH,
+            IS_NULLABLE,
+            DEFAULT_VALUE,
+            TRANSFORMATION_RULE,
+            VALIDATION_RULE,
+            SORT_ORDER,
+            IS_ENABLED,
+            DESCRIPTION,
+            TENANT_ID,
+            CREATE_TIME,
+            CREATE_USER
+        )
+        SELECT
+            #{targetDataSourceId},
+            TARGET_TABLE,
+            SOURCE_FIELD,
+            TARGET_FIELD,
+            FIELD_TYPE,
+            FIELD_LENGTH,
+            IS_NULLABLE,
+            DEFAULT_VALUE,
+            TRANSFORMATION_RULE,
+            VALIDATION_RULE,
+            SORT_ORDER,
+            IS_ENABLED,
+            DESCRIPTION,
+            #{tenantId},
+            SYSDATE,
+            #{createUser}
+        FROM TBL_FIELD_MAPPING
+        WHERE DATA_SOURCE_ID = #{sourceDataSourceId}
+        AND TENANT_ID = #{tenantId}
+    </insert>
+
+</mapper>

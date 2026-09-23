@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.cybermonitor.mapper.QueryTemplateMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.huabo.cybermonitor.entity.QueryTemplate">
+        <id column="TEMPLATE_ID" property="templateId" jdbcType="VARCHAR"/>
+        <result column="TEMPLATE_NAME" property="templateName" jdbcType="VARCHAR"/>
+        <result column="TEMPLATE_TYPE" property="templateType" jdbcType="VARCHAR"/>
+        <result column="QUERY_SQL" property="querySql" jdbcType="CLOB"/>
+        <result column="QUERY_PARAMS" property="queryParams" jdbcType="CLOB"/>
+        <result column="RESULT_FIELDS" property="resultFields" jdbcType="CLOB"/>
+        <result column="TEMPLATE_DESCRIPTION" property="templateDescription" jdbcType="VARCHAR"/>
+        <result column="ENABLED" property="enabled" jdbcType="BOOLEAN"/>
+        <result column="IS_PUBLIC" property="isPublic" jdbcType="BOOLEAN"/>
+        <result column="CREATE_BY" property="createBy" jdbcType="VARCHAR"/>
+        <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="Base_Column_List">
+        TEMPLATE_ID, TEMPLATE_NAME, TEMPLATE_TYPE, QUERY_SQL, QUERY_PARAMS, RESULT_FIELDS,
+        TEMPLATE_DESCRIPTION, ENABLED, IS_PUBLIC, CREATE_BY, CREATE_TIME, UPDATE_TIME
+    </sql>
+
+    <!-- 分页查询查询模板列表 -->
+    <select id="selectTemplateList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM SYS_QUERY_TEMPLATE
+        <where>
+            <if test="queryVO.templateName != null and queryVO.templateName != ''">
+                AND TEMPLATE_NAME LIKE CONCAT('%', #{queryVO.templateName}, '%')
+            </if>
+            <if test="queryVO.templateType != null and queryVO.templateType != ''">
+                AND TEMPLATE_TYPE = #{queryVO.templateType}
+            </if>
+            <if test="queryVO.enabled != null">
+                AND ENABLED = #{queryVO.enabled}
+            </if>
+            <if test="queryVO.isPublic != null">
+                AND IS_PUBLIC = #{queryVO.isPublic}
+            </if>
+            <if test="queryVO.createBy != null and queryVO.createBy != ''">
+                AND CREATE_BY = #{queryVO.createBy}
+            </if>
+        </where>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据模板类型查询模板列表 -->
+    <select id="selectTemplatesByType" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM SYS_QUERY_TEMPLATE
+        WHERE TEMPLATE_TYPE = #{templateType}
+        AND ENABLED = 1
+        ORDER BY TEMPLATE_NAME
+    </select>
+
+    <!-- 根据创建人查询模板列表 -->
+    <select id="selectTemplatesByCreateBy" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM SYS_QUERY_TEMPLATE
+        WHERE CREATE_BY = #{createBy}
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 查询公开的模板列表 -->
+    <select id="selectPublicTemplates" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM SYS_QUERY_TEMPLATE
+        WHERE IS_PUBLIC = 1
+        AND ENABLED = 1
+        ORDER BY TEMPLATE_NAME
+    </select>
+
+    <!-- 查询启用的模板列表 -->
+    <select id="selectEnabledTemplates" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM SYS_QUERY_TEMPLATE
+        WHERE ENABLED = 1
+        ORDER BY TEMPLATE_NAME
+    </select>
+
+    <!-- 根据模板名称查询（用于唯一性验证） -->
+    <select id="selectByTemplateName" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM SYS_QUERY_TEMPLATE
+        WHERE TEMPLATE_NAME = #{templateName}
+        <if test="excludeId != null and excludeId != ''">
+            AND TEMPLATE_ID != #{excludeId}
+        </if>
+        LIMIT 1
+    </select>
+
+    <!-- 更新模板状态 -->
+    <update id="updateTemplateStatus">
+        UPDATE SYS_QUERY_TEMPLATE
+        SET ENABLED = #{enabled},
+            UPDATE_TIME = <if test="_databaseId == 'mysql'">NOW()</if><if test="_databaseId == 'dm'">SYSDATE</if>
+        WHERE TEMPLATE_ID = #{templateId}
+    </update>
+
+    <!-- 批量更新模板状态 -->
+    <update id="batchUpdateTemplateStatus">
+        UPDATE SYS_QUERY_TEMPLATE
+        SET ENABLED = #{enabled},
+            UPDATE_TIME = <if test="_databaseId == 'mysql'">NOW()</if><if test="_databaseId == 'dm'">SYSDATE</if>
+        WHERE TEMPLATE_ID IN
+        <foreach collection="templateIds" item="templateId" open="(" separator="," close=")">
+            #{templateId}
+        </foreach>
+    </update>
+
+    <!-- 查询模板统计信息 -->
+    <select id="selectTemplateStatistics" resultType="java.util.Map">
+        SELECT
+            COUNT(*) AS totalTemplates,
+            COUNT(CASE WHEN ENABLED = 1 THEN 1 END) AS enabledTemplates,
+            COUNT(CASE WHEN ENABLED = 0 THEN 1 END) AS disabledTemplates,
+            COUNT(CASE WHEN IS_PUBLIC = 1 THEN 1 END) AS publicTemplates,
+            COUNT(CASE WHEN IS_PUBLIC = 0 THEN 1 END) AS privateTemplates,
+            COUNT(DISTINCT TEMPLATE_TYPE) AS templateTypes,
+            COUNT(DISTINCT CREATE_BY) AS creators
+        FROM SYS_QUERY_TEMPLATE
+    </select>
+
+    <!-- 查询模板类型分布统计 -->
+    <select id="selectTemplateTypeDistribution" resultType="java.util.Map">
+        SELECT
+            TEMPLATE_TYPE AS type,
+            COUNT(*) AS count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM SYS_QUERY_TEMPLATE), 2) AS percentage
+        FROM SYS_QUERY_TEMPLATE
+        GROUP BY TEMPLATE_TYPE
+        ORDER BY count DESC
+    </select>
+
+    <!-- 查询模板使用频率统计 -->
+    <select id="selectTemplateUsageStatistics" resultType="java.util.Map">
+        SELECT
+            t.TEMPLATE_ID AS templateId,
+            t.TEMPLATE_NAME AS templateName,
+            t.TEMPLATE_TYPE AS templateType,
+            0 AS usageCount,
+            t.CREATE_TIME AS createTime
+        FROM SYS_QUERY_TEMPLATE t
+        WHERE t.ENABLED = 1
+        ORDER BY t.CREATE_TIME DESC
+        <if test="_databaseId == 'mysql'">
+            LIMIT 20
+        </if>
+        <if test="_databaseId == 'dm'">
+            AND ROWNUM &lt;= 20
+        </if>
+    </select>
+
+    <!-- 导出查询模板列表 -->
+    <select id="selectTemplateListForExport" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM SYS_QUERY_TEMPLATE
+        <where>
+            <if test="templateName != null and templateName != ''">
+                AND TEMPLATE_NAME LIKE CONCAT('%', #{templateName}, '%')
+            </if>
+            <if test="templateType != null and templateType != ''">
+                AND TEMPLATE_TYPE = #{templateType}
+            </if>
+            <if test="enabled != null">
+                AND ENABLED = #{enabled}
+            </if>
+            <if test="isPublic != null">
+                AND IS_PUBLIC = #{isPublic}
+            </if>
+            <if test="createBy != null and createBy != ''">
+                AND CREATE_BY = #{createBy}
+            </if>
+        </where>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+</mapper>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.business.mapper.ContractMapper">
+
+    <!-- 分页查询合同 -->
+    <select id="selectContractPage" resultType="com.financial.sharing.business.entity.TblContract">
+        SELECT *
+        FROM TBL_CONTRACT
+        <where>
+            <if test="contractCode != null and contractCode != ''">
+                AND CONTRACT_CODE LIKE CONCAT('%', #{contractCode}, '%')
+            </if>
+            <if test="contractName != null and contractName != ''">
+                AND CONTRACT_NAME LIKE CONCAT('%', #{contractName}, '%')
+            </if>
+            <if test="contractType != null and contractType != ''">
+                AND CONTRACT_TYPE = #{contractType}
+            </if>
+            <if test="contractStatus != null and contractStatus != ''">
+                AND CONTRACT_STATUS = #{contractStatus}
+            </if>
+            <if test="startDate != null">
+                AND START_DATE &gt;= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND END_DATE &lt;= #{endDate}
+            </if>
+        </where>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据合同编号查询 -->
+    <select id="selectByContractCode" resultType="com.financial.sharing.business.entity.TblContract">
+        SELECT *
+        FROM TBL_CONTRACT
+        WHERE CONTRACT_CODE = #{contractCode}
+    </select>
+
+    <!-- 批量删除合同 -->
+    <delete id="batchDelete">
+        DELETE FROM TBL_CONTRACT
+        WHERE CONTRACT_ID IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

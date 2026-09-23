@@ -1,0 +1,109 @@
+spring:
+  cloud:
+    sentinel:
+      # 取消控制台懒加载
+      eager: true
+      transport:
+        dashboard: 127.0.0.1:30098
+      log:
+        dir: log/${spring.application.name}/sentinel
+        # LOGGING日志等级, ALL, INFO, WARNING, SEVERE, OFF
+        level: OFF
+#    inetutils:
+#      #填写多个网段或IP, 或者全部匹配的正则表达式
+#      preferred-networks:
+#        - 192.168.0 
+#        - 192.168.20
+
+
+# SpringDoc接口文档 访问地址：http://127.0.0.1:30000/doc.html
+springdoc:
+  api-docs:
+    enabled: true
+#SpringDoc增强
+#knife4j:
+#  enable: true
+#  basic: #接口文档访问鉴权
+#    enable: true
+#    username: jnpf
+#    password: 123456
+
+lock4j:
+  aop:
+    # Lock4j注解是否启用
+    enabled: false
+
+feign:
+  sentinel:
+    enabled: true
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 300000
+  httpclient:
+    connection-timeout: 5000
+
+seata:
+  enabled: false
+  application-id: ${spring.application.name}
+  #此处配置自定义的seata事务分组名称
+  tx-service-group: default_tx_group
+  #  enable-auto-data-source-proxy: true    #开启数据库代理
+  config:
+    type: nacos
+    nacos:
+      namespace:
+      serverAddr: ${spring.cloud.nacos.discovery.server-addr}
+      group: "DEFAULT_GROUP"
+      userName: ${spring.cloud.nacos.username}
+      password: ${spring.cloud.nacos.password}
+      data-id: seata-server.properties
+  registry:
+    type: ${seata.config.type}
+    nacos:
+      application: seata-server
+      serverAddr: ${spring.cloud.nacos.discovery.server-addr}
+      group: ${seata.config.nacos.group}
+      namespace:
+      cluster: default
+      userName: ${spring.cloud.nacos.username}
+      password: ${spring.cloud.nacos.password}
+
+# dubbo 配置
+dubbo:
+  # 指定Dubbo服务实现类的包
+  scan:
+    base-packages: jnpf.provider.impl
+  protocols:
+    dubbo:
+      # 主机
+      host: ${spring.cloud.client.ip-address}
+      # 协议名称
+      name: dubbo
+      # 端口 -1为20880自增长
+      port: -1
+      # 新增防止线程溢出
+      heartbeat: 60000
+  registry:
+    # 挂载到nacos注册中心
+    address: nacos://${spring.cloud.nacos.discovery.server-addr}/serviceManagement?namespace=${spring.cloud.nacos.discovery.namespace}&username=${spring.cloud.nacos.username}&password=${spring.cloud.nacos.password}
+  # 新增防止线程溢出
+  provider:
+    threadpool: fixed
+    threads: 200
+    queues: 500
+    timeout: 5000
+  # 启动时不检查 consumer
+  consumer:
+    check: false
+    # 新增防止线程溢出
+    timeout: 5000
+    retries: 0
+  application:
+    name: dubbo-${spring.application.name}
+    logger: slf4j
+    # 检查允许序列化列表
+    # serialize-check-status: DISABLE
+    # 检查序列化对象是否继承serializable
+    # check-serializable: false

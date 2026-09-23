@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.FinancingCostAnalysisMapper">
+    
+    <resultMap type="FinancingCostAnalysis" id="FinancingCostAnalysisResult">
+        <result property="analysisId"       column="ANALYSISID"       />
+        <result property="analysisNo"       column="ANALYSISNO"       />
+        <result property="analysisName"     column="ANALYSISNAME"     />
+        <result property="analysisType"     column="ANALYSISTYPE"     />
+        <result property="analysisPeriod"   column="ANALYSISPERIOD"   />
+        <result property="startDate"        column="STARTDATE"        />
+        <result property="endDate"          column="ENDDATE"          />
+        <result property="totalCost"        column="TOTALCOST"        />
+        <result property="interestCost"     column="INTERESTCOST"     />
+        <result property="feeCost"          column="FEECOST"          />
+        <result property="otherCost"        column="OTHERCOST"        />
+        <result property="averageRate"      column="AVERAGERATE"      />
+        <result property="effectiveRate"    column="EFFECTIVERATE"    />
+        <result property="costRate"         column="COSTRATE"         />
+        <result property="analysisResult"   column="ANALYSISRESULT"   />
+        <result property="recommendations"  column="RECOMMENDATIONS"  />
+        <result property="analysisStatus"   column="ANALYSISSTATUS"   />
+        <result property="remark"           column="REMARK"           />
+        <result property="orgId"            column="ORGID"            />
+        <result property="createBy"         column="CREATEUSER"       />
+        <result property="createTime"       column="CREATETIME"       />
+        <result property="updateBy"         column="UPDATEUSER"       />
+        <result property="updateTime"       column="UPDATETIME"       />
+    </resultMap>
+
+    <sql id="selectFinancingCostAnalysisVo">
+        select ANALYSISID, ANALYSISNO, ANALYSISNAME, ANALYSISTYPE, ANALYSISPERIOD, STARTDATE, ENDDATE, 
+               TOTALCOST, INTERESTCOST, FEECOST, OTHERCOST, AVERAGERATE, EFFECTIVERATE, COSTRATE, 
+               ANALYSISRESULT, RECOMMENDATIONS, ANALYSISSTATUS, REMARK, ORGID, 
+               CREATEUSER, CREATETIME, UPDATEUSER, UPDATETIME 
+        from TBL_FINANCING_COST_ANALYSIS
+    </sql>
+
+    <select id="selectFinancingCostAnalysisList" parameterType="FinancingCostAnalysis" resultMap="FinancingCostAnalysisResult">
+        <include refid="selectFinancingCostAnalysisVo"/>
+        <where>  
+            <if test="analysisNo != null  and analysisNo != ''"> and ANALYSISNO like concat('%', #{analysisNo}, '%')</if>
+            <if test="analysisName != null  and analysisName != ''"> and ANALYSISNAME like concat('%', #{analysisName}, '%')</if>
+            <if test="analysisType != null  and analysisType != ''"> and ANALYSISTYPE = #{analysisType}</if>
+            <if test="analysisPeriod != null  and analysisPeriod != ''"> and ANALYSISPERIOD = #{analysisPeriod}</if>
+            <if test="startDate != null "> and STARTDATE &gt;= #{startDate}</if>
+            <if test="endDate != null "> and ENDDATE &lt;= #{endDate}</if>
+            <if test="analysisStatus != null  and analysisStatus != ''"> and ANALYSISSTATUS = #{analysisStatus}</if>
+            <if test="orgId != null "> and ORGID = #{orgId}</if>
+        </where>
+        order by CREATETIME desc
+    </select>
+    
+    <select id="selectFinancingCostAnalysisById" parameterType="Long" resultMap="FinancingCostAnalysisResult">
+        <include refid="selectFinancingCostAnalysisVo"/>
+        where ANALYSISID = #{analysisId}
+    </select>
+        
+    <insert id="insertFinancingCostAnalysis" parameterType="FinancingCostAnalysis" useGeneratedKeys="true" keyProperty="analysisId">
+        insert into TBL_FINANCING_COST_ANALYSIS
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="analysisNo != null and analysisNo != ''">ANALYSISNO,</if>
+            <if test="analysisName != null and analysisName != ''">ANALYSISNAME,</if>
+            <if test="analysisType != null and analysisType != ''">ANALYSISTYPE,</if>
+            <if test="analysisPeriod != null and analysisPeriod != ''">ANALYSISPERIOD,</if>
+            <if test="startDate != null">STARTDATE,</if>
+            <if test="endDate != null">ENDDATE,</if>
+            <if test="totalCost != null">TOTALCOST,</if>
+            <if test="interestCost != null">INTERESTCOST,</if>
+            <if test="feeCost != null">FEECOST,</if>
+            <if test="otherCost != null">OTHERCOST,</if>
+            <if test="averageRate != null">AVERAGERATE,</if>
+            <if test="effectiveRate != null">EFFECTIVERATE,</if>
+            <if test="costRate != null">COSTRATE,</if>
+            <if test="analysisResult != null">ANALYSISRESULT,</if>
+            <if test="recommendations != null">RECOMMENDATIONS,</if>
+            <if test="analysisStatus != null and analysisStatus != ''">ANALYSISSTATUS,</if>
+            <if test="remark != null">REMARK,</if>
+            <if test="orgId != null">ORGID,</if>
+            <if test="createBy != null and createBy != ''">CREATEUSER,</if>
+            <if test="createTime != null">CREATETIME,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="analysisNo != null and analysisNo != ''">#{analysisNo},</if>
+            <if test="analysisName != null and analysisName != ''">#{analysisName},</if>
+            <if test="analysisType != null and analysisType != ''">#{analysisType},</if>
+            <if test="analysisPeriod != null and analysisPeriod != ''">#{analysisPeriod},</if>
+            <if test="startDate != null">#{startDate},</if>
+            <if test="endDate != null">#{endDate},</if>
+            <if test="totalCost != null">#{totalCost},</if>
+            <if test="interestCost != null">#{interestCost},</if>
+            <if test="feeCost != null">#{feeCost},</if>
+            <if test="otherCost != null">#{otherCost},</if>
+            <if test="averageRate != null">#{averageRate},</if>
+            <if test="effectiveRate != null">#{effectiveRate},</if>
+            <if test="costRate != null">#{costRate},</if>
+            <if test="analysisResult != null">#{analysisResult},</if>
+            <if test="recommendations != null">#{recommendations},</if>
+            <if test="analysisStatus != null and analysisStatus != ''">#{analysisStatus},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="orgId != null">#{orgId},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateFinancingCostAnalysis" parameterType="FinancingCostAnalysis">
+        update TBL_FINANCING_COST_ANALYSIS
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="analysisNo != null and analysisNo != ''">ANALYSISNO = #{analysisNo},</if>
+            <if test="analysisName != null and analysisName != ''">ANALYSISNAME = #{analysisName},</if>
+            <if test="analysisType != null and analysisType != ''">ANALYSISTYPE = #{analysisType},</if>
+            <if test="analysisPeriod != null and analysisPeriod != ''">ANALYSISPERIOD = #{analysisPeriod},</if>
+            <if test="startDate != null">STARTDATE = #{startDate},</if>
+            <if test="endDate != null">ENDDATE = #{endDate},</if>
+            <if test="totalCost != null">TOTALCOST = #{totalCost},</if>
+            <if test="interestCost != null">INTERESTCOST = #{interestCost},</if>
+            <if test="feeCost != null">FEECOST = #{feeCost},</if>
+            <if test="otherCost != null">OTHERCOST = #{otherCost},</if>
+            <if test="averageRate != null">AVERAGERATE = #{averageRate},</if>
+            <if test="effectiveRate != null">EFFECTIVERATE = #{effectiveRate},</if>
+            <if test="costRate != null">COSTRATE = #{costRate},</if>
+            <if test="analysisResult != null">ANALYSISRESULT = #{analysisResult},</if>
+            <if test="recommendations != null">RECOMMENDATIONS = #{recommendations},</if>
+            <if test="analysisStatus != null and analysisStatus != ''">ANALYSISSTATUS = #{analysisStatus},</if>
+            <if test="remark != null">REMARK = #{remark},</if>
+            <if test="orgId != null">ORGID = #{orgId},</if>
+            <if test="updateBy != null and updateBy != ''">UPDATEUSER = #{updateBy},</if>
+            <if test="updateTime != null">UPDATETIME = #{updateTime},</if>
+        </trim>
+        where ANALYSISID = #{analysisId}
+    </update>
+
+    <delete id="deleteFinancingCostAnalysisById" parameterType="Long">
+        delete from TBL_FINANCING_COST_ANALYSIS where ANALYSISID = #{analysisId}
+    </delete>
+
+    <delete id="deleteFinancingCostAnalysisByIds" parameterType="String">
+        delete from TBL_FINANCING_COST_ANALYSIS where ANALYSISID in 
+        <foreach item="analysisId" collection="array" open="(" separator="," close=")">
+            #{analysisId}
+        </foreach>
+    </delete>
+</mapper>

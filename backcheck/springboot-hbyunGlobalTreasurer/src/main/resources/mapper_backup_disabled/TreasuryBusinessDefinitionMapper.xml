@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.TreasuryBusinessDefinitionMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TreasuryBusinessDefinition">
+        <id column="BUSINESS_DEFINITION_ID" property="businessDefinitionId" jdbcType="BIGINT"/>
+        <result column="BUSINESS_CODE" property="businessCode" jdbcType="VARCHAR"/>
+        <result column="BUSINESS_NAME" property="businessName" jdbcType="VARCHAR"/>
+        <result column="BUSINESS_TYPE_ID" property="businessTypeId" jdbcType="BIGINT"/>
+        <result column="BUSINESS_TYPE_NAME" property="businessTypeName" jdbcType="VARCHAR"/>
+        <result column="BUSINESS_DIRECTION" property="businessDirection" jdbcType="VARCHAR"/>
+        <result column="CURRENCY_CODE" property="currencyCode" jdbcType="VARCHAR"/>
+        <result column="CURRENCY_NAME" property="currencyName" jdbcType="VARCHAR"/>
+        <result column="RISK_LEVEL" property="riskLevel" jdbcType="VARCHAR"/>
+        <result column="APPROVAL_FLOW_ID" property="approvalFlowId" jdbcType="BIGINT"/>
+        <result column="APPROVAL_FLOW_NAME" property="approvalFlowName" jdbcType="VARCHAR"/>
+        <result column="BUSINESS_RULES" property="businessRules" jdbcType="CLOB"/>
+        <result column="DESCRIPTION" property="description" jdbcType="VARCHAR"/>
+        <result column="IS_ENABLED" property="isEnabled" jdbcType="INTEGER"/>
+        <result column="ORG_ID" property="orgId" jdbcType="BIGINT"/>
+        <result column="CREATE_USER" property="createUser" jdbcType="BIGINT"/>
+        <result column="UPDATE_USER" property="updateUser" jdbcType="BIGINT"/>
+        <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="Base_Column_List">
+        BUSINESS_DEFINITION_ID, BUSINESS_CODE, BUSINESS_NAME, BUSINESS_TYPE_ID, BUSINESS_TYPE_NAME,
+        BUSINESS_DIRECTION, CURRENCY_CODE, CURRENCY_NAME, RISK_LEVEL, APPROVAL_FLOW_ID,
+        APPROVAL_FLOW_NAME, BUSINESS_RULES, DESCRIPTION, IS_ENABLED, ORG_ID,
+        CREATE_USER, UPDATE_USER, CREATE_TIME, UPDATE_TIME
+    </sql>
+
+    <!-- 分页查询业务品种定义 -->
+    <select id="selectBusinessDefinitionPage" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_TREASURY_BUSINESS_DEFINITIONS
+        <where>
+            <if test="businessCode != null and businessCode != ''">
+                AND BUSINESS_CODE LIKE CONCAT('%', #{businessCode}, '%')
+            </if>
+            <if test="businessName != null and businessName != ''">
+                AND BUSINESS_NAME LIKE CONCAT('%', #{businessName}, '%')
+            </if>
+            <if test="businessTypeId != null">
+                AND BUSINESS_TYPE_ID = #{businessTypeId}
+            </if>
+            <if test="businessDirection != null and businessDirection != ''">
+                AND BUSINESS_DIRECTION = #{businessDirection}
+            </if>
+            <if test="currencyCode != null and currencyCode != ''">
+                AND CURRENCY_CODE = #{currencyCode}
+            </if>
+            <if test="isEnabled != null">
+                AND IS_ENABLED = #{isEnabled}
+            </if>
+            <if test="orgId != null">
+                AND ORG_ID = #{orgId}
+            </if>
+        </where>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 查询所有启用的业务品种定义 -->
+    <select id="selectEnabledDefinitions" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_TREASURY_BUSINESS_DEFINITIONS
+        WHERE IS_ENABLED = 1 AND ORG_ID = #{orgId}
+        ORDER BY BUSINESS_CODE
+    </select>
+
+    <!-- 根据业务品种类型ID查询业务品种定义列表 -->
+    <select id="selectByBusinessType" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_TREASURY_BUSINESS_DEFINITIONS
+        WHERE BUSINESS_TYPE_ID = #{businessTypeId} AND ORG_ID = #{orgId}
+        ORDER BY BUSINESS_CODE
+    </select>
+
+    <!-- 根据业务方向查询业务品种定义列表 -->
+    <select id="selectByDirection" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_TREASURY_BUSINESS_DEFINITIONS
+        WHERE BUSINESS_DIRECTION = #{businessDirection} AND ORG_ID = #{orgId}
+        ORDER BY BUSINESS_CODE
+    </select>
+
+    <!-- 根据币种查询业务品种定义列表 -->
+    <select id="selectByCurrency" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_TREASURY_BUSINESS_DEFINITIONS
+        WHERE CURRENCY_CODE = #{currencyCode} AND ORG_ID = #{orgId}
+        ORDER BY BUSINESS_CODE
+    </select>
+
+    <!-- 根据风险等级查询业务品种定义列表 -->
+    <select id="selectByRiskLevel" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_TREASURY_BUSINESS_DEFINITIONS
+        WHERE RISK_LEVEL = #{riskLevel} AND ORG_ID = #{orgId}
+        ORDER BY BUSINESS_CODE
+    </select>
+
+    <!-- 根据审批流程ID查询业务品种定义列表 -->
+    <select id="selectByApprovalFlow" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_TREASURY_BUSINESS_DEFINITIONS
+        WHERE APPROVAL_FLOW_ID = #{approvalFlowId} AND ORG_ID = #{orgId}
+        ORDER BY BUSINESS_CODE
+    </select>
+
+    <!-- 检查业务品种编码是否存在 -->
+    <select id="checkBusinessCodeExists" resultType="int">
+        SELECT COUNT(1)
+        FROM TBL_TREASURY_BUSINESS_DEFINITIONS
+        WHERE BUSINESS_CODE = #{businessCode} AND ORG_ID = #{orgId}
+        <if test="excludeId != null">
+            AND BUSINESS_DEFINITION_ID != #{excludeId}
+        </if>
+    </select>
+
+</mapper>

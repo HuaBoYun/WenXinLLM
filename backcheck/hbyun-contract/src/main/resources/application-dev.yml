@@ -1,0 +1,99 @@
+spring:
+ main:
+  allow-bean-definition-overriding: true
+ application:
+  name: hbyunFinancialData #应用名称
+ datasource:
+  type: com.alibaba.druid.pool.DruidDataSource
+   #数据库配置
+  url: jdbc:dm://127.0.0.1:5236/SYSDBA?zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=utf-8
+  username: SYSDBA
+  password: REDACTED
+  driverClassName: dm.jdbc.driver.DmDriver
+ druid: 
+  initialSize: 5
+  minIdle: 5
+  maxActive: 20
+  maxWait: 60000
+  timeBetweenEvictionRunsMillis: 60000
+  minEvictableIdleTimeMillis: 300000
+  validationQuery: SELECT 1 FROM DUAL
+  testWhileIdle: true
+  testOnBorrow: false
+  testOnReturn: false
+  poolPreparedStatement: true
+  maxPoolPreparedStatementPerConnectionSize: 20
+  filters: stat,wall,log4j
+  connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+ redis:
+  host: 127.0.0.1
+  port: 6379
+  password:
+
+#eureka服务注册中心配置
+eureka:
+ instance:
+  ip-address: 127.0.0.1
+  instance-id: hbyunContract-8064
+  prefer-ip-address: true
+  hostname: hbyun-contract-service
+ client:
+  serviceUrl:
+   defaultZone: http://hbyunadmin:REDACTED@127.0.0.1:8761/eureka
+security:
+ basic:
+  enabled: false
+
+
+acurl: http://127.0.0.1:8003
+formurl: http://127.0.0.1:8001
+activitiModelerUrl: http://127.0.0.1:8137
+getOrgChildrenUrl: http://127.0.0.1:8379
+insertOrgOneUrl: http://127.0.0.1:8379
+redisurl: http://127.0.0.1:8379
+
+
+mybatis-plus:
+ mapper-locations: classpath*:mapper/*.xml
+ type-aliases-package: com.huabo.contract.entity
+ configuration:
+  map-underscore-to-camel-case: true
+  log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+ global-config:
+  db-config:
+   # 达梦数据库特定配置
+   id-type: auto
+   logic-delete-field: del_flag
+   logic-delete-value: 1
+   logic-not-delete-value: 0
+
+logging:
+ level:
+  com:
+   huabo:
+    contract:
+     mapper: debug
+
+file: 
+ path: C:\HBFK\PRO\www\apache-tomcat-7.0.65\webapps\ROOT\WEB-INF\
+
+fwgl:
+ belongGroupName: 国有资产监督管理委员会
+ legalPersonnel: 法务人员
+
+# 数据库兼容性配置
+database:
+ compatibility:
+  enabled: true
+  type: dameng
+  auto-convert-sql: true
+  log-sql-conversion: true
+
+# ============================================================
+# 计费系统配置
+# ============================================================
+billing:
+ enabled: true              # 是否启用计费（false=关闭所有计费）
+ mode: cloud                # cloud=云端版（只记录） / offline=离线版（余额不足时拦截）
+ deduplicate-seconds: 10    # 防重复计费时间窗口（秒）
+ default-fee-amount: 2.0    # 未配置单价的页面默认计费金额（元/次）

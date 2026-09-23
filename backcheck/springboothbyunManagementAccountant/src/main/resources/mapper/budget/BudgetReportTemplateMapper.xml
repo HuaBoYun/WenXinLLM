@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.management.accountant.oracle.mapper.budget.BudgetReportTemplateMapper">
+
+    <resultMap id="BaseResultMap" type="com.management.accountant.oracle.entity.budget.BudgetReportTemplate">
+        <id     column="ID"               property="id"/>
+        <result column="TEMPLATE_CODE"    property="templateCode"/>
+        <result column="NAME"             property="name"/>
+        <result column="DESCRIPTION"      property="description"/>
+        <result column="REPORT_TYPE"      property="reportType"/>
+        <result column="ICON"             property="icon"/>
+        <result column="USAGE_COUNT"      property="usageCount"/>
+        <result column="IS_QUICK"         property="isQuick"/>
+        <result column="TEMPLATE_CONTENT" property="templateContent"/>
+        <result column="STATUS"           property="status"/>
+        <result column="SORT_ORDER"       property="sortOrder"/>
+        <result column="CREATE_BY"        property="createBy"/>
+        <result column="CREATE_TIME"      property="createTime"/>
+        <result column="UPDATE_BY"        property="updateBy"/>
+        <result column="UPDATE_TIME"      property="updateTime"/>
+        <result column="DEL_FLAG"         property="delFlag"/>
+    </resultMap>
+
+    <select id="selectQuickTemplates" resultMap="BaseResultMap">
+        SELECT * FROM "REDACTED"."TBL_BUDGET_REPORT_TEMPLATE"
+        WHERE IS_QUICK = 1 AND DEL_FLAG = 0 AND STATUS = 1
+        ORDER BY SORT_ORDER ASC, USAGE_COUNT DESC
+    </select>
+
+    <select id="selectByReportType" resultMap="BaseResultMap">
+        SELECT * FROM "REDACTED"."TBL_BUDGET_REPORT_TEMPLATE"
+        WHERE REPORT_TYPE = #{reportType} AND DEL_FLAG = 0 AND STATUS = 1
+        ORDER BY SORT_ORDER ASC
+    </select>
+
+</mapper>

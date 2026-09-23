@@ -1,7 +1,7 @@
 /**
  * AI Bridge 客户端 - 用于 AIProgramming.vue 连接本地 Bridge Server
  * 
- * 提供与 OpenClaw 客户端类似的事件驱动 API，方便页面无缝切换
+ * 提供与 WenxinClaw 客户端类似的事件驱动 API，方便页面无缝切换
  */
 
 export class AIBridgeClient {

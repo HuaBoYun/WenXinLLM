@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.central.enterprises.audit.oracle.mapper.TblCeaProjectDeclareMapper">
+
+    <select id="getList" resultType="com.huabo.central.enterprises.audit.oracle.entity.TblCeaProjectDeclare">
+        select t1.*,t2.PROJECT_NAME as implementationProjectName,t2.PROJECT_ORDER_NAME as implementationPlanMainReviewer,
+        t2.PROJECT_TYPE as implementationProjectType,t2.PROJECT_ORDER_ID as implementationProjectOrderId,t2.SJLX_NAME as sjlxName
+        from TBL_CEA_PROJECT_DECLARE t1
+        left join TBL_YQNS_IMPLEMENT_PLAN t2 on t2.ID = t1.IMPLEMENTATIONPLANID
+        where 1=1
+        and (t1.creator = #{param.creator}
+        <if test="param.deptIds != null and param.deptIds != ''">
+           or t1.creator in (SELECT DISTINCT STAFFID FROM TBL_USER_ORGRELATION WHERE DEPTID IN (${param.getDeptIds}))
+        </if>)
+        <if test="param.implementationProjectName != null and param.implementationProjectName != ''">
+            and t2.PROJECT_NAME like concat('%',concat(#{param.implementationProjectName},'%'))
+        </if>
+        <if test="param.state != null">
+            and t1.state = #{param.state}
+        </if>
+        <if test="param.noIds != null and param.noIds.size() > 0">
+            and t1.id not in
+            <foreach collection="param.noIds" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        <if test="param.ids != null and param.ids.size() > 0">
+            and t1.id in
+            <foreach collection="param.ids" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        <if test="param.groupId != null">
+            and t1.groupId = #{param.groupId}
+        </if>
+        <if test="param.noGroup != null and param.noGroup == 0">
+            and t1.groupId IS NULL
+        </if>
+        <if test="param.noGroup != null and param.noGroup == 1">
+            and t1.groupId IS NOT NULL
+        </if>
+        <if test="param.flagAbandoned != null">
+            and t1.flag_abandoned = #{param.flagAbandoned}
+        </if>
+        <if test="param.flagSort == 1">
+            order by t1.RESULTSORT,t1.ID
+        </if>
+        <if test="param.flagSort == 0">
+            order by t1.ID desc
+        </if>
+    </select>
+
+    <select id="findById" resultType="com.huabo.central.enterprises.audit.oracle.entity.TblCeaProjectDeclare">
+        select t1.*,t2.PROJECT_NAME as implementationProjectName,t2.PROJECT_ORDER_NAME as implementationPlanMainReviewer
+        from TBL_CEA_PROJECT_DECLARE t1
+        left join TBL_YQNS_IMPLEMENT_PLAN t2 on t2.ID = t1.IMPLEMENTATIONPLANID
+        where t1.id = #{id}
+    </select>
+
+    <select id="findTblCeaProjectDeclareSortList" resultType="com.huabo.central.enterprises.audit.oracle.entity.TblCeaProjectDeclare">
+        select t1.*,t2.PROJECT_NAME as implementationProjectName
+        from TBL_CEA_PROJECT_DECLARE t1
+        inner join TBL_CEA_PROJECT_DECLARE_GROUP t3 on t3.id = t1.GROUPID
+        left join TBL_YQNS_IMPLEMENT_PLAN t2 on t2.ID = t1.IMPLEMENTATIONPLANID
+        where (t1.creator = #{param.creator}
+        <if test="param.deptIds != null and param.deptIds != ''">
+           or t1.creator in (SELECT DISTINCT STAFFID FROM TBL_USER_ORGRELATION WHERE DEPTID IN (${param.getDeptIds}))
+        </if>)
+        <if test="param.state != null">
+            and t3.state = #{param.state}
+        </if>
+        <if test="param.implementationProjectName != null and param.implementationProjectName != ''">
+            and t2.PROJECT_NAME like concat('%',concat(#{param.implementationProjectName},'%'))
+        </if>
+        order by t1.RESULTSORT ,t1.ID
+    </select>
+
+</mapper>

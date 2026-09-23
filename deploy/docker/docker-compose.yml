@@ -1,0 +1,205 @@
+# ============================================================
+# JNPF 微服务 docker-compose(使用离线镜像版)
+# 使用前请先按 README.md 执行 docker load 导入各服务镜像 tar
+#
+# 1) 所有服务通过容器网络访问 nacos(地址已用环境变量覆盖为
+#    nacos-server:30099,无需修改 jar 内的 127.0.0.1:30099)
+# 2) nacos 自身连接的数据库在 ./nacos-conf/application.properties
+#    中修改(db.url.0 / db.user / db.password),改完 restart 即可
+# 3) 业务配置(MySQL/Redis 等)在 nacos 中,用 nacos-config-tools
+#    里的脚本导入/修改
+# ============================================================
+
+# 各业务服务共用环境变量(覆盖 jar 内写死的 nacos 地址)
+x-service-env: &service-env
+  SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos-server:30099
+  SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR: nacos-server:30099
+  # 如需修改 nacos 登录账号,取消下面两行注释
+  # SPRING_CLOUD_NACOS_USERNAME: nacos
+  # SPRING_CLOUD_NACOS_PASSWORD: nacos
+  JAVA_OPTS: "-Xms300m -Xmx300m"
+
+services:
+
+  # ---------------- 注册/配置中心 ----------------
+  nacos-server:
+    image: nacos-server:2.4.3
+    container_name: nacos-server
+    ports:
+      - "30099:30099"
+    environment:
+      JAVA_OPTS: "-Dnacos.standalone=true -Xms512m -Xmx512m -Xmn256m -Dloader.path=/app/plugins,/app/plugins/health,/app/plugins/cmdb,/app/plugins/selector -Dnacos.home=/app -Dfile.encoding=utf-8 -Xlog:gc*:file=/app/logs/nacos_gc.log:time,tags:filecount=10,filesize=100m"
+    volumes:
+      # nacos 自身的数据库连接配置,直接编辑宿主机文件后 restart 即可生效
+      - ./nacos-conf/application.properties:/app/conf/application.properties
+    restart: always
+    networks: [jnpf-net]
+
+  # ---------------- 网关 ----------------
+  gateway:
+    image: gateway:5.1.0
+    container_name: gateway
+    ports:
+      - "30000:30000"
+    environment:
+      <<: *service-env
+    restart: always
+    depends_on: [nacos-server]
+    networks: [jnpf-net]
+
+  # ---------------- 认证服务 ----------------
+  oauth:
+    image: oauth:5.1.0
+    container_name: oauth
+    ports:
+      - "30001:30001"
+    environment:
+      <<: *service-env
+    restart: always
+    depends_on: [nacos-server]
+    networks: [jnpf-net]
+
+  # ---------------- 系统服务 ----------------
+  system:
+    image: system:5.1.0
+    container_name: system
+    ports:
+      - "30002:30002"
+    environment:
+      <<: *service-env
+    restart: always
+    depends_on: [nacos-server]
+    networks: [jnpf-net]
+
+  # ---------------- 可视化开发服务 ----------------
+  visualdev:
+    image: visualdev:5.1.0
+    container_name: visualdev
+    ports:
+      - "30003:30003"
+    environment:
+      <<: *service-env
+    restart: always
+    depends_on: [nacos-server]
+    networks: [jnpf-net]
+
+  # ---------------- 工作流服务 ----------------
+  flowable:
+    image: flowable:5.1.0
+    container_name: flowable
+    ports:
+      - "30004:30004"
+    environment:
+      <<: *service-env
+    restart: always
+    depends_on: [nacos-server]
+    networks: [jnpf-net]
+
+  # ---------------- 文件服务 ----------------
+  file:
+    image: file:5.1.0
+    container_name: file
+    ports:
+      - "30005:30005"
+    environment:
+      <<: *service-env
+    restart: always
+    depends_on: [nacos-server]
+    networks: [jnpf-net]
+
+  # ---------------- 消息服务 ----------------
+  message:
+    image: message:5.1.0
+    container_name: message
+    ports:
+      - "30008:30008"
+    environment:
+      <<: *service-env
+    restart: always
+    depends_on: [nacos-server]
+    networks: [jnpf-net]
+
+  # ---------------- 任务调度(xxl-job) ----------------
+  scheduletask:
+    image: scheduletask:5.1.0
+    container_name: scheduletask
+    ports:
+      - "30009:30009"
+    environment:
+      <<: *service-env
+    restart: always
+    depends_on: [nacos-server]
+    networks: [jnpf-net]
+
+  # ---------------- 权限服务 ----------------
+  permission:
+    image: permission:5.1.0
+    container_name: permission
+    ports:
+      - "30010:30010"
+    environment:
+      <<: *service-env
+    restart: always
+    depends_on: [nacos-server]
+    networks: [jnpf-net]
+
+  # ---------------- 可视化数据服务 ----------------
+  visualdata:
+    image: visualdata:5.1.0
+    container_name: visualdata
+    ports:
+      - "30011:30011"
+    environment:
+      <<: *service-env
+    restart: always
+    depends_on: [nacos-server]
+    networks: [jnpf-net]
+
+  # ---------------- APP 服务 ----------------
+  app:
+    image: app:5.1.0
+    container_name: app
+    ports:
+      - "30012:30012"
+    environment:
+      <<: *service-env
+    restart: always
+    depends_on: [nacos-server]
+    networks: [jnpf-net]
+
+  # ---------------- 扩展服务 ----------------
+  extend:
+    image: extend:5.1.0
+    container_name: extend
+    ports:
+      - "30019:30019"
+    environment:
+      <<: *service-env
+    restart: always
+    depends_on: [nacos-server]
+    networks: [jnpf-net]
+
+  # ---------------- 工作流管理端(独立服务,不连 nacos) ----------------
+  # 数据库连接配置在上级目录 application-dev.yml(挂载进容器覆盖 jar 内置配置),
+  # 推荐用 nacos-config-tools/setup.sh 或 setup.ps1 交互式配置,也可手动编辑后重启容器:
+  #   docker compose --profile workflow up -d workflow
+  workflow:
+    image: workflow:1.0.0
+    container_name: workflow
+    ports:
+      - "31000:31000"
+    environment:
+      JAVA_OPTS: "-Xms300m -Xmx300m -Dfile.encoding=UTF-8 -Duser.timezone=GMT+8"
+      # 指定外部配置目录(优先级高于 jar 内配置)
+      SPRING_CONFIG_ADDITIONAL_LOCATION: "file:/app/config/"
+    volumes:
+      - ../application.yml:/app/config/application.yml
+      - ../application-dev.yml:/app/config/application-dev.yml
+    restart: always
+    profiles: ["workflow"]
+    networks: [jnpf-net]
+
+networks:
+  jnpf-net:
+    name: jnpf-net
+    driver: bridge

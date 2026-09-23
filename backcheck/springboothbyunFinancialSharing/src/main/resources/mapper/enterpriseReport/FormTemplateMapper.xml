@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.enterpriseReport.mapper.FormTemplateMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.financial.sharing.enterpriseReport.entity.TblFormTemplate">
+        <id column="TEMPLATE_ID" property="templateId" />
+        <result column="GROUP_ID" property="groupId" />
+        <result column="TEMPLATE_CODE" property="templateCode" />
+        <result column="TEMPLATE_NAME" property="templateName" />
+        <result column="TEMPLATE_TYPE" property="templateType" />
+        <result column="TEMPLATE_CONTENT" property="templateContent" />
+        <result column="VERSION_NO" property="versionNo" />
+        <result column="START_PERIOD" property="startPeriod" />
+        <result column="END_PERIOD" property="endPeriod" />
+        <result column="IS_DEFAULT" property="isDefault" />
+        <result column="SORT_NO" property="sortNo" />
+        <result column="STATUS" property="status" />
+        <result column="TENANT_ID" property="tenantId" />
+        <result column="CREATE_USER" property="createUser" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_USER" property="updateUser" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="GROUP_NAME" property="groupName" />
+    </resultMap>
+
+    <!-- 查询表单模板列表(关联表单组名称) -->
+    <select id="selectFormTemplateList" resultMap="BaseResultMap">
+        SELECT 
+            t.TEMPLATE_ID,
+            t.GROUP_ID,
+            t.TEMPLATE_CODE,
+            t.TEMPLATE_NAME,
+            t.TEMPLATE_TYPE,
+            t.TEMPLATE_CONTENT,
+            t.VERSION_NO,
+            t.START_PERIOD,
+            t.END_PERIOD,
+            t.IS_DEFAULT,
+            t.SORT_NO,
+            t.STATUS,
+            t.TENANT_ID,
+            t.CREATE_USER,
+            t.CREATE_TIME,
+            t.UPDATE_USER,
+            t.UPDATE_TIME,
+            g.GROUP_NAME
+        FROM TBL_FORM_TEMPLATE t
+        LEFT JOIN TBL_FORM_GROUP g ON t.GROUP_ID = g.GROUP_ID
+        WHERE t.TENANT_ID = #{tenantId}
+        <if test="groupId != null and groupId != ''">
+            AND t.GROUP_ID = #{groupId}
+        </if>
+        <if test="templateName != null and templateName != ''">
+            AND t.TEMPLATE_NAME LIKE CONCAT('%', #{templateName}, '%')
+        </if>
+        <if test="templateType != null and templateType != ''">
+            AND t.TEMPLATE_TYPE = #{templateType}
+        </if>
+        <if test="status != null and status != ''">
+            AND t.STATUS = #{status}
+        </if>
+        ORDER BY t.SORT_NO ASC, t.CREATE_TIME ASC
+    </select>
+
+    <!-- 检查模板编码是否存在 -->
+    <select id="checkTemplateCodeExists" resultType="int">
+        SELECT COUNT(*)
+        FROM TBL_FORM_TEMPLATE
+        WHERE TEMPLATE_CODE = #{templateCode}
+        AND TENANT_ID = #{tenantId}
+        <if test="excludeTemplateId != null and excludeTemplateId != ''">
+            AND TEMPLATE_ID != #{excludeTemplateId}
+        </if>
+    </select>
+
+    <!-- 取消表单组下所有模板的默认版本标识 -->
+    <update id="cancelDefaultVersion">
+        UPDATE TBL_FORM_TEMPLATE
+        SET IS_DEFAULT = 'N'
+        WHERE GROUP_ID = #{groupId}
+        AND TENANT_ID = #{tenantId}
+    </update>
+
+</mapper>
+

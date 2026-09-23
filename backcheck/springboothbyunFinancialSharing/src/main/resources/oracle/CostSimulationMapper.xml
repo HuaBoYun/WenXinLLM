@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.oracle.mapper.CostSimulationMapper">
+
+    <resultMap id="BaseResultMap" type="com.financial.sharing.oracle.entity.CostSimulationEntity">
+        <id column="SIMULATION_ID" property="simulationId" />
+        <result column="SIMULATION_NO" property="simulationNo" />
+        <result column="SIMULATION_NAME" property="simulationName" />
+        <result column="MODEL_ID" property="modelId" />
+        <result column="SCHEME_ID" property="schemeId" />
+        <result column="SIMULATION_SCENARIO" property="simulationScenario" />
+        <result column="INPUT_PARAMETERS" property="inputParameters" />
+        <result column="SIMULATION_RESULT" property="simulationResult" />
+        <result column="ESTIMATED_COST" property="estimatedCost" />
+        <result column="CONFIDENCE_LEVEL" property="confidenceLevel" />
+        <result column="SIMULATION_STATUS" property="simulationStatus" />
+        <result column="EXECUTION_TIME" property="executionTime" />
+        <result column="BOOK_ID" property="bookId" />
+        <result column="TENANT_ID" property="tenantId" />
+        <result column="CREATE_BY" property="createBy" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_BY" property="updateBy" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="REMARK" property="remark" />
+    </resultMap>
+
+    <!-- 分页查询成本模拟列表 -->
+    <select id="selectSimulationListWithPagination" resultType="map">
+        SELECT
+            SIMULATION_ID AS "simulationId",
+            SIMULATION_NO AS "simulationNo",
+            SIMULATION_NAME AS "simulationName",
+            MODEL_ID AS "modelId",
+            SCHEME_ID AS "schemeId",
+            SIMULATION_SCENARIO AS "simulationScenario",
+            ESTIMATED_COST AS "estimatedCost",
+            CONFIDENCE_LEVEL AS "confidenceLevel",
+            SIMULATION_STATUS AS "simulationStatus",
+            EXECUTION_TIME AS "executionTime",
+            CREATE_TIME AS "createTime"
+        FROM TBL_COST_SIMULATION
+        WHERE BOOK_ID = #{bookId}
+          AND TENANT_ID = #{tenantId}
+          <if test="simulationNo != null and simulationNo != ''">
+              AND SIMULATION_NO LIKE '%' || #{simulationNo} || '%'
+          </if>
+          <if test="simulationName != null and simulationName != ''">
+              AND SIMULATION_NAME LIKE '%' || #{simulationName} || '%'
+          </if>
+          <if test="modelId != null and modelId != ''">
+              AND MODEL_ID = #{modelId}
+          </if>
+          <if test="simulationStatus != null">
+              AND SIMULATION_STATUS = #{simulationStatus}
+          </if>
+        ORDER BY CREATE_TIME DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
+    </select>
+
+    <!-- 查询总记录数 -->
+    <select id="countSimulationList" resultType="int">
+        SELECT COUNT(1)
+        FROM TBL_COST_SIMULATION
+        WHERE BOOK_ID = #{bookId}
+          AND TENANT_ID = #{tenantId}
+          <if test="simulationNo != null and simulationNo != ''">
+              AND SIMULATION_NO LIKE '%' || #{simulationNo} || '%'
+          </if>
+          <if test="simulationName != null and simulationName != ''">
+              AND SIMULATION_NAME LIKE '%' || #{simulationName} || '%'
+          </if>
+          <if test="modelId != null and modelId != ''">
+              AND MODEL_ID = #{modelId}
+          </if>
+          <if test="simulationStatus != null">
+              AND SIMULATION_STATUS = #{simulationStatus}
+          </if>
+    </select>
+
+    <!-- 根据模拟编号查询模拟 -->
+    <select id="selectBySimulationNo" resultType="map">
+        SELECT
+            SIMULATION_ID AS "simulationId",
+            SIMULATION_NO AS "simulationNo",
+            SIMULATION_NAME AS "simulationName",
+            MODEL_ID AS "modelId",
+            SCHEME_ID AS "schemeId",
+            SIMULATION_SCENARIO AS "simulationScenario",
+            INPUT_PARAMETERS AS "inputParameters",
+            SIMULATION_RESULT AS "simulationResult",
+            ESTIMATED_COST AS "estimatedCost",
+            CONFIDENCE_LEVEL AS "confidenceLevel",
+            SIMULATION_STATUS AS "simulationStatus",
+            EXECUTION_TIME AS "executionTime",
+            REMARK AS "remark"
+        FROM TBL_COST_SIMULATION
+        WHERE SIMULATION_NO = #{simulationNo}
+          AND BOOK_ID = #{bookId}
+          AND TENANT_ID = #{tenantId}
+    </select>
+
+    <!-- 批量更新模拟状态 -->
+    <update id="batchUpdateStatus">
+        UPDATE TBL_COST_SIMULATION
+        SET SIMULATION_STATUS = #{simulationStatus},
+            UPDATE_TIME = SYSDATE
+        WHERE SIMULATION_ID IN
+        <foreach collection="simulationIds" item="simulationId" open="(" separator="," close=")">
+            #{simulationId}
+        </foreach>
+    </update>
+
+    <!-- 获取模拟结果统计 -->
+    <select id="selectSimulationStatistics" resultType="map">
+        SELECT
+            COUNT(1) AS "totalCount",
+            SUM(CASE WHEN SIMULATION_STATUS = 2 THEN 1 ELSE 0 END) AS "completedCount",
+            AVG(ESTIMATED_COST) AS "avgCost",
+            AVG(CONFIDENCE_LEVEL) AS "avgConfidence"
+        FROM TBL_COST_SIMULATION
+        WHERE MODEL_ID = #{modelId}
+          AND BOOK_ID = #{bookId}
+          AND TENANT_ID = #{tenantId}
+    </select>
+
+</mapper>
+

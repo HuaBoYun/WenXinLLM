@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.oracle.mapper.FinanceBuDataMapper">
+    
+    <!-- 查询BU数据列表 -->
+    <select id="selectBuDataList" resultType="java.util.Map">
+        SELECT 
+            bu_id,
+            bu_name,
+            bu_code,
+            book_id,
+            book_name,
+            org_id,
+            org_name,
+            period,
+            revenue,
+            cost,
+            profit,
+            currency,
+            status,
+            create_by,
+            create_time,
+            update_by,
+            update_time
+        FROM finance_bu_data
+        <where>
+            <if test="params.buName != null and params.buName != ''">
+                AND bu_name LIKE '%' || #{params.buName} || '%'
+            </if>
+            <if test="params.buCode != null and params.buCode != ''">
+                AND bu_code = #{params.buCode}
+            </if>
+            <if test="params.bookId != null and params.bookId != ''">
+                AND book_id = #{params.bookId}
+            </if>
+            <if test="params.orgId != null and params.orgId != ''">
+                AND org_id = #{params.orgId}
+            </if>
+            <if test="params.period != null and params.period != ''">
+                AND period = #{params.period}
+            </if>
+            <if test="params.status != null and params.status != ''">
+                AND status = #{params.status}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+    
+    <!-- 根据ID查询BU数据详情 -->
+    <select id="selectBuDataById" resultType="java.util.Map">
+        SELECT 
+            bu_id,
+            bu_name,
+            bu_code,
+            book_id,
+            book_name,
+            org_id,
+            org_name,
+            period,
+            revenue,
+            cost,
+            profit,
+            currency,
+            status,
+            create_by,
+            create_time,
+            update_by,
+            update_time
+        FROM finance_bu_data
+        WHERE bu_id = #{buId}
+    </select>
+    
+    <!-- 插入BU数据 -->
+    <insert id="insertBuData">
+        INSERT INTO finance_bu_data (
+            bu_id,
+            bu_name,
+            bu_code,
+            book_id,
+            book_name,
+            org_id,
+            org_name,
+            period,
+            revenue,
+            cost,
+            profit,
+            currency,
+            status,
+            create_by,
+            create_time
+        ) VALUES (
+            #{buData.buId},
+            #{buData.buName},
+            #{buData.buCode},
+            #{buData.bookId},
+            #{buData.bookName},
+            #{buData.orgId},
+            #{buData.orgName},
+            #{buData.period},
+            #{buData.revenue},
+            #{buData.cost},
+            #{buData.profit},
+            #{buData.currency},
+            #{buData.status},
+            #{buData.createBy},
+            SYSDATE
+        )
+    </insert>
+    
+    <!-- 更新BU数据 -->
+    <update id="updateBuData">
+        UPDATE finance_bu_data
+        SET 
+            bu_name = #{buData.buName},
+            bu_code = #{buData.buCode},
+            book_id = #{buData.bookId},
+            book_name = #{buData.bookName},
+            org_id = #{buData.orgId},
+            org_name = #{buData.orgName},
+            period = #{buData.period},
+            revenue = #{buData.revenue},
+            cost = #{buData.cost},
+            profit = #{buData.profit},
+            currency = #{buData.currency},
+            status = #{buData.status},
+            update_by = #{buData.updateBy},
+            update_time = SYSDATE
+        WHERE bu_id = #{buData.buId}
+    </update>
+    
+    <!-- 删除BU数据 -->
+    <delete id="deleteBuData">
+        DELETE FROM finance_bu_data WHERE bu_id = #{buId}
+    </delete>
+    
+    <!-- 查询BU数据统计 -->
+    <select id="selectBuDataStatistics" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as total_count,
+            SUM(revenue) as total_revenue,
+            SUM(cost) as total_cost,
+            SUM(profit) as total_profit,
+            AVG(profit) as avg_profit
+        FROM finance_bu_data
+        WHERE status = 'ACTIVE'
+        <if test="params.period != null and params.period != ''">
+            AND period = #{params.period}
+        </if>
+    </select>
+    
+    <!-- 批量插入BU数据 -->
+    <insert id="batchInsertBuData">
+        INSERT INTO finance_bu_data (
+            bu_id,
+            bu_name,
+            bu_code,
+            book_id,
+            book_name,
+            org_id,
+            org_name,
+            period,
+            revenue,
+            cost,
+            profit,
+            currency,
+            status,
+            create_by,
+            create_time
+        ) VALUES
+        <foreach collection="buDataList" item="item" separator=",">
+            (
+                #{item.buId},
+                #{item.buName},
+                #{item.buCode},
+                #{item.bookId},
+                #{item.bookName},
+                #{item.orgId},
+                #{item.orgName},
+                #{item.period},
+                #{item.revenue},
+                #{item.cost},
+                #{item.profit},
+                #{item.currency},
+                #{item.status},
+                #{item.createBy},
+                SYSDATE
+            )
+        </foreach>
+    </insert>
+    
+    <!-- 查询导出BU数据 -->
+    <select id="selectBuDataForExport" resultType="java.util.Map">
+        SELECT 
+            bu_id,
+            bu_name,
+            bu_code,
+            book_id,
+            book_name,
+            org_id,
+            org_name,
+            period,
+            revenue,
+            cost,
+            profit,
+            currency,
+            status,
+            create_time
+        FROM finance_bu_data
+        <where>
+            <if test="params.bookId != null and params.bookId != ''">
+                AND book_id = #{params.bookId}
+            </if>
+            <if test="params.orgId != null and params.orgId != ''">
+                AND org_id = #{params.orgId}
+            </if>
+            <if test="params.period != null and params.period != ''">
+                AND period = #{params.period}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+    
+</mapper>

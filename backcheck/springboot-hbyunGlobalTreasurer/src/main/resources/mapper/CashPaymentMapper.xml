@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.CashPaymentMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.CashPayment">
+        <id column="PAYMENT_ID" property="paymentId" />
+        <result column="PAYMENT_NO" property="paymentNo" />
+        <result column="PAYMENT_DATE" property="paymentDate" />
+        <result column="ACCOUNT_ID" property="accountId" />
+        <result column="ACCOUNT_NAME" property="accountName" />
+        <result column="PAYEE_NAME" property="payeeName" />
+        <result column="PAYEE_ACCOUNT" property="payeeAccount" />
+        <result column="PAYEE_BANK" property="payeeBank" />
+        <result column="PAYMENT_AMOUNT" property="paymentAmount" />
+        <result column="CURRENCY_CODE" property="currencyCode" />
+        <result column="PAYMENT_METHOD" property="paymentMethod" />
+        <result column="PAYMENT_PURPOSE" property="paymentPurpose" />
+        <result column="PAYMENT_STATUS" property="paymentStatus" />
+        <result column="REMARK" property="remark" />
+        <result column="ORG_ID" property="orgId" />
+        <result column="DELETE_FLAG" property="deleteFlag" />
+        <result column="CREATED_BY" property="createdBy" />
+        <result column="CREATED_BY_NAME" property="createdByName" />
+        <result column="CREATED_TIME" property="createdTime" />
+        <result column="UPDATED_BY" property="updatedBy" />
+        <result column="UPDATED_BY_NAME" property="updatedByName" />
+        <result column="UPDATED_TIME" property="updatedTime" />
+    </resultMap>
+
+    <!-- 分页查询付款单列表 -->
+    <select id="selectPaymentPage" resultMap="BaseResultMap">
+        SELECT *
+        FROM TBL_CASH_PAYMENT
+        <where>
+            DELETE_FLAG = 0
+            <if test="param.paymentNo != null and param.paymentNo != ''">
+                AND PAYMENT_NO = #{param.paymentNo}
+            </if>
+            <if test="param.payeeName != null and param.payeeName != ''">
+                AND PAYEE_NAME LIKE '%' || #{param.payeeName} || '%'
+            </if>
+            <if test="param.paymentStatus != null and param.paymentStatus != ''">
+                AND PAYMENT_STATUS = #{param.paymentStatus}
+            </if>
+            <if test="param.startDate != null">
+                AND PAYMENT_DATE >= TO_DATE(#{param.startDate}, 'YYYY-MM-DD')
+            </if>
+            <if test="param.endDate != null">
+                AND PAYMENT_DATE &lt;= TO_DATE(#{param.endDate}, 'YYYY-MM-DD')
+            </if>
+            <if test="param.orgId != null">
+                AND ORG_ID = #{param.orgId}
+            </if>
+        </where>
+        ORDER BY CREATED_TIME DESC
+    </select>
+
+    <!-- 批量删除付款单（软删除） -->
+    <update id="batchDelete">
+        UPDATE TBL_CASH_PAYMENT
+        SET DELETE_FLAG = 1,
+            UPDATED_TIME = CURRENT_TIMESTAMP
+        WHERE PAYMENT_ID IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 批量更新状态 -->
+    <update id="batchUpdateStatus">
+        UPDATE TBL_CASH_PAYMENT
+        SET PAYMENT_STATUS = #{status},
+            UPDATED_BY_NAME = #{updateByName},
+            UPDATED_TIME = CURRENT_TIMESTAMP
+        WHERE PAYMENT_ID IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+</mapper>

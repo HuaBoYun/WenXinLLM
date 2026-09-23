@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.TreasuryCloudConnectionContractMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TreasuryCloudConnectionContract">
+        <id column="CONTRACT_ID" property="contractId" />
+        <result column="CONTRACT_NO" property="contractNo" />
+        <result column="CONTRACT_NAME" property="contractName" />
+        <result column="BANK_CODE" property="bankCode" />
+        <result column="BANK_NAME" property="bankName" />
+        <result column="ACCOUNT_ID" property="accountId" />
+        <result column="ACCOUNT_NUMBER" property="accountNumber" />
+        <result column="ACCOUNT_NAME" property="accountName" />
+        <result column="CONTRACT_TYPE" property="contractType" />
+        <result column="CONTRACT_STATUS" property="contractStatus" />
+        <result column="APPLICATION_DATE" property="applicationDate" />
+        <result column="APPLICANT_ID" property="applicantId" />
+        <result column="APPLICANT_NAME" property="applicantName" />
+        <result column="APPLICANT_DEPARTMENT" property="applicantDepartment" />
+        <result column="QUALIFICATION_VERIFICATION_STATUS" property="qualificationVerificationStatus" />
+        <result column="QUALIFICATION_VERIFICATION_TIME" property="qualificationVerificationTime" />
+        <result column="QUALIFICATION_VERIFIER_ID" property="qualificationVerifierId" />
+        <result column="QUALIFICATION_VERIFIER_NAME" property="qualificationVerifierName" />
+        <result column="VERIFICATION_RESULT" property="verificationResult" />
+        <result column="AGREEMENT_SIGNING_STATUS" property="agreementSigningStatus" />
+        <result column="AGREEMENT_SIGNING_TIME" property="agreementSigningTime" />
+        <result column="AGREEMENT_SIGNER_ID" property="agreementSignerId" />
+        <result column="AGREEMENT_SIGNER_NAME" property="agreementSignerName" />
+        <result column="ELECTRONIC_CONTRACT_PATH" property="electronicContractPath" />
+        <result column="PAPER_CONTRACT_PATH" property="paperContractPath" />
+        <result column="SERVICE_ACTIVATION_STATUS" property="serviceActivationStatus" />
+        <result column="SERVICE_ACTIVATION_TIME" property="serviceActivationTime" />
+        <result column="SERVICE_ACTIVATOR_ID" property="serviceActivatorId" />
+        <result column="SERVICE_ACTIVATOR_NAME" property="serviceActivatorName" />
+        <result column="CONTRACT_EFFECTIVE_DATE" property="contractEffectiveDate" />
+        <result column="CONTRACT_EXPIRE_DATE" property="contractExpireDate" />
+        <result column="CONTRACT_TERM_MONTHS" property="contractTermMonths" />
+        <result column="AUTO_RENEWAL" property="autoRenewal" />
+        <result column="RENEWAL_REMINDER_DAYS" property="renewalReminderDays" />
+        <result column="NEXT_RENEWAL_DATE" property="nextRenewalDate" />
+        <result column="RENEWAL_COUNT" property="renewalCount" />
+        <result column="MAX_RENEWAL_COUNT" property="maxRenewalCount" />
+        <result column="TERMINATION_REASON" property="terminationReason" />
+        <result column="TERMINATION_DATE" property="terminationDate" />
+        <result column="TERMINATOR_ID" property="terminatorId" />
+        <result column="TERMINATOR_NAME" property="terminatorName" />
+        <result column="SERVICE_FEE" property="serviceFee" />
+        <result column="FEE_PERIOD" property="feePeriod" />
+        <result column="PAYMENT_METHOD" property="paymentMethod" />
+        <result column="SERVICE_LEVEL" property="serviceLevel" />
+        <result column="SLA_DOCUMENT_PATH" property="slaDocumentPath" />
+        <result column="CONTACT_NAME" property="contactName" />
+        <result column="CONTACT_PHONE" property="contactPhone" />
+        <result column="CONTACT_EMAIL" property="contactEmail" />
+        <result column="TECHNICAL_SUPPORT_CONTACT" property="technicalSupportContact" />
+        <result column="BUSINESS_SUPPORT_CONTACT" property="businessSupportContact" />
+        <result column="AVAILABILITY_GUARANTEE" property="availabilityGuarantee" />
+        <result column="RECOVERY_TIME_REQUIREMENT" property="recoveryTimeRequirement" />
+        <result column="SPECIAL_TERMS" property="specialTerms" />
+        <result column="CONTRACT_NOTES" property="contractNotes" />
+        <result column="APPROVAL_STATUS" property="approvalStatus" />
+        <result column="APPROVER_ID" property="approverId" />
+        <result column="APPROVER_NAME" property="approverName" />
+        <result column="APPROVAL_TIME" property="approvalTime" />
+        <result column="APPROVAL_COMMENTS" property="approvalComments" />
+        <result column="CONTRACT_DOCUMENT_PATH" property="contractDocumentPath" />
+        <result column="ATTACHMENT_PATHS" property="attachmentPaths" />
+        <result column="ORG_ID" property="orgId" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="CREATE_USER" property="createUser" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="UPDATE_USER" property="updateUser" />
+        <result column="IS_ENABLED" property="isEnabled" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        CONTRACT_ID, CONTRACT_NO, CONTRACT_NAME, BANK_CODE, BANK_NAME, ACCOUNT_ID,
+        ACCOUNT_NUMBER, ACCOUNT_NAME, CONTRACT_TYPE, CONTRACT_STATUS, APPLICATION_DATE,
+        APPLICANT_ID, APPLICANT_NAME, APPLICANT_DEPARTMENT, QUALIFICATION_VERIFICATION_STATUS,
+        QUALIFICATION_VERIFICATION_TIME, QUALIFICATION_VERIFIER_ID, QUALIFICATION_VERIFIER_NAME,
+        VERIFICATION_RESULT, AGREEMENT_SIGNING_STATUS, AGREEMENT_SIGNING_TIME, AGREEMENT_SIGNER_ID,
+        AGREEMENT_SIGNER_NAME, ELECTRONIC_CONTRACT_PATH, PAPER_CONTRACT_PATH, SERVICE_ACTIVATION_STATUS,
+        SERVICE_ACTIVATION_TIME, SERVICE_ACTIVATOR_ID, SERVICE_ACTIVATOR_NAME, CONTRACT_EFFECTIVE_DATE,
+        CONTRACT_EXPIRE_DATE, CONTRACT_TERM_MONTHS, AUTO_RENEWAL, RENEWAL_REMINDER_DAYS,
+        NEXT_RENEWAL_DATE, RENEWAL_COUNT, MAX_RENEWAL_COUNT, TERMINATION_REASON, TERMINATION_DATE,
+        TERMINATOR_ID, TERMINATOR_NAME, SERVICE_FEE, FEE_PERIOD, PAYMENT_METHOD, SERVICE_LEVEL,
+        SLA_DOCUMENT_PATH, CONTACT_NAME, CONTACT_PHONE, CONTACT_EMAIL, TECHNICAL_SUPPORT_CONTACT,
+        BUSINESS_SUPPORT_CONTACT, AVAILABILITY_GUARANTEE, RECOVERY_TIME_REQUIREMENT, SPECIAL_TERMS,
+        CONTRACT_NOTES, APPROVAL_STATUS, APPROVER_ID, APPROVER_NAME, APPROVAL_TIME, APPROVAL_COMMENTS,
+        CONTRACT_DOCUMENT_PATH, ATTACHMENT_PATHS, ORG_ID, CREATE_TIME, CREATE_USER, UPDATE_TIME,
+        UPDATE_USER, IS_ENABLED
+    </sql>
+
+    <!-- 分页查询云连接合同列表 -->
+    <select id="selectCloudConnectionContractPage" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TBL_TREASURY_CLOUD_CONNECTION_CONTRACT
+        WHERE ORG_ID = #{orgId}
+        <if test="contractNumber != null and contractNumber != ''">
+            AND CONTRACT_NO LIKE CONCAT('%', #{contractNumber}, '%')
+        </if>
+        <if test="contractName != null and contractName != ''">
+            AND CONTRACT_NAME LIKE CONCAT('%', #{contractName}, '%')
+        </if>
+        <if test="serviceProvider != null and serviceProvider != ''">
+            AND BANK_CODE = #{serviceProvider}
+        </if>
+        <if test="serviceType != null and serviceType != ''">
+            AND CONTRACT_TYPE = #{serviceType}
+        </if>
+        <if test="contractStatus != null and contractStatus != ''">
+            AND CONTRACT_STATUS = #{contractStatus}
+        </if>
+        <if test="isEnabled != null">
+            AND IS_ENABLED = #{isEnabled}
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据合同编号和组织ID查询云连接合同 -->
+    <select id="selectByContractNoAndOrg" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TBL_TREASURY_CLOUD_CONNECTION_CONTRACT
+        WHERE CONTRACT_NO = #{contractNumber}
+        AND ORG_ID = #{orgId}
+        LIMIT 1
+    </select>
+
+    <!-- 查询所有启用的云连接合同 -->
+    <select id="selectEnabledContracts" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TBL_TREASURY_CLOUD_CONNECTION_CONTRACT
+        WHERE ORG_ID = #{orgId}
+        AND IS_ENABLED = 1
+        AND CONTRACT_STATUS = 'ACTIVE'
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据服务提供商查询云连接合同列表 -->
+    <select id="selectByServiceProvider" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TBL_TREASURY_CLOUD_CONNECTION_CONTRACT
+        WHERE BANK_CODE = #{serviceProvider}
+        AND ORG_ID = #{orgId}
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据合同状态查询云连接合同列表 -->
+    <select id="selectByContractStatus" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TBL_TREASURY_CLOUD_CONNECTION_CONTRACT
+        WHERE CONTRACT_STATUS = #{contractStatus}
+        AND ORG_ID = #{orgId}
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 查询即将到期的合同列表 -->
+    <select id="selectExpiringContracts" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TBL_TREASURY_CLOUD_CONNECTION_CONTRACT
+        WHERE ORG_ID = #{orgId}
+        AND CONTRACT_STATUS = 'ACTIVE'
+        AND CONTRACT_EXPIRE_DATE BETWEEN CURRENT_DATE AND (CURRENT_DATE + INTERVAL '#{days}' DAY)
+        ORDER BY CONTRACT_EXPIRE_DATE ASC
+    </select>
+
+    <!-- 检查合同编号是否存在 -->
+    <select id="checkContractNumberExists" resultType="int">
+        SELECT COUNT(1)
+        FROM TBL_TREASURY_CLOUD_CONNECTION_CONTRACT
+        WHERE CONTRACT_NO = #{contractNumber}
+        AND ORG_ID = #{orgId}
+        <if test="excludeId != null">
+            AND CONTRACT_ID != #{excludeId}
+        </if>
+    </select>
+
+    <!-- 统计不同状态合同数量 -->
+    <select id="selectContractStatistics" resultType="map">
+        SELECT
+            CONTRACT_STATUS,
+            COUNT(1) as statusCount
+        FROM TBL_TREASURY_CLOUD_CONNECTION_CONTRACT
+        WHERE ORG_ID = #{orgId}
+        GROUP BY CONTRACT_STATUS
+    </select>
+
+    <!-- 统计合同总金额 -->
+    <select id="selectContractAmountStatistics" resultType="map">
+        SELECT
+            IFNULL(SUM(SERVICE_FEE), 0) as totalAmount,
+            COUNT(1) as totalCount,
+            COUNT(CASE WHEN CONTRACT_STATUS = 'ACTIVE' THEN 1 END) as activeCount
+        FROM TBL_TREASURY_CLOUD_CONNECTION_CONTRACT
+        WHERE ORG_ID = #{orgId}
+    </select>
+
+    <!-- 查询需要续约提醒的合同 -->
+    <select id="selectRenewalReminderContracts" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TBL_TREASURY_CLOUD_CONNECTION_CONTRACT
+        WHERE ORG_ID = #{orgId}
+        AND CONTRACT_STATUS = 'ACTIVE'
+        AND CONTRACT_EXPIRE_DATE BETWEEN CURRENT_DATE AND (CURRENT_DATE + INTERVAL '#{reminderDays}' DAY)
+        ORDER BY CONTRACT_EXPIRE_DATE ASC
+    </select>
+
+    <!-- 更新合同状态 -->
+    <update id="updateContractStatus">
+        UPDATE TBL_TREASURY_CLOUD_CONNECTION_CONTRACT
+        SET CONTRACT_STATUS = #{contractStatus},
+            UPDATE_TIME = CURRENT_TIMESTAMP,
+            UPDATE_USER = #{updateUser}
+        WHERE CONTRACT_ID = #{id}
+    </update>
+
+    <!-- 更新合同审批信息 -->
+    <update id="updateApprovalInfo">
+        UPDATE TBL_TREASURY_CLOUD_CONNECTION_CONTRACT
+        SET APPROVAL_STATUS = #{approvalStatus},
+            APPROVER_ID = #{approverId},
+            APPROVER_NAME = #{approverName},
+            APPROVAL_TIME = CURRENT_TIMESTAMP,
+            APPROVAL_COMMENTS = #{approvalComments},
+            UPDATE_TIME = CURRENT_TIMESTAMP,
+            UPDATE_USER = #{updateUser}
+        WHERE CONTRACT_ID = #{id}
+    </update>
+
+    <!-- 更新合同终止信息 -->
+    <update id="updateTerminationInfo">
+        UPDATE TBL_TREASURY_CLOUD_CONNECTION_CONTRACT
+        SET CONTRACT_STATUS = #{contractStatus},
+            TERMINATION_REASON = #{terminationReason},
+            TERMINATION_DATE = #{terminationDate},
+            TERMINATOR_ID = #{terminatorId},
+            TERMINATOR_NAME = #{terminatorName},
+            UPDATE_TIME = CURRENT_TIMESTAMP,
+            UPDATE_USER = #{updateUser}
+        WHERE CONTRACT_ID = #{id}
+    </update>
+
+    <!-- 更新续约信息 -->
+    <update id="updateRenewalInfo">
+        UPDATE TBL_TREASURY_CLOUD_CONNECTION_CONTRACT
+        SET CONTRACT_EXPIRE_DATE = #{contractExpireDate},
+            RENEWAL_COUNT = #{renewalCount},
+            NEXT_RENEWAL_DATE = #{nextRenewalDate},
+            UPDATE_TIME = CURRENT_TIMESTAMP,
+            UPDATE_USER = #{updateUser}
+        WHERE CONTRACT_ID = #{id}
+    </update>
+
+</mapper>

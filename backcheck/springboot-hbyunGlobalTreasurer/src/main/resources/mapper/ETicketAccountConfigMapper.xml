@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.ETicketAccountConfigMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.ETicketAccountConfig">
+        <id column="ACCOUNT_ID" property="id" />
+        <result column="ACCOUNT_NUMBER" property="accountNumber" />
+        <result column="ACCOUNT_NAME" property="accountName" />
+        <result column="ETICKET_SYSTEM" property="eTicketSystem" />
+        <result column="ACCOUNT_TYPE" property="accountType" />
+        <result column="BANK_CODE" property="bankCode" />
+        <result column="BANK_ACCOUNT_NUMBER" property="bankAccountNumber" />
+        <result column="ACCOUNT_BALANCE" property="accountBalance" />
+        <result column="CREDIT_LIMIT" property="creditLimit" />
+        <result column="AVAILABLE_LIMIT" property="availableLimit" />
+        <result column="OPEN_DATE" property="openDate" />
+        <result column="EXPIRE_DATE" property="expireDate" />
+        <result column="ACCOUNT_STATUS" property="accountStatus" />
+        <result column="ENABLED" property="enabled" />
+        <result column="CREATED_BY" property="createdBy" />
+        <result column="CREATED_BY_NAME" property="createdByName" />
+        <result column="CREATED_TIME" property="createdTime" />
+        <result column="UPDATED_BY" property="updatedBy" />
+        <result column="UPDATED_BY_NAME" property="updatedByName" />
+        <result column="UPDATED_TIME" property="updatedTime" />
+        <result column="REMARK" property="remark" />
+        <result column="DELETE_FLAG" property="deleteFlag" />
+    </resultMap>
+
+    <!-- 分页查询电票账户列表 -->
+    <select id="selectAccountPage" resultMap="BaseResultMap">
+        SELECT *
+        FROM TBL_ETICKET_ACCOUNT_CONFIG
+        <where>
+            DELETE_FLAG = 0
+            <if test="param.accountNumber != null and param.accountNumber != ''">
+                AND ACCOUNT_NUMBER LIKE '%' || #{param.accountNumber} || '%'
+            </if>
+            <if test="param.accountName != null and param.accountName != ''">
+                AND ACCOUNT_NAME LIKE '%' || #{param.accountName} || '%'
+            </if>
+            <if test="param.eTicketSystem != null and param.eTicketSystem != ''">
+                AND ETICKET_SYSTEM = #{param.eTicketSystem}
+            </if>
+            <if test="param.accountType != null and param.accountType != ''">
+                AND ACCOUNT_TYPE = #{param.accountType}
+            </if>
+            <if test="param.bankCode != null and param.bankCode != ''">
+                AND BANK_CODE = #{param.bankCode}
+            </if>
+            <if test="param.accountStatus != null and param.accountStatus != ''">
+                AND ACCOUNT_STATUS = #{param.accountStatus}
+            </if>
+        </where>
+        ORDER BY CREATED_TIME DESC
+    </select>
+
+    <!-- 批量删除电票账户（软删除） -->
+    <update id="batchDelete">
+        UPDATE TBL_ETICKET_ACCOUNT_CONFIG
+        SET DELETE_FLAG = 1,
+            UPDATED_TIME = CURRENT_TIMESTAMP
+        WHERE ACCOUNT_ID IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 同步账户状态 -->
+    <select id="syncAccountStatus" resultType="java.util.HashMap">
+        SELECT
+            ACCOUNT_ID as id,
+            ACCOUNT_NUMBER as accountNumber,
+            ACCOUNT_STATUS as accountStatus,
+            1 as success,
+            '状态同步成功' as message
+        FROM TBL_ETICKET_ACCOUNT_CONFIG
+        WHERE ACCOUNT_ID = #{id}
+          AND DELETE_FLAG = 0
+    </select>
+
+</mapper>

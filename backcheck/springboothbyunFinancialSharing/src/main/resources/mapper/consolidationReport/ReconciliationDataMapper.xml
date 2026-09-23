@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.consolidationReport.mapper.ReconciliationDataMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.financial.sharing.consolidationReport.entity.TblReconciliationData">
+        <id column="RECONCILIATION_ID" property="reconciliationId"/>
+        <result column="MODEL_ID" property="modelId"/>
+        <result column="PERIOD" property="period"/>
+        <result column="COMPANY_A_ID" property="companyAId"/>
+        <result column="COMPANY_A_NAME" property="companyAName"/>
+        <result column="COMPANY_B_ID" property="companyBId"/>
+        <result column="COMPANY_B_NAME" property="companyBName"/>
+        <result column="TRANSACTION_TYPE" property="transactionType"/>
+        <result column="AMOUNT_A" property="amountA"/>
+        <result column="AMOUNT_B" property="amountB"/>
+        <result column="DIFF_AMOUNT" property="diffAmount"/>
+        <result column="ACCOUNT_CODE" property="accountCode"/>
+        <result column="ACCOUNT_NAME" property="accountName"/>
+        <result column="DESCRIPTION" property="description"/>
+        <result column="STATUS" property="status"/>
+        <result column="TENANT_ID" property="tenantId"/>
+        <result column="CREATE_USER" property="createUser"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_USER" property="updateUser"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="MODEL_NAME" property="modelName"/>
+    </resultMap>
+
+    <!-- 查询对账数据列表 -->
+    <select id="selectReconciliationList" resultMap="BaseResultMap">
+        SELECT
+            r.RECONCILIATION_ID,
+            r.MODEL_ID,
+            r.PERIOD,
+            r.COMPANY_A_ID,
+            r.COMPANY_A_NAME,
+            r.COMPANY_B_ID,
+            r.COMPANY_B_NAME,
+            r.TRANSACTION_TYPE,
+            r.AMOUNT_A,
+            r.AMOUNT_B,
+            r.DIFF_AMOUNT,
+            r.ACCOUNT_CODE,
+            r.ACCOUNT_NAME,
+            r.DESCRIPTION,
+            r.STATUS,
+            r.TENANT_ID,
+            r.CREATE_USER,
+            r.CREATE_TIME,
+            r.UPDATE_USER,
+            r.UPDATE_TIME,
+            m.MODEL_NAME
+        FROM TBL_RECONCILIATION_DATA r
+        LEFT JOIN TBL_CONSOLIDATION_MODEL m ON r.MODEL_ID = m.MODEL_ID
+        <where>
+            <if test="param.modelId != null and param.modelId != ''">
+                AND r.MODEL_ID = #{param.modelId}
+            </if>
+            <if test="param.period != null and param.period != ''">
+                AND r.PERIOD = #{param.period}
+            </if>
+            <if test="param.companyAId != null and param.companyAId != ''">
+                AND r.COMPANY_A_ID = #{param.companyAId}
+            </if>
+            <if test="param.companyAName != null and param.companyAName != ''">
+                AND r.COMPANY_A_NAME LIKE CONCAT('%', #{param.companyAName}, '%')
+            </if>
+            <if test="param.companyBId != null and param.companyBId != ''">
+                AND r.COMPANY_B_ID = #{param.companyBId}
+            </if>
+            <if test="param.companyBName != null and param.companyBName != ''">
+                AND r.COMPANY_B_NAME LIKE CONCAT('%', #{param.companyBName}, '%')
+            </if>
+            <if test="param.transactionType != null and param.transactionType != ''">
+                AND r.TRANSACTION_TYPE = #{param.transactionType}
+            </if>
+            <if test="param.status != null and param.status != ''">
+                AND r.STATUS = #{param.status}
+            </if>
+        </where>
+        ORDER BY r.CREATE_TIME DESC
+    </select>
+
+    <!-- 根据模型ID和期间删除对账数据 -->
+    <delete id="deleteByModelIdAndPeriod">
+        DELETE FROM TBL_RECONCILIATION_DATA
+        WHERE MODEL_ID = #{modelId}
+        AND PERIOD = #{period}
+    </delete>
+
+    <!-- 批量插入对账数据 -->
+    <insert id="batchInsert">
+        INSERT INTO TBL_RECONCILIATION_DATA (
+            RECONCILIATION_ID,
+            MODEL_ID,
+            PERIOD,
+            COMPANY_A_ID,
+            COMPANY_A_NAME,
+            COMPANY_B_ID,
+            COMPANY_B_NAME,
+            TRANSACTION_TYPE,
+            AMOUNT_A,
+            AMOUNT_B,
+            DIFF_AMOUNT,
+            ACCOUNT_CODE,
+            ACCOUNT_NAME,
+            DESCRIPTION,
+            STATUS,
+            TENANT_ID,
+            CREATE_USER,
+            CREATE_TIME,
+            UPDATE_USER,
+            UPDATE_TIME
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.reconciliationId},
+                #{item.modelId},
+                #{item.period},
+                #{item.companyAId},
+                #{item.companyAName},
+                #{item.companyBId},
+                #{item.companyBName},
+                #{item.transactionType},
+                #{item.amountA},
+                #{item.amountB},
+                #{item.diffAmount},
+                #{item.accountCode},
+                #{item.accountName},
+                #{item.description},
+                #{item.status},
+                #{item.tenantId},
+                #{item.createUser},
+                #{item.createTime},
+                #{item.updateUser},
+                #{item.updateTime}
+            )
+        </foreach>
+    </insert>
+
+    <!-- 根据模型ID和期间统计对账数据 -->
+    <select id="countByStatus" resultType="map">
+        SELECT
+            STATUS,
+            COUNT(1) AS COUNT
+        FROM TBL_RECONCILIATION_DATA
+        WHERE MODEL_ID = #{modelId}
+        AND PERIOD = #{period}
+        GROUP BY STATUS
+    </select>
+
+</mapper>
+

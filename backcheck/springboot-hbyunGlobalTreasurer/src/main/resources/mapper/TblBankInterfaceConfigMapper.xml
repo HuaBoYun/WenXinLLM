@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.TblBankInterfaceConfigMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TblBankInterfaceConfig">
+        <id column="CONFIG_ID" property="configId" />
+        <result column="BANK_NAME" property="bankName" />
+        <result column="BANK_CODE" property="bankCode" />
+        <result column="INTERFACE_TYPE" property="interfaceType" />
+        <result column="INTERFACE_VERSION" property="interfaceVersion" />
+        <result column="API_URL" property="apiUrl" />
+        <result column="AUTH_TYPE" property="authType" />
+        <result column="AUTH_TOKEN" property="authToken" />
+        <result column="CONNECTION_TIMEOUT" property="connectionTimeout" />
+        <result column="READ_TIMEOUT" property="readTimeout" />
+        <result column="MAX_RETRY_COUNT" property="maxRetryCount" />
+        <result column="PRIORITY" property="priority" />
+        <result column="LOAD_BALANCE_WEIGHT" property="loadBalanceWeight" />
+        <result column="HEALTH_CHECK_INTERVAL" property="healthCheckInterval" />
+        <result column="IS_ENABLED" property="isEnabled" />
+        <result column="LAST_CONNECT_TIME" property="lastConnectTime" />
+        <result column="LAST_CONNECT_STATUS" property="lastConnectStatus" />
+        <result column="LAST_CONNECT_MESSAGE" property="lastConnectMessage" />
+        <result column="CONFIG_DESCRIPTION" property="configDescription" />
+        <result column="REMARK" property="remark" />
+        <result column="DELETE_FLAG" property="deleteFlag" />
+        <result column="CREATE_BY" property="createdBy" />
+        <result column="CREATE_BY_NAME" property="createdByName" />
+        <result column="CREATE_TIME" property="createdTime" />
+        <result column="UPDATE_BY" property="updatedBy" />
+        <result column="UPDATE_BY_NAME" property="updatedByName" />
+        <result column="UPDATE_TIME" property="updatedTime" />
+        <result column="ORG_ID" property="orgId" />
+        <result column="ORG_NAME" property="orgName" />
+    </resultMap>
+
+    <!-- 根据ID查询配置（显式定义列名，避免MyBatis-Plus自动推断错误） -->
+    <select id="selectByIdWithCorrectColumns" resultMap="BaseResultMap">
+        SELECT CONFIG_ID,BANK_NAME,BANK_CODE,INTERFACE_TYPE,INTERFACE_VERSION,API_URL,AUTH_TYPE,AUTH_TOKEN,
+               CONNECTION_TIMEOUT,READ_TIMEOUT,MAX_RETRY_COUNT,PRIORITY,LOAD_BALANCE_WEIGHT,HEALTH_CHECK_INTERVAL,
+               IS_ENABLED,LAST_CONNECT_TIME,LAST_CONNECT_STATUS,LAST_CONNECT_MESSAGE,CONFIG_DESCRIPTION,REMARK,
+               DELETE_FLAG,CREATE_BY,CREATE_TIME,UPDATE_BY,UPDATE_TIME,ORG_ID,ORG_NAME
+        FROM TBL_BANK_INTERFACE_CONFIG
+        WHERE CONFIG_ID = #{configId}
+    </select>
+
+    <!-- 更新配置（达梦数据库兼容语法） -->
+    <update id="updateConfigById" parameterType="com.global.treasurer.entity.TblBankInterfaceConfig">
+        UPDATE TBL_BANK_INTERFACE_CONFIG
+        SET BANK_NAME = #{bankName},
+            BANK_CODE = #{bankCode},
+            INTERFACE_TYPE = #{interfaceType},
+            INTERFACE_VERSION = #{interfaceVersion},
+            API_URL = #{apiUrl},
+            AUTH_TYPE = #{authType},
+            AUTH_TOKEN = #{authToken},
+            CONNECTION_TIMEOUT = #{connectionTimeout},
+            READ_TIMEOUT = #{readTimeout},
+            MAX_RETRY_COUNT = #{maxRetryCount},
+            PRIORITY = #{priority},
+            LOAD_BALANCE_WEIGHT = #{loadBalanceWeight},
+            HEALTH_CHECK_INTERVAL = #{healthCheckInterval},
+            IS_ENABLED = #{isEnabled},
+            LAST_CONNECT_TIME = #{lastConnectTime},
+            LAST_CONNECT_STATUS = #{lastConnectStatus},
+            LAST_CONNECT_MESSAGE = #{lastConnectMessage},
+            CONFIG_DESCRIPTION = #{configDescription},
+            REMARK = #{remark},
+            DELETE_FLAG = #{deleteFlag},
+            CREATE_BY = #{createdBy},
+            CREATE_BY_NAME = #{createdByName},
+            CREATE_TIME = #{createdTime},
+            UPDATE_BY = #{updatedBy},
+            UPDATE_BY_NAME = #{updatedByName},
+            UPDATE_TIME = SYSDATE,
+            ORG_ID = #{orgId},
+            ORG_NAME = #{orgName}
+        WHERE CONFIG_ID = #{configId}
+    </update>
+
+    <!-- 分页查询银企联配置 -->
+    <select id="selectBankConfigPage" parameterType="map" resultMap="BaseResultMap">
+        SELECT * FROM (
+            SELECT a.*, ROWNUM AS rn FROM (
+                SELECT * FROM TBL_BANK_INTERFACE_CONFIG
+                <where>
+                    DELETE_FLAG = 0
+                    <if test="interfaceCode != null and interfaceCode != ''">
+                        AND BANK_CODE LIKE CONCAT('%', #{interfaceCode}, '%')
+                    </if>
+                    <if test="interfaceName != null and interfaceName != ''">
+                        AND BANK_NAME LIKE CONCAT('%', #{interfaceName}, '%')
+                    </if>
+                    <if test="bankName != null and bankName != ''">
+                        AND BANK_NAME LIKE CONCAT('%', #{bankName}, '%')
+                    </if>
+                    <if test="bankCode != null and bankCode != ''">
+                        AND BANK_CODE = #{bankCode}
+                    </if>
+                    <if test="interfaceType != null and interfaceType != ''">
+                        AND INTERFACE_TYPE = #{interfaceType}
+                    </if>
+                    <if test="isEnabled != null">
+                        AND IS_ENABLED = #{isEnabled}
+                    </if>
+                    <if test="lastConnectStatus != null and lastConnectStatus != ''">
+                        AND LAST_CONNECT_STATUS = #{lastConnectStatus}
+                    </if>
+                    <if test="orgId != null">
+                        AND ORG_ID = #{orgId}
+                    </if>
+                    <if test="beginTime != null and beginTime != ''">
+                        AND CREATE_TIME &gt;= #{beginTime}
+                    </if>
+                    <if test="endTime != null and endTime != ''">
+                        AND CREATE_TIME &lt;= #{endTime}
+                    </if>
+                </where>
+                ORDER BY PRIORITY DESC, CREATE_TIME DESC
+            ) a
+        ) WHERE rn &gt; #{offset} AND rn &lt;= (#{offset} + #{limit})
+    </select>
+
+    <!-- 统计银企联配置数量 -->
+    <select id="countBankConfigList" parameterType="map" resultType="int">
+        SELECT COUNT(*) FROM TBL_BANK_INTERFACE_CONFIG
+        <where>
+            DELETE_FLAG = 0
+            <if test="interfaceCode != null and interfaceCode != ''">
+                AND BANK_CODE LIKE CONCAT('%', #{interfaceCode}, '%')
+            </if>
+            <if test="interfaceName != null and interfaceName != ''">
+                AND BANK_NAME LIKE CONCAT('%', #{interfaceName}, '%')
+            </if>
+            <if test="bankName != null and bankName != ''">
+                AND BANK_NAME LIKE CONCAT('%', #{bankName}, '%')
+            </if>
+            <if test="bankCode != null and bankCode != ''">
+                AND BANK_CODE = #{bankCode}
+            </if>
+            <if test="interfaceType != null and interfaceType != ''">
+                AND INTERFACE_TYPE = #{interfaceType}
+            </if>
+            <if test="isEnabled != null">
+                AND IS_ENABLED = #{isEnabled}
+            </if>
+            <if test="lastConnectStatus != null and lastConnectStatus != ''">
+                AND LAST_CONNECT_STATUS = #{lastConnectStatus}
+            </if>
+            <if test="orgId != null">
+                AND ORG_ID = #{orgId}
+            </if>
+        </where>
+    </select>
+
+    <!-- 查询可用配置 -->
+    <select id="selectAvailableConfigs" parameterType="map" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BANK_INTERFACE_CONFIG
+        <where>
+            DELETE_FLAG = 0
+            AND IS_ENABLED = 1
+            AND LAST_CONNECT_STATUS = 'SUCCESS'
+            <if test="bankCode != null and bankCode != ''">
+                AND BANK_CODE = #{bankCode}
+            </if>
+            <if test="interfaceType != null and interfaceType != ''">
+                AND INTERFACE_TYPE = #{interfaceType}
+            </if>
+            <if test="orgId != null">
+                AND ORG_ID = #{orgId}
+            </if>
+        </where>
+        ORDER BY PRIORITY DESC, LOAD_BALANCE_WEIGHT DESC
+    </select>
+
+    <!-- 统计配置概要 -->
+    <select id="selectBankConfigSummary" parameterType="long" resultType="map">
+        SELECT
+            COUNT(*) AS "totalCount",
+            COUNT(CASE WHEN IS_ENABLED = 1 THEN 1 END) AS "enabledCount",
+            COUNT(CASE WHEN IS_ENABLED = 0 THEN 1 END) AS "disabledCount",
+            COUNT(CASE WHEN LAST_CONNECT_STATUS = 'SUCCESS' THEN 1 END) AS "successCount",
+            COUNT(CASE WHEN LAST_CONNECT_STATUS = 'FAILED' THEN 1 END) AS "failedCount",
+            COUNT(CASE WHEN LAST_CONNECT_STATUS IS NULL THEN 1 END) AS "unknownCount"
+        FROM TBL_BANK_INTERFACE_CONFIG
+        WHERE DELETE_FLAG = 0
+        <!-- 当 orgId 为 null 时，不限制组织ID，返回所有可见数据的统计结果 -->
+        <if test="orgId != null">
+          AND ORG_ID = #{orgId}
+        </if>
+    </select>
+
+    <!-- 批量更新启用状态 -->
+    <update id="batchUpdateEnabled" parameterType="map">
+        UPDATE TBL_BANK_INTERFACE_CONFIG
+        SET IS_ENABLED = #{isEnabled},
+            UPDATE_TIME = SYSDATE
+        WHERE CONFIG_ID IN
+        <foreach collection="configIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 更新连接状态 -->
+    <update id="updateConnectStatus" parameterType="map">
+        UPDATE TBL_BANK_INTERFACE_CONFIG
+        SET LAST_CONNECT_STATUS = #{status},
+            LAST_CONNECT_TIME = SYSDATE,
+            LAST_CONNECT_MESSAGE = #{message},
+            UPDATE_TIME = SYSDATE
+        WHERE CONFIG_ID = #{configId}
+    </update>
+
+    <!-- 插入银行接口配置（完整字段） -->
+    <insert id="insertBankConfig" parameterType="com.global.treasurer.entity.TblBankInterfaceConfig">
+        INSERT INTO TBL_BANK_INTERFACE_CONFIG (
+            BANK_NAME, BANK_CODE, INTERFACE_TYPE, INTERFACE_VERSION, API_URL, AUTH_TYPE, AUTH_TOKEN,
+            CONNECTION_TIMEOUT, READ_TIMEOUT, MAX_RETRY_COUNT, PRIORITY, LOAD_BALANCE_WEIGHT, HEALTH_CHECK_INTERVAL,
+            IS_ENABLED, LAST_CONNECT_TIME, LAST_CONNECT_STATUS, LAST_CONNECT_MESSAGE, CONFIG_DESCRIPTION, REMARK,
+            DELETE_FLAG, CREATE_BY, CREATE_TIME, UPDATE_BY, UPDATE_TIME,
+            ORG_ID, ORG_NAME, CONFIG_ID
+        ) VALUES (
+            #{bankName}, #{bankCode}, #{interfaceType}, #{interfaceVersion}, #{apiUrl}, #{authType}, #{authToken},
+            #{connectionTimeout}, #{readTimeout}, #{maxRetryCount}, #{priority}, #{loadBalanceWeight}, #{healthCheckInterval},
+            #{isEnabled}, #{lastConnectTime}, #{lastConnectStatus}, #{lastConnectMessage}, #{configDescription}, #{remark},
+            #{deleteFlag}, #{createdBy}, #{createdTime}, #{updatedBy}, #{updatedTime},
+            #{orgId}, #{orgName}, #{configId}
+        )
+    </insert>
+
+</mapper>

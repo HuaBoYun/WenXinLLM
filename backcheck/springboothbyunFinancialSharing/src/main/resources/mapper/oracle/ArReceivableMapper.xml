@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.oracle.mapper.ArReceivableMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.financial.sharing.oracle.entity.ArReceivableEntity">
+        <id column="RECEIVABLE_ID" property="receivableId" />
+        <result column="DOCUMENT_NO" property="documentNo" />
+        <result column="CUSTOMER_ID" property="customerId" />
+        <result column="BUSINESS_TYPE" property="businessType" />
+        <result column="RECEIVABLE_AMOUNT" property="receivableAmount" />
+        <result column="RECEIVED_AMOUNT" property="receivedAmount" />
+        <result column="REMAINING_AMOUNT" property="remainingAmount" />
+        <result column="DOCUMENT_STATUS" property="documentStatus" />
+        <result column="DUE_DATE" property="dueDate" />
+        <result column="CURRENCY" property="currency" />
+        <result column="EXCHANGE_RATE" property="exchangeRate" />
+        <result column="REMARKS" property="remarks" />
+        <result column="AUDIT_TIME" property="auditTime" />
+        <result column="AUDITOR_ID" property="auditorId" />
+        <result column="AUDIT_COMMENTS" property="auditComments" />
+        <result column="TENANT_ID" property="tenantId" />
+        <result column="ORG_ID" property="orgId" />
+        <result column="BOOK_ID" property="bookId" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="CREATE_BY" property="createBy" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="UPDATE_BY" property="updateBy" />
+        <result column="IS_DELETED" property="isDeleted" />
+        <!-- 扩展字段 -->
+        <result column="customerName" property="customerName" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        RECEIVABLE_ID, DOCUMENT_NO, CUSTOMER_ID, BUSINESS_TYPE, RECEIVABLE_AMOUNT,
+        RECEIVED_AMOUNT, REMAINING_AMOUNT, DOCUMENT_STATUS, DUE_DATE, CURRENCY,
+        EXCHANGE_RATE, REMARKS, AUDIT_TIME, AUDITOR_ID, AUDIT_COMMENTS,
+        TENANT_ID, ORG_ID, BOOK_ID, CREATE_TIME, CREATE_BY, UPDATE_TIME, UPDATE_BY, IS_DELETED
+    </sql>
+
+    <!-- 新增应收单据 -->
+    <insert id="insert" parameterType="com.financial.sharing.oracle.entity.ArReceivableEntity">
+        INSERT INTO TBL_AR_RECEIVABLE (
+            RECEIVABLE_ID, DOCUMENT_NO, CUSTOMER_ID, BUSINESS_TYPE, RECEIVABLE_AMOUNT,
+            RECEIVED_AMOUNT, REMAINING_AMOUNT, DOCUMENT_STATUS, DUE_DATE, CURRENCY,
+            EXCHANGE_RATE, REMARKS, TENANT_ID, ORG_ID, BOOK_ID,
+            CREATE_TIME, CREATE_BY, UPDATE_TIME, UPDATE_BY, IS_DELETED
+        ) VALUES (
+            #{receivableId}, #{documentNo}, #{customerId}, #{businessType}, #{receivableAmount},
+            #{receivedAmount}, #{remainingAmount}, #{documentStatus}, #{dueDate}, #{currency},
+            #{exchangeRate}, #{remarks}, #{tenantId}, #{orgId}, #{bookId},
+            #{createTime}, #{createBy}, #{updateTime}, #{updateBy}, #{isDeleted}
+        )
+    </insert>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_AR_RECEIVABLE
+        WHERE RECEIVABLE_ID = #{receivableId} AND IS_DELETED = 0
+    </select>
+
+    <!-- 根据ID更新（自定义方法，避免与BaseMapper冲突） -->
+    <update id="updateReceivableById" parameterType="com.financial.sharing.oracle.entity.ArReceivableEntity">
+        UPDATE TBL_AR_RECEIVABLE
+        <set>
+            <if test="documentNo != null">DOCUMENT_NO = #{documentNo},</if>
+            <if test="customerId != null">CUSTOMER_ID = #{customerId},</if>
+            <if test="businessType != null">BUSINESS_TYPE = #{businessType},</if>
+            <if test="receivableAmount != null">RECEIVABLE_AMOUNT = #{receivableAmount},</if>
+            <if test="receivedAmount != null">RECEIVED_AMOUNT = #{receivedAmount},</if>
+            <if test="remainingAmount != null">REMAINING_AMOUNT = #{remainingAmount},</if>
+            <if test="documentStatus != null">DOCUMENT_STATUS = #{documentStatus},</if>
+            <if test="dueDate != null">DUE_DATE = #{dueDate},</if>
+            <if test="currency != null">CURRENCY = #{currency},</if>
+            <if test="exchangeRate != null">EXCHANGE_RATE = #{exchangeRate},</if>
+            <if test="remarks != null">REMARKS = #{remarks},</if>
+            <if test="auditTime != null">AUDIT_TIME = #{auditTime},</if>
+            <if test="auditorId != null">AUDITOR_ID = #{auditorId},</if>
+            <if test="auditComments != null">AUDIT_COMMENTS = #{auditComments},</if>
+            <if test="updateTime != null">UPDATE_TIME = #{updateTime},</if>
+            <if test="updateBy != null">UPDATE_BY = #{updateBy},</if>
+            <if test="isDeleted != null">IS_DELETED = #{isDeleted},</if>
+        </set>
+        WHERE RECEIVABLE_ID = #{receivableId}
+    </update>
+
+    <!-- 分页查询应收单据列表（关联客户表获取客户名称） -->
+    <select id="selectReceivableList" resultMap="BaseResultMap">
+        SELECT r.RECEIVABLE_ID, r.DOCUMENT_NO, r.CUSTOMER_ID, r.BUSINESS_TYPE, r.RECEIVABLE_AMOUNT,
+               r.RECEIVED_AMOUNT, r.REMAINING_AMOUNT, r.DOCUMENT_STATUS, r.DUE_DATE, r.CURRENCY,
+               r.EXCHANGE_RATE, r.REMARKS, r.AUDIT_TIME, r.AUDITOR_ID, r.AUDIT_COMMENTS,
+               r.TENANT_ID, r.ORG_ID, r.BOOK_ID, r.CREATE_TIME, r.CREATE_BY, r.UPDATE_TIME, r.UPDATE_BY, r.IS_DELETED,
+               c.CUSTOMER_NAME AS customerName
+        FROM TBL_AR_RECEIVABLE r
+        LEFT JOIN TBL_AR_CUSTOMER c ON r.CUSTOMER_ID = c.CUSTOMER_ID AND c.IS_DELETED = 0
+        WHERE r.IS_DELETED = 0
+        <if test="param.tenantId != null">
+            AND r.TENANT_ID = #{param.tenantId}
+        </if>
+        <if test="param.documentNo != null and param.documentNo != ''">
+            AND r.DOCUMENT_NO LIKE '%' || #{param.documentNo} || '%'
+        </if>
+        <if test="param.customerId != null and param.customerId != ''">
+            AND r.CUSTOMER_ID = #{param.customerId}
+        </if>
+        <if test="param.businessType != null">
+            AND r.BUSINESS_TYPE = #{param.businessType}
+        </if>
+        <if test="param.documentStatus != null">
+            AND r.DOCUMENT_STATUS = #{param.documentStatus}
+        </if>
+        <if test="param.dueDateStart != null">
+            AND r.DUE_DATE &gt;= #{param.dueDateStart}
+        </if>
+        <if test="param.dueDateEnd != null">
+            AND r.DUE_DATE &lt;= #{param.dueDateEnd}
+        </if>
+        ORDER BY r.CREATE_TIME DESC
+    </select>
+
+    <!-- 根据单据编号查询 -->
+    <select id="selectByDocumentNo" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_AR_RECEIVABLE
+        WHERE DOCUMENT_NO = #{documentNo} AND TENANT_ID = #{tenantId} AND IS_DELETED = 0
+    </select>
+
+    <!-- 查询客户应收单据 -->
+    <select id="selectByCustomerId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_AR_RECEIVABLE
+        WHERE CUSTOMER_ID = #{customerId} AND TENANT_ID = #{tenantId} AND IS_DELETED = 0
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 查询待核销的应收单据 -->
+    <select id="selectPendingWriteOff" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_AR_RECEIVABLE
+        WHERE CUSTOMER_ID = #{customerId} AND TENANT_ID = #{tenantId}
+        AND DOCUMENT_STATUS = 2 AND REMAINING_AMOUNT > 0 AND IS_DELETED = 0
+        ORDER BY DUE_DATE ASC
+    </select>
+
+    <!-- 批量更新单据状态 -->
+    <update id="batchUpdateStatus">
+        UPDATE TBL_AR_RECEIVABLE
+        SET DOCUMENT_STATUS = #{status},
+            AUDITOR_ID = #{auditorId},
+            AUDIT_COMMENTS = #{auditComments},
+            AUDIT_TIME = SYSDATE,
+            UPDATE_TIME = SYSDATE
+        WHERE RECEIVABLE_ID IN
+        <foreach collection="receivableIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- ==================== 应收分析统计SQL ==================== -->
+
+    <!-- 查询应收总览数据 -->
+    <select id="selectReceivableOverview" resultType="java.util.Map">
+        SELECT
+            NVL(SUM(RECEIVABLE_AMOUNT), 0) AS totalReceivables,
+            NVL(SUM(RECEIVED_AMOUNT), 0) AS totalReceived,
+            NVL(SUM(REMAINING_AMOUNT), 0) AS totalRemaining,
+            COUNT(DISTINCT CUSTOMER_ID) AS activeCustomers,
+            NVL(ROUND(AVG(TRUNC(SYSDATE) - DUE_DATE), 0), 0) AS averageAgingDays
+        FROM TBL_AR_RECEIVABLE
+        WHERE IS_DELETED = 0 AND DOCUMENT_STATUS = 2
+        <if test="tenantId != null">
+            AND TENANT_ID = #{tenantId}
+        </if>
+    </select>
+
+    <!-- 查询应收结构分析 - 按客户分布 -->
+    <select id="selectReceivableByCustomer" resultType="java.util.Map">
+        SELECT * FROM (
+            SELECT
+                r.CUSTOMER_ID AS customerId,
+                c.CUSTOMER_NAME AS customerName,
+                SUM(r.REMAINING_AMOUNT) AS receivableAmount,
+                ROUND(SUM(r.REMAINING_AMOUNT) * 100 /
+                    (SELECT NVL(SUM(REMAINING_AMOUNT), 1) FROM TBL_AR_RECEIVABLE
+                     WHERE IS_DELETED = 0 AND DOCUMENT_STATUS = 2 AND TENANT_ID = #{tenantId}), 2) AS percentage
+            FROM TBL_AR_RECEIVABLE r
+            LEFT JOIN TBL_AR_CUSTOMER c ON r.CUSTOMER_ID = c.CUSTOMER_ID AND c.IS_DELETED = 0
+            WHERE r.IS_DELETED = 0 AND r.DOCUMENT_STATUS = 2
+            <if test="tenantId != null">
+                AND r.TENANT_ID = #{tenantId}
+            </if>
+            GROUP BY r.CUSTOMER_ID, c.CUSTOMER_NAME
+            ORDER BY SUM(r.REMAINING_AMOUNT) DESC
+        ) WHERE ROWNUM &lt;= #{topN}
+    </select>
+
+    <!-- 查询应收结构分析 - 按账龄分布 -->
+    <select id="selectReceivableByAging" resultType="java.util.Map">
+        SELECT agingRange, amount, documentCount, sortOrder
+        FROM (
+            SELECT
+                CASE
+                    WHEN TRUNC(#{analysisDate}) - DUE_DATE &lt;= 0 THEN '未到期'
+                    WHEN TRUNC(#{analysisDate}) - DUE_DATE &lt;= 30 THEN '1-30天'
+                    WHEN TRUNC(#{analysisDate}) - DUE_DATE &lt;= 60 THEN '31-60天'
+                    WHEN TRUNC(#{analysisDate}) - DUE_DATE &lt;= 90 THEN '61-90天'
+                    WHEN TRUNC(#{analysisDate}) - DUE_DATE &lt;= 180 THEN '91-180天'
+                    WHEN TRUNC(#{analysisDate}) - DUE_DATE &lt;= 365 THEN '181-365天'
+                    ELSE '1年以上'
+                END AS agingRange,
+                CASE
+                    WHEN TRUNC(#{analysisDate}) - DUE_DATE &lt;= 0 THEN 1
+                    WHEN TRUNC(#{analysisDate}) - DUE_DATE &lt;= 30 THEN 2
+                    WHEN TRUNC(#{analysisDate}) - DUE_DATE &lt;= 60 THEN 3
+                    WHEN TRUNC(#{analysisDate}) - DUE_DATE &lt;= 90 THEN 4
+                    WHEN TRUNC(#{analysisDate}) - DUE_DATE &lt;= 180 THEN 5
+                    WHEN TRUNC(#{analysisDate}) - DUE_DATE &lt;= 365 THEN 6
+                    ELSE 7
+                END AS sortOrder,
+                SUM(REMAINING_AMOUNT) AS amount,
+                COUNT(*) AS documentCount
+            FROM TBL_AR_RECEIVABLE
+            WHERE IS_DELETED = 0 AND DOCUMENT_STATUS = 2 AND REMAINING_AMOUNT > 0
+            <if test="tenantId != null">
+                AND TENANT_ID = #{tenantId}
+            </if>
+            GROUP BY
+                CASE
+                    WHEN TRUNC(#{analysisDate}) - DUE_DATE &lt;= 0 THEN '未到期'
+                    WHEN TRUNC(#{analysisDate}) - DUE_DATE &lt;= 30 THEN '1-30天'
+                    WHEN TRUNC(#{analysisDate}) - DUE_DATE &lt;= 60 THEN '31-60天'
+                    WHEN TRUNC(#{analysisDate}) - DUE_DATE &lt;= 90 THEN '61-90天'
+                    WHEN TRUNC(#{analysisDate}) - DUE_DATE &lt;= 180 THEN '91-180天'
+                    WHEN TRUNC(#{analysisDate}) - DUE_DATE &lt;= 365 THEN '181-365天'
+                    ELSE '1年以上'
+                END,
+                CASE
+                    WHEN TRUNC(#{analysisDate}) - DUE_DATE &lt;= 0 THEN 1
+                    WHEN TRUNC(#{analysisDate}) - DUE_DATE &lt;= 30 THEN 2
+                    WHEN TRUNC(#{analysisDate}) - DUE_DATE &lt;= 60 THEN 3
+                    WHEN TRUNC(#{analysisDate}) - DUE_DATE &lt;= 90 THEN 4
+                    WHEN TRUNC(#{analysisDate}) - DUE_DATE &lt;= 180 THEN 5
+                    WHEN TRUNC(#{analysisDate}) - DUE_DATE &lt;= 365 THEN 6
+                    ELSE 7
+                END
+        ) t
+        ORDER BY sortOrder
+    </select>
+
+    <!-- 查询应收结构分析 - 按业务类型分布 -->
+    <select id="selectReceivableByBusinessType" resultType="java.util.Map">
+        SELECT
+            BUSINESS_TYPE AS businessType,
+            CASE BUSINESS_TYPE
+                WHEN 1 THEN '销售收入'
+                WHEN 2 THEN '服务收入'
+                WHEN 3 THEN '租赁收入'
+                WHEN 4 THEN '其他收入'
+                ELSE '未知'
+            END AS businessTypeName,
+            SUM(REMAINING_AMOUNT) AS amount,
+            ROUND(SUM(REMAINING_AMOUNT) * 100 /
+                (SELECT NVL(SUM(REMAINING_AMOUNT), 1) FROM TBL_AR_RECEIVABLE
+                 WHERE IS_DELETED = 0 AND DOCUMENT_STATUS = 2 AND TENANT_ID = #{tenantId}), 2) AS percentage
+        FROM TBL_AR_RECEIVABLE
+        WHERE IS_DELETED = 0 AND DOCUMENT_STATUS = 2
+        <if test="tenantId != null">
+            AND TENANT_ID = #{tenantId}
+        </if>
+        GROUP BY BUSINESS_TYPE
+        ORDER BY SUM(REMAINING_AMOUNT) DESC
+    </select>
+
+    <!-- 查询客户应收排名 -->
+    <select id="selectCustomerReceivableRanking" resultType="java.util.Map">
+        SELECT * FROM (
+            SELECT
+                r.CUSTOMER_ID AS customerId,
+                c.CUSTOMER_NAME AS customerName,
+                SUM(r.REMAINING_AMOUNT) AS receivableBalance,
+                SUM(CASE WHEN r.DUE_DATE &lt; TRUNC(SYSDATE) THEN r.REMAINING_AMOUNT ELSE 0 END) AS overdueAmount,
+                NVL(ROUND(AVG(
+                    CASE WHEN r.DUE_DATE &lt; TRUNC(SYSDATE)
+                         THEN TRUNC(SYSDATE) - r.DUE_DATE
+                         ELSE 0
+                    END
+                ), 0), 0) AS averageAgingDays,
+                c.CREDIT_LEVEL AS creditLevel,
+                MAX(rec.RECEIPT_DATE) AS lastPaymentDate,
+                ROUND(NVL(SUM(r.RECEIVED_AMOUNT), 0) * 100 / NULLIF(SUM(r.RECEIVABLE_AMOUNT), 0), 1) AS collectionRate
+            FROM TBL_AR_RECEIVABLE r
+            LEFT JOIN TBL_AR_CUSTOMER c ON r.CUSTOMER_ID = c.CUSTOMER_ID AND c.IS_DELETED = 0
+            LEFT JOIN TBL_AR_RECEIPT rec ON r.CUSTOMER_ID = rec.CUSTOMER_ID AND rec.IS_DELETED = 0 AND rec.RECEIPT_STATUS = 1
+            WHERE r.IS_DELETED = 0 AND r.DOCUMENT_STATUS = 2
+            <if test="tenantId != null">
+                AND r.TENANT_ID = #{tenantId}
+            </if>
+            <if test="startDate != null">
+                AND r.CREATE_TIME &gt;= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND r.CREATE_TIME &lt;= #{endDate}
+            </if>
+            GROUP BY r.CUSTOMER_ID, c.CUSTOMER_NAME, c.CREDIT_LEVEL
+            ORDER BY
+                <choose>
+                    <when test="rankingType == 'overdue'">SUM(CASE WHEN r.DUE_DATE &lt; TRUNC(SYSDATE) THEN r.REMAINING_AMOUNT ELSE 0 END) DESC</when>
+                    <when test="rankingType == 'aging'">AVG(CASE WHEN r.DUE_DATE &lt; TRUNC(SYSDATE) THEN TRUNC(SYSDATE) - r.DUE_DATE ELSE 0 END) DESC</when>
+                    <otherwise>SUM(r.REMAINING_AMOUNT) DESC</otherwise>
+                </choose>
+        ) WHERE ROWNUM &lt;= #{topN}
+    </select>
+
+    <!-- 查询收款效率指标 -->
+    <select id="selectCollectionEfficiencyMetrics" resultType="java.util.Map">
+        SELECT
+            NVL(ROUND(AVG(rec.RECEIPT_DATE - r.CREATE_TIME), 0), 0) AS averageCollectionCycle,
+            NVL(ROUND(SUM(r.RECEIVABLE_AMOUNT) / NULLIF(AVG(r.REMAINING_AMOUNT), 0), 2), 0) AS receivableTurnover,
+            NVL(ROUND(SUM(CASE WHEN r.REMAINING_AMOUNT > 0 AND r.DUE_DATE &lt; TRUNC(SYSDATE) - 365 THEN r.REMAINING_AMOUNT ELSE 0 END) * 100 /
+                NULLIF(SUM(r.RECEIVABLE_AMOUNT), 0), 2), 0) AS badDebtRate
+        FROM TBL_AR_RECEIVABLE r
+        LEFT JOIN TBL_AR_RECEIPT rec ON r.CUSTOMER_ID = rec.CUSTOMER_ID AND rec.IS_DELETED = 0 AND rec.RECEIPT_STATUS = 1
+        WHERE r.IS_DELETED = 0 AND r.DOCUMENT_STATUS = 2
+        <if test="tenantId != null">
+            AND r.TENANT_ID = #{tenantId}
+        </if>
+        <if test="startDate != null">
+            AND r.CREATE_TIME &gt;= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND r.CREATE_TIME &lt;= #{endDate}
+        </if>
+    </select>
+
+    <!-- 查询月度收款效率明细 -->
+    <select id="selectMonthlyCollectionEfficiency" resultType="java.util.Map">
+        SELECT
+            TO_CHAR(r.CREATE_TIME, 'YYYY-MM') AS month,
+            SUM(r.RECEIVABLE_AMOUNT) AS receivableAmount,
+            SUM(r.RECEIVED_AMOUNT) AS collectedAmount,
+            ROUND(NVL(SUM(r.RECEIVED_AMOUNT), 0) * 100 / NULLIF(SUM(r.RECEIVABLE_AMOUNT), 0), 1) AS collectionRate,
+            NVL(ROUND(AVG(rec.RECEIPT_DATE - r.CREATE_TIME), 0), 0) AS averageCycle,
+            NVL(ROUND(SUM(r.RECEIVABLE_AMOUNT) / NULLIF(AVG(r.REMAINING_AMOUNT), 0), 2), 0) AS turnoverRate,
+            ROUND(NVL(SUM(CASE WHEN r.DUE_DATE &lt; TRUNC(SYSDATE) THEN r.REMAINING_AMOUNT ELSE 0 END), 0) * 100 /
+                NULLIF(SUM(r.RECEIVABLE_AMOUNT), 0), 1) AS overdueRate
+        FROM TBL_AR_RECEIVABLE r
+        LEFT JOIN TBL_AR_RECEIPT rec ON r.CUSTOMER_ID = rec.CUSTOMER_ID AND rec.IS_DELETED = 0 AND rec.RECEIPT_STATUS = 1
+        WHERE r.IS_DELETED = 0 AND r.DOCUMENT_STATUS = 2
+        <if test="tenantId != null">
+            AND r.TENANT_ID = #{tenantId}
+        </if>
+        <if test="startDate != null">
+            AND r.CREATE_TIME &gt;= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND r.CREATE_TIME &lt;= #{endDate}
+        </if>
+        GROUP BY TO_CHAR(r.CREATE_TIME, 'YYYY-MM')
+        ORDER BY TO_CHAR(r.CREATE_TIME, 'YYYY-MM')
+    </select>
+
+</mapper>
+

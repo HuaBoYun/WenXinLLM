@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.management.accountant.oracle.mapper.integration.BudgetMqMessageMapper">
+    <resultMap id="BaseResultMap" type="com.management.accountant.oracle.entity.integration.BudgetMqMessage">
+        <id column="MESSAGE_ID" property="messageId"/>
+        <result column="MQ_ID" property="mqId"/>
+        <result column="MESSAGE_TYPE" property="messageType"/>
+        <result column="PRIORITY" property="priority"/>
+        <result column="PAYLOAD" property="payload"/>
+        <result column="STATUS" property="status"/>
+        <result column="CREATED_TIME" property="createdTime"/>
+        <result column="UPDATED_TIME" property="updatedTime"/>
+    </resultMap>
+</mapper>

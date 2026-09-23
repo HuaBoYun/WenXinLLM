@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.TcBusinessSystemRegisterMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TcBusinessSystemRegister">
+        <id column="ID" jdbcType="VARCHAR" property="id"/>
+        <result column="ORG_ID" jdbcType="VARCHAR" property="orgId"/>
+        <result column="SYSTEM_CODE" jdbcType="VARCHAR" property="systemCode"/>
+        <result column="SYSTEM_NAME" jdbcType="VARCHAR" property="systemName"/>
+        <result column="SYSTEM_TYPE" jdbcType="VARCHAR" property="systemType"/>
+        <result column="SYSTEM_VERSION" jdbcType="VARCHAR" property="systemVersion"/>
+        <result column="VENDOR_NAME" jdbcType="VARCHAR" property="vendorName"/>
+        <result column="CONTACT_PERSON" jdbcType="VARCHAR" property="contactPerson"/>
+        <result column="CONTACT_PHONE" jdbcType="VARCHAR" property="contactPhone"/>
+        <result column="CONTACT_EMAIL" jdbcType="VARCHAR" property="contactEmail"/>
+        <result column="SYSTEM_STATUS" jdbcType="VARCHAR" property="systemStatus"/>
+        <result column="CONNECTION_URL" jdbcType="VARCHAR" property="connectionUrl"/>
+        <result column="API_VERSION" jdbcType="VARCHAR" property="apiVersion"/>
+        <result column="DESCRIPTION" jdbcType="VARCHAR" property="description"/>
+        <result column="IS_ENABLED" jdbcType="INTEGER" property="isEnabled"/>
+        <result column="CREATE_TIME" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="UPDATE_TIME" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="CREATE_USER" jdbcType="VARCHAR" property="createUser"/>
+        <result column="UPDATE_USER" jdbcType="VARCHAR" property="updateUser"/>
+        <result column="REMARK" jdbcType="VARCHAR" property="remark"/>
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        ID, ORG_ID, SYSTEM_CODE, SYSTEM_NAME, SYSTEM_TYPE, SYSTEM_VERSION, VENDOR_NAME,
+        CONTACT_PERSON, CONTACT_PHONE, CONTACT_EMAIL, SYSTEM_STATUS, CONNECTION_URL,
+        API_VERSION, DESCRIPTION, IS_ENABLED, CREATE_TIME, UPDATE_TIME, CREATE_USER,
+        UPDATE_USER, REMARK
+    </sql>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_BUSINESS_SYSTEM_REGISTER
+        WHERE ID = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <!-- 根据系统编码查询 -->
+    <select id="selectBySystemCode" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_BUSINESS_SYSTEM_REGISTER
+        WHERE SYSTEM_CODE = #{systemCode,jdbcType=VARCHAR}
+    </select>
+
+    <!-- 分页查询 -->
+    <select id="selectPage" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_BUSINESS_SYSTEM_REGISTER
+        WHERE 1=1
+        <if test="orgId != null and orgId != ''">
+            AND ORG_ID = #{orgId,jdbcType=VARCHAR}
+        </if>
+        <if test="systemCode != null and systemCode != ''">
+            AND SYSTEM_CODE LIKE '%' || #{systemCode,jdbcType=VARCHAR} || '%'
+        </if>
+        <if test="systemName != null and systemName != ''">
+            AND SYSTEM_NAME LIKE '%' || #{systemName,jdbcType=VARCHAR} || '%'
+        </if>
+        <if test="systemType != null and systemType != ''">
+            AND SYSTEM_TYPE = #{systemType,jdbcType=VARCHAR}
+        </if>
+        <if test="systemStatus != null and systemStatus != ''">
+            AND SYSTEM_STATUS = #{systemStatus,jdbcType=VARCHAR}
+        </if>
+        <if test="vendorName != null and vendorName != ''">
+            AND VENDOR_NAME LIKE '%' || #{vendorName,jdbcType=VARCHAR} || '%'
+        </if>
+        ORDER BY CREATE_TIME DESC
+        OFFSET #{offset,jdbcType=INTEGER} ROWS FETCH NEXT #{pageSize,jdbcType=INTEGER} ROWS ONLY
+    </select>
+
+    <!-- 统计总数 -->
+    <select id="countTotal" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM TBL_BUSINESS_SYSTEM_REGISTER
+        WHERE 1=1
+        <if test="orgId != null and orgId != ''">
+            AND ORG_ID = #{orgId,jdbcType=VARCHAR}
+        </if>
+        <if test="systemCode != null and systemCode != ''">
+            AND SYSTEM_CODE LIKE '%' || #{systemCode,jdbcType=VARCHAR} || '%'
+        </if>
+        <if test="systemName != null and systemName != ''">
+            AND SYSTEM_NAME LIKE '%' || #{systemName,jdbcType=VARCHAR} || '%'
+        </if>
+        <if test="systemType != null and systemType != ''">
+            AND SYSTEM_TYPE = #{systemType,jdbcType=VARCHAR}
+        </if>
+        <if test="systemStatus != null and systemStatus != ''">
+            AND SYSTEM_STATUS = #{systemStatus,jdbcType=VARCHAR}
+        </if>
+        <if test="vendorName != null and vendorName != ''">
+            AND VENDOR_NAME LIKE '%' || #{vendorName,jdbcType=VARCHAR} || '%'
+        </if>
+    </select>
+
+    <!-- 插入 -->
+    <insert id="insert" parameterType="com.global.treasurer.entity.TcBusinessSystemRegister">
+        INSERT INTO TBL_BUSINESS_SYSTEM_REGISTER (
+            ID, ORG_ID, SYSTEM_CODE, SYSTEM_NAME, SYSTEM_TYPE, SYSTEM_VERSION,
+            VENDOR_NAME, CONTACT_PERSON, CONTACT_PHONE, CONTACT_EMAIL, SYSTEM_STATUS,
+            CONNECTION_URL, API_VERSION, DESCRIPTION, IS_ENABLED, CREATE_TIME,
+            CREATE_USER, REMARK
+        ) VALUES (
+            #{id,jdbcType=VARCHAR}, #{orgId,jdbcType=VARCHAR}, #{systemCode,jdbcType=VARCHAR},
+            #{systemName,jdbcType=VARCHAR}, #{systemType,jdbcType=VARCHAR}, #{systemVersion,jdbcType=VARCHAR},
+            #{vendorName,jdbcType=VARCHAR}, #{contactPerson,jdbcType=VARCHAR}, #{contactPhone,jdbcType=VARCHAR},
+            #{contactEmail,jdbcType=VARCHAR}, #{systemStatus,jdbcType=VARCHAR}, #{connectionUrl,jdbcType=VARCHAR},
+            #{apiVersion,jdbcType=VARCHAR}, #{description,jdbcType=VARCHAR}, #{isEnabled,jdbcType=INTEGER},
+            #{createTime,jdbcType=TIMESTAMP}, #{createUser,jdbcType=VARCHAR}, #{remark,jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <!-- 更新 -->
+    <update id="update" parameterType="com.global.treasurer.entity.TcBusinessSystemRegister">
+        UPDATE TBL_BUSINESS_SYSTEM_REGISTER
+        SET ORG_ID = #{orgId,jdbcType=VARCHAR},
+            SYSTEM_CODE = #{systemCode,jdbcType=VARCHAR},
+            SYSTEM_NAME = #{systemName,jdbcType=VARCHAR},
+            SYSTEM_TYPE = #{systemType,jdbcType=VARCHAR},
+            SYSTEM_VERSION = #{systemVersion,jdbcType=VARCHAR},
+            VENDOR_NAME = #{vendorName,jdbcType=VARCHAR},
+            CONTACT_PERSON = #{contactPerson,jdbcType=VARCHAR},
+            CONTACT_PHONE = #{contactPhone,jdbcType=VARCHAR},
+            CONTACT_EMAIL = #{contactEmail,jdbcType=VARCHAR},
+            SYSTEM_STATUS = #{systemStatus,jdbcType=VARCHAR},
+            CONNECTION_URL = #{connectionUrl,jdbcType=VARCHAR},
+            API_VERSION = #{apiVersion,jdbcType=VARCHAR},
+            DESCRIPTION = #{description,jdbcType=VARCHAR},
+            IS_ENABLED = #{isEnabled,jdbcType=INTEGER},
+            UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP},
+            UPDATE_USER = #{updateUser,jdbcType=VARCHAR},
+            REMARK = #{remark,jdbcType=VARCHAR}
+        WHERE ID = #{id,jdbcType=VARCHAR}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <delete id="deleteById" parameterType="java.lang.String">
+        DELETE FROM TBL_BUSINESS_SYSTEM_REGISTER
+        WHERE ID = #{id,jdbcType=VARCHAR}
+    </delete>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete">
+        DELETE FROM TBL_BUSINESS_SYSTEM_REGISTER
+        WHERE ID IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id,jdbcType=VARCHAR}
+        </foreach>
+    </delete>
+
+    <!-- 根据组织ID查询 -->
+    <select id="selectByOrgId" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_BUSINESS_SYSTEM_REGISTER
+        WHERE ORG_ID = #{orgId,jdbcType=VARCHAR}
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据系统类型查询 -->
+    <select id="selectBySystemType" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_BUSINESS_SYSTEM_REGISTER
+        WHERE SYSTEM_TYPE = #{systemType,jdbcType=VARCHAR}
+        <if test="orgId != null and orgId != ''">
+            AND ORG_ID = #{orgId,jdbcType=VARCHAR}
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据系统状态查询 -->
+    <select id="selectBySystemStatus" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_BUSINESS_SYSTEM_REGISTER
+        WHERE SYSTEM_STATUS = #{systemStatus,jdbcType=VARCHAR}
+        <if test="orgId != null and orgId != ''">
+            AND ORG_ID = #{orgId,jdbcType=VARCHAR}
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 查询所有激活状态的业务系统 -->
+    <select id="selectActiveSystems" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_BUSINESS_SYSTEM_REGISTER
+        WHERE SYSTEM_STATUS = 'ACTIVE'
+        AND IS_ENABLED = 1
+        <if test="orgId != null and orgId != ''">
+            AND ORG_ID = #{orgId,jdbcType=VARCHAR}
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据厂商名称查询 -->
+    <select id="selectByVendorName" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_BUSINESS_SYSTEM_REGISTER
+        WHERE VENDOR_NAME LIKE '%' || #{vendorName,jdbcType=VARCHAR} || '%'
+        <if test="orgId != null and orgId != ''">
+            AND ORG_ID = #{orgId,jdbcType=VARCHAR}
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+</mapper>

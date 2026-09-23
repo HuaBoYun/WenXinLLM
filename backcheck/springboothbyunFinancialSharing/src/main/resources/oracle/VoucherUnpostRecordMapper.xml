@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.oracle.mapper.VoucherUnpostRecordMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.financial.sharing.oracle.entity.VoucherUnpostRecordEntity">
+        <id column="RECORD_ID" property="recordId"/>
+        <result column="VOUCHER_ID" property="voucherId"/>
+        <result column="VOUCHER_NO" property="voucherNo"/>
+        <result column="VOUCHER_TYPE" property="voucherType"/>
+        <result column="TOTAL_AMOUNT" property="totalAmount"/>
+        <result column="POSTING_TIME" property="postingTime"/>
+        <result column="POSTING_BY" property="postingBy"/>
+        <result column="POSTING_BY_NAME" property="postingByName"/>
+        <result column="UNPOST_REASON" property="unpostReason"/>
+        <result column="UNPOST_TIME" property="unpostTime"/>
+        <result column="UNPOST_BY" property="unpostBy"/>
+        <result column="UNPOST_BY_NAME" property="unpostByName"/>
+        <result column="UNPOST_STATUS" property="unpostStatus"/>
+        <result column="REPOST_TIME" property="repostTime"/>
+        <result column="REPOST_BY" property="repostBy"/>
+        <result column="REPOST_BY_NAME" property="repostByName"/>
+        <result column="BOOK_ID" property="bookId"/>
+        <result column="TENANT_ID" property="tenantId"/>
+        <result column="REMARK" property="remark"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="IS_DELETED" property="isDeleted"/>
+    </resultMap>
+
+    <!-- 分页查询反过账记录列表 -->
+    <select id="selectUnpostRecordPage" resultType="java.util.Map">
+        SELECT
+            RECORD_ID as "recordId",
+            VOUCHER_ID as "voucherId",
+            VOUCHER_NO as "voucherNo",
+            VOUCHER_TYPE as "voucherType",
+            TOTAL_AMOUNT as "totalAmount",
+            POSTING_TIME as "postingTime",
+            POSTING_BY as "postingBy",
+            POSTING_BY_NAME as "postingByName",
+            UNPOST_REASON as "unpostReason",
+            UNPOST_TIME as "unpostTime",
+            UNPOST_BY as "unpostBy",
+            UNPOST_BY_NAME as "unpostByName",
+            UNPOST_STATUS as "unpostStatus",
+            REPOST_TIME as "repostTime",
+            REPOST_BY as "repostBy",
+            REPOST_BY_NAME as "repostByName",
+            BOOK_ID as "bookId",
+            TENANT_ID as "tenantId",
+            REMARK as "remark",
+            CREATE_TIME as "createTime"
+        FROM TBL_VOUCHER_UNPOST_RECORD
+        WHERE IS_DELETED = 0
+        <if test="param.voucherNo != null and param.voucherNo != ''">
+            AND VOUCHER_NO LIKE '%' || #{param.voucherNo} || '%'
+        </if>
+        <if test="param.voucherType != null and param.voucherType != ''">
+            AND VOUCHER_TYPE = #{param.voucherType}
+        </if>
+        <if test="param.unpostStatus != null and param.unpostStatus != ''">
+            AND UNPOST_STATUS = #{param.unpostStatus}
+        </if>
+        <if test="param.startDate != null and param.startDate != ''">
+            AND UNPOST_TIME &gt;= TO_TIMESTAMP(#{param.startDate}, 'YYYY-MM-DD HH24:MI:SS')
+        </if>
+        <if test="param.endDate != null and param.endDate != ''">
+            AND UNPOST_TIME &lt;= TO_TIMESTAMP(#{param.endDate}, 'YYYY-MM-DD HH24:MI:SS')
+        </if>
+        <if test="param.bookId != null">
+            AND BOOK_ID = #{param.bookId}
+        </if>
+        <if test="param.tenantId != null">
+            AND TENANT_ID = #{param.tenantId}
+        </if>
+        ORDER BY UNPOST_TIME DESC
+    </select>
+
+    <!-- 查询反过账记录总数 -->
+    <select id="selectUnpostRecordCount" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM TBL_VOUCHER_UNPOST_RECORD
+        WHERE IS_DELETED = 0
+        <if test="param.voucherNo != null and param.voucherNo != ''">
+            AND VOUCHER_NO LIKE '%' || #{param.voucherNo} || '%'
+        </if>
+        <if test="param.voucherType != null and param.voucherType != ''">
+            AND VOUCHER_TYPE = #{param.voucherType}
+        </if>
+        <if test="param.unpostStatus != null and param.unpostStatus != ''">
+            AND UNPOST_STATUS = #{param.unpostStatus}
+        </if>
+        <if test="param.startDate != null and param.startDate != ''">
+            AND UNPOST_TIME &gt;= TO_TIMESTAMP(#{param.startDate}, 'YYYY-MM-DD HH24:MI:SS')
+        </if>
+        <if test="param.endDate != null and param.endDate != ''">
+            AND UNPOST_TIME &lt;= TO_TIMESTAMP(#{param.endDate}, 'YYYY-MM-DD HH24:MI:SS')
+        </if>
+        <if test="param.bookId != null">
+            AND BOOK_ID = #{param.bookId}
+        </if>
+        <if test="param.tenantId != null">
+            AND TENANT_ID = #{param.tenantId}
+        </if>
+    </select>
+
+    <!-- 根据凭证ID查询反过账记录 -->
+    <select id="selectByVoucherId" resultMap="BaseResultMap">
+        SELECT * FROM TBL_VOUCHER_UNPOST_RECORD
+        WHERE VOUCHER_ID = #{voucherId} AND IS_DELETED = 0
+        ORDER BY UNPOST_TIME DESC
+    </select>
+
+    <!-- 插入反过账记录 -->
+    <insert id="insertUnpostRecord">
+        INSERT INTO TBL_VOUCHER_UNPOST_RECORD (
+            RECORD_ID, VOUCHER_ID, VOUCHER_NO, VOUCHER_TYPE, TOTAL_AMOUNT,
+            POSTING_TIME, POSTING_BY, POSTING_BY_NAME, UNPOST_REASON, UNPOST_TIME,
+            UNPOST_BY, UNPOST_BY_NAME, UNPOST_STATUS, BOOK_ID, TENANT_ID, REMARK,
+            CREATE_TIME, UPDATE_TIME, IS_DELETED
+        ) VALUES (
+            SEQ_VOUCHER_UNPOST_RECORD.NEXTVAL, #{record.voucherId}, #{record.voucherNo},
+            #{record.voucherType}, #{record.totalAmount}, #{record.postingTime},
+            #{record.postingBy}, #{record.postingByName}, #{record.unpostReason}, SYSDATE,
+            #{record.unpostBy}, #{record.unpostByName}, 'UNPOSTED', #{record.bookId},
+            #{record.tenantId}, #{record.remark}, SYSDATE, SYSDATE, 0
+        )
+    </insert>
+
+    <!-- 更新反过账记录状态 -->
+    <update id="updateUnpostStatus">
+        UPDATE TBL_VOUCHER_UNPOST_RECORD
+        SET UNPOST_STATUS = #{status},
+            REPOST_TIME = SYSDATE,
+            REPOST_BY = #{repostBy},
+            REPOST_BY_NAME = #{repostByName},
+            UPDATE_TIME = SYSDATE
+        WHERE RECORD_ID = #{recordId}
+    </update>
+
+</mapper>
+

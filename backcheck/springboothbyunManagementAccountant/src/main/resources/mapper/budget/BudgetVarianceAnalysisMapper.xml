@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.management.accountant.oracle.mapper.budget.BudgetVarianceAnalysisMapper">
+
+    <!-- 与 BudgetVarianceAnalysis.java 实体类字段严格对齐 -->
+    <resultMap id="BaseResultMap" type="com.management.accountant.oracle.entity.budget.BudgetVarianceAnalysis">
+        <id     column="ID"                   property="id"/>
+        <result column="ANALYSIS_CODE"        property="analysisCode"/>
+        <result column="ANALYSIS_NAME"        property="analysisName"/>
+        <result column="BUDGET_ID"            property="budgetId"/>
+        <result column="BUDGET_YEAR"          property="budgetYear"/>
+        <result column="BUDGET_PERIOD"        property="budgetPeriod"/>
+        <result column="ORGANIZATION_ID"      property="organizationId"/>
+        <result column="ORGANIZATION_NAME"    property="organizationName"/>
+        <result column="ACCOUNT_ID"           property="accountId"/>
+        <result column="ACCOUNT_NAME"         property="accountName"/>
+        <result column="BUDGET_AMOUNT"        property="budgetAmount"/>
+        <result column="ACTUAL_AMOUNT"        property="actualAmount"/>
+        <result column="VARIANCE_AMOUNT"      property="varianceAmount"/>
+        <result column="VARIANCE_RATE"        property="varianceRate"/>
+        <result column="VARIANCE_TYPE"        property="varianceType"/>
+        <result column="VARIANCE_REASON"      property="varianceReason"/>
+        <result column="ANALYSIS_DESCRIPTION" property="analysisDescription"/>
+        <result column="IMPROVEMENT_MEASURES" property="improvementMeasures"/>
+        <result column="ANALYSIS_RESULT"      property="analysisResult"/>
+        <result column="ANALYSIS_DIMENSION"   property="analysisDimension"/>
+        <result column="ANALYSIS_STATUS"      property="analysisStatus"/>
+        <result column="ANALYZED_BY"          property="analyzedBy"/>
+        <result column="ANALYZED_TIME"        property="analyzedTime"/>
+        <result column="REVIEWED_BY"          property="reviewedBy"/>
+        <result column="REVIEWED_TIME"        property="reviewedTime"/>
+        <result column="REMARK"               property="remark"/>
+        <result column="CREATE_BY"            property="createBy"/>
+        <result column="CREATE_TIME"          property="createTime"/>
+        <result column="UPDATE_BY"            property="updateBy"/>
+        <result column="UPDATE_TIME"          property="updateTime"/>
+        <result column="DEL_FLAG"             property="delFlag"/>
+    </resultMap>
+
+    <!-- 通用查询条件片段 -->
+    <sql id="whereClause">
+        <where>
+            <if test="delFlag != null">AND DEL_FLAG = #{delFlag}</if>
+            <if test="delFlag == null">AND DEL_FLAG = 0</if>
+            <if test="organizationId != null and organizationId != ''">AND ORGANIZATION_ID = #{organizationId}</if>
+            <if test="accountId != null and accountId != ''">AND ACCOUNT_ID = #{accountId}</if>
+            <if test="varianceType != null and varianceType != '' and varianceType != 'ALL'">AND VARIANCE_TYPE = #{varianceType}</if>
+            <if test="budgetYear != null">AND BUDGET_YEAR = #{budgetYear}</if>
+            <if test="budgetPeriod != null and budgetPeriod != ''">AND BUDGET_PERIOD = #{budgetPeriod}</if>
+            <if test="analysisStatus != null and analysisStatus != ''">AND ANALYSIS_STATUS = #{analysisStatus}</if>
+            <if test="startDate != null and startDate != ''">AND ANALYZED_TIME &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')</if>
+            <if test="endDate != null and endDate != ''">AND ANALYZED_TIME &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD') + 1</if>
+        </where>
+    </sql>
+
+    <!-- 分页查询 -->
+    <select id="selectByPage" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BUDGET_VARIANCE_ANALYSIS
+        <include refid="whereClause"/>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 统计数据查询 -->
+    <select id="selectStats" resultType="java.util.Map">
+        SELECT
+            COUNT(*)                                              AS TOTAL_COUNT,
+            NVL(SUM(ABS(VARIANCE_AMOUNT)), 0)                    AS TOTAL_VARIANCE,
+            NVL(SUM(CASE WHEN VARIANCE_AMOUNT > 0 THEN VARIANCE_AMOUNT ELSE 0 END), 0) AS POSITIVE_VARIANCE,
+            NVL(SUM(CASE WHEN VARIANCE_AMOUNT &lt; 0 THEN ABS(VARIANCE_AMOUNT) ELSE 0 END), 0) AS NEGATIVE_VARIANCE,
+            NVL(SUM(BUDGET_AMOUNT), 0)                           AS TOTAL_BUDGET,
+            CASE WHEN SUM(BUDGET_AMOUNT) = 0 THEN 0
+                 ELSE ROUND(SUM(ABS(VARIANCE_AMOUNT)) / SUM(BUDGET_AMOUNT) * 100, 2) END AS VARIANCE_RATE
+        FROM TBL_BUDGET_VARIANCE_ANALYSIS
+        WHERE DEL_FLAG = 0
+    </select>
+
+    <!-- 按月份统计图表数据（差异趋势）：用 NVL(ANALYZED_TIME, CREATE_TIME) 兜底，不过滤NULL -->
+    <select id="selectMonthlyChartData" resultType="java.util.Map">
+        SELECT
+            TO_CHAR(NVL(ANALYZED_TIME, CREATE_TIME), 'YYYY-MM')       AS MONTH_KEY,
+            TO_CHAR(NVL(ANALYZED_TIME, CREATE_TIME), 'MM') || '月'     AS MONTH_LABEL,
+            NVL(SUM(CASE WHEN VARIANCE_AMOUNT > 0 THEN VARIANCE_AMOUNT ELSE 0 END), 0) AS POSITIVE_AMOUNT,
+            NVL(SUM(CASE WHEN VARIANCE_AMOUNT &lt; 0 THEN ABS(VARIANCE_AMOUNT) ELSE 0 END), 0) AS NEGATIVE_AMOUNT,
+            CASE WHEN NVL(SUM(BUDGET_AMOUNT), 0) = 0 THEN 0
+                 ELSE ROUND(SUM(ABS(VARIANCE_AMOUNT)) / SUM(BUDGET_AMOUNT) * 100, 2) END AS RATE
+        FROM TBL_BUDGET_VARIANCE_ANALYSIS
+        WHERE DEL_FLAG = 0
+          AND NVL(ANALYZED_TIME, CREATE_TIME) &gt;= ADD_MONTHS(SYSDATE, -12)
+        GROUP BY TO_CHAR(NVL(ANALYZED_TIME, CREATE_TIME), 'YYYY-MM'),
+                 TO_CHAR(NVL(ANALYZED_TIME, CREATE_TIME), 'MM') || '月'
+        ORDER BY MONTH_KEY ASC
+    </select>
+
+    <!-- 按季度统计图表数据（差异趋势，近6个季度） -->
+    <select id="selectQuarterlyChartData" resultType="java.util.Map">
+        SELECT
+            TO_CHAR(NVL(ANALYZED_TIME, CREATE_TIME), 'YYYY') || 'Q' || TO_CHAR(NVL(ANALYZED_TIME, CREATE_TIME), 'Q') AS QUARTER_KEY,
+            TO_CHAR(NVL(ANALYZED_TIME, CREATE_TIME), 'YYYY') || '年Q' || TO_CHAR(NVL(ANALYZED_TIME, CREATE_TIME), 'Q') AS QUARTER_LABEL,
+            NVL(SUM(CASE WHEN VARIANCE_AMOUNT > 0 THEN VARIANCE_AMOUNT ELSE 0 END), 0) AS POSITIVE_AMOUNT,
+            NVL(SUM(CASE WHEN VARIANCE_AMOUNT &lt; 0 THEN ABS(VARIANCE_AMOUNT) ELSE 0 END), 0) AS NEGATIVE_AMOUNT,
+            CASE WHEN NVL(SUM(BUDGET_AMOUNT), 0) = 0 THEN 0
+                 ELSE ROUND(SUM(ABS(VARIANCE_AMOUNT)) / SUM(BUDGET_AMOUNT) * 100, 2) END AS RATE
+        FROM TBL_BUDGET_VARIANCE_ANALYSIS
+        WHERE DEL_FLAG = 0
+          AND NVL(ANALYZED_TIME, CREATE_TIME) &gt;= ADD_MONTHS(SYSDATE, -18)
+        GROUP BY TO_CHAR(NVL(ANALYZED_TIME, CREATE_TIME), 'YYYY') || 'Q' || TO_CHAR(NVL(ANALYZED_TIME, CREATE_TIME), 'Q'),
+                 TO_CHAR(NVL(ANALYZED_TIME, CREATE_TIME), 'YYYY') || '年Q' || TO_CHAR(NVL(ANALYZED_TIME, CREATE_TIME), 'Q')
+        ORDER BY QUARTER_KEY ASC
+    </select>
+
+    <!-- 按年度统计图表数据（差异趋势，近5年） -->
+    <select id="selectYearlyChartData" resultType="java.util.Map">
+        SELECT
+            TO_CHAR(NVL(ANALYZED_TIME, CREATE_TIME), 'YYYY')           AS YEAR_KEY,
+            TO_CHAR(NVL(ANALYZED_TIME, CREATE_TIME), 'YYYY') || '年'    AS YEAR_LABEL,
+            NVL(SUM(CASE WHEN VARIANCE_AMOUNT > 0 THEN VARIANCE_AMOUNT ELSE 0 END), 0) AS POSITIVE_AMOUNT,
+            NVL(SUM(CASE WHEN VARIANCE_AMOUNT &lt; 0 THEN ABS(VARIANCE_AMOUNT) ELSE 0 END), 0) AS NEGATIVE_AMOUNT,
+            CASE WHEN NVL(SUM(BUDGET_AMOUNT), 0) = 0 THEN 0
+                 ELSE ROUND(SUM(ABS(VARIANCE_AMOUNT)) / SUM(BUDGET_AMOUNT) * 100, 2) END AS RATE
+        FROM TBL_BUDGET_VARIANCE_ANALYSIS
+        WHERE DEL_FLAG = 0
+          AND NVL(ANALYZED_TIME, CREATE_TIME) &gt;= ADD_MONTHS(SYSDATE, -60)
+        GROUP BY TO_CHAR(NVL(ANALYZED_TIME, CREATE_TIME), 'YYYY'),
+                 TO_CHAR(NVL(ANALYZED_TIME, CREATE_TIME), 'YYYY') || '年'
+        ORDER BY YEAR_KEY ASC
+    </select>
+
+    <!-- 差异分布：按部门（ORGANIZATION_NAME）分组，取差异金额绝对值 -->
+    <select id="selectDistributionByDept" resultType="java.util.Map">
+        SELECT
+            NVL(ORGANIZATION_NAME, '未知部门')                           AS DIST_NAME,
+            NVL(SUM(ABS(VARIANCE_AMOUNT)), 0)                           AS DIST_VALUE
+        FROM TBL_BUDGET_VARIANCE_ANALYSIS
+        WHERE DEL_FLAG = 0
+          AND ABS(NVL(VARIANCE_AMOUNT, 0)) > 0
+        GROUP BY ORGANIZATION_NAME
+        ORDER BY DIST_VALUE DESC
+    </select>
+
+    <!-- 差异分布：按预算科目（ACCOUNT_NAME）分组 -->
+    <select id="selectDistributionByAccount" resultType="java.util.Map">
+        SELECT
+            NVL(ACCOUNT_NAME, '未知科目')                                AS DIST_NAME,
+            NVL(SUM(ABS(VARIANCE_AMOUNT)), 0)                           AS DIST_VALUE
+        FROM TBL_BUDGET_VARIANCE_ANALYSIS
+        WHERE DEL_FLAG = 0
+          AND ABS(NVL(VARIANCE_AMOUNT, 0)) > 0
+        GROUP BY ACCOUNT_NAME
+        ORDER BY DIST_VALUE DESC
+    </select>
+
+    <!-- 差异分布：按差异类型（VARIANCE_TYPE）分组（正差异/负差异/无差异） -->
+    <select id="selectDistributionByProject" resultType="java.util.Map">
+        SELECT
+            CASE VARIANCE_TYPE
+                WHEN 'POSITIVE' THEN '正差异'
+                WHEN 'NEGATIVE' THEN '负差异'
+                WHEN 'ZERO'     THEN '无差异'
+                ELSE NVL(VARIANCE_TYPE, '其他')
+            END                                                          AS DIST_NAME,
+            NVL(SUM(ABS(VARIANCE_AMOUNT)), 0)                           AS DIST_VALUE
+        FROM TBL_BUDGET_VARIANCE_ANALYSIS
+        WHERE DEL_FLAG = 0
+        GROUP BY VARIANCE_TYPE
+        ORDER BY DIST_VALUE DESC
+    </select>
+
+    <!-- 对比分析数据（按期间汇总） -->
+    <select id="selectCompareData" resultType="java.util.Map" parameterType="java.lang.String">
+        SELECT
+            TO_CHAR(ANALYZED_TIME, 'YYYY"年"Q"季度"') AS PERIOD_NAME,
+            NVL(SUM(BUDGET_AMOUNT), 0)               AS BUDGET_AMOUNT,
+            NVL(SUM(ACTUAL_AMOUNT), 0)               AS ACTUAL_AMOUNT,
+            NVL(SUM(VARIANCE_AMOUNT), 0)             AS VARIANCE_AMOUNT
+        FROM TBL_BUDGET_VARIANCE_ANALYSIS
+        WHERE DEL_FLAG = 0
+          AND ID = #{id}
+        GROUP BY TO_CHAR(ANALYZED_TIME, 'YYYY"年"Q"季度"')
+        ORDER BY PERIOD_NAME ASC
+    </select>
+
+    <!-- 更新差异原因 -->
+    <update id="updateReasonById">
+        UPDATE TBL_BUDGET_VARIANCE_ANALYSIS
+        SET VARIANCE_REASON     = #{varianceReason},
+            IMPROVEMENT_MEASURES = #{improvementMeasures},
+            REVIEWED_BY         = #{reviewedBy},
+            UPDATE_TIME         = SYSDATE
+        WHERE ID = #{id}
+          AND DEL_FLAG = 0
+    </update>
+
+    <!-- 批量逻辑删除 -->
+    <update id="batchDelete">
+        UPDATE TBL_BUDGET_VARIANCE_ANALYSIS SET DEL_FLAG = 1, UPDATE_TIME = SYSDATE
+        WHERE ID IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+    </update>
+
+</mapper>
+

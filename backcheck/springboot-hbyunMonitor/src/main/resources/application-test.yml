@@ -1,0 +1,107 @@
+spring:
+ application:
+  name: hbyunMonitorModule #应用名称
+ http:
+  encoding:
+   force: true
+  charset: UTF-8
+  enabled: true
+ datasource:
+  type: com.alibaba.druid.pool.DruidDataSource
+  #Oracle数据库配置
+  oracle:
+   url: jdbc:oracle:thin:@192.0.2.200:1521:orcl
+   username: HBGRCTEST
+   password: HBGRCTEST
+   driverClassName: oracle.jdbc.driver.OracleDriver
+ druid:
+  oracle:
+   initialSize: 5
+   minIdle: 5
+   maxActive: 20
+   maxWait: 60000
+   timeBetweenEvictionRunsMillis: 60000
+   minEvictableIdleTimeMillis: 300000
+   validationQuery: SELECT 1 FROM DUAL
+   testWhileIdle: true
+   testOnBorrow: false
+   testOnReturn: false
+   poolPreparedStatement: true
+   maxPoolPreparedStatementPerConnectionSize: 20
+   filters: stat,wall,log4j
+   connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+
+  #Mysql数据库配置
+  mysql:
+   url: jdbc:mysql://192.0.2.200:3306/hbgrcccc?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&serverTimezone=GMT%2B8
+   username: ROOT
+   password: HBGRC
+   driverClassName: com.mysql.jdbc.Driver
+  druid:
+   mysql:
+    initialSize: 5
+    minIdle: 5
+    maxActive: 20
+    maxWait: 60000
+    timeBetweenEvictionRunsMillis: 60000
+    minEvictableIdleTimeMillis: 300000
+    validationQuery: SELECT 1 FROM DUAL
+    testWhileIdle: true
+    testOnBorrow: false
+    testOnReturn: false
+    poolPreparedStatement: true
+    maxPoolPreparedStatementPerConnectionSize: 20
+    filters: stat,wall,log4j
+    connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+    
+#通用mapper配置
+mapper:
+ mappers: tk.mybatis.mapper.common.Mapper
+ not-empty: false
+ identity: oracle
+ before: true
+
+mysqlmapper:
+ mappers: tk.mybatis.mapper.common.MySqlMapper
+ not-empty: false
+ identity: mysql
+ before: true
+#日志配置
+logging:
+ level:
+  org:
+   springframework: WARN
+   spring:
+    springboot:
+     dao: info
+  com:
+   dc:
+    pcasweb:
+     mapper: debug
+ file: logs/spring-boot-logging.log
+ 
+#eureka服务注册中心配置
+eureka:
+ instance:
+  ip-address: 127.0.0.1
+  instance-id: hbyunSystemSetting-8763
+  prefer-ip-address: true
+  hostname: hbyun-systemSetting-service
+ client:
+  register-with-eureka: false
+  fetch-registry: false
+  serviceUrl:
+   defaultZone: http://hbyunadmin:hbEureka12345@127.0.0.1:8761/eureka
+security:
+  basic:
+    enabled: false
+
+#redis配置
+redisAddressIp: 192.0.2.200
+redisAddressPort: 6379
+redisPwd: 123456
+redisMaxTotal: 512
+redisMaxIdle: 100
+redisMaxWait: 10000
+redisTimeOut: 1000
+redisTextonBorrow: true

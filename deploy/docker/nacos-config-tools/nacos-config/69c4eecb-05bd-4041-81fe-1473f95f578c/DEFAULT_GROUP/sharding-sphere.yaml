@@ -1,0 +1,45 @@
+databaseName: shardingsphere
+dataSources: # 数据源配置 =============
+  <数据源_0>: # 自定义数据源名称
+    dataSourceClassName: com.zaxxer.hikari.HikariDataSource # 连接池提供方完整类名（Spring默认Hikari）
+    driverClassName: com.mysql.jdbc.Driver # JDBC驱动
+    jdbcUrl: jdbc:mysql://{host}:{port}/{dbName}?serverTimezone=UTC&useSSL=false&useUnicode=true&characterEncoding=UTF-8 # 数据库连接URL
+    username: {username} # 用户
+    password: {password} # 密码
+  <数据源_1>: # 自定义数据源名称
+    dataSourceClassName: com.alibaba.druid.pool.DruidDataSource # 连接池提供方完整类名（Spring默认Hikari）
+    driverClassName: com.mysql.jdbc.Driver # JDBC驱动
+    url: jdbc:mysql://{host}:{port}/{dbName}?serverTimezone=UTC&useSSL=false&useUnicode=true&characterEncoding=UTF-8 # 数据库连接URL
+    username: {username} # 用户
+    password: {password} # 密码
+rules: # 规则 =============
+- !SHARDING # 注意类似“- !SHARDING”标识不能省略
+  tables:
+    <逻辑表名>: # 自定义逻辑表名
+      actualDataNodes: <数据源>_${0..1}.<逻辑表名>_${0..1} # 由数据源名 + 表名组成（参考 Inline 语法规则）
+      tableStrategy: # 表策略 -------
+        standard:
+          shardingColumn: <f_id> # 分表依据字段
+          shardingAlgorithmName: <表算法>
+      keyGenerateStrategy:
+        column: <f_id> # 表主键策略
+        keyGeneratorName: <主键策略>
+
+  defaultDatabaseStrategy: # 库策略 -------
+    standard:
+      shardingColumn: <f_id>
+      shardingAlgorithmName: <库算法>
+  shardingAlgorithms: # 分片算法 -------
+    <库算法>: # 自定义算法名
+      type: INLINE
+      props:
+        algorithm-expression: 库名_${<f_id> % 2}
+    <表算法>: # 自定义算法名
+      type: INLINE
+      props:
+        algorithm-expression: 逻辑表名_${<f_id> % 2}
+  keyGenerators:
+    <主键策略>: # 自定义主键策略名
+      type: SNOWFLAKE
+props:
+  sql-show: true

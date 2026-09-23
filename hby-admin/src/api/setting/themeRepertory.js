@@ -197,7 +197,7 @@ export function modifyRiskClass(data) {
 
 export function ssfx(data) {
   return request({
-    url: '/setting/yinMai/paikeSingLogin ',
+    url: '/setting/ym/paikeSingLogin ',
     method: 'get',
     params: transData(data),
   })

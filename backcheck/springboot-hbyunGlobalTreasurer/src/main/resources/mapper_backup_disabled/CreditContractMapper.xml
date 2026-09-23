@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.CreditContractMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.CreditContract">
+        <id column="ID" property="id" jdbcType="BIGINT"/>
+        <result column="CONTRACT_NO" property="contractNo" jdbcType="VARCHAR"/>
+        <result column="APPLICATION_ID" property="applicationId" jdbcType="BIGINT"/>
+        <result column="COMPANY_ID" property="companyId" jdbcType="BIGINT"/>
+        <result column="COMPANY_NAME" property="companyName" jdbcType="VARCHAR"/>
+        <result column="FINANCING_INSTITUTION_ID" property="financingInstitutionId" jdbcType="BIGINT"/>
+        <result column="FINANCING_INSTITUTION_NAME" property="financingInstitutionName" jdbcType="VARCHAR"/>
+        <result column="CREDIT_TYPE" property="creditType" jdbcType="VARCHAR"/>
+        <result column="CREDIT_AMOUNT" property="creditAmount" jdbcType="DECIMAL"/>
+        <result column="CURRENCY_CODE" property="currencyCode" jdbcType="VARCHAR"/>
+        <result column="CREDIT_TERM" property="creditTerm" jdbcType="INTEGER"/>
+        <result column="CONTRACT_START_DATE" property="contractStartDate" jdbcType="DATE"/>
+        <result column="CONTRACT_END_DATE" property="contractEndDate" jdbcType="DATE"/>
+        <result column="GUARANTEE_METHOD" property="guaranteeMethod" jdbcType="VARCHAR"/>
+        <result column="GUARANTEE_DETAILS" property="guaranteeDetails" jdbcType="CLOB"/>
+        <result column="INTEREST_RATE_TYPE" property="interestRateType" jdbcType="VARCHAR"/>
+        <result column="BASE_RATE" property="baseRate" jdbcType="VARCHAR"/>
+        <result column="RATE_SPREAD" property="rateSpread" jdbcType="DECIMAL"/>
+        <result column="COMMITMENT_FEE_RATE" property="commitmentFeeRate" jdbcType="DECIMAL"/>
+        <result column="MANAGEMENT_FEE_RATE" property="managementFeeRate" jdbcType="DECIMAL"/>
+        <result column="SPECIAL_CLAUSES" property="specialClauses" jdbcType="CLOB"/>
+        <result column="DEFAULT_CLAUSES" property="defaultClauses" jdbcType="CLOB"/>
+        <result column="CONTRACT_STATUS" property="contractStatus" jdbcType="VARCHAR"/>
+        <result column="CONTRACT_FILE_PATH" property="contractFilePath" jdbcType="VARCHAR"/>
+        <result column="SIGN_DATE" property="signDate" jdbcType="DATE"/>
+        <result column="SIGN_USER" property="signUser" jdbcType="VARCHAR"/>
+        <result column="TERMINATE_REASON" property="terminateReason" jdbcType="VARCHAR"/>
+        <result column="TERMINATE_DATE" property="terminateDate" jdbcType="DATE"/>
+        <result column="ORGID" property="orgId" jdbcType="BIGINT"/>
+        <result column="CREATETIME" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="CREATEUSER" property="createUser" jdbcType="BIGINT"/>
+        <result column="CREATE_USER_NAME" property="createUserName" jdbcType="VARCHAR"/>
+        <result column="UPDATETIME" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="UPDATEUSER" property="updateUser" jdbcType="BIGINT"/>
+        <result column="UPDATE_USER_NAME" property="updateUserName" jdbcType="VARCHAR"/>
+        <result column="REMARK" property="remark" jdbcType="VARCHAR"/>
+        <result column="REMAINING_DAYS" property="remainingDays" jdbcType="INTEGER"/>
+        <result column="USED_AMOUNT" property="usedAmount" jdbcType="DECIMAL"/>
+        <result column="AVAILABLE_AMOUNT" property="availableAmount" jdbcType="DECIMAL"/>
+        <result column="USAGE_RATE" property="usageRate" jdbcType="DECIMAL"/>
+        <result column="RISK_LEVEL" property="riskLevel" jdbcType="VARCHAR"/>
+        <result column="LAST_USAGE_DATE" property="lastUsageDate" jdbcType="DATE"/>
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="Base_Column_List">
+        ID, CONTRACT_NO, APPLICATION_ID, COMPANY_ID, FINANCING_INSTITUTION_ID,
+        CREDIT_TYPE, CREDIT_AMOUNT, CURRENCY_CODE, CREDIT_TERM,
+        CONTRACT_START_DATE, CONTRACT_END_DATE, GUARANTEE_METHOD, GUARANTEE_DETAILS,
+        INTEREST_RATE_TYPE, BASE_RATE, RATE_SPREAD, COMMITMENT_FEE_RATE, MANAGEMENT_FEE_RATE,
+        SPECIAL_CLAUSES, DEFAULT_CLAUSES, CONTRACT_STATUS, CONTRACT_FILE_PATH,
+        SIGN_DATE, SIGN_USER, TERMINATE_REASON, TERMINATE_DATE,
+        ORGID, CREATETIME, CREATEUSER, UPDATETIME, UPDATEUSER, REMARK
+    </sql>
+
+    <!-- 扩展字段 -->
+    <sql id="Extended_Column_List">
+        <include refid="Base_Column_List"/>,
+        (CASE WHEN CONTRACT_END_DATE > SYSDATE THEN TRUNC(CONTRACT_END_DATE - SYSDATE) ELSE 0 END) AS REMAINING_DAYS,
+        c.COMPANY_NAME,
+        fi.INSTITUTION_NAME AS FINANCING_INSTITUTION_NAME,
+        cu.USER_NAME AS CREATE_USER_NAME,
+        uu.USER_NAME AS UPDATE_USER_NAME
+    </sql>
+
+    <!-- 根据条件查询授信合同列表 -->
+    <select id="selectByCondition" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Extended_Column_List"/>
+        FROM TBL_CREDIT_CONTRACT cc
+        LEFT JOIN TBL_COMPANY c ON cc.COMPANY_ID = c.ID
+        LEFT JOIN TBL_FINANCING_INSTITUTION fi ON cc.FINANCING_INSTITUTION_ID = fi.ID
+        LEFT JOIN TBL_USER cu ON cc.CREATEUSER = cu.ID
+        LEFT JOIN TBL_USER uu ON cc.UPDATEUSER = uu.ID
+        <where>
+            <if test="contractNo != null and contractNo != ''">
+                AND cc.CONTRACT_NO LIKE '%' || #{contractNo} || '%'
+            </if>
+            <if test="companyName != null and companyName != ''">
+                AND c.COMPANY_NAME LIKE '%' || #{companyName} || '%'
+            </if>
+            <if test="creditType != null and creditType != ''">
+                AND cc.CREDIT_TYPE = #{creditType}
+            </if>
+            <if test="contractStatus != null and contractStatus != ''">
+                AND cc.CONTRACT_STATUS = #{contractStatus}
+            </if>
+            <if test="financingInstitution != null and financingInstitution != ''">
+                AND fi.INSTITUTION_NAME LIKE '%' || #{financingInstitution} || '%'
+            </if>
+            <if test="startDate != null">
+                AND cc.CONTRACT_START_DATE >= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND cc.CONTRACT_END_DATE <= #{endDate}
+            </if>
+            <if test="orgId != null">
+                AND cc.ORGID = #{orgId}
+            </if>
+        </where>
+        ORDER BY cc.CREATETIME DESC
+    </select>
+
+    <!-- 根据合同编号查询 -->
+    <select id="selectByContractNo" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Extended_Column_List"/>
+        FROM TBL_CREDIT_CONTRACT cc
+        LEFT JOIN TBL_COMPANY c ON cc.COMPANY_ID = c.ID
+        LEFT JOIN TBL_FINANCING_INSTITUTION fi ON cc.FINANCING_INSTITUTION_ID = fi.ID
+        LEFT JOIN TBL_USER cu ON cc.CREATEUSER = cu.ID
+        LEFT JOIN TBL_USER uu ON cc.UPDATEUSER = uu.ID
+        WHERE cc.CONTRACT_NO = #{contractNo}
+    </select>
+
+    <!-- 根据主键查询 -->
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Extended_Column_List"/>
+        FROM TBL_CREDIT_CONTRACT cc
+        LEFT JOIN TBL_COMPANY c ON cc.COMPANY_ID = c.ID
+        LEFT JOIN TBL_FINANCING_INSTITUTION fi ON cc.FINANCING_INSTITUTION_ID = fi.ID
+        LEFT JOIN TBL_USER cu ON cc.CREATEUSER = cu.ID
+        LEFT JOIN TBL_USER uu ON cc.UPDATEUSER = uu.ID
+        WHERE cc.ID = #{id}
+    </select>
+
+    <!-- 插入授信合同 -->
+    <insert id="insert" parameterType="com.global.treasurer.entity.CreditContract" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO TBL_CREDIT_CONTRACT (
+            CONTRACT_NO, APPLICATION_ID, COMPANY_ID, FINANCING_INSTITUTION_ID,
+            CREDIT_TYPE, CREDIT_AMOUNT, CURRENCY_CODE, CREDIT_TERM,
+            CONTRACT_START_DATE, CONTRACT_END_DATE, GUARANTEE_METHOD, GUARANTEE_DETAILS,
+            INTEREST_RATE_TYPE, BASE_RATE, RATE_SPREAD, COMMITMENT_FEE_RATE, MANAGEMENT_FEE_RATE,
+            SPECIAL_CLAUSES, DEFAULT_CLAUSES, CONTRACT_STATUS, CONTRACT_FILE_PATH,
+            SIGN_DATE, SIGN_USER, TERMINATE_REASON, TERMINATE_DATE,
+            ORGID, CREATETIME, CREATEUSER, UPDATETIME, UPDATEUSER, REMARK
+        ) VALUES (
+            #{contractNo}, #{applicationId}, #{companyId}, #{financingInstitutionId},
+            #{creditType}, #{creditAmount}, #{currencyCode}, #{creditTerm},
+            #{contractStartDate}, #{contractEndDate}, #{guaranteeMethod}, #{guaranteeDetails},
+            #{interestRateType}, #{baseRate}, #{rateSpread}, #{commitmentFeeRate}, #{managementFeeRate},
+            #{specialClauses}, #{defaultClauses}, #{contractStatus}, #{contractFilePath},
+            #{signDate}, #{signUser}, #{terminateReason}, #{terminateDate},
+            #{orgId}, #{createTime}, #{createUser}, #{updateTime}, #{updateUser}, #{remark}
+        )
+    </insert>
+
+    <!-- 选择性更新授信合同 -->
+    <update id="updateByPrimaryKeySelective" parameterType="com.global.treasurer.entity.CreditContract">
+        UPDATE TBL_CREDIT_CONTRACT
+        <set>
+            <if test="contractNo != null">CONTRACT_NO = #{contractNo},</if>
+            <if test="applicationId != null">APPLICATION_ID = #{applicationId},</if>
+            <if test="companyId != null">COMPANY_ID = #{companyId},</if>
+            <if test="financingInstitutionId != null">FINANCING_INSTITUTION_ID = #{financingInstitutionId},</if>
+            <if test="creditType != null">CREDIT_TYPE = #{creditType},</if>
+            <if test="creditAmount != null">CREDIT_AMOUNT = #{creditAmount},</if>
+            <if test="currencyCode != null">CURRENCY_CODE = #{currencyCode},</if>
+            <if test="creditTerm != null">CREDIT_TERM = #{creditTerm},</if>
+            <if test="contractStartDate != null">CONTRACT_START_DATE = #{contractStartDate},</if>
+            <if test="contractEndDate != null">CONTRACT_END_DATE = #{contractEndDate},</if>
+            <if test="guaranteeMethod != null">GUARANTEE_METHOD = #{guaranteeMethod},</if>
+            <if test="guaranteeDetails != null">GUARANTEE_DETAILS = #{guaranteeDetails},</if>
+            <if test="interestRateType != null">INTEREST_RATE_TYPE = #{interestRateType},</if>
+            <if test="baseRate != null">BASE_RATE = #{baseRate},</if>
+            <if test="rateSpread != null">RATE_SPREAD = #{rateSpread},</if>
+            <if test="commitmentFeeRate != null">COMMITMENT_FEE_RATE = #{commitmentFeeRate},</if>
+            <if test="managementFeeRate != null">MANAGEMENT_FEE_RATE = #{managementFeeRate},</if>
+            <if test="specialClauses != null">SPECIAL_CLAUSES = #{specialClauses},</if>
+            <if test="defaultClauses != null">DEFAULT_CLAUSES = #{defaultClauses},</if>
+            <if test="contractStatus != null">CONTRACT_STATUS = #{contractStatus},</if>
+            <if test="contractFilePath != null">CONTRACT_FILE_PATH = #{contractFilePath},</if>
+            <if test="signDate != null">SIGN_DATE = #{signDate},</if>
+            <if test="signUser != null">SIGN_USER = #{signUser},</if>
+            <if test="terminateReason != null">TERMINATE_REASON = #{terminateReason},</if>
+            <if test="terminateDate != null">TERMINATE_DATE = #{terminateDate},</if>
+            <if test="updateTime != null">UPDATETIME = #{updateTime},</if>
+            <if test="updateUser != null">UPDATEUSER = #{updateUser},</if>
+            <if test="remark != null">REMARK = #{remark},</if>
+        </set>
+        WHERE ID = #{id}
+    </update>
+
+    <!-- 根据主键删除 -->
+    <delete id="deleteByPrimaryKey">
+        DELETE FROM TBL_CREDIT_CONTRACT WHERE ID = #{id}
+    </delete>
+
+    <!-- 根据组织ID统计合同数量 -->
+    <select id="countByOrgId" resultType="int">
+        SELECT COUNT(*) FROM TBL_CREDIT_CONTRACT
+        <where>
+            <if test="orgId != null">
+                AND ORGID = #{orgId}
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据状态和组织ID统计合同数量 -->
+    <select id="countByStatusAndOrgId" resultType="int">
+        SELECT COUNT(*) FROM TBL_CREDIT_CONTRACT
+        WHERE CONTRACT_STATUS = #{status}
+        <if test="orgId != null">
+            AND ORGID = #{orgId}
+        </if>
+    </select>
+
+    <!-- 统计即将到期的合同数量 -->
+    <select id="countExpiringSoon" resultType="int">
+        SELECT COUNT(*) FROM TBL_CREDIT_CONTRACT
+        WHERE CONTRACT_STATUS = 'EFFECTIVE'
+        AND CONTRACT_END_DATE BETWEEN SYSDATE AND SYSDATE + #{days}
+        <if test="orgId != null">
+            AND ORGID = #{orgId}
+        </if>
+    </select>
+
+    <!-- 根据组织ID汇总授信金额 -->
+    <select id="sumCreditAmountByOrgId" resultType="map">
+        SELECT 
+            CURRENCY_CODE,
+            SUM(CREDIT_AMOUNT) AS TOTAL_AMOUNT,
+            COUNT(*) AS CONTRACT_COUNT
+        FROM TBL_CREDIT_CONTRACT
+        WHERE CONTRACT_STATUS = 'EFFECTIVE'
+        <if test="orgId != null">
+            AND ORGID = #{orgId}
+        </if>
+        GROUP BY CURRENCY_CODE
+    </select>
+
+    <!-- 查询即将到期的合同 -->
+    <select id="selectExpiring" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Extended_Column_List"/>
+        FROM TBL_CREDIT_CONTRACT cc
+        LEFT JOIN TBL_COMPANY c ON cc.COMPANY_ID = c.ID
+        LEFT JOIN TBL_FINANCING_INSTITUTION fi ON cc.FINANCING_INSTITUTION_ID = fi.ID
+        LEFT JOIN TBL_USER cu ON cc.CREATEUSER = cu.ID
+        LEFT JOIN TBL_USER uu ON cc.UPDATEUSER = uu.ID
+        WHERE cc.CONTRACT_STATUS = 'EFFECTIVE'
+        AND cc.CONTRACT_END_DATE BETWEEN SYSDATE AND SYSDATE + #{days}
+        <if test="orgId != null">
+            AND cc.ORGID = #{orgId}
+        </if>
+        ORDER BY cc.CONTRACT_END_DATE ASC
+    </select>
+
+    <!-- 检查合同编号是否存在 -->
+    <select id="checkContractNoExists" resultType="int">
+        SELECT COUNT(*) FROM TBL_CREDIT_CONTRACT
+        WHERE CONTRACT_NO = #{contractNo}
+        <if test="excludeId != null">
+            AND ID != #{excludeId}
+        </if>
+    </select>
+
+    <!-- 根据前缀获取最大序号 -->
+    <select id="getMaxSeqByPrefix" resultType="int">
+        SELECT COALESCE(MAX(CAST(SUBSTR(CONTRACT_NO, LENGTH(#{prefix}) + 1) AS NUMBER)), 0)
+        FROM TBL_CREDIT_CONTRACT
+        WHERE CONTRACT_NO LIKE #{prefix} || '%'
+        AND LENGTH(CONTRACT_NO) = LENGTH(#{prefix}) + 4
+    </select>
+
+    <!-- 根据公司ID查询有效合同 -->
+    <select id="selectEffectiveByCompany" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Extended_Column_List"/>
+        FROM TBL_CREDIT_CONTRACT cc
+        LEFT JOIN TBL_COMPANY c ON cc.COMPANY_ID = c.ID
+        LEFT JOIN TBL_FINANCING_INSTITUTION fi ON cc.FINANCING_INSTITUTION_ID = fi.ID
+        LEFT JOIN TBL_USER cu ON cc.CREATEUSER = cu.ID
+        LEFT JOIN TBL_USER uu ON cc.UPDATEUSER = uu.ID
+        WHERE cc.COMPANY_ID = #{companyId}
+        AND cc.CONTRACT_STATUS = 'EFFECTIVE'
+        ORDER BY cc.CONTRACT_START_DATE DESC
+    </select>
+
+    <!-- 根据合同ID统计额度数量 -->
+    <select id="countLimitsByContractId" resultType="int">
+        SELECT COUNT(*) FROM TBL_CREDIT_LIMIT
+        WHERE CONTRACT_ID = #{contractId}
+    </select>
+
+    <!-- 根据合同ID查询额度使用情况 -->
+    <select id="selectLimitUsageByContractId" resultType="map">
+        SELECT 
+            SUM(TOTAL_LIMIT) AS TOTAL_LIMIT,
+            SUM(USED_LIMIT) AS USED_LIMIT,
+            SUM(AVAILABLE_LIMIT) AS AVAILABLE_LIMIT,
+            SUM(FROZEN_LIMIT) AS FROZEN_LIMIT,
+            CASE WHEN SUM(TOTAL_LIMIT) > 0 THEN ROUND(SUM(USED_LIMIT) / SUM(TOTAL_LIMIT) * 100, 2) ELSE 0 END AS USAGE_RATE
+        FROM TBL_CREDIT_LIMIT
+        WHERE CONTRACT_ID = #{contractId}
+        AND LIMIT_STATUS = 'ACTIVE'
+    </select>
+
+</mapper>

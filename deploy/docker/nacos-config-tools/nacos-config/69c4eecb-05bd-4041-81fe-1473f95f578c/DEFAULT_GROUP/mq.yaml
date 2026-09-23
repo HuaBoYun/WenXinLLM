@@ -1,0 +1,25 @@
+spring:
+  cloud:
+    function:
+      definition: defMsgToptic;ssoEventReceiver
+    stream:
+      rocketmq:
+        binder:
+          name-server: 172.17.2.155:30094
+        bindings:
+          defMsgToptic-in-0:
+            consumer:
+              messageModel: BROADCASTING
+      bindings:
+        ssoEventReceiver-in-0:
+          destination: MXK_IDENTITY_MAIN_TOPIC
+          consumer:
+            auto-startup: false
+        defMsgToptic-out-0:
+          destination: jnpf-topic
+          producer:
+            auto-startup: false
+        defMsgToptic-in-0:
+          destination: ${spring.cloud.stream.bindings.defMsgToptic-out-0.destination}
+          consumer:
+            auto-startup: false

@@ -1,0 +1,34 @@
+server: 
+  port: 8083
+  
+spring:
+  profiles:
+    active: dev
+  main:
+    allow-circular-references: true
+  springdoc:
+    swagger-ui:
+      enabled: true
+    api-docs:
+      enabled: true
+  servlet:
+    multipart:
+      enabled: true
+      #maxFileSize  单文件大小限制
+      max-file-size: 200MB
+      #maxRequestSize   总上传大小限制
+      max-request-size: 200000MB
+
+      
+      
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+  show-actuator: true
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.TblSealTypeMapper">
+
+    <!-- 结果映射 - 匹配TblSealType实体类 (TC_SEAL_TYPE表) -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TblSealType">
+        <id column="TYPE_ID" property="id" />
+        <result column="TYPE_CODE" property="typeCode" />
+        <result column="TYPE_NAME" property="name" />
+        <result column="IS_ACTIVE" property="isActive" />
+        <result column="REMARK" property="remark" />
+        <result column="CREATE_TIME" property="createTime" />
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        TYPE_ID, TYPE_CODE, TYPE_NAME, IS_ACTIVE, REMARK, CREATE_TIME
+    </sql>
+
+</mapper>

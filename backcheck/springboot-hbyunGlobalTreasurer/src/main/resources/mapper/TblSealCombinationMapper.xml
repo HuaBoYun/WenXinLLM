@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.TblSealCombinationMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TblSealCombination">
+        <id column="ID" property="id" />
+        <result column="COMBINATION_NAME" property="combinationName" />
+        <result column="COMBINATION_CODE" property="combinationCode" />
+        <result column="SEAL_LIST" property="sealList" />
+        <result column="DESCRIPTION" property="description" />
+        <result column="STATUS" property="status" />
+        <result column="CREATE_BY" property="createBy" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_BY" property="updateBy" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="REMARK" property="remark" />
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        ID, COMBINATION_NAME, COMBINATION_CODE, SEAL_LIST, DESCRIPTION,
+        STATUS, CREATE_BY, CREATE_TIME, UPDATE_BY, UPDATE_TIME, REMARK
+    </sql>
+
+    <!-- selectList - 查询列表,配合PageHelper使用分页 -->
+    <select id="selectList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_SEAL_COMBINATION
+        <if test="ew != null and ew.sqlSegment != null and ew.sqlSegment != ''">
+            ${ew.sqlSegment}
+        </if>
+    </select>
+
+    <!-- selectById -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_SEAL_COMBINATION
+        WHERE ID = #{id}
+    </select>
+
+    <!-- selectOne -->
+    <select id="selectOne" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_SEAL_COMBINATION
+        <if test="ew != null and ew.sqlSegment != null and ew.sqlSegment != ''">
+            ${ew.sqlSegment}
+        </if>
+        LIMIT 1
+    </select>
+
+    <!-- selectCount -->
+    <select id="selectCount" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM TBL_SEAL_COMBINATION
+        <if test="ew != null and ew.sqlSegment != null and ew.sqlSegment != ''">
+            ${ew.sqlSegment}
+        </if>
+    </select>
+
+    <!-- insert -->
+    <insert id="insert" parameterType="com.global.treasurer.entity.TblSealCombination">
+        INSERT INTO TBL_SEAL_COMBINATION (
+            ID, COMBINATION_NAME, COMBINATION_CODE, SEAL_LIST, DESCRIPTION,
+            STATUS, CREATE_BY, CREATE_TIME, UPDATE_BY, UPDATE_TIME, REMARK
+        ) VALUES (
+            #{id}, #{combinationName}, #{combinationCode}, #{sealList}, #{description},
+            #{status}, #{createBy}, #{createTime}, #{updateBy}, #{updateTime}, #{remark}
+        )
+    </insert>
+
+    <!-- updateById -->
+    <update id="updateById" parameterType="com.global.treasurer.entity.TblSealCombination">
+        UPDATE TBL_SEAL_COMBINATION
+        <set>
+            <if test="combinationName != null">COMBINATION_NAME = #{combinationName},</if>
+            <if test="combinationCode != null">COMBINATION_CODE = #{combinationCode},</if>
+            <if test="sealList != null">SEAL_LIST = #{sealList},</if>
+            <if test="description != null">DESCRIPTION = #{description},</if>
+            <if test="status != null">STATUS = #{status},</if>
+            <if test="updateBy != null">UPDATE_BY = #{updateBy},</if>
+            <if test="updateTime != null">UPDATE_TIME = #{updateTime},</if>
+            <if test="remark != null">REMARK = #{remark}</if>
+        </set>
+        WHERE ID = #{id}
+    </update>
+
+    <!-- deleteById -->
+    <delete id="deleteById">
+        DELETE FROM TBL_SEAL_COMBINATION WHERE ID = #{id}
+    </delete>
+
+</mapper>

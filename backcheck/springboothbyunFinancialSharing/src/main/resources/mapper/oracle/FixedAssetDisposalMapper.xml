@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.mysql.mapper.FixedAssetDisposalMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.financial.sharing.mysql.entity.FixedAssetDisposalEntity">
+        <id column="DISPOSAL_ID" property="disposalId" />
+        <result column="DISPOSAL_NO" property="disposalNo" />
+        <result column="DISPOSAL_TYPE" property="disposalType" />
+        <result column="ASSET_ID" property="assetId" />
+        <result column="ORIGINAL_VALUE" property="originalValue" />
+        <result column="NET_VALUE" property="netValue" />
+        <result column="DISPOSAL_INCOME" property="disposalIncome" />
+        <result column="DISPOSAL_PROFIT_LOSS" property="disposalProfitLoss" />
+        <result column="DISPOSAL_DATE" property="disposalDate" />
+        <result column="REASON" property="reason" />
+        <result column="STATUS" property="status" />
+        <result column="REMARK" property="remark" />
+        <result column="TENANT_ID" property="tenantId" />
+        <result column="CREATE_BY" property="createBy" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_BY" property="updateBy" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="IS_DELETED" property="isDeleted" />
+        <!-- 扩展字段 -->
+        <result column="assetCode" property="assetCode" />
+        <result column="assetName" property="assetName" />
+        <result column="accumulatedDepreciation" property="accumulatedDepreciation" />
+    </resultMap>
+
+    <!-- 分页查询资产处置列表 -->
+    <select id="selectPageList" resultMap="BaseResultMap">
+        SELECT d.DISPOSAL_ID, d.DISPOSAL_NO, d.DISPOSAL_TYPE, d.ASSET_ID, d.ORIGINAL_VALUE, d.NET_VALUE,
+               d.DISPOSAL_INCOME, d.DISPOSAL_PROFIT_LOSS, d.DISPOSAL_DATE, d.REASON, d.STATUS, d.REMARK,
+               d.TENANT_ID, d.CREATE_BY, d.CREATE_TIME, d.UPDATE_BY, d.UPDATE_TIME, d.IS_DELETED,
+               a.ASSET_CODE AS assetCode,
+               a.ASSET_NAME AS assetName
+        FROM TBL_FIXED_ASSET_DISPOSAL d
+        LEFT JOIN TBL_FIXED_ASSET_CARD a ON d.ASSET_ID = a.ASSET_ID AND a.IS_DELETED = 0
+        WHERE d.IS_DELETED = 0
+        <if test="tenantId != null">
+            AND d.TENANT_ID = #{tenantId}
+        </if>
+        <if test="disposalNo != null and disposalNo != ''">
+            AND d.DISPOSAL_NO LIKE '%' || #{disposalNo} || '%'
+        </if>
+        <if test="assetCode != null and assetCode != ''">
+            AND a.ASSET_CODE LIKE '%' || #{assetCode} || '%'
+        </if>
+        <if test="disposalType != null and disposalType != ''">
+            AND d.DISPOSAL_TYPE = #{disposalType}
+        </if>
+        <if test="status != null and status != ''">
+            AND d.STATUS = #{status}
+        </if>
+        ORDER BY d.DISPOSAL_DATE DESC, d.CREATE_TIME DESC
+    </select>
+
+    <!-- 查询资产处置详情 -->
+    <select id="selectDetailById" resultMap="BaseResultMap">
+        SELECT d.DISPOSAL_ID, d.DISPOSAL_NO, d.DISPOSAL_TYPE, d.ASSET_ID, d.ORIGINAL_VALUE, d.NET_VALUE,
+               d.DISPOSAL_INCOME, d.DISPOSAL_PROFIT_LOSS, d.DISPOSAL_DATE, d.REASON, d.STATUS, d.REMARK,
+               d.TENANT_ID, d.CREATE_BY, d.CREATE_TIME, d.UPDATE_BY, d.UPDATE_TIME, d.IS_DELETED,
+               a.ASSET_CODE AS assetCode,
+               a.ASSET_NAME AS assetName,
+               a.ACCUMULATED_DEPRECIATION AS accumulatedDepreciation
+        FROM TBL_FIXED_ASSET_DISPOSAL d
+        LEFT JOIN TBL_FIXED_ASSET_CARD a ON d.ASSET_ID = a.ASSET_ID AND a.IS_DELETED = 0
+        WHERE d.DISPOSAL_ID = #{disposalId}
+          AND d.TENANT_ID = #{tenantId}
+          AND d.IS_DELETED = 0
+    </select>
+
+    <!-- 统计处置汇总信息 -->
+    <select id="selectDisposalSummary" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) AS totalCount,
+            NVL(SUM(ORIGINAL_VALUE), 0) AS totalOriginalValue,
+            NVL(SUM(NET_VALUE), 0) AS totalNetValue,
+            NVL(SUM(DISPOSAL_INCOME), 0) AS totalDisposalIncome,
+            NVL(SUM(DISPOSAL_PROFIT_LOSS), 0) AS totalDisposalProfitLoss
+        FROM TBL_FIXED_ASSET_DISPOSAL
+        WHERE IS_DELETED = 0
+        <if test="tenantId != null">
+            AND TENANT_ID = #{tenantId}
+        </if>
+        <if test="disposalDateStart != null">
+            AND DISPOSAL_DATE &gt;= #{disposalDateStart}
+        </if>
+        <if test="disposalDateEnd != null">
+            AND DISPOSAL_DATE &lt;= #{disposalDateEnd}
+        </if>
+    </select>
+
+    <!-- 更新处置状态 -->
+    <update id="updateStatus">
+        UPDATE TBL_FIXED_ASSET_DISPOSAL
+        SET STATUS = #{status},
+            UPDATE_BY = #{updateBy},
+            UPDATE_TIME = SYSDATE
+        WHERE DISPOSAL_ID = #{disposalId}
+    </update>
+
+</mapper>
+

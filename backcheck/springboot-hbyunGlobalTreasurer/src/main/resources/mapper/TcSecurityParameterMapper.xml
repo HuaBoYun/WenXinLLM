@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.TcSecurityParameterMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TcSecurityParameter">
+        <id column="ID" property="id" />
+        <result column="PARAM_CODE" property="paramCode" />
+        <result column="PARAM_NAME" property="paramName" />
+        <result column="PARAM_TYPE" property="paramType" />
+        <result column="PARAM_VALUE" property="paramValue" />
+        <result column="DEFAULT_VALUE" property="defaultValue" />
+        <result column="IS_ENABLED" property="isEnabled" />
+        <result column="STATUS" property="status" />
+        <result column="DESCRIPTION" property="description" />
+        <result column="SORT_ORDER" property="sortOrder" />
+        <result column="COMPANY_ID" property="companyId" />
+        <result column="COMPANY_NAME" property="companyName" />
+        <result column="DELETE_FLAG" property="deleteFlag" />
+        <result column="CREATE_BY" property="createBy" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_BY" property="updateBy" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="REMARK" property="remark" />
+    </resultMap>
+
+    <!-- 基础列定义 -->
+    <sql id="Base_Column_List">
+        ID, PARAM_CODE, PARAM_NAME, PARAM_TYPE, PARAM_VALUE, DEFAULT_VALUE,
+        IS_ENABLED, STATUS, DESCRIPTION, SORT_ORDER, COMPANY_ID, COMPANY_NAME,
+        DELETE_FLAG, CREATE_BY, CREATE_TIME, UPDATE_BY, UPDATE_TIME, REMARK
+    </sql>
+
+    <!-- 分页查询安全参数列表 -->
+    <select id="selectPageList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TC_SECURITY_PARAMETER
+        <where>
+            <if test="params.paramName != null and params.paramName != ''">
+                AND PARAM_NAME LIKE CONCAT('%', #{params.paramName}, '%')
+            </if>
+            <if test="params.paramCode != null and params.paramCode != ''">
+                AND PARAM_CODE LIKE CONCAT('%', #{params.paramCode}, '%')
+            </if>
+            <if test="params.paramType != null and params.paramType != ''">
+                AND PARAM_TYPE = #{params.paramType}
+            </if>
+            <if test="params.status != null">
+                AND STATUS = #{params.status}
+            </if>
+            <if test="params.isEnabled != null">
+                AND IS_ENABLED = #{params.isEnabled}
+            </if>
+            AND (DELETE_FLAG IS NULL OR DELETE_FLAG = 0)
+        </where>
+        ORDER BY SORT_ORDER ASC, CREATE_TIME DESC
+    </select>
+
+    <!-- selectPage - MyBatis-Plus分页查询，支持QueryWrapper动态条件 -->
+    <select id="selectPage" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TC_SECURITY_PARAMETER
+        <if test="ew != null and ew.sqlSegment != null and ew.sqlSegment != ''">
+            WHERE ${ew.sqlSegment}
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- selectCount - 统计查询，支持QueryWrapper动态条件 -->
+    <select id="selectCount" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM TC_SECURITY_PARAMETER
+        <if test="ew.sqlSegment != null and ew.sqlSegment != ''">
+            WHERE ${ew.sqlSegment}
+        </if>
+    </select>
+
+    <!-- 根据ID查询详情 -->
+    <select id="selectDetailById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TC_SECURITY_PARAMETER
+        WHERE ID = #{id}
+        AND (DELETE_FLAG IS NULL OR DELETE_FLAG = 0)
+    </select>
+
+    <!-- 根据参数编码查询 -->
+    <select id="selectByParamCode" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TC_SECURITY_PARAMETER
+        WHERE PARAM_CODE = #{paramCode}
+        AND (DELETE_FLAG IS NULL OR DELETE_FLAG = 0)
+    </select>
+
+    <!-- 统计数量 -->
+    <select id="countByParams" resultType="int">
+        SELECT COUNT(*)
+        FROM TC_SECURITY_PARAMETER
+        <where>
+            <if test="params.paramName != null and params.paramName != ''">
+                AND PARAM_NAME LIKE CONCAT('%', #{params.paramName}, '%')
+            </if>
+            <if test="params.paramType != null and params.paramType != ''">
+                AND PARAM_TYPE = #{params.paramType}
+            </if>
+            <if test="params.status != null">
+                AND STATUS = #{params.status}
+            </if>
+            AND (DELETE_FLAG IS NULL OR DELETE_FLAG = 0)
+        </where>
+    </select>
+
+    <!-- 检查参数编码是否存在 -->
+    <select id="checkParamCodeExists" resultType="int">
+        SELECT COUNT(*)
+        FROM TC_SECURITY_PARAMETER
+        WHERE PARAM_CODE = #{paramCode}
+        <if test="id != null">
+            AND ID != #{id}
+        </if>
+        AND (DELETE_FLAG IS NULL OR DELETE_FLAG = 0)
+    </select>
+
+    <!-- 批量查询 -->
+    <select id="selectByIds" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TC_SECURITY_PARAMETER
+        WHERE ID IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND (DELETE_FLAG IS NULL OR DELETE_FLAG = 0)
+    </select>
+
+    <!-- 根据类型查询启用的参数 -->
+    <select id="selectEnabledByType" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TC_SECURITY_PARAMETER
+        WHERE PARAM_TYPE = #{paramType}
+        AND STATUS = 1
+        AND (DELETE_FLAG IS NULL OR DELETE_FLAG = 0)
+        ORDER BY SORT_ORDER ASC
+    </select>
+
+</mapper>
+

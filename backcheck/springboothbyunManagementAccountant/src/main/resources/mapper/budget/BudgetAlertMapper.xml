@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.management.accountant.oracle.mapper.budget.BudgetAlertMapper">
+
+    <resultMap id="BaseResultMap" type="com.management.accountant.oracle.entity.budget.BudgetAlert">
+        <id column="ALERT_ID" property="alertId"/>
+        <result column="ALERT_CODE" property="alertCode"/>
+        <result column="ALERT_NAME" property="alertName"/>
+        <result column="ALERT_TYPE" property="alertType"/>
+        <result column="ALERT_LEVEL" property="alertLevel"/>
+        <result column="BUDGET_ID" property="budgetId"/>
+        <result column="ORGANIZATION_ID" property="organizationId"/>
+        <result column="RULE_ID" property="ruleId"/>
+        <result column="ALERT_MESSAGE" property="alertMessage"/>
+        <result column="ALERT_DETAIL" property="alertDetail"/>
+        <result column="TRIGGER_VALUE" property="triggerValue"/>
+        <result column="THRESHOLD_VALUE" property="thresholdValue"/>
+        <result column="ALERT_STATUS" property="alertStatus"/>
+        <result column="ACKNOWLEDGED_BY" property="acknowledgedBy"/>
+        <result column="ACKNOWLEDGED_TIME" property="acknowledgedTime"/>
+        <result column="ACKNOWLEDGED_NOTE" property="acknowledgedNote"/>
+        <result column="RESOLVED_BY" property="resolvedBy"/>
+        <result column="RESOLVED_TIME" property="resolvedTime"/>
+        <result column="RESOLVED_NOTE" property="resolvedNote"/>
+        <result column="ESCALATED_BY" property="escalatedBy"/>
+        <result column="ESCALATED_TIME" property="escalatedTime"/>
+        <result column="ESCALATED_REASON" property="escalatedReason"/>
+        <result column="ESCALATED_TO" property="escalatedTo"/>
+        <result column="NOTIFICATION_METHOD" property="notificationMethod"/>
+        <result column="IS_NOTIFIED" property="isNotified"/>
+        <result column="NOTIFICATION_TIME" property="notificationTime"/>
+        <result column="NOTIFICATION_RECEIVERS" property="notificationReceivers"/>
+        <result column="TRIGGER_TIME" property="triggerTime"/>
+        <result column="EXPIRE_TIME" property="expireTime"/>
+        <result column="AUTO_CLOSE" property="autoClose"/>
+        <result column="AUTO_CLOSE_HOURS" property="autoCloseHours"/>
+        <result column="PRIORITY" property="priority"/>
+        <result column="COMPANY_ID" property="companyId"/>
+        <result column="CREATE_BY" property="createBy"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_BY" property="updateBy"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="DEL_FLAG" property="delFlag"/>
+        <result column="REMARK" property="remark"/>
+    </resultMap>
+
+    <select id="selectByAlertCode" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BUDGET_ALERT WHERE ALERT_CODE = #{alertCode} AND DEL_FLAG = 0
+    </select>
+
+    <select id="selectByBudgetId" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BUDGET_ALERT WHERE BUDGET_ID = #{budgetId} AND DEL_FLAG = 0 ORDER BY TRIGGER_TIME DESC
+    </select>
+
+    <select id="selectByAlertStatus" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BUDGET_ALERT WHERE ALERT_STATUS = #{alertStatus} AND DEL_FLAG = 0 ORDER BY PRIORITY DESC, TRIGGER_TIME DESC
+    </select>
+
+    <select id="selectByAlertLevel" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BUDGET_ALERT WHERE ALERT_LEVEL = #{alertLevel} AND DEL_FLAG = 0 ORDER BY TRIGGER_TIME DESC
+    </select>
+
+    <select id="selectPendingAlerts" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BUDGET_ALERT WHERE ALERT_STATUS = 'PENDING' AND DEL_FLAG = 0 ORDER BY PRIORITY DESC, TRIGGER_TIME DESC
+    </select>
+
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BUDGET_ALERT WHERE (CREATE_BY = #{userId} OR ACKNOWLEDGED_BY = #{userId} OR RESOLVED_BY = #{userId}) AND DEL_FLAG = 0 ORDER BY TRIGGER_TIME DESC
+    </select>
+
+    <select id="selectExpiredAlerts" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BUDGET_ALERT WHERE EXPIRE_TIME IS NOT NULL AND EXPIRE_TIME &lt; CURRENT_TIMESTAMP AND ALERT_STATUS NOT IN ('RESOLVED', 'CLOSED') AND DEL_FLAG = 0
+    </select>
+
+    <update id="batchUpdateStatus">
+        UPDATE TBL_BUDGET_ALERT SET ALERT_STATUS = #{alertStatus}, UPDATE_TIME = CURRENT_TIMESTAMP
+        WHERE ALERT_ID IN <foreach collection="alertIds" item="id" open="(" separator="," close=")">#{id}</foreach>
+    </update>
+
+    <update id="batchDeleteAlerts">
+        UPDATE TBL_BUDGET_ALERT SET DEL_FLAG = 1, UPDATE_TIME = CURRENT_TIMESTAMP
+        WHERE ALERT_ID IN <foreach collection="alertIds" item="id" open="(" separator="," close=")">#{id}</foreach>
+    </update>
+
+    <select id="countByStatus" resultType="java.util.Map">
+        SELECT ALERT_STATUS as "status", COUNT(*) as "count" FROM TBL_BUDGET_ALERT
+        WHERE DEL_FLAG = 0 <if test="companyId != null and companyId != ''">AND COMPANY_ID = #{companyId}</if>
+        GROUP BY ALERT_STATUS
+    </select>
+
+    <select id="countByLevel" resultType="java.util.Map">
+        SELECT ALERT_LEVEL as "level", COUNT(*) as "count" FROM TBL_BUDGET_ALERT
+        WHERE DEL_FLAG = 0 <if test="companyId != null and companyId != ''">AND COMPANY_ID = #{companyId}</if>
+        GROUP BY ALERT_LEVEL
+    </select>
+
+    <select id="countByType" resultType="java.util.Map">
+        SELECT ALERT_TYPE as "type", COUNT(*) as "count" FROM TBL_BUDGET_ALERT
+        WHERE DEL_FLAG = 0 <if test="companyId != null and companyId != ''">AND COMPANY_ID = #{companyId}</if>
+        GROUP BY ALERT_TYPE
+    </select>
+
+</mapper>
+

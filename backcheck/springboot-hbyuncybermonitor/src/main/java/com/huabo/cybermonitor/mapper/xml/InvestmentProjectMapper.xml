@@ -1,0 +1,569 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.cybermonitor.mapper.InvestmentProjectMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.huabo.cybermonitor.entity.InvestmentProject">
+        <id column="PROJECT_ID" property="projectId" />
+        <result column="PROJECT_NAME" property="projectName" />
+        <result column="PROJECT_CODE" property="projectCode" />
+        <result column="INVESTOR_ENTERPRISE_ID" property="investorEnterpriseId" />
+        <result column="INVESTOR_ENTERPRISE_NAME" property="investorEnterpriseName" />
+        <result column="INVESTEE_ENTERPRISE_ID" property="investeeEnterpriseId" />
+        <result column="INVESTEE_ENTERPRISE_NAME" property="investeeEnterpriseName" />
+        <result column="INVESTMENT_TYPE" property="investmentType" />
+        <result column="INVESTMENT_METHOD" property="investmentMethod" />
+        <result column="INVESTMENT_INDUSTRY" property="investmentIndustry" />
+        <result column="INVESTMENT_REGION" property="investmentRegion" />
+        <result column="PROJECT_STATUS" property="projectStatus" />
+        <result column="INVESTMENT_STAGE" property="investmentStage" />
+        <result column="PLANNED_INVESTMENT_AMOUNT" property="plannedInvestmentAmount" />
+        <result column="ACTUAL_INVESTMENT_AMOUNT" property="actualInvestmentAmount" />
+        <result column="INVESTMENT_PROGRESS" property="investmentProgress" />
+        <result column="EXPECTED_RETURN_RATE" property="expectedReturnRate" />
+        <result column="ACTUAL_RETURN_RATE" property="actualReturnRate" />
+        <result column="INVESTMENT_START_DATE" property="investmentStartDate" />
+        <result column="INVESTMENT_END_DATE" property="investmentEndDate" />
+        <result column="PROJECT_DURATION" property="projectDuration" />
+        <result column="RISK_LEVEL" property="riskLevel" />
+        <result column="RISK_FACTORS" property="riskFactors" />
+        <result column="DECISION_PROCESS_STATUS" property="decisionProcessStatus" />
+        <result column="APPROVAL_STATUS" property="approvalStatus" />
+        <result column="APPROVAL_DATE" property="approvalDate" />
+        <result column="APPROVAL_AUTHORITY" property="approvalAuthority" />
+        <result column="APPROVAL_DOCUMENT_NO" property="approvalDocumentNo" />
+        <result column="IS_STRATEGIC_INVESTMENT" property="isStrategicInvestment" />
+        <result column="IS_RELATED_TRANSACTION" property="isRelatedTransaction" />
+        <result column="RELATED_TRANSACTION_DESCRIPTION" property="relatedTransactionDescription" />
+        <result column="NEED_REGULATORY_ATTENTION" property="needRegulatoryAttention" />
+        <result column="REGULATORY_ATTENTION_REASON" property="regulatoryAttentionReason" />
+        <result column="PROJECT_MANAGER" property="projectManager" />
+        <result column="PROJECT_TEAM" property="projectTeam" />
+        <result column="DUE_DILIGENCE_REPORT" property="dueDiligenceReport" />
+        <result column="INVESTMENT_AGREEMENT" property="investmentAgreement" />
+        <result column="PERFORMANCE_INDICATORS" property="performanceIndicators" />
+        <result column="COMPLIANCE_CHECK_RESULT" property="complianceCheckResult" />
+        <result column="DATA_SOURCE" property="dataSource" />
+        <result column="DATA_UPDATE_TIME" property="dataUpdateTime" />
+        <result column="REMARKS" property="remarks" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="CREATE_BY" property="createBy" />
+        <result column="UPDATE_BY" property="updateBy" />
+    </resultMap>
+
+    <!-- 基础查询条件 -->
+    <sql id="BaseWhere">
+        <where>
+            <!-- 穿透查询：按公司ID递归查当前公司及所有下级公司的数据 -->
+            <if test="companyId != null and companyId != ''">
+                AND INVESTOR_ENTERPRISE_ID IN (
+                    SELECT ORGID FROM TBL_ORGANIZATION
+                    START WITH ORGID = #{companyId}
+                    CONNECT BY PRIOR ORGID = FATHERORGID
+                )
+            </if>
+            <if test="projectName != null and projectName != ''">
+                AND PROJECT_NAME LIKE CONCAT('%', #{projectName}, '%')
+            </if>
+            <if test="projectCode != null and projectCode != ''">
+                AND PROJECT_CODE = #{projectCode}
+            </if>
+            <if test="investorEnterpriseId != null and investorEnterpriseId != ''">
+                AND INVESTOR_ENTERPRISE_ID = #{investorEnterpriseId}
+            </if>
+            <if test="investeeEnterpriseId != null and investeeEnterpriseId != ''">
+                AND INVESTEE_ENTERPRISE_ID = #{investeeEnterpriseId}
+            </if>
+            <if test="investmentType != null and investmentType != ''">
+                AND INVESTMENT_TYPE = #{investmentType}
+            </if>
+            <if test="investmentMethod != null and investmentMethod != ''">
+                AND INVESTMENT_METHOD = #{investmentMethod}
+            </if>
+            <if test="investmentIndustry != null and investmentIndustry != ''">
+                AND INVESTMENT_INDUSTRY = #{investmentIndustry}
+            </if>
+            <if test="investmentRegion != null and investmentRegion != ''">
+                AND INVESTMENT_REGION = #{investmentRegion}
+            </if>
+            <if test="projectStatus != null and projectStatus != ''">
+                AND PROJECT_STATUS = #{projectStatus}
+            </if>
+            <if test="investmentStage != null and investmentStage != ''">
+                AND INVESTMENT_STAGE = #{investmentStage}
+            </if>
+            <if test="riskLevel != null and riskLevel != ''">
+                AND RISK_LEVEL = #{riskLevel}
+            </if>
+            <if test="approvalStatus != null and approvalStatus != ''">
+                AND APPROVAL_STATUS = #{approvalStatus}
+            </if>
+            <if test="isStrategicInvestment != null">
+                AND IS_STRATEGIC_INVESTMENT = #{isStrategicInvestment}
+            </if>
+            <if test="isRelatedTransaction != null">
+                AND IS_RELATED_TRANSACTION = #{isRelatedTransaction}
+            </if>
+            <if test="needRegulatoryAttention != null">
+                AND NEED_REGULATORY_ATTENTION = #{needRegulatoryAttention}
+            </if>
+            <if test="projectManager != null and projectManager != ''">
+                AND PROJECT_MANAGER = #{projectManager}
+            </if>
+            <if test="minInvestmentAmount != null">
+                AND PLANNED_INVESTMENT_AMOUNT >= #{minInvestmentAmount}
+            </if>
+            <if test="maxInvestmentAmount != null">
+                AND PLANNED_INVESTMENT_AMOUNT &lt;= #{maxInvestmentAmount}
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND INVESTMENT_START_DATE >= #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND INVESTMENT_START_DATE &lt;= #{endDate}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (PROJECT_NAME LIKE CONCAT('%', #{keyword}, '%')
+                     OR PROJECT_CODE LIKE CONCAT('%', #{keyword}, '%')
+                     OR INVESTOR_ENTERPRISE_NAME LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+    </sql>
+
+    <!-- 分页查询投资项目列表 -->
+    <select id="selectInvestmentProjectList" resultMap="BaseResultMap">
+        SELECT * FROM INVESTMENT_PROJECT
+        <include refid="BaseWhere" />
+        ORDER BY PLANNED_INVESTMENT_AMOUNT DESC, UPDATE_TIME DESC
+        <if test="pageNumber != null and pageSize != null">
+            <if test="_databaseId == 'mysql'">
+                LIMIT #{pageSize} OFFSET #{pageNumber}
+            </if>
+            <if test="_databaseId == 'dm'">
+                OFFSET #{pageNumber} ROWS FETCH NEXT #{pageSize} ROWS ONLY
+            </if>
+        </if>
+    </select>
+
+    <!-- 统计查询总数（配合分页） -->
+    <select id="countInvestmentProjectList" resultType="long">
+        SELECT COUNT(*) FROM INVESTMENT_PROJECT
+        <include refid="BaseWhere" />
+    </select>
+
+    <!-- 根据投资方企业ID查询项目 -->
+    <select id="selectByInvestorEnterpriseId" resultMap="BaseResultMap">
+        SELECT * FROM INVESTMENT_PROJECT
+        WHERE INVESTOR_ENTERPRISE_ID = #{investorEnterpriseId}
+        ORDER BY INVESTMENT_START_DATE DESC
+    </select>
+
+    <!-- 根据被投资方企业ID查询项目 -->
+    <select id="selectByInvesteeEnterpriseId" resultMap="BaseResultMap">
+        SELECT * FROM INVESTMENT_PROJECT
+        WHERE INVESTEE_ENTERPRISE_ID = #{investeeEnterpriseId}
+        ORDER BY INVESTMENT_START_DATE DESC
+    </select>
+
+    <!-- 按投资类型查询项目 -->
+    <select id="selectByInvestmentType" resultMap="BaseResultMap">
+        SELECT * FROM INVESTMENT_PROJECT
+        WHERE INVESTMENT_TYPE = #{investmentType}
+        ORDER BY PLANNED_INVESTMENT_AMOUNT DESC
+    </select>
+
+    <!-- 按投资行业查询项目 -->
+    <select id="selectByInvestmentIndustry" resultMap="BaseResultMap">
+        SELECT * FROM INVESTMENT_PROJECT
+        WHERE INVESTMENT_INDUSTRY = #{investmentIndustry}
+        ORDER BY PLANNED_INVESTMENT_AMOUNT DESC
+    </select>
+
+    <!-- 按投资地区查询项目 -->
+    <select id="selectByInvestmentRegion" resultMap="BaseResultMap">
+        SELECT * FROM INVESTMENT_PROJECT
+        WHERE INVESTMENT_REGION = #{investmentRegion}
+        ORDER BY PLANNED_INVESTMENT_AMOUNT DESC
+    </select>
+
+    <!-- 按项目状态查询项目 -->
+    <select id="selectByProjectStatus" resultMap="BaseResultMap">
+        SELECT * FROM INVESTMENT_PROJECT
+        WHERE PROJECT_STATUS = #{projectStatus}
+        ORDER BY UPDATE_TIME DESC
+    </select>
+
+    <!-- 按投资阶段查询项目 -->
+    <select id="selectByInvestmentStage" resultMap="BaseResultMap">
+        SELECT * FROM INVESTMENT_PROJECT
+        WHERE INVESTMENT_STAGE = #{investmentStage}
+        ORDER BY PLANNED_INVESTMENT_AMOUNT DESC
+    </select>
+
+    <!-- 按风险等级查询项目 -->
+    <select id="selectByRiskLevel" resultMap="BaseResultMap">
+        SELECT * FROM INVESTMENT_PROJECT
+        WHERE RISK_LEVEL = #{riskLevel}
+        ORDER BY PLANNED_INVESTMENT_AMOUNT DESC
+    </select>
+
+    <!-- 按审批状态查询项目 -->
+    <select id="selectByApprovalStatus" resultMap="BaseResultMap">
+        SELECT * FROM INVESTMENT_PROJECT
+        WHERE APPROVAL_STATUS = #{approvalStatus}
+        ORDER BY UPDATE_TIME DESC
+    </select>
+
+    <!-- 查询战略投资项目 -->
+    <select id="selectStrategicInvestmentProjects" resultMap="BaseResultMap">
+        SELECT * FROM INVESTMENT_PROJECT
+        WHERE IS_STRATEGIC_INVESTMENT = #{isStrategicInvestment}
+        ORDER BY PLANNED_INVESTMENT_AMOUNT DESC
+    </select>
+
+    <!-- 查询关联交易项目 -->
+    <select id="selectRelatedTransactionProjects" resultMap="BaseResultMap">
+        SELECT * FROM INVESTMENT_PROJECT
+        WHERE IS_RELATED_TRANSACTION = #{isRelatedTransaction}
+        ORDER BY PLANNED_INVESTMENT_AMOUNT DESC
+    </select>
+
+    <!-- 查询需要监管关注的项目 -->
+    <select id="selectRegulatoryAttentionProjects" resultMap="BaseResultMap">
+        SELECT * FROM INVESTMENT_PROJECT
+        WHERE NEED_REGULATORY_ATTENTION = #{needRegulatoryAttention}
+        ORDER BY RISK_LEVEL DESC, PLANNED_INVESTMENT_AMOUNT DESC
+    </select>
+
+    <!-- 查询项目负责人的项目 -->
+    <select id="selectByProjectManager" resultMap="BaseResultMap">
+        SELECT * FROM INVESTMENT_PROJECT
+        WHERE PROJECT_MANAGER = #{projectManager}
+        ORDER BY INVESTMENT_START_DATE DESC
+    </select>
+
+    <!-- 按投资类型统计项目 -->
+    <select id="selectInvestmentTypeStatistics" resultType="java.util.Map">
+        SELECT 
+            INVESTMENT_TYPE as investmentType,
+            COUNT(*) as count,
+            SUM(PLANNED_INVESTMENT_AMOUNT) as totalPlannedAmount,
+            SUM(ACTUAL_INVESTMENT_AMOUNT) as totalActualAmount,
+            AVG(EXPECTED_RETURN_RATE) as avgExpectedReturnRate
+        FROM INVESTMENT_PROJECT
+        GROUP BY INVESTMENT_TYPE
+        ORDER BY totalPlannedAmount DESC
+    </select>
+
+    <!-- 按投资行业统计项目 -->
+    <select id="selectInvestmentIndustryStatistics" resultType="java.util.Map">
+        SELECT 
+            INVESTMENT_INDUSTRY as investmentIndustry,
+            COUNT(*) as count,
+            SUM(PLANNED_INVESTMENT_AMOUNT) as totalPlannedAmount,
+            SUM(ACTUAL_INVESTMENT_AMOUNT) as totalActualAmount,
+            AVG(EXPECTED_RETURN_RATE) as avgExpectedReturnRate
+        FROM INVESTMENT_PROJECT
+        GROUP BY INVESTMENT_INDUSTRY
+        ORDER BY totalPlannedAmount DESC
+    </select>
+
+    <!-- 按投资地区统计项目 -->
+    <select id="selectInvestmentRegionStatistics" resultType="java.util.Map">
+        SELECT 
+            INVESTMENT_REGION as investmentRegion,
+            COUNT(*) as count,
+            SUM(PLANNED_INVESTMENT_AMOUNT) as totalPlannedAmount,
+            SUM(ACTUAL_INVESTMENT_AMOUNT) as totalActualAmount,
+            AVG(EXPECTED_RETURN_RATE) as avgExpectedReturnRate
+        FROM INVESTMENT_PROJECT
+        GROUP BY INVESTMENT_REGION
+        ORDER BY totalPlannedAmount DESC
+    </select>
+
+    <!-- 按项目状态统计项目 -->
+    <select id="selectProjectStatusStatistics" resultType="java.util.Map">
+        SELECT 
+            PROJECT_STATUS as projectStatus,
+            COUNT(*) as count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM INVESTMENT_PROJECT), 2) as percentage,
+            SUM(PLANNED_INVESTMENT_AMOUNT) as totalPlannedAmount
+        FROM INVESTMENT_PROJECT
+        GROUP BY PROJECT_STATUS
+        ORDER BY count DESC
+    </select>
+
+    <!-- 按投资阶段统计项目 -->
+    <select id="selectInvestmentStageStatistics" resultType="java.util.Map">
+        SELECT 
+            INVESTMENT_STAGE as investmentStage,
+            COUNT(*) as count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM INVESTMENT_PROJECT), 2) as percentage,
+            SUM(PLANNED_INVESTMENT_AMOUNT) as totalPlannedAmount
+        FROM INVESTMENT_PROJECT
+        GROUP BY INVESTMENT_STAGE
+        ORDER BY count DESC
+    </select>
+
+    <!-- 按风险等级统计项目 -->
+    <select id="selectRiskLevelStatistics" resultType="java.util.Map">
+        SELECT 
+            RISK_LEVEL as riskLevel,
+            COUNT(*) as count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM INVESTMENT_PROJECT), 2) as percentage,
+            SUM(PLANNED_INVESTMENT_AMOUNT) as totalPlannedAmount
+        FROM INVESTMENT_PROJECT
+        GROUP BY RISK_LEVEL
+        ORDER BY 
+            CASE RISK_LEVEL 
+                WHEN 'CRITICAL' THEN 1
+                WHEN 'HIGH' THEN 2
+                WHEN 'MEDIUM' THEN 3
+                WHEN 'LOW' THEN 4
+                ELSE 5
+            END
+    </select>
+
+    <!-- 按审批状态统计项目 -->
+    <select id="selectApprovalStatusStatistics" resultType="java.util.Map">
+        SELECT 
+            APPROVAL_STATUS as approvalStatus,
+            COUNT(*) as count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM INVESTMENT_PROJECT), 2) as percentage,
+            SUM(PLANNED_INVESTMENT_AMOUNT) as totalPlannedAmount
+        FROM INVESTMENT_PROJECT
+        GROUP BY APPROVAL_STATUS
+        ORDER BY count DESC
+    </select>
+
+    <!-- 查询投资趋势 -->
+    <select id="selectInvestmentTrend" resultType="java.util.Map">
+        SELECT 
+            <if test="_databaseId == 'mysql'">
+                DATE_FORMAT(INVESTMENT_START_DATE, '%Y-%m') as period,
+            </if>
+            <if test="_databaseId == 'dm'">
+                TO_CHAR(INVESTMENT_START_DATE, 'YYYY-MM') as period,
+            </if>
+            COUNT(*) as projectCount,
+            COUNT(DISTINCT INVESTOR_ENTERPRISE_ID) as investorCount,
+            COUNT(DISTINCT INVESTEE_ENTERPRISE_ID) as investeeCount,
+            SUM(PLANNED_INVESTMENT_AMOUNT) as totalPlannedAmount,
+            AVG(EXPECTED_RETURN_RATE) as avgExpectedReturnRate
+        FROM INVESTMENT_PROJECT
+        WHERE INVESTMENT_START_DATE IS NOT NULL
+        <if test="startDate != null and startDate != ''">
+            AND INVESTMENT_START_DATE >= #{startDate}
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND INVESTMENT_START_DATE &lt;= #{endDate}
+        </if>
+        GROUP BY 
+            <if test="_databaseId == 'mysql'">
+                DATE_FORMAT(INVESTMENT_START_DATE, '%Y-%m')
+            </if>
+            <if test="_databaseId == 'dm'">
+                TO_CHAR(INVESTMENT_START_DATE, 'YYYY-MM')
+            </if>
+        ORDER BY period
+    </select>
+
+    <!-- 查询投资金额趋势 -->
+    <select id="selectInvestmentAmountTrend" resultType="java.util.Map">
+        SELECT 
+            <if test="_databaseId == 'mysql'">
+                DATE_FORMAT(INVESTMENT_START_DATE, '%Y-%m') as period,
+            </if>
+            <if test="_databaseId == 'dm'">
+                TO_CHAR(INVESTMENT_START_DATE, 'YYYY-MM') as period,
+            </if>
+            SUM(PLANNED_INVESTMENT_AMOUNT) as plannedAmount,
+            SUM(ACTUAL_INVESTMENT_AMOUNT) as actualAmount,
+            AVG(PLANNED_INVESTMENT_AMOUNT) as avgPlannedAmount,
+            AVG(ACTUAL_INVESTMENT_AMOUNT) as avgActualAmount
+        FROM INVESTMENT_PROJECT
+        WHERE INVESTMENT_START_DATE IS NOT NULL
+        <if test="startDate != null and startDate != ''">
+            AND INVESTMENT_START_DATE >= #{startDate}
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND INVESTMENT_START_DATE &lt;= #{endDate}
+        </if>
+        GROUP BY 
+            <if test="_databaseId == 'mysql'">
+                DATE_FORMAT(INVESTMENT_START_DATE, '%Y-%m')
+            </if>
+            <if test="_databaseId == 'dm'">
+                TO_CHAR(INVESTMENT_START_DATE, 'YYYY-MM')
+            </if>
+        ORDER BY period
+    </select>
+
+    <!-- 查询投资收益分析 -->
+    <select id="selectInvestmentReturnAnalysis" resultType="java.util.Map">
+        SELECT 
+            INVESTMENT_TYPE as investmentType,
+            COUNT(*) as projectCount,
+            AVG(EXPECTED_RETURN_RATE) as avgExpectedReturnRate,
+            AVG(ACTUAL_RETURN_RATE) as avgActualReturnRate,
+            AVG(CASE WHEN ACTUAL_RETURN_RATE IS NOT NULL AND EXPECTED_RETURN_RATE > 0 
+                THEN ACTUAL_RETURN_RATE / EXPECTED_RETURN_RATE * 100 
+                ELSE NULL END) as returnRateAchievementRatio,
+            SUM(PLANNED_INVESTMENT_AMOUNT) as totalPlannedAmount,
+            SUM(ACTUAL_INVESTMENT_AMOUNT) as totalActualAmount
+        FROM INVESTMENT_PROJECT
+        WHERE PROJECT_STATUS IN ('COMPLETED', 'EXECUTING')
+        GROUP BY INVESTMENT_TYPE
+        ORDER BY avgActualReturnRate DESC
+    </select>
+
+    <!-- 查询投资风险分析 -->
+    <select id="selectInvestmentRiskAnalysis" resultType="java.util.Map">
+        SELECT 
+            RISK_LEVEL as riskLevel,
+            COUNT(*) as projectCount,
+            SUM(PLANNED_INVESTMENT_AMOUNT) as totalPlannedAmount,
+            AVG(EXPECTED_RETURN_RATE) as avgExpectedReturnRate,
+            AVG(ACTUAL_RETURN_RATE) as avgActualReturnRate,
+            SUM(CASE WHEN PROJECT_STATUS = 'FAILED' THEN 1 ELSE 0 END) as failedProjects,
+            ROUND(SUM(CASE WHEN PROJECT_STATUS = 'FAILED' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) as failureRate
+        FROM INVESTMENT_PROJECT
+        GROUP BY RISK_LEVEL
+        ORDER BY 
+            CASE RISK_LEVEL 
+                WHEN 'CRITICAL' THEN 1
+                WHEN 'HIGH' THEN 2
+                WHEN 'MEDIUM' THEN 3
+                WHEN 'LOW' THEN 4
+                ELSE 5
+            END
+    </select>
+
+    <!-- 查询投资效果评估 -->
+    <select id="selectInvestmentEffectEvaluation" resultType="java.util.Map">
+        SELECT 
+            PROJECT_ID as projectId,
+            PROJECT_NAME as projectName,
+            PLANNED_INVESTMENT_AMOUNT as plannedAmount,
+            ACTUAL_INVESTMENT_AMOUNT as actualAmount,
+            INVESTMENT_PROGRESS as progress,
+            EXPECTED_RETURN_RATE as expectedReturnRate,
+            ACTUAL_RETURN_RATE as actualReturnRate,
+            PROJECT_STATUS as projectStatus,
+            CASE 
+                WHEN ACTUAL_RETURN_RATE IS NOT NULL AND EXPECTED_RETURN_RATE > 0 
+                THEN ACTUAL_RETURN_RATE / EXPECTED_RETURN_RATE * 100 
+                ELSE NULL 
+            END as returnRateAchievementRatio,
+            CASE 
+                WHEN ACTUAL_INVESTMENT_AMOUNT IS NOT NULL AND PLANNED_INVESTMENT_AMOUNT > 0 
+                THEN ACTUAL_INVESTMENT_AMOUNT / PLANNED_INVESTMENT_AMOUNT * 100 
+                ELSE NULL 
+            END as investmentAmountAchievementRatio
+        FROM INVESTMENT_PROJECT
+        WHERE INVESTOR_ENTERPRISE_ID = #{investorEnterpriseId}
+        ORDER BY INVESTMENT_START_DATE DESC
+    </select>
+
+    <!-- 批量更新项目状态 -->
+    <update id="batchUpdateProjectStatus">
+        UPDATE INVESTMENT_PROJECT 
+        SET PROJECT_STATUS = #{projectStatus},
+            UPDATE_TIME = 
+            <if test="_databaseId == 'mysql'">NOW()</if>
+            <if test="_databaseId == 'dm'">SYSDATE</if>
+        WHERE PROJECT_ID IN
+        <foreach collection="projectIds" item="projectId" open="(" separator="," close=")">
+            #{projectId}
+        </foreach>
+    </update>
+
+    <!-- 批量更新审批状态 -->
+    <update id="batchUpdateApprovalStatus">
+        UPDATE INVESTMENT_PROJECT 
+        SET APPROVAL_STATUS = #{approvalStatus},
+            UPDATE_TIME = 
+            <if test="_databaseId == 'mysql'">NOW()</if>
+            <if test="_databaseId == 'dm'">SYSDATE</if>
+        WHERE PROJECT_ID IN
+        <foreach collection="projectIds" item="projectId" open="(" separator="," close=")">
+            #{projectId}
+        </foreach>
+    </update>
+
+    <!-- 批量更新风险等级 -->
+    <update id="batchUpdateRiskLevel">
+        UPDATE INVESTMENT_PROJECT 
+        SET RISK_LEVEL = #{riskLevel},
+            UPDATE_TIME = 
+            <if test="_databaseId == 'mysql'">NOW()</if>
+            <if test="_databaseId == 'dm'">SYSDATE</if>
+        WHERE PROJECT_ID IN
+        <foreach collection="projectIds" item="projectId" open="(" separator="," close=")">
+            #{projectId}
+        </foreach>
+    </update>
+
+    <!-- 删除过期项目记录 -->
+    <delete id="deleteExpiredProjectRecords">
+        DELETE FROM INVESTMENT_PROJECT 
+        WHERE PROJECT_STATUS = 'CANCELLED'
+        AND UPDATE_TIME &lt; 
+        <if test="_databaseId == 'mysql'">
+            DATE_SUB(NOW(), INTERVAL #{days} DAY)
+        </if>
+        <if test="_databaseId == 'dm'">
+            SYSDATE - #{days}
+        </if>
+    </delete>
+
+    <!-- 获取投资项目统计概览 -->
+    <select id="selectInvestmentStatisticsOverview" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as totalProjects,
+            COUNT(DISTINCT INVESTOR_ENTERPRISE_ID) as totalInvestors,
+            COUNT(DISTINCT INVESTEE_ENTERPRISE_ID) as totalInvestees,
+            SUM(CASE WHEN IS_STRATEGIC_INVESTMENT = 1 THEN 1 ELSE 0 END) as strategicProjects,
+            SUM(CASE WHEN IS_RELATED_TRANSACTION = 1 THEN 1 ELSE 0 END) as relatedTransactionProjects,
+            SUM(CASE WHEN NEED_REGULATORY_ATTENTION = 1 THEN 1 ELSE 0 END) as attentionProjects,
+            SUM(CASE WHEN PROJECT_STATUS = 'COMPLETED' THEN 1 ELSE 0 END) as completedProjects,
+            SUM(CASE WHEN PROJECT_STATUS = 'EXECUTING' THEN 1 ELSE 0 END) as executingProjects,
+            SUM(PLANNED_INVESTMENT_AMOUNT) as totalPlannedAmount,
+            SUM(ACTUAL_INVESTMENT_AMOUNT) as totalActualAmount,
+            AVG(EXPECTED_RETURN_RATE) as avgExpectedReturnRate,
+            AVG(ACTUAL_RETURN_RATE) as avgActualReturnRate
+        FROM INVESTMENT_PROJECT
+    </select>
+
+    <!-- 导出投资项目列表 -->
+    <select id="exportInvestmentProjectList" resultType="java.util.Map">
+        SELECT 
+            PROJECT_ID as projectId,
+            PROJECT_NAME as projectName,
+            PROJECT_CODE as projectCode,
+            INVESTOR_ENTERPRISE_NAME as investorEnterpriseName,
+            INVESTEE_ENTERPRISE_NAME as investeeEnterpriseName,
+            INVESTMENT_TYPE as investmentType,
+            INVESTMENT_METHOD as investmentMethod,
+            INVESTMENT_INDUSTRY as investmentIndustry,
+            INVESTMENT_REGION as investmentRegion,
+            PROJECT_STATUS as projectStatus,
+            INVESTMENT_STAGE as investmentStage,
+            PLANNED_INVESTMENT_AMOUNT as plannedInvestmentAmount,
+            ACTUAL_INVESTMENT_AMOUNT as actualInvestmentAmount,
+            INVESTMENT_PROGRESS as investmentProgress,
+            EXPECTED_RETURN_RATE as expectedReturnRate,
+            ACTUAL_RETURN_RATE as actualReturnRate,
+            INVESTMENT_START_DATE as investmentStartDate,
+            RISK_LEVEL as riskLevel,
+            APPROVAL_STATUS as approvalStatus,
+            IS_STRATEGIC_INVESTMENT as isStrategicInvestment,
+            IS_RELATED_TRANSACTION as isRelatedTransaction,
+            PROJECT_MANAGER as projectManager
+        FROM INVESTMENT_PROJECT
+        <include refid="BaseWhere" />
+        ORDER BY PLANNED_INVESTMENT_AMOUNT DESC
+    </select>
+
+</mapper>

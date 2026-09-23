@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.TcSealCombinationMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TcSealCombination">
+        <id column="ID" property="id" />
+        <result column="COMBINATION_NAME" property="combinationName" />
+        <result column="COMBINATION_CODE" property="combinationCode" />
+        <result column="SEAL_LIST" property="sealList" />
+        <result column="DESCRIPTION" property="description" />
+        <result column="STATUS" property="status" />
+        <result column="CREATE_TIME" property="createTime" />
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        ID, COMBINATION_NAME, COMBINATION_CODE, SEAL_LIST, DESCRIPTION,
+        STATUS, CREATE_TIME
+    </sql>
+
+
+</mapper>

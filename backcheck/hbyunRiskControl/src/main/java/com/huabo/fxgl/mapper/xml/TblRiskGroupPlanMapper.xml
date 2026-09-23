@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.fxgl.mapper.TblRiskGroupPlanMapper">
+    <resultMap id="RM_RISK_GROUPPLAN" type="TblRiskGroupplan" autoMapping="true">
+        <id column="id" property="id"></id>
+        <result column="unit"  property="unit"/>
+        <result column="assstdid"  property="assstdid"/>
+        <association property="organization" javaType="Organization" column="unit" select="com.huabo.fxgl.mapper.OrganizationMapper.selectById"></association>
+        <association property="assessmentstd" javaType="RiskAssessmentstd" column="assstdid" select="com.huabo.fxgl.mapper.RiskAssessmentstdMapper.selectById"></association>
+    </resultMap>
+
+    <resultMap id="RM_RISK_ASSPLAN_NO_DETAIL" type="TblRiskGroupplan" autoMapping="true">
+        <id column="id" property="id"></id>
+        <association property="organization" javaType="Organization" column="unit" select="com.huabo.fxgl.mapper.OrganizationMapper.selectById"></association>
+        <!--<association property="assessmentstd" javaType="RiskAssessmentstd" column="assstdid" select="com.huabo.fxgl.mapper.RiskAssessmentstdMapper.selectById"></association>-->
+    </resultMap>
+    
+    <select id="getOneDetail" resultMap="RM_RISK_GROUPPLAN">
+		SELECT * from TBL_RISK_GROUPPLAN WHERE ID=#{ID}
+	</select>
+    
+	<select id="findAll" resultMap="RM_RISK_GROUPPLAN">
+		select * from TBL_RISK_GROUPPLAN
+		where 1=1
+		<if test="sql!=null and sql!=''">
+			${sql}
+		</if>
+		and ${ew.sqlSegment}
+	</select>
+
+   <select id="findBysqlObj"  resultType="Integer">
+       SELECT COUNT(*) from TBL_RISK_GROUPPLAN
+                       <where>
+                           plancode = #{plancode}
+                           AND UNIT IN (SELECT ORGID FROM TBL_ORGANIZATION WHERE  1=1
+                           <if test="idsStr!=null and idsStr!=''">
+                             and FATHERORGID in ( ${idsStr})
+                           </if>
+                           UNION ALL SELECT ${orgid}  FROM DUAL)
+                       </where>
+
+   </select>
+ 
+</mapper>

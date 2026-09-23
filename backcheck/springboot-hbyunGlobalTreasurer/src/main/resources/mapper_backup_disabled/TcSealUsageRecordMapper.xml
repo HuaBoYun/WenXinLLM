@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.TcSealUsageRecordMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TcSealUsageRecord">
+        <id column="LOGID" property="logId" jdbcType="BIGINT"/>
+        <result column="SEALID" property="sealId" jdbcType="BIGINT"/>
+        <result column="BUSINESSTYPE" property="businessType" jdbcType="VARCHAR"/>
+        <result column="BUSINESSID" property="businessId" jdbcType="VARCHAR"/>
+        <result column="BUSINESSNO" property="businessNo" jdbcType="VARCHAR"/>
+        <result column="USAGETYPE" property="usageType" jdbcType="VARCHAR"/>
+        <result column="USAGEDATE" property="usageDate" jdbcType="TIMESTAMP"/>
+        <result column="USERID" property="userId" jdbcType="BIGINT"/>
+        <result column="USERNAME" property="userName" jdbcType="VARCHAR"/>
+        <result column="USAGELOCATION" property="usageLocation" jdbcType="VARCHAR"/>
+        <result column="USAGEREASON" property="usageReason" jdbcType="VARCHAR"/>
+        <result column="APPROVERID" property="approverId" jdbcType="BIGINT"/>
+        <result column="APPROVERNAME" property="approverName" jdbcType="VARCHAR"/>
+        <result column="APPROVALTIME" property="approvalTime" jdbcType="TIMESTAMP"/>
+        <result column="USAGESTATUS" property="usageStatus" jdbcType="VARCHAR"/>
+        <result column="ORGID" property="orgId" jdbcType="BIGINT"/>
+        <result column="CREATETIME" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="CREATEUSER" property="createUser" jdbcType="BIGINT"/>
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        LOGID, SEALID, BUSINESSTYPE, BUSINESSID, BUSINESSNO, USAGETYPE, USAGEDATE,
+        USERID, USERNAME, USAGELOCATION, USAGEREASON, APPROVERID, APPROVERNAME,
+        APPROVALTIME, USAGESTATUS, ORGID, CREATETIME, CREATEUSER
+    </sql>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_TREASURY_SEAL_USAGE_LOGS
+        WHERE LOGID = #{logId}
+    </select>
+
+    <!-- 根据条件查询 -->
+    <select id="selectByCondition" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_TREASURY_SEAL_USAGE_LOGS
+        WHERE 1=1
+        <if test="params.sealId != null">
+            AND SEALID = #{params.sealId}
+        </if>
+        <if test="params.businessType != null and params.businessType != ''">
+            AND BUSINESSTYPE LIKE CONCAT('%', #{params.businessType}, '%')
+        </if>
+        <if test="params.businessNo != null and params.businessNo != ''">
+            AND BUSINESSNO LIKE CONCAT('%', #{params.businessNo}, '%')
+        </if>
+        <if test="params.userName != null and params.userName != ''">
+            AND USERNAME LIKE CONCAT('%', #{params.userName}, '%')
+        </if>
+        <if test="params.usageStatus != null and params.usageStatus != ''">
+            AND USAGESTATUS = #{params.usageStatus}
+        </if>
+        <if test="params.startDate != null">
+            AND USAGEDATE >= #{params.startDate}
+        </if>
+        <if test="params.endDate != null">
+            AND USAGEDATE &lt;= #{params.endDate}
+        </if>
+        <if test="params.orgId != null">
+            AND ORGID = #{params.orgId}
+        </if>
+        ORDER BY USAGEDATE DESC
+    </select>
+
+    <!-- 新增 -->
+    <insert id="insert" parameterType="com.global.treasurer.entity.TcSealUsageRecord" useGeneratedKeys="true" keyProperty="logId">
+        INSERT INTO TBL_TREASURY_SEAL_USAGE_LOGS (
+            SEALID, BUSINESSTYPE, BUSINESSID, BUSINESSNO, USAGETYPE, USAGEDATE,
+            USERID, USERNAME, USAGELOCATION, USAGEREASON, APPROVERID, APPROVERNAME,
+            APPROVALTIME, USAGESTATUS, ORGID, CREATETIME, CREATEUSER
+        ) VALUES (
+            #{sealId}, #{businessType}, #{businessId}, #{businessNo}, #{usageType}, #{usageDate},
+            #{userId}, #{userName}, #{usageLocation}, #{usageReason}, #{approverId}, #{approverName},
+            #{approvalTime}, #{usageStatus}, #{orgId}, #{createTime}, #{createUser}
+        )
+    </insert>
+
+    <!-- 根据ID更新 -->
+    <update id="updateById" parameterType="com.global.treasurer.entity.TcSealUsageRecord">
+        UPDATE TBL_TREASURY_SEAL_USAGE_LOGS
+        SET BUSINESSTYPE = #{businessType},
+            BUSINESSID = #{businessId},
+            BUSINESSNO = #{businessNo},
+            USAGETYPE = #{usageType},
+            USERID = #{userId},
+            USERNAME = #{userName},
+            USAGELOCATION = #{usageLocation},
+            USAGEREASON = #{usageReason},
+            APPROVERID = #{approverId},
+            APPROVERNAME = #{approverName},
+            APPROVALTIME = #{approvalTime},
+            USAGESTATUS = #{usageStatus}
+        WHERE LOGID = #{logId}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <delete id="deleteById">
+        DELETE FROM TBL_TREASURY_SEAL_USAGE_LOGS
+        WHERE LOGID = #{logId}
+    </delete>
+
+    <!-- 批量删除 -->
+    <delete id="batchDelete">
+        DELETE FROM TBL_TREASURY_SEAL_USAGE_LOGS
+        WHERE LOGID IN
+        <foreach collection="logIds" item="logId" open="(" separator="," close=")">
+            #{logId}
+        </foreach>
+    </delete>
+
+    <!-- 查询总数 -->
+    <select id="selectTotalCount" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM TBL_TREASURY_SEAL_USAGE_LOGS
+    </select>
+
+    <!-- 根据印鉴ID查询 -->
+    <select id="selectBySealId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_TREASURY_SEAL_USAGE_LOGS
+        WHERE SEALID = #{sealId}
+        ORDER BY USAGEDATE DESC
+    </select>
+
+    <!-- 根据使用人查询 -->
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_TREASURY_SEAL_USAGE_LOGS
+        WHERE USERID = #{userId}
+        ORDER BY USAGEDATE DESC
+    </select>
+
+    <!-- 根据业务类型查询 -->
+    <select id="selectByBusinessType" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_TREASURY_SEAL_USAGE_LOGS
+        WHERE BUSINESSTYPE = #{businessType}
+        ORDER BY USAGEDATE DESC
+    </select>
+
+    <!-- 根据使用状态查询 -->
+    <select id="selectByUsageStatus" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_TREASURY_SEAL_USAGE_LOGS
+        WHERE USAGESTATUS = #{usageStatus}
+        ORDER BY USAGEDATE DESC
+    </select>
+
+    <!-- 根据日期范围查询 -->
+    <select id="selectByDateRange" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_TREASURY_SEAL_USAGE_LOGS
+        WHERE USAGEDATE >= #{startDate} AND USAGEDATE &lt;= #{endDate}
+        ORDER BY USAGEDATE DESC
+    </select>
+
+    <!-- 根据印鉴ID统计使用次数 -->
+    <select id="selectUsageCountBySealId" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM TBL_TREASURY_SEAL_USAGE_LOGS
+        WHERE SEALID = #{sealId}
+    </select>
+
+    <!-- 根据日期统计使用次数 -->
+    <select id="selectUsageCountByDate" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM TBL_TREASURY_SEAL_USAGE_LOGS
+        WHERE DATE(USAGEDATE) = #{usageDate}
+    </select>
+
+    <!-- 查询今日使用记录 -->
+    <select id="selectTodayUsage" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_TREASURY_SEAL_USAGE_LOGS
+        WHERE DATE(USAGEDATE) = CURRENT_DATE
+        <if test="orgId != null">
+            AND ORGID = #{orgId}
+        </if>
+        ORDER BY USAGEDATE DESC
+    </select>
+
+    <!-- 查询待审批记录 -->
+    <select id="selectPendingApproval" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_TREASURY_SEAL_USAGE_LOGS
+        WHERE USAGESTATUS = 'PENDING'
+        <if test="orgId != null">
+            AND ORGID = #{orgId}
+        </if>
+        ORDER BY USAGEDATE ASC
+    </select>
+
+    <!-- 批量更新审批状态 -->
+    <update id="batchUpdateApprovalStatus">
+        UPDATE TBL_TREASURY_SEAL_USAGE_LOGS
+        SET USAGESTATUS = #{params.usageStatus},
+            APPROVERID = #{params.approverId},
+            APPROVERNAME = #{params.approverName},
+            APPROVALTIME = #{params.approvalTime}
+        WHERE LOGID IN
+        <foreach collection="params.logIds" item="logId" open="(" separator="," close=")">
+            #{logId}
+        </foreach>
+    </update>
+
+</mapper>

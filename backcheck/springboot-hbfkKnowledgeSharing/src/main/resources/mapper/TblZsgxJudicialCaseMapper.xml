@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.know.mapper.TblZsgxJudicialCaseMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.huabo.know.entity.TblZsgxJudicialCase">
+        <result column="ID" property="id" />
+        <result column="TITLE" property="title" />
+        <result column="CONTENT" property="content" />
+        <result column="JUDGE" property="judge" />
+        <result column="CASE_FLAG" property="caseFlag" />
+        <result column="AGENT_LAWYER" property="agentLawyer" />
+        <result column="CASE_DOC" property="caseDoc" />
+        <result column="PARTY" property="party" />
+        <result column="ISSUE_DATE" property="issueDate" />
+        <result column="LAST_INSTANCE_DATE" property="lastInstanceDate" />
+        <result column="CONTENT_LEN" property="contentLen" />
+        <result column="ISSUE_YEAR" property="issueYear" />
+        <result column="DOCUMENT_ATTR_CODE" property="documentAttrCode" />
+        <result column="DOCUMENT_ATTR_NAME" property="documentAttrName" />
+        <result column="CONTRACT_TYPE_CODE" property="contractTypeCode" />
+        <result column="CONTRACT_TYPE_NAME" property="contractTypeName" />
+        <result column="TRIAL_STEP_CODE" property="trialStepCode" />
+        <result column="TRIAL_STEP_NAME" property="trialStepName" />
+        <result column="CASE_CLASS_CODE" property="caseClassCode" />
+        <result column="CASE_CLASS_NAME" property="caseClassName" />
+        <result column="NO_PUBLIC_REASON_CODE" property="noPublicReasonCode" />
+        <result column="NO_PUBLIC_REASON_NAME" property="noPublicReasonName" />
+        <result column="COURT_GRADE_CODE" property="courtGradeCode" />
+        <result column="COURT_GRADE_NAME" property="courtGradeName" />
+        <result column="LAST_INSTANCE_COURT_CODE" property="lastInstanceCourtCode" />
+        <result column="LAST_INSTANCE_COURT_NAME" property="lastInstanceCourtName" />
+        <result column="CASE_GRADE_CODE" property="caseGradeCode" />
+        <result column="CASE_GRADE_NAME" property="caseGradeName" />
+        <result column="CATEGORY_CODE" property="categoryCode" />
+        <result column="CATEGORY_NAME" property="categoryName" />
+        <result column="CREATE_COMPANY" property="createCompany" />
+        <result column="CREATE_DEPT" property="createDept" />
+        <result column="CREATE_BY" property="createBy" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="UPDATE_BY" property="updateBy" />
+        <result column="DELETED" property="deleted" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        ID, TITLE, CONTENT, JUDGE, CASE_FLAG, AGENT_LAWYER, CASE_DOC, PARTY, PUBLISH_DATE, LAST_INSTANCE_DATE, CONTENT_LEN, ISSUE_YEAR, DOCUMENT_ATTR_CODE, DOCUMENT_ATTR_NAME, CONTRACT_TYPE_CODE, CONTRACT_TYPE_NAME, TRIAL_STEP_CODE, TRIAL_STEP_NAME, CASE_CLASS_CODE, CASE_CLASS_NAME, NO_PUBLIC_REASON_CODE, NO_PUBLIC_REASON_NAME, COURT_GRADE_CODE, COURT_GRADE_NAME, LAST_INSTANCE_COURT_CODE, LAST_INSTANCE_COURT_NAME, CASE_GRADE_CODE, CASE_GRADE_NAME, CATEGORY_CODE, CATEGORY_NAME, CREATE_COMPANY, CREATE_DEPT, CREATE_BY, CREATE_TIME, UPDATE_TIME, UPDATE_BY, DELETED
+    </sql>
+
+</mapper>

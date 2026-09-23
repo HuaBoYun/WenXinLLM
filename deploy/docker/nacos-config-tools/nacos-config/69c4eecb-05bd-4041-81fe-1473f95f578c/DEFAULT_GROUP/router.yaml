@@ -1,0 +1,124 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        # 认证中心
+        - id: jnpf-oauth
+          uri: lb://jnpf-oauth
+          predicates:
+            - Path=/api/oauth/**
+          filters:
+            - StripPrefix=2
+        # 系统基础服务
+        - id: jnpf-system
+          uri: lb://jnpf-system
+          predicates:
+            - Path=/api/system/**
+          filters:
+            - StripPrefix=2
+        # 示例
+        - id: jnpf-example
+          uri: lb://jnpf-example
+          predicates:
+            - Path=/api/example/**
+          filters:
+            - StripPrefix=2
+        # 扩展服务
+        - id: jnpf-extend
+          uri: lb://jnpf-extend
+          predicates:
+            - Path=/api/extend/**
+          filters:
+            - StripPrefix=2
+        # 报表服务
+        - id: jnpf-datareport
+          uri: lb://jnpf-datareport
+          predicates:
+            - Path=/api/datareport/**
+          filters:
+            - StripPrefix=2
+        # 可视化开发服务
+        - id: jnpf-visualdev
+          uri: lb://jnpf-visualdev
+          predicates:
+            - Path=/api/visualdev/**
+          filters:
+            - StripPrefix=2
+        # 工作流服务
+        - id: jnpf-workflow
+          uri: lb://jnpf-workflow
+          predicates:
+            - Path=/api/workflow/**
+          filters:
+            - StripPrefix=2
+        # 文件服务
+        - id: jnpf-file
+          uri: lb://jnpf-file
+          predicates:
+            - Path=/api/file/**
+          filters:
+            - StripPrefix=2
+        # 多租户
+        - id: jnpf-tenant
+          uri: lb://jnpf-tenant
+          predicates:
+            - Path=/api/tenant/**
+          filters:
+            - StripPrefix=2
+        # 消息
+        - id: jnpf-message
+          uri: lb://jnpf-message
+          predicates:
+            - Path=/api/message/**
+          filters:
+            - StripPrefix=2
+        # 任务调度
+        - id: jnpf-scheduletask
+          uri: lb://jnpf-scheduletask
+          predicates:
+            - Path=/api/scheduletask/**
+          filters:
+            - StripPrefix=2
+        # 权限
+        - id: jnpf-permission
+          uri: lb://jnpf-permission
+          predicates:
+            - Path=/api/permission/**
+          filters:
+            - StripPrefix=2
+        # 大屏
+        - id: jnpf-visualdata
+          uri: lb://jnpf-visualdata
+          predicates:
+            - Path=/api/blade-visual/**
+          filters:
+            - StripPrefix=2
+        # app
+        - id: jnpf-app
+          uri: lb://jnpf-app
+          predicates:
+            - Path=/api/app/**
+          filters:
+            - StripPrefix=2
+        # 工作流表单
+        - id: jnpf-flowForm
+          uri: lb://jnpf-flowForm
+          predicates:
+            - Path=/api/flowForm/**
+          filters:
+            - StripPrefix=2
+
+
+#接口放行地址 与GatewayWhite中的默认URL合并
+gateway:
+  #禁止访问
+  block-url:
+  #不验证Token, 记录访问
+  white-url:
+  #- /api/message/Notice
+  - /api/permission/Users/*
+  #放行不记录
+  exclude-url:
+  #禁止访问地址的白名单IP
+  white-ip:
+  #- 192.168

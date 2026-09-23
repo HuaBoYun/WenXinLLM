@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.audit.oracle.mapper.LeaveAudit3LMapper">
+
+    <select id="selectLeaveAudit3LSummary" resultType="com.huabo.audit.oracle.vo.LeaveAudit3LCountVo">
+    SELECT PROJECTNAME PROJECTTWO,RELAORGNAME NAMETHREE,count(AA.PROJECTCOUNT) COUNTS,SUM(AA.yssl) YSSL,SUM(AA.sjsl) SJSL,SUM(AA.yssl)-SUM(AA.sjsl) WSSL,SUM(AA.bssl) BSSL from (
+    SELECT FAO.ORGNAME||'离任经济责任审计' AS PROJECTNAME, FAO.ORGID AS RELAORGID ,FAO.ORGNAME AS RELAORGNAME,
+    (SELECT count(0) from TBL_YQNS_LEAVE_AUDIT_3L zs where ZS."ID"=TYLA."ID")  AS PROJECTCOUNT,
+    (SELECT count(0) from TBL_YQNS_LEAVE_AUDIT_3L ys where YS."ID"=TYLA."ID" and YS.IS_AUDIT=1)  AS yssl,
+    (SELECT count(0) from TBL_YQNS_LEAVE_AUDIT_3L bs where bs."ID"=TYLA."ID" and bs.IS_AUDIT=0)  AS bssl,
+    (SELECT count(0) from TBL_YQNS_LEAVE_AUDIT_3L sj where sj."ID"=TYLA."ID" and sj."ID" IN (SELECT GLID from TBL_YQNS_FUND_AUDIT_PROJECT_GL) )  AS sjsl
+    FROM TBL_YQNS_LEAVE_AUDIT_3L TYLA LEFT JOIN TBL_ORGANIZATION ORG ON TYLA.OLD_ORG_ID = ORG.ORGID
+    LEFT JOIN TBL_ORGANIZATION FAO ON ORG.FATHERORGID = FAO.ORGID
+    WHERE TYLA.ID IN (select NRID from TBL_YQNS_LEAVE_AUDIT_JD3L_GL where JDID IN ( SELECT JDID FROM TBL_YQNS_LEAVE_AUDIT_JD3L WHERE STATUS = 6 ))
+     and TO_CHAR(TYLA.CREATE_TIME,'YYYY-MM-DD')  LIKE '${queryYear}%'
+     ) aa GROUP BY AA.PROJECTNAME,RELAORGID,RELAORGNAME
+    </select>
+
+
+    <update id="updateByStatus">
+
+    </update>
+</mapper>

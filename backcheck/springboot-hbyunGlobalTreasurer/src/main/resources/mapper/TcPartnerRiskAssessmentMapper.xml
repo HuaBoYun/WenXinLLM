@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.TcPartnerRiskAssessmentMapper">
+
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TcPartnerRiskAssessment">
+        <id column="ID" property="id"/>
+        <result column="PARTNER_ID" property="partnerId"/>
+        <result column="ASSESSMENT_TYPE" property="assessmentType"/>
+        <result column="RISK_LEVEL" property="riskLevel"/>
+        <result column="RISK_SCORE" property="riskScore"/>
+        <result column="RISK_STATUS" property="riskStatus"/>
+        <result column="LAST_ASSESSMENT_DATE" property="lastAssessmentDate"/>
+        <result column="NEXT_ASSESSMENT_DATE" property="nextAssessmentDate"/>
+        <result column="ASSESSMENT_DESCRIPTION" property="assessmentDescription"/>
+        <result column="CONTROL_MEASURES" property="controlMeasures"/>
+        <result column="REMARKS" property="remarks"/>
+        <result column="IS_ENABLED" property="isEnabled"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="CREATE_USER" property="createUser"/>
+        <result column="UPDATE_USER" property="updateUser"/>
+        <result column="VERSION_NO" property="versionNo"/>
+    </resultMap>
+
+    <resultMap id="DetailResultMap" type="com.global.treasurer.entity.TcPartnerRiskAssessment" extends="BaseResultMap">
+        <result column="PARTNER_CODE" property="partnerCode"/>
+        <result column="PARTNER_NAME" property="partnerName"/>
+        <result column="PARTNER_TYPE_ID" property="partnerType"/>
+    </resultMap>
+
+    <select id="selectByParams" resultMap="DetailResultMap" parameterType="map">
+        SELECT
+            r.ID, r.PARTNER_ID, r.ASSESSMENT_TYPE, r.RISK_LEVEL, r.RISK_SCORE,
+            r.RISK_STATUS, r.LAST_ASSESSMENT_DATE, r.NEXT_ASSESSMENT_DATE,
+            r.ASSESSMENT_DESCRIPTION, r.CONTROL_MEASURES, r.REMARKS,
+            r.IS_ENABLED, r.CREATE_TIME, r.UPDATE_TIME, r.CREATE_USER, r.UPDATE_USER, r.VERSION_NO,
+            p.PARTNER_CODE, p.PARTNER_NAME, p.PARTNER_TYPE_ID
+        FROM TC_PARTNER_RISK_ASSESSMENT r
+        LEFT JOIN TC_PARTNER_ARCHIVE p ON r.PARTNER_ID = p.ID
+        <where>
+            <if test="params.partnerId != null and params.partnerId != ''">
+                AND r.PARTNER_ID = #{params.partnerId}
+            </if>
+            <if test="params.partnerCode != null and params.partnerCode != ''">
+                AND p.PARTNER_CODE LIKE '%' || #{params.partnerCode} || '%'
+            </if>
+            <if test="params.partnerName != null and params.partnerName != ''">
+                AND p.PARTNER_NAME LIKE '%' || #{params.partnerName} || '%'
+            </if>
+            <if test="params.riskLevel != null and params.riskLevel != ''">
+                AND r.RISK_LEVEL = #{params.riskLevel}
+            </if>
+            <if test="params.riskStatus != null and params.riskStatus != ''">
+                AND r.RISK_STATUS = #{params.riskStatus}
+            </if>
+            <if test="params.assessmentType != null and params.assessmentType != ''">
+                AND r.ASSESSMENT_TYPE = #{params.assessmentType}
+            </if>
+        </where>
+        ORDER BY r.CREATE_TIME DESC
+    </select>
+
+    <select id="selectByPartnerId" resultMap="BaseResultMap">
+        SELECT * FROM TC_PARTNER_RISK_ASSESSMENT
+        WHERE PARTNER_ID = #{partnerId}
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <select id="selectByRiskLevel" resultMap="BaseResultMap">
+        SELECT * FROM TC_PARTNER_RISK_ASSESSMENT
+        WHERE RISK_LEVEL = #{riskLevel}
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <select id="selectByRiskStatus" resultMap="BaseResultMap">
+        SELECT * FROM TC_PARTNER_RISK_ASSESSMENT
+        WHERE RISK_STATUS = #{riskStatus}
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <select id="selectStatistics" resultType="map">
+        SELECT
+            COUNT(*) AS totalAssessments,
+            SUM(CASE WHEN RISK_LEVEL IN ('B', 'C') THEN 1 ELSE 0 END) AS highRiskCount,
+            SUM(CASE WHEN RISK_LEVEL IN ('BBB', 'BB') THEN 1 ELSE 0 END) AS mediumRiskCount,
+            SUM(CASE WHEN RISK_LEVEL IN ('AAA', 'AA', 'A') THEN 1 ELSE 0 END) AS lowRiskCount
+        FROM TC_PARTNER_RISK_ASSESSMENT
+        WHERE IS_ENABLED = 1
+    </select>
+
+</mapper>
+

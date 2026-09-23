@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.GuaranteeApplicationMapper">
+
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TblGuaranteeApplication">
+        <id column="APPLICATION_ID" property="applicationId"/>
+        <result column="APPLICATION_NO" property="applicationNo"/>
+        <result column="GUARANTEE_TYPE" property="guaranteeType"/>
+        <result column="APPLICANT_ID" property="applicantId"/>
+        <result column="APPLICANT_NAME" property="applicantName"/>
+        <result column="GUARANTOR_ID" property="guarantorId"/>
+        <result column="GUARANTOR_NAME" property="guarantorName"/>
+        <result column="GUARANTEED_PARTY" property="guaranteedParty"/>
+        <result column="APPLY_AMOUNT" property="applyAmount"/>
+        <result column="GUARANTEE_AMOUNT" property="guaranteeAmount"/>
+        <result column="APPROVED_AMOUNT" property="approvedAmount"/>
+        <result column="CURRENCY_CODE" property="currencyCode"/>
+        <result column="APPLY_DATE" property="applyDate"/>
+        <result column="APPLICATION_TIME" property="applicationTime"/>
+        <result column="EXPECTED_START_DATE" property="expectedStartDate"/>
+        <result column="EXPECTED_END_DATE" property="expectedEndDate"/>
+        <result column="APPLICATION_STATUS" property="applicationStatus"/>
+        <result column="DELETE_FLAG" property="deleteFlag"/>
+        <result column="CREATED_BY" property="createdBy"/>
+        <result column="CREATED_TIME" property="createdTime"/>
+        <result column="UPDATED_BY" property="updatedBy"/>
+        <result column="UPDATED_TIME" property="updatedTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        APPLICATION_ID, APPLICATION_NO, GUARANTEE_TYPE, APPLICANT_ID, APPLICANT_NAME,
+        GUARANTOR_ID, GUARANTOR_NAME,
+        APPLY_AMOUNT, APPLY_AMOUNT AS GUARANTEE_AMOUNT, APPROVED_AMOUNT, CURRENCY_CODE,
+        APPLY_DATE, APPLY_DATE AS APPLICATION_TIME, EXPECTED_START_DATE, EXPECTED_END_DATE,
+        APPLICATION_STATUS, GUARANTOR_NAME AS GUARANTEED_PARTY,
+        DELETE_FLAG, CREATED_BY, CREATED_TIME, UPDATED_BY, UPDATED_TIME
+    </sql>
+
+    <select id="selectApplicationList" resultMap="BaseResultMap" parameterType="map">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_GUARANTEE_APPLICATION
+        WHERE (DELETE_FLAG = 0 OR DELETE_FLAG IS NULL)
+        <if test="guaranteeType != null and guaranteeType != ''">
+            AND GUARANTEE_TYPE = #{guaranteeType}
+        </if>
+        <if test="applicationStatus != null and applicationStatus != ''">
+            AND APPLICATION_STATUS = #{applicationStatus}
+        </if>
+        <if test="applicationNo != null and applicationNo != ''">
+            AND APPLICATION_NO LIKE CONCAT('%', #{applicationNo}, '%')
+        </if>
+        <if test="applicantId != null">
+            AND APPLICANT_ID = #{applicantId}
+        </if>
+        <if test="guarantorId != null">
+            AND GUARANTOR_ID = #{guarantorId}
+        </if>
+        ORDER BY APPLY_DATE DESC
+    </select>
+
+    <select id="selectApplicationById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_GUARANTEE_APPLICATION
+        WHERE APPLICATION_ID = #{applicationId} AND (DELETE_FLAG = 0 OR DELETE_FLAG IS NULL)
+    </select>
+
+    <select id="selectApplicationSummary" resultType="map">
+        SELECT
+            COUNT(*) AS totalCount,
+            SUM(APPLY_AMOUNT) AS totalApplyAmount,
+            SUM(APPROVED_AMOUNT) AS totalApprovedAmount
+        FROM TBL_GUARANTEE_APPLICATION
+        WHERE DELETE_FLAG = 0
+        <if test="applicantId != null">
+            AND APPLICANT_ID = #{applicantId}
+        </if>
+    </select>
+
+    <update id="updateApplicationStatus">
+        UPDATE TBL_GUARANTEE_APPLICATION
+        SET APPLICATION_STATUS = #{status}, UPDATED_TIME = SYSDATE
+        WHERE APPLICATION_ID = #{applicationId}
+    </update>
+
+    <!-- 新增担保申请 -->
+    <insert id="insert" parameterType="com.global.treasurer.entity.TblGuaranteeApplication">
+        INSERT INTO TBL_GUARANTEE_APPLICATION (
+            APPLICATION_ID,
+            APPLICATION_NO,
+            GUARANTEE_TYPE,
+            APPLY_AMOUNT,
+            APPROVED_AMOUNT,
+            CURRENCY_CODE,
+            GUARANTOR_ID,
+            GUARANTOR_NAME,
+            APPLICANT_ID,
+            APPLICANT_NAME,
+            APPLICATION_STATUS,
+            APPLY_DATE,
+            EXPECTED_START_DATE,
+            EXPECTED_END_DATE,
+            DELETE_FLAG,
+            CREATED_BY,
+            CREATED_TIME,
+            UPDATED_BY,
+            UPDATED_TIME
+        ) VALUES (
+            #{applicationId},
+            #{applicationNo},
+            #{guaranteeType},
+            #{guaranteeAmount},
+            #{approvedAmount},
+            #{currencyCode},
+            #{guarantorId},
+            #{guarantorName},
+            #{applicantId},
+            #{applicantName},
+            #{applicationStatus},
+            #{applyDate},
+            #{expectedStartDate},
+            #{expectedEndDate},
+            #{deleteFlag},
+            #{createdBy},
+            #{createdTime},
+            #{updatedBy},
+            #{updatedTime}
+        )
+    </insert>
+
+    <!-- 更新担保申请 - 重命名为 updateApplication 避免与 MyBatis-Plus 的 updateById 冲突 -->
+    <update id="updateApplication" parameterType="com.global.treasurer.entity.TblGuaranteeApplication">
+        UPDATE TBL_GUARANTEE_APPLICATION
+        <set>
+            <if test="applicationNo != null">APPLICATION_NO = #{applicationNo},</if>
+            <if test="guaranteeType != null">GUARANTEE_TYPE = #{guaranteeType},</if>
+            <if test="guaranteeAmount != null">APPLY_AMOUNT = #{guaranteeAmount},</if>
+            <if test="approvedAmount != null">APPROVED_AMOUNT = #{approvedAmount},</if>
+            <if test="currencyCode != null">CURRENCY_CODE = #{currencyCode},</if>
+            <if test="guarantorId != null">GUARANTOR_ID = #{guarantorId},</if>
+            <if test="guarantorName != null">GUARANTOR_NAME = #{guarantorName},</if>
+            <if test="applicantId != null">APPLICANT_ID = #{applicantId},</if>
+            <if test="applicantName != null">APPLICANT_NAME = #{applicantName},</if>
+            <if test="applicationStatus != null">APPLICATION_STATUS = #{applicationStatus},</if>
+            <if test="applyDate != null">APPLY_DATE = #{applyDate},</if>
+            <if test="expectedStartDate != null">EXPECTED_START_DATE = #{expectedStartDate},</if>
+            <if test="expectedEndDate != null">EXPECTED_END_DATE = #{expectedEndDate},</if>
+            UPDATED_TIME = SYSDATE
+        </set>
+        WHERE APPLICATION_ID = #{applicationId}
+    </update>
+
+    <!-- 根据ID删除（逻辑删除） -->
+    <update id="deleteById">
+        UPDATE TBL_GUARANTEE_APPLICATION
+        SET DELETE_FLAG = 1, UPDATED_TIME = SYSDATE
+        WHERE APPLICATION_ID = #{applicationId}
+    </update>
+
+    <!-- 批量删除（逻辑删除） -->
+    <update id="deleteBatchIds" parameterType="list">
+        UPDATE TBL_GUARANTEE_APPLICATION
+        SET DELETE_FLAG = 1, UPDATED_TIME = SYSDATE
+        WHERE APPLICATION_ID IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+</mapper>
+

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.treasuryCommon.SealCombinationConfigMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.treasuryCommon.SealCombinationConfig">
+        <id column="ID" property="id" jdbcType="BIGINT"/>
+        <result column="ORG_ID" property="orgId" jdbcType="BIGINT"/>
+        <result column="COMBINATION_CODE" property="combinationCode" jdbcType="VARCHAR"/>
+        <result column="COMBINATION_NAME" property="combinationName" jdbcType="VARCHAR"/>
+        <result column="COMBINATION_TYPE" property="combinationType" jdbcType="VARCHAR"/>
+        <result column="SEAL_LIST" property="sealList" jdbcType="VARCHAR"/>
+        <result column="USAGE_RULES" property="usageRules" jdbcType="VARCHAR"/>
+        <result column="APPROVAL_FLOW" property="approvalFlow" jdbcType="VARCHAR"/>
+        <result column="BUSINESS_SCENES" property="businessScenes" jdbcType="VARCHAR"/>
+        <result column="RISK_LEVEL" property="riskLevel" jdbcType="VARCHAR"/>
+        <result column="STATUS" property="status" jdbcType="INTEGER"/>
+        <result column="IS_ENABLED" property="isEnabled" jdbcType="INTEGER"/>
+        <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="CREATE_USER" property="createUser" jdbcType="VARCHAR"/>
+        <result column="UPDATE_USER" property="updateUser" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        ID, ORG_ID, COMBINATION_CODE, COMBINATION_NAME, COMBINATION_TYPE, SEAL_LIST,
+        USAGE_RULES, APPROVAL_FLOW, BUSINESS_SCENES, RISK_LEVEL, STATUS, IS_ENABLED,
+        CREATE_TIME, UPDATE_TIME, CREATE_USER, UPDATE_USER
+    </sql>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_SEAL_COMBINATION_CONFIG
+        WHERE ID = #{id,jdbcType=BIGINT}
+        AND STATUS = 1
+    </select>
+
+    <!-- 根据编码查询 -->
+    <select id="selectByCode" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_SEAL_COMBINATION_CONFIG
+        WHERE COMBINATION_CODE = #{combinationCode,jdbcType=VARCHAR}
+        AND STATUS = 1
+    </select>
+
+    <!-- 查询列表 -->
+    <select id="selectCombinationList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_SEAL_COMBINATION_CONFIG
+        <where>
+            STATUS = 1
+            <if test="orgId != null and orgId != ''">
+                AND ORG_ID = #{orgId,jdbcType=BIGINT}
+            </if>
+            <if test="combinationCode != null and combinationCode != ''">
+                AND COMBINATION_CODE LIKE CONCAT('%', #{combinationCode,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="combinationName != null and combinationName != ''">
+                AND COMBINATION_NAME LIKE CONCAT('%', #{combinationName,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="combinationType != null and combinationType != ''">
+                AND COMBINATION_TYPE = #{combinationType,jdbcType=VARCHAR}
+            </if>
+            <if test="riskLevel != null and riskLevel != ''">
+                AND RISK_LEVEL = #{riskLevel,jdbcType=VARCHAR}
+            </if>
+            <if test="status != null and status != ''">
+                AND STATUS = #{status,jdbcType=INTEGER}
+            </if>
+            <if test="isEnabled != null and isEnabled != ''">
+                AND IS_ENABLED = #{isEnabled,jdbcType=INTEGER}
+            </if>
+        </where>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 插入 -->
+    <insert id="insert" parameterType="com.global.treasurer.entity.treasuryCommon.SealCombinationConfig" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO TBL_SEAL_COMBINATION_CONFIG (
+            ORG_ID, COMBINATION_CODE, COMBINATION_NAME, COMBINATION_TYPE, SEAL_LIST,
+            USAGE_RULES, APPROVAL_FLOW, BUSINESS_SCENES, RISK_LEVEL, STATUS, IS_ENABLED,
+            CREATE_TIME, UPDATE_TIME, CREATE_USER, UPDATE_USER
+        ) VALUES (
+            #{orgId,jdbcType=BIGINT}, #{combinationCode,jdbcType=VARCHAR}, #{combinationName,jdbcType=VARCHAR},
+            #{combinationType,jdbcType=VARCHAR}, #{sealList,jdbcType=VARCHAR}, #{usageRules,jdbcType=VARCHAR},
+            #{approvalFlow,jdbcType=VARCHAR}, #{businessScenes,jdbcType=VARCHAR}, #{riskLevel,jdbcType=VARCHAR},
+            #{status,jdbcType=INTEGER}, #{isEnabled,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP},
+            #{updateTime,jdbcType=TIMESTAMP}, #{createUser,jdbcType=VARCHAR}, #{updateUser,jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <!-- 更新 -->
+    <update id="updateById" parameterType="com.global.treasurer.entity.treasuryCommon.SealCombinationConfig">
+        UPDATE TBL_SEAL_COMBINATION_CONFIG
+        SET COMBINATION_NAME = #{combinationName,jdbcType=VARCHAR},
+            COMBINATION_TYPE = #{combinationType,jdbcType=VARCHAR},
+            SEAL_LIST = #{sealList,jdbcType=VARCHAR},
+            USAGE_RULES = #{usageRules,jdbcType=VARCHAR},
+            APPROVAL_FLOW = #{approvalFlow,jdbcType=VARCHAR},
+            BUSINESS_SCENES = #{businessScenes,jdbcType=VARCHAR},
+            RISK_LEVEL = #{riskLevel,jdbcType=VARCHAR},
+            STATUS = #{status,jdbcType=INTEGER},
+            IS_ENABLED = #{isEnabled,jdbcType=INTEGER},
+            UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP},
+            UPDATE_USER = #{updateUser,jdbcType=VARCHAR}
+        WHERE ID = #{id,jdbcType=BIGINT}
+    </update>
+
+    <!-- 删除（逻辑删除） -->
+    <update id="deleteById" parameterType="java.lang.String">
+        UPDATE TBL_SEAL_COMBINATION_CONFIG
+        SET STATUS = 0, IS_ENABLED = 0, UPDATE_TIME = CURRENT_TIMESTAMP
+        WHERE ID = #{id,jdbcType=BIGINT}
+    </update>
+
+    <!-- 根据组织ID查询 -->
+    <select id="selectByOrgId" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_SEAL_COMBINATION_CONFIG
+        WHERE ORG_ID = #{orgId,jdbcType=BIGINT}
+        AND STATUS = 1 AND IS_ENABLED = 1
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+</mapper>

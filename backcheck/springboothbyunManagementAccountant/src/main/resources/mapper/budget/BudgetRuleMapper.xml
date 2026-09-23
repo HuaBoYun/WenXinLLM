@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.management.accountant.oracle.mapper.budget.BudgetRuleMapper">
+
+    <select id="selectByRuleCode" resultType="com.management.accountant.oracle.entity.budget.BudgetRule">
+        SELECT * FROM TBL_BUDGET_RULE WHERE RULE_CODE = #{ruleCode} AND DEL_FLAG = 0
+    </select>
+
+    <select id="selectByRuleType" resultType="com.management.accountant.oracle.entity.budget.BudgetRule">
+        SELECT * FROM TBL_BUDGET_RULE WHERE RULE_TYPE = #{ruleType} AND DEL_FLAG = 0 ORDER BY PRIORITY
+    </select>
+
+    <select id="selectEnabledRules" resultType="com.management.accountant.oracle.entity.budget.BudgetRule">
+        SELECT * FROM TBL_BUDGET_RULE WHERE IS_ENABLED = 1 AND DEL_FLAG = 0 ORDER BY PRIORITY
+    </select>
+
+    <select id="selectByPriority" resultType="com.management.accountant.oracle.entity.budget.BudgetRule">
+        SELECT * FROM TBL_BUDGET_RULE WHERE PRIORITY BETWEEN #{minPriority} AND #{maxPriority} AND DEL_FLAG = 0 ORDER BY PRIORITY
+    </select>
+
+    <update id="batchDeleteRules">
+        UPDATE TBL_BUDGET_RULE SET DEL_FLAG = 1 WHERE RULE_ID IN
+        <foreach collection="ruleIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+</mapper>
+

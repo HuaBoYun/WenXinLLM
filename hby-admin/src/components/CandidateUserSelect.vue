@@ -75,7 +75,7 @@
       title="候选人员"
       :close-on-click-modal="false"
       :visible.sync="visible"
-      class="JNPF-dialog JNPF-dialog_center transfer-dialog"
+      class="transfer-dialog"
       lock-scroll
       append-to-body
       width="800px"

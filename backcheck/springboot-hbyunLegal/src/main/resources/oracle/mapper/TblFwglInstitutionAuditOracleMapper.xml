@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.legal.oracle.mapper.TblFwglInstitutionAuditOracleMapper">
+  <resultMap id="BaseResultMap" type="com.huabo.legal.oracle.entity.TblFwglInstitutionAuditOracle">
+    <!--@mbg.generated generated on Mon Sep 12 23:28:33 CST 2022.-->
+    <!--@Table hbgrctest.tbl_fwgl_institution_audit-->
+    <id column="INSTITUTIONAUDITID" jdbcType="INTEGER" property="institutionAuditId" />
+    <result column="AUDITTYPE" jdbcType="INTEGER" property="auditType" />
+    <result column="AUDITNAME" jdbcType="VARCHAR" property="auditName" />
+    <result column="OPINIONNAME" jdbcType="VARCHAR" property="opinionName" />
+    <result column="AUDITBELONGGROUPID" jdbcType="VARCHAR" property="auditBelongGroupId" />
+    <result column="DRAFTADMINISTRATOROPINION" jdbcType="VARCHAR" property="draftAdministratorOpinion" />
+    <result column="DRAFTDEPARTMENTOPINION" jdbcType="VARCHAR" property="draftDepartmentOpinion" />
+    <result column="DEPARTMENTBELONGGROUPOPINION" jdbcType="VARCHAR" property="departmentBelongGroupOpinion" />
+    <result column="DRAFTDEPARTMENTOPINIONSUCK" jdbcType="VARCHAR" property="draftDepartmentOpinionSuck" />
+    <result column="FILEIDS" jdbcType="VARCHAR" property="fileIds" />
+    <result column="INSTITUTIONAUDITEXTID" jdbcType="VARCHAR" property="institutionAuditExtId" />
+    <result column="MATTERSINFORMEDPERSONNEL" jdbcType="VARCHAR" property="mattersInformedPersonnel" />
+    <result column="MATTERSINSTRUCTIONS" jdbcType="VARCHAR" property="mattersInstructions" />
+    <result column="HOSTDEPARTMENTOPINION" jdbcType="VARCHAR" property="hostDepartmentOpinion" />
+    <result column="RELATEDDEPARTMENTOPINION" jdbcType="VARCHAR" property="relatedDepartmentOpinion" />
+    <result column="TEAMLEADEROPINION" jdbcType="VARCHAR" property="teamLeaderOpinion" />
+    <result column="FIRMLEADEROPINION" jdbcType="VARCHAR" property="firmLeaderOpinion" />
+    <result column="STATE" jdbcType="INTEGER" property="state" />
+    <result column="CREATOR" jdbcType="VARCHAR" property="creator" />
+    <result column="WORKUNIT" jdbcType="VARCHAR" property="workUnit" />
+    <result column="BELONGGROUP" jdbcType="VARCHAR" property="belongGroup" />
+    <result column="CREATEDTIME" jdbcType="TIMESTAMP" property="createdTime" />
+    <result column="UPDATEDTIME" jdbcType="TIMESTAMP" property="updatedTime" />
+  </resultMap>
+
+  <select id="findInstitutionAuditCompliance" resultType="com.huabo.legal.vo.result.TblFwglComplianceResult">
+    select tfia.belongGroup,tblo.orgmeno as belongGroupName, count(tfia.belongGroup) as reviewNumber
+    from tbl_fwgl_institution_audit tfia
+    LEFT JOIN tbl_organization tblo on tfia.belongGroup=tblo.ORGID
+    WHERE tfia.auditType = #{type} and tfia.createdTime &gt;= #{beginOfYear} and tfia.createdTime &lt; #{endYear} and tfia.state=6
+    <if test="tblOrganizationAll != null and tblOrganizationAll.size() > 0">
+        and tfia.belongGroup in
+        <foreach collection="tblOrganizationAll" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </if>
+    GROUP BY tfia.belongGroup,tblo.orgmeno
+  </select>
+
+  <select id="getLegalInstitution" resultType="com.huabo.legal.vo.result.LegalInstitutionResult">
+    select
+    a.belongGroup as belongGroup,b.orgmeno as belongGroupName,
+    (select count(*) from tbl_fwgl_institution_audit c where c.belongGroup=a.belongGroup and c.state=6) as institutionCount,
+    (select count(*) from tbl_fwgl_institution_audit c where c.belongGroup=a.belongGroup and c.state=6) as manageCount
+    from
+    tbl_fwgl_institution_audit a
+    LEFT JOIN tbl_organization b on a.belongGroup=b.ORGID
+    where 1=1
+    <if test="tblOrganizationAll != null and tblOrganizationAll.size() > 0">
+        and a.belongGroup in
+        <foreach collection="tblOrganizationAll" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </if>
+    group by a.belongGroup,b.orgmeno
+  </select>
+
+</mapper>

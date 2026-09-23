@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.mapper.TblAccountingRuleCenterMapper">
+
+    <select id="selectByRuleCode" resultType="com.financial.sharing.entity.TblAccountingRuleCenter">
+        SELECT * FROM TBL_ACCOUNTING_RULE_CENTER WHERE RULE_CODE = #{ruleCode}
+    </select>
+
+    <select id="selectByRuleType" resultType="com.financial.sharing.entity.TblAccountingRuleCenter">
+        SELECT * FROM TBL_ACCOUNTING_RULE_CENTER WHERE RULE_TYPE = #{ruleType} ORDER BY PRIORITY DESC, CREATE_TIME DESC
+    </select>
+
+    <select id="selectByPriorityRange" resultType="com.financial.sharing.entity.TblAccountingRuleCenter">
+        SELECT * FROM TBL_ACCOUNTING_RULE_CENTER
+        WHERE PRIORITY BETWEEN #{minPriority} AND #{maxPriority}
+        ORDER BY PRIORITY DESC, CREATE_TIME DESC
+    </select>
+
+    <select id="selectByIsEnabled" resultType="com.financial.sharing.entity.TblAccountingRuleCenter">
+        SELECT * FROM TBL_ACCOUNTING_RULE_CENTER WHERE IS_ENABLED = #{isEnabled} ORDER BY PRIORITY DESC, CREATE_TIME DESC
+    </select>
+
+    <select id="selectByDebitAccount" resultType="com.financial.sharing.entity.TblAccountingRuleCenter">
+        SELECT * FROM TBL_ACCOUNTING_RULE_CENTER WHERE DEBIT_ACCOUNT = #{debitAccount} ORDER BY PRIORITY DESC, CREATE_TIME DESC
+    </select>
+
+    <select id="selectByCreditAccount" resultType="com.financial.sharing.entity.TblAccountingRuleCenter">
+        SELECT * FROM TBL_ACCOUNTING_RULE_CENTER WHERE CREDIT_ACCOUNT = #{creditAccount} ORDER BY PRIORITY DESC, CREATE_TIME DESC
+    </select>
+
+</mapper>

@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.audit.oracle.mapper.AuditSmartHomeMapper">
+
+    <!-- 统计审计计划数 -->
+    <select id="countPlans" parameterType="map" resultType="int">
+        SELECT COUNT(1) FROM TBL_NBSJ_AUDITPLAN
+        WHERE 1=1
+        <if test="orgId != null and orgId != ''">
+            AND ORGID = #{orgId}
+        </if>
+    </select>
+
+    <!-- 统计审计项目数 -->
+    <select id="countProjects" parameterType="map" resultType="int">
+        SELECT COUNT(1) FROM TBL_NBSJ_PROJECT
+        WHERE 1=1
+        <if test="orgId != null and orgId != ''">
+            AND ORGID = #{orgId}
+        </if>
+    </select>
+
+    <!-- 统计实施中项目数 -->
+    <select id="countImplementing" parameterType="map" resultType="int">
+        SELECT COUNT(1) FROM TBL_NBSJ_PROJECT
+        WHERE STATUS = '2'
+        <if test="orgId != null and orgId != ''">
+            AND ORGID = #{orgId}
+        </if>
+    </select>
+
+    <!-- 统计审计发现数 -->
+    <select id="countDiscoveries" parameterType="map" resultType="int">
+        SELECT COUNT(1) FROM TBL_NBSJ_QUESTION
+        WHERE 1=1
+        <if test="orgId != null and orgId != ''">
+            AND ORGID = #{orgId}
+        </if>
+    </select>
+
+    <!-- 统计审计报告数 -->
+    <select id="countReports" parameterType="map" resultType="int">
+        SELECT COUNT(1) FROM TBL_NBSJ_REPORT
+        WHERE 1=1
+        <if test="orgId != null and orgId != ''">
+            AND ORGID = #{orgId}
+        </if>
+    </select>
+
+    <!-- 统计未销号问题数 -->
+    <select id="countUnsolvedIssues" parameterType="map" resultType="int">
+        SELECT COUNT(1) FROM TBL_ZGZZ_ISSUESILIST
+        WHERE STATUS = 9
+        <if test="orgId != null and orgId != ''">
+            AND ORGID = #{orgId}
+        </if>
+    </select>
+
+    <!-- 统计底稿总数 -->
+    <select id="countSheets" parameterType="map" resultType="int">
+        SELECT COUNT(1) FROM TBL_NBSJ_SHEET
+        WHERE 1=1
+        <if test="orgId != null and orgId != ''">
+            AND ORGID = #{orgId}
+        </if>
+    </select>
+
+    <!-- 统计已完成底稿数 -->
+    <select id="countCompletedSheets" parameterType="map" resultType="int">
+        SELECT COUNT(1) FROM TBL_NBSJ_SHEET
+        WHERE STATUS = '3'
+        <if test="orgId != null and orgId != ''">
+            AND ORGID = #{orgId}
+        </if>
+    </select>
+
+    <!-- 整改问题总数 -->
+    <select id="countRectifyTotal" parameterType="map" resultType="int">
+        SELECT COUNT(1) FROM TBL_ZGZZ_ISSUESILIST
+        WHERE 1=1
+        <if test="orgId != null and orgId != ''">
+            AND ORGID = #{orgId}
+        </if>
+    </select>
+
+    <!-- 整改已完成数 -->
+    <select id="countRectifyCompleted" parameterType="map" resultType="int">
+        SELECT COUNT(1) FROM TBL_ZGZZ_ISSUESILIST
+        WHERE STATUS IN (6, 8, 11)
+        <if test="orgId != null and orgId != ''">
+            AND ORGID = #{orgId}
+        </if>
+    </select>
+
+    <!-- 整改分派数（有问题记录即视为已分派） -->
+    <select id="countRectifyAssign" parameterType="map" resultType="int">
+        SELECT COUNT(1) FROM TBL_ZGZZ_ISSUESILIST
+        WHERE 1=1
+        <if test="orgId != null and orgId != ''">
+            AND ORGID = #{orgId}
+        </if>
+    </select>
+
+    <!-- 整改方案数 -->
+    <select id="countRectifyScheme" parameterType="map" resultType="int">
+        SELECT COUNT(1) FROM TBL_ZGZZ_RECTIFICATIONPLAN
+        WHERE 1=1
+        <if test="orgId != null and orgId != ''">
+            AND ORGID = #{orgId}
+        </if>
+    </select>
+
+    <!-- 整改落实数 -->
+    <select id="countRectifyPractice" parameterType="map" resultType="int">
+        SELECT COUNT(1) FROM TBL_ZGZZ_RECTIFICATIONIMPL
+        WHERE 1=1
+        <if test="orgId != null and orgId != ''">
+            AND ORGID = #{orgId}
+        </if>
+    </select>
+
+    <!-- 整改跟踪数（已完成整改的） -->
+    <select id="countRectifyTrack" parameterType="map" resultType="int">
+        SELECT COUNT(1) FROM TBL_ZGZZ_ISSUESILIST
+        WHERE STATUS IN (6, 7, 8, 10, 11)
+        <if test="orgId != null and orgId != ''">
+            AND ORGID = #{orgId}
+        </if>
+    </select>
+
+    <!-- 已归档项目数 -->
+    <select id="countArchived" parameterType="map" resultType="int">
+        SELECT COUNT(1) FROM TBL_NBSJ_PROJECT
+        WHERE STATUS = '5'
+        <if test="orgId != null and orgId != ''">
+            AND ORGID = #{orgId}
+        </if>
+    </select>
+
+    <!-- 风险预警数量 -->
+    <select id="countRiskWarnings" parameterType="map" resultType="int">
+        SELECT COUNT(1) FROM TBL_NBKZ_RISK
+        WHERE 1=1
+        <if test="orgId != null and orgId != ''">
+            AND ORGID = #{orgId}
+        </if>
+    </select>
+
+    <!-- 风险预警列表 -->
+    <select id="getRiskWarningList" parameterType="map" resultType="map">
+        SELECT * FROM (
+            SELECT RISKID, RISKNAME, RISKLEVEL, RISKTYPE, RISKSTATUS
+            FROM TBL_NBKZ_RISK
+            WHERE 1=1
+            <if test="orgId != null and orgId != ''">
+                AND ORGID = #{orgId}
+            </if>
+        ) WHERE ROWNUM &lt;= #{pageSize}
+    </select>
+
+</mapper>

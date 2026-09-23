@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.fxgl.mapper.TblEvaluationModelMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.huabo.fxgl.entity.TblEvaluationModel">
+        <id column="EVAL_MODEL_ID" property="evalModelId" />
+        <result column="MODEL_CODE" property="modelCode" />
+        <result column="MODEL_NAME" property="modelName" />
+        <result column="BUSINESS_SCENARIO" property="businessScenario" />
+        <result column="INDUSTRY_TYPE" property="industryType" />
+        <result column="DESCRIPTION" property="description" />
+        <result column="SCORE_ALGORITHM" property="scoreAlgorithm" />
+        <result column="TOTAL_WEIGHT" property="totalWeight" />
+        <result column="RISK_THRESHOLD_LOW" property="riskThresholdLow" />
+        <result column="RISK_THRESHOLD_MEDIUM" property="riskThresholdMedium" />
+        <result column="RISK_THRESHOLD_HIGH" property="riskThresholdHigh" />
+        <result column="VERSION" property="version" />
+        <result column="STATUS" property="status" />
+        <result column="IS_ENABLED" property="isEnabled" />
+        <result column="ACCURACY_RATE" property="accuracyRate" />
+        <result column="WARNING_COUNT" property="warningCount" />
+        <result column="LAST_TEST_TIME" property="lastTestTime" />
+        <result column="PUBLISH_TIME" property="publishTime" />
+        <result column="CREATE_USER" property="createUser" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_USER" property="updateUser" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="PARAMETER_CONFIG" property="parameterConfig" />
+        <result column="REMARK" property="remark" />
+        <result column="SCHEDULE_CONFIG" property="scheduleConfig" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        EVAL_MODEL_ID, MODEL_CODE, MODEL_NAME, DATA_MODEL_ID, BUSINESS_SCENARIO, INDUSTRY_TYPE,
+        DESCRIPTION, SCORE_ALGORITHM, TOTAL_WEIGHT, RISK_THRESHOLD_LOW,
+        RISK_THRESHOLD_MEDIUM, RISK_THRESHOLD_HIGH, VERSION, STATUS, IS_ENABLED,
+        ACCURACY_RATE, WARNING_COUNT, LAST_TEST_TIME, PUBLISH_TIME, CREATE_USER, CREATE_TIME,
+        UPDATE_USER, UPDATE_TIME, PARAMETER_CONFIG, REMARK, SCHEDULE_CONFIG
+    </sql>
+
+    <!-- 分页查询评估模型列表 -->
+    <select id="selectEvaluationModelPage" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM TBL_EVALUATION_MODEL
+        <where>
+            <if test="query.modelName != null and query.modelName != ''">
+                AND MODEL_NAME LIKE CONCAT('%', #{query.modelName}, '%')
+            </if>
+            <if test="query.businessScenario != null and query.businessScenario != ''">
+                AND BUSINESS_SCENARIO = #{query.businessScenario}
+            </if>
+            <if test="query.status != null and query.status != ''">
+                AND STATUS = #{query.status}
+            </if>
+            <if test="query.isEnabled != null and query.isEnabled != ''">
+                AND IS_ENABLED = #{query.isEnabled}
+            </if>
+            <if test="query.industryType != null and query.industryType != ''">
+                AND INDUSTRY_TYPE = #{query.industryType}
+            </if>
+            <if test="query.createUser != null and query.createUser != ''">
+                AND CREATE_USER LIKE CONCAT('%', #{query.createUser}, '%')
+            </if>
+            <if test="query.startTime != null and query.startTime != ''">
+                AND DATE(CREATE_TIME) >= #{query.startTime}
+            </if>
+            <if test="query.endTime != null and query.endTime != ''">
+                AND DATE(CREATE_TIME) <= #{query.endTime}
+            </if>
+        </where>
+        <choose>
+            <when test="query.sortField != null and query.sortField != ''">
+                ORDER BY ${query.sortField}
+                <if test="query.sortOrder != null and query.sortOrder != ''">
+                    ${query.sortOrder}
+                </if>
+            </when>
+            <otherwise>
+                ORDER BY CREATE_TIME DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 查询模型统计信息 -->
+    <select id="selectModelStatistics" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as totalCount,
+            SUM(CASE WHEN STATUS = 'DRAFT' THEN 1 ELSE 0 END) as draftCount,
+            SUM(CASE WHEN STATUS = 'TESTING' THEN 1 ELSE 0 END) as testingCount,
+            SUM(CASE WHEN STATUS = 'PUBLISHED' THEN 1 ELSE 0 END) as publishedCount,
+            SUM(CASE WHEN STATUS = 'ARCHIVED' THEN 1 ELSE 0 END) as archivedCount,
+            SUM(CASE WHEN IS_ENABLED = 'Y' THEN 1 ELSE 0 END) as enabledCount,
+            SUM(CASE WHEN IS_ENABLED = 'N' THEN 1 ELSE 0 END) as disabledCount
+        FROM TBL_EVALUATION_MODEL
+    </select>
+
+    <!-- 查询业务场景分布 -->
+    <select id="selectScenarioDistribution" resultType="java.util.Map">
+        SELECT 
+            BUSINESS_SCENARIO as scenario,
+            COUNT(*) as count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM TBL_EVALUATION_MODEL), 2) as percentage
+        FROM TBL_EVALUATION_MODEL
+        GROUP BY BUSINESS_SCENARIO
+        ORDER BY count DESC
+    </select>
+
+    <!-- 查询最近活跃的模型 -->
+    <select id="selectRecentActiveModels" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM TBL_EVALUATION_MODEL
+        WHERE UPDATE_TIME >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        ORDER BY UPDATE_TIME DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询模型准确率排行 -->
+    <select id="selectAccuracyRanking" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM TBL_EVALUATION_MODEL
+        WHERE ACCURACY_RATE IS NOT NULL
+        AND STATUS = 'PUBLISHED'
+        ORDER BY ACCURACY_RATE DESC
+        LIMIT #{limit}
+    </select>
+
+</mapper>

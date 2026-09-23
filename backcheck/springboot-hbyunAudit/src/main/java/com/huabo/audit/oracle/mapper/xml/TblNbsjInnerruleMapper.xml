@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.audit.oracle.mapper.TblNbsjInnerruleMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.huabo.audit.oracle.entity.TblNbsjInnerrule">
+        <id column="INNRULID" property="innrulid" />
+        <result column="RULENAME" property="rulename" />
+        <result column="PUBLISHORG" property="publishorg" />
+        <result column="PUBLISHDATE" property="publishdate" />
+        <result column="RULENUMBER" property="rulenumber" />
+        <result column="MEMO" property="memo" />
+        <result column="INNRULETYPE" property="innruletype" />
+        <result column="HOSTDEPARTMENT" property="hostdepartment" />
+        <result column="COORGANIZER" property="coorganizer" />
+        <result column="VERSION" property="version" />
+        <result column="TAKEEFFECTTIME" property="takeeffecttime" />
+        <result column="SUMMARYINFO" property="summaryinfo" />
+        <result column="ENTERINGPERSON" property="enteringperson" />
+        <result column="ENTERINGTIME" property="enteringtime" />
+        <result column="STATUS" property="status" />
+        <result column="TIMELINESS" property="timeliness" />
+        <result column="RULECODE" property="rulecode" />
+        <result column="BODYINFO" property="bodyinfo" />
+    </resultMap>
+
+</mapper>

@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.oracle.mapper.TcInterestRateMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.oracle.entity.TcInterestRate">
+        <id column="ID" jdbcType="VARCHAR" property="id" />
+        <result column="RATE_DATE" jdbcType="DATE" property="rateDate" />
+        <result column="RATE_TYPE" jdbcType="VARCHAR" property="rateType" />
+        <result column="RATE_CODE" jdbcType="VARCHAR" property="rateCode" />
+        <result column="RATE_NAME" jdbcType="VARCHAR" property="rateName" />
+        <result column="CURRENCY_CODE" jdbcType="VARCHAR" property="currencyCode" />
+        <result column="TERM_TYPE" jdbcType="VARCHAR" property="termType" />
+        <result column="TERM_VALUE" jdbcType="INTEGER" property="termValue" />
+        <result column="TERM_UNIT" jdbcType="VARCHAR" property="termUnit" />
+        <result column="INTEREST_RATE" jdbcType="DECIMAL" property="interestRate" />
+        <result column="DATA_SOURCE" jdbcType="VARCHAR" property="dataSource" />
+        <result column="SOURCE_SYSTEM" jdbcType="VARCHAR" property="sourceSystem" />
+        <result column="PUBLISH_TIME" jdbcType="TIMESTAMP" property="publishTime" />
+        <result column="EFFECTIVE_TIME" jdbcType="TIMESTAMP" property="effectiveTime" />
+        <result column="EXPIRE_TIME" jdbcType="TIMESTAMP" property="expireTime" />
+        <result column="STATUS" jdbcType="VARCHAR" property="status" />
+        <result column="REMARK" jdbcType="VARCHAR" property="remark" />
+        <result column="CREATE_TIME" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="UPDATE_TIME" jdbcType="TIMESTAMP" property="updateTime" />
+        <result column="CREATE_USER" jdbcType="VARCHAR" property="createUser" />
+        <result column="UPDATE_USER" jdbcType="VARCHAR" property="updateUser" />
+        <result column="VERSION_NO" jdbcType="INTEGER" property="versionNo" />
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="Base_Column_List">
+        ID, RATE_DATE, RATE_TYPE, RATE_CODE, RATE_NAME, CURRENCY_CODE, TERM_TYPE,
+        TERM_VALUE, TERM_UNIT, INTEREST_RATE, DATA_SOURCE, SOURCE_SYSTEM, PUBLISH_TIME,
+        EFFECTIVE_TIME, EXPIRE_TIME, STATUS, REMARK, CREATE_TIME, UPDATE_TIME,
+        CREATE_USER, UPDATE_USER, VERSION_NO
+    </sql>
+
+    <!-- 根据利率编码和日期查询利率 -->
+    <select id="selectByDateAndCode" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TC_INTEREST_RATE
+        WHERE RATE_DATE = #{rateDate,jdbcType=DATE}
+        AND RATE_CODE = #{rateCode,jdbcType=VARCHAR}
+        <if test="currencyCode != null and currencyCode != ''">
+            AND CURRENCY_CODE = #{currencyCode,jdbcType=VARCHAR}
+        </if>
+        <if test="termType != null and termType != ''">
+            AND TERM_TYPE = #{termType,jdbcType=VARCHAR}
+        </if>
+        <if test="termValue != null">
+            AND TERM_VALUE = #{termValue,jdbcType=INTEGER}
+        </if>
+        AND STATUS = '1'
+    </select>
+
+    <!-- 根据条件查询利率列表 -->
+    <select id="selectByCondition" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TC_INTEREST_RATE
+        <where>
+            <if test="rateType != null and rateType != ''">
+                AND RATE_TYPE = #{rateType,jdbcType=VARCHAR}
+            </if>
+            <if test="rateCode != null and rateCode != ''">
+                AND RATE_CODE LIKE CONCAT('%', #{rateCode,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="rateName != null and rateName != ''">
+                AND RATE_NAME LIKE CONCAT('%', #{rateName,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="currencyCode != null and currencyCode != ''">
+                AND CURRENCY_CODE = #{currencyCode,jdbcType=VARCHAR}
+            </if>
+            <if test="termType != null and termType != ''">
+                AND TERM_TYPE = #{termType,jdbcType=VARCHAR}
+            </if>
+            <if test="dataSource != null and dataSource != ''">
+                AND DATA_SOURCE = #{dataSource,jdbcType=VARCHAR}
+            </if>
+            <if test="startDate != null">
+                AND RATE_DATE &gt;= #{startDate,jdbcType=DATE}
+            </if>
+            <if test="endDate != null">
+                AND RATE_DATE &lt;= #{endDate,jdbcType=DATE}
+            </if>
+            <if test="status != null and status != ''">
+                AND STATUS = #{status,jdbcType=VARCHAR}
+            </if>
+        </where>
+        ORDER BY RATE_DATE DESC, RATE_CODE, TERM_VALUE
+    </select>
+
+    <!-- 根据利率编码查询最新利率 -->
+    <select id="selectLatestByCode" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TC_INTEREST_RATE
+        WHERE RATE_CODE = #{rateCode,jdbcType=VARCHAR}
+        <if test="currencyCode != null and currencyCode != ''">
+            AND CURRENCY_CODE = #{currencyCode,jdbcType=VARCHAR}
+        </if>
+        <if test="termType != null and termType != ''">
+            AND TERM_TYPE = #{termType,jdbcType=VARCHAR}
+        </if>
+        <if test="termValue != null">
+            AND TERM_VALUE = #{termValue,jdbcType=INTEGER}
+        </if>
+        AND STATUS = '1'
+        ORDER BY RATE_DATE DESC, EFFECTIVE_TIME DESC
+        FETCH FIRST 1 ROWS ONLY
+    </select>
+
+    <!-- 根据日期查询所有利率 -->
+    <select id="selectByDate" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TC_INTEREST_RATE
+        WHERE RATE_DATE = #{rateDate,jdbcType=DATE}
+        AND STATUS = '1'
+        ORDER BY RATE_TYPE, RATE_CODE, TERM_VALUE
+    </select>
+
+    <!-- 查询指定日期范围内的利率历史 -->
+    <select id="selectHistoryByDateRange" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TC_INTEREST_RATE
+        WHERE RATE_CODE = #{rateCode,jdbcType=VARCHAR}
+        <if test="currencyCode != null and currencyCode != ''">
+            AND CURRENCY_CODE = #{currencyCode,jdbcType=VARCHAR}
+        </if>
+        <if test="termType != null and termType != ''">
+            AND TERM_TYPE = #{termType,jdbcType=VARCHAR}
+        </if>
+        <if test="termValue != null">
+            AND TERM_VALUE = #{termValue,jdbcType=INTEGER}
+        </if>
+        AND RATE_DATE BETWEEN #{startDate,jdbcType=DATE} AND #{endDate,jdbcType=DATE}
+        AND STATUS = '1'
+        ORDER BY RATE_DATE DESC
+    </select>
+
+    <!-- 根据利率类型查询利率列表 -->
+    <select id="selectByRateType" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TC_INTEREST_RATE
+        WHERE RATE_TYPE = #{rateType,jdbcType=VARCHAR}
+        AND STATUS = '1'
+        ORDER BY RATE_DATE DESC, RATE_CODE
+    </select>
+
+    <!-- 根据货币代码查询利率列表 -->
+    <select id="selectByCurrencyCode" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TC_INTEREST_RATE
+        WHERE CURRENCY_CODE = #{currencyCode,jdbcType=VARCHAR}
+        AND STATUS = '1'
+        ORDER BY RATE_DATE DESC, RATE_TYPE, RATE_CODE
+    </select>
+
+    <!-- 查询所有利率类型 -->
+    <select id="selectAllRateTypes" resultType="java.lang.String">
+        SELECT DISTINCT RATE_TYPE
+        FROM TC_INTEREST_RATE
+        WHERE RATE_TYPE IS NOT NULL
+        AND RATE_TYPE != ''
+        AND STATUS = '1'
+        ORDER BY RATE_TYPE
+    </select>
+
+    <!-- 查询所有利率编码 -->
+    <select id="selectAllRateCodes" resultType="java.lang.String">
+        SELECT DISTINCT RATE_CODE
+        FROM TC_INTEREST_RATE
+        WHERE RATE_CODE IS NOT NULL
+        AND RATE_CODE != ''
+        AND STATUS = '1'
+        ORDER BY RATE_CODE
+    </select>
+
+    <!-- 查询所有货币代码 -->
+    <select id="selectAllCurrencyCodes" resultType="java.lang.String">
+        SELECT DISTINCT CURRENCY_CODE
+        FROM TC_INTEREST_RATE
+        WHERE CURRENCY_CODE IS NOT NULL
+        AND CURRENCY_CODE != ''
+        AND STATUS = '1'
+        ORDER BY CURRENCY_CODE
+    </select>
+
+    <!-- 查询所有期限类型 -->
+    <select id="selectAllTermTypes" resultType="java.lang.String">
+        SELECT DISTINCT TERM_TYPE
+        FROM TC_INTEREST_RATE
+        WHERE TERM_TYPE IS NOT NULL
+        AND TERM_TYPE != ''
+        AND STATUS = '1'
+        ORDER BY TERM_TYPE
+    </select>
+
+    <!-- 查询所有数据来源 -->
+    <select id="selectAllDataSources" resultType="java.lang.String">
+        SELECT DISTINCT DATA_SOURCE
+        FROM TC_INTEREST_RATE
+        WHERE DATA_SOURCE IS NOT NULL
+        AND DATA_SOURCE != ''
+        AND STATUS = '1'
+        ORDER BY DATA_SOURCE
+    </select>
+
+    <!-- 批量插入利率数据 -->
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO TC_INTEREST_RATE (
+            ID, RATE_DATE, RATE_TYPE, RATE_CODE, RATE_NAME, CURRENCY_CODE,
+            TERM_TYPE, TERM_VALUE, TERM_UNIT, INTEREST_RATE, DATA_SOURCE,
+            SOURCE_SYSTEM, PUBLISH_TIME, EFFECTIVE_TIME, EXPIRE_TIME,
+            STATUS, REMARK, CREATE_TIME, CREATE_USER, VERSION_NO
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.id,jdbcType=VARCHAR},
+                #{item.rateDate,jdbcType=DATE},
+                #{item.rateType,jdbcType=VARCHAR},
+                #{item.rateCode,jdbcType=VARCHAR},
+                #{item.rateName,jdbcType=VARCHAR},
+                #{item.currencyCode,jdbcType=VARCHAR},
+                #{item.termType,jdbcType=VARCHAR},
+                #{item.termValue,jdbcType=INTEGER},
+                #{item.termUnit,jdbcType=VARCHAR},
+                #{item.interestRate,jdbcType=DECIMAL},
+                #{item.dataSource,jdbcType=VARCHAR},
+                #{item.sourceSystem,jdbcType=VARCHAR},
+                #{item.publishTime,jdbcType=TIMESTAMP},
+                #{item.effectiveTime,jdbcType=TIMESTAMP},
+                #{item.expireTime,jdbcType=TIMESTAMP},
+                #{item.status,jdbcType=VARCHAR},
+                #{item.remark,jdbcType=VARCHAR},
+                #{item.createTime,jdbcType=TIMESTAMP},
+                #{item.createUser,jdbcType=VARCHAR},
+                #{item.versionNo,jdbcType=INTEGER}
+            )
+        </foreach>
+    </insert>
+
+    <!-- 批量更新利率数据 -->
+    <update id="batchUpdate" parameterType="java.util.List">
+        <foreach collection="list" item="item" separator=";">
+            UPDATE TC_INTEREST_RATE
+            SET
+                RATE_NAME = #{item.rateName,jdbcType=VARCHAR},
+                TERM_TYPE = #{item.termType,jdbcType=VARCHAR},
+                TERM_VALUE = #{item.termValue,jdbcType=INTEGER},
+                TERM_UNIT = #{item.termUnit,jdbcType=VARCHAR},
+                INTEREST_RATE = #{item.interestRate,jdbcType=DECIMAL},
+                DATA_SOURCE = #{item.dataSource,jdbcType=VARCHAR},
+                SOURCE_SYSTEM = #{item.sourceSystem,jdbcType=VARCHAR},
+                PUBLISH_TIME = #{item.publishTime,jdbcType=TIMESTAMP},
+                EFFECTIVE_TIME = #{item.effectiveTime,jdbcType=TIMESTAMP},
+                EXPIRE_TIME = #{item.expireTime,jdbcType=TIMESTAMP},
+                STATUS = #{item.status,jdbcType=VARCHAR},
+                REMARK = #{item.remark,jdbcType=VARCHAR},
+                UPDATE_TIME = #{item.updateTime,jdbcType=TIMESTAMP},
+                UPDATE_USER = #{item.updateUser,jdbcType=VARCHAR},
+                VERSION_NO = #{item.versionNo,jdbcType=INTEGER}
+            WHERE ID = #{item.id,jdbcType=VARCHAR}
+        </foreach>
+    </update>
+
+    <!-- 根据日期删除利率数据 -->
+    <delete id="deleteByDate" parameterType="java.util.Date">
+        DELETE FROM TC_INTEREST_RATE
+        WHERE RATE_DATE = #{rateDate,jdbcType=DATE}
+    </delete>
+
+    <!-- 根据利率日期删除 (别名方法) -->
+    <delete id="deleteByRateDate" parameterType="java.util.Date">
+        DELETE FROM TC_INTEREST_RATE
+        WHERE RATE_DATE = #{rateDate,jdbcType=DATE}
+    </delete>
+
+    <!-- 统计利率数据 -->
+    <select id="getStatistics" resultType="java.util.Map">
+        SELECT
+            COUNT(*) as totalCount,
+            COUNT(CASE WHEN STATUS = '1' THEN 1 END) as activeCount,
+            COUNT(CASE WHEN RATE_TYPE = 'SHIBOR' THEN 1 END) as shiborCount,
+            COUNT(CASE WHEN RATE_TYPE = 'LPR' THEN 1 END) as lprCount,
+            COUNT(CASE WHEN CURRENCY_CODE = 'CNY' THEN 1 END) as cnyCount,
+            COUNT(CASE WHEN CURRENCY_CODE = 'USD' THEN 1 END) as usdCount,
+            MAX(RATE_DATE) as latestRateDate,
+            MIN(RATE_DATE) as earliestRateDate
+        FROM TC_INTEREST_RATE
+        WHERE STATUS IN ('0', '1')
+    </select>
+
+    <!-- 检查利率数据是否存在 -->
+    <select id="checkExistsByDateAndCode" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM TC_INTEREST_RATE
+        WHERE RATE_DATE = #{rateDate,jdbcType=DATE}
+        AND RATE_CODE = #{rateCode,jdbcType=VARCHAR}
+        <if test="currencyCode != null and currencyCode != ''">
+            AND CURRENCY_CODE = #{currencyCode,jdbcType=VARCHAR}
+        </if>
+        <if test="termType != null and termType != ''">
+            AND TERM_TYPE = #{termType,jdbcType=VARCHAR}
+        </if>
+        <if test="termValue != null">
+            AND TERM_VALUE = #{termValue,jdbcType=INTEGER}
+        </if>
+    </select>
+
+    <!-- 更新利率状态 -->
+    <update id="updateStatus">
+        UPDATE TC_INTEREST_RATE
+        SET
+            STATUS = #{status,jdbcType=VARCHAR},
+            UPDATE_TIME = SYSDATE,
+            UPDATE_USER = #{updateUser,jdbcType=VARCHAR}
+        WHERE ID = #{id,jdbcType=VARCHAR}
+    </update>
+
+</mapper>

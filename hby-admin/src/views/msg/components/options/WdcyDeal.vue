@@ -171,7 +171,7 @@
         cssyIsEdit: false,
         flowtaskinfoflowid: '',
         formId: 0, // 我发起的获取表单id
-        ymFromId: '', // 我发起的获取引迈表单id
+        ymFromId: '', // 我发起的获取的流程表单id
         flowTaskNodeList: [],
         loading: false,
         flowTaskInfo: {},

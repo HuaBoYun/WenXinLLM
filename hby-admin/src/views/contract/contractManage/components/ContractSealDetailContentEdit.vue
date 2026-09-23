@@ -410,7 +410,7 @@
           }
         })
       },
-      //流程提交引迈
+      //流程提交
       async ymsubmit() {
         this.$refs['form'].validate(async (valid) => {
           if (valid) {

@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.TreasuryBankInterfaceConfigMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TreasuryBankInterfaceConfig">
+        <id column="INTERFACE_CONFIG_ID" property="interfaceConfigId" />
+        <result column="INTERFACE_CODE" property="interfaceCode" />
+        <result column="INTERFACE_NAME" property="interfaceName" />
+        <result column="BANK_CODE" property="bankCode" />
+        <result column="BANK_NAME" property="bankName" />
+        <result column="INTERFACE_TYPE" property="interfaceType" />
+        <result column="PROTOCOL" property="protocol" />
+        <result column="INTERFACE_VERSION" property="interfaceVersion" />
+        <result column="REQUEST_METHOD" property="requestMethod" />
+        <result column="SERVICE_URL" property="serviceUrl" />
+        <result column="SERVICE_PORT" property="servicePort" />
+        <result column="INTERFACE_PATH" property="interfacePath" />
+        <result column="FULL_URL" property="fullUrl" />
+        <result column="REQUEST_HEADERS" property="requestHeaders" />
+        <result column="REQUEST_TEMPLATE" property="requestTemplate" />
+        <result column="RESPONSE_PARSE_RULE" property="responseParseRule" />
+        <result column="AUTH_TYPE" property="authType" />
+        <result column="USERNAME" property="username" />
+        <result column="PASSWORD" property="password" />
+        <result column="API_KEY" property="apiKey" />
+        <result column="ACCESS_TOKEN" property="accessToken" />
+        <result column="TOKEN_TYPE" property="tokenType" />
+        <result column="SIGN_ALGORITHM" property="signAlgorithm" />
+        <result column="SIGN_SECRET" property="signSecret" />
+        <result column="TIMESTAMP_FIELD" property="timestampField" />
+        <result column="NONCE_FIELD" property="nonceField" />
+        <result column="CERT_PATH" property="certPath" />
+        <result column="CERT_PASSWORD" property="certPassword" />
+        <result column="PUBLIC_KEY" property="publicKey" />
+        <result column="PRIVATE_KEY" property="privateKey" />
+        <result column="ENCRYPT_ALGORITHM" property="encryptAlgorithm" />
+        <result column="ENCRYPT_KEY" property="encryptKey" />
+        <result column="ENCODING" property="encoding" />
+        <result column="CONTENT_TYPE" property="contentType" />
+        <result column="TIMEOUT_SECONDS" property="timeoutSeconds" />
+        <result column="CONNECT_TIMEOUT" property="connectTimeout" />
+        <result column="READ_TIMEOUT" property="readTimeout" />
+        <result column="RETRY_TIMES" property="retryTimes" />
+        <result column="RETRY_INTERVAL" property="retryInterval" />
+        <result column="CONNECTION_POOL_SIZE" property="connectionPoolSize" />
+        <result column="MAX_CONNECTIONS" property="maxConnections" />
+        <result column="ENABLE_CONNECTION_POOL" property="enableConnectionPool" />
+        <result column="ENABLE_COMPRESSION" property="enableCompression" />
+        <result column="VERIFY_SSL" property="verifySsl" />
+        <result column="ENABLE_PROXY" property="enableProxy" />
+        <result column="PROXY_HOST" property="proxyHost" />
+        <result column="PROXY_PORT" property="proxyPort" />
+        <result column="PROXY_USERNAME" property="proxyUsername" />
+        <result column="PROXY_PASSWORD" property="proxyPassword" />
+        <result column="SUPPORTED_BUSINESS_TYPES" property="supportedBusinessTypes" />
+        <result column="INTERFACE_STATUS" property="interfaceStatus" />
+        <result column="MONITOR_LEVEL" property="monitorLevel" />
+        <result column="DESCRIPTION" property="description" />
+        <result column="TEST_STATUS" property="testStatus" />
+        <result column="LAST_TEST_TIME" property="lastTestTime" />
+        <result column="LAST_TEST_RESULT" property="lastTestResult" />
+        <result column="DOCUMENT_URL" property="documentUrl" />
+        <result column="CATEGORY" property="category" />
+        <result column="TAGS" property="tags" />
+        <result column="ORG_ID" property="orgId" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="CREATE_USER" property="createUser" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="UPDATE_USER" property="updateUser" />
+        <result column="IS_ENABLED" property="isEnabled" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        INTERFACE_CONFIG_ID, INTERFACE_CODE, INTERFACE_NAME, BANK_CODE, BANK_NAME,
+        INTERFACE_TYPE, PROTOCOL, INTERFACE_VERSION, REQUEST_METHOD, SERVICE_URL,
+        SERVICE_PORT, INTERFACE_PATH, FULL_URL, REQUEST_HEADERS, REQUEST_TEMPLATE,
+        RESPONSE_PARSE_RULE, AUTH_TYPE, USERNAME, PASSWORD, API_KEY, ACCESS_TOKEN,
+        TOKEN_TYPE, SIGN_ALGORITHM, SIGN_SECRET, TIMESTAMP_FIELD, NONCE_FIELD,
+        CERT_PATH, CERT_PASSWORD, PUBLIC_KEY, PRIVATE_KEY, ENCRYPT_ALGORITHM,
+        ENCRYPT_KEY, ENCODING, CONTENT_TYPE, TIMEOUT_SECONDS, CONNECT_TIMEOUT,
+        READ_TIMEOUT, RETRY_TIMES, RETRY_INTERVAL, CONNECTION_POOL_SIZE,
+        MAX_CONNECTIONS, ENABLE_CONNECTION_POOL, ENABLE_COMPRESSION, VERIFY_SSL,
+        ENABLE_PROXY, PROXY_HOST, PROXY_PORT, PROXY_USERNAME, PROXY_PASSWORD,
+        SUPPORTED_BUSINESS_TYPES, INTERFACE_STATUS, MONITOR_LEVEL, DESCRIPTION,
+        TEST_STATUS, LAST_TEST_TIME, LAST_TEST_RESULT, DOCUMENT_URL, CATEGORY,
+        TAGS, ORG_ID, CREATE_TIME, CREATE_USER, UPDATE_TIME, UPDATE_USER, IS_ENABLED
+    </sql>
+
+    <!-- 分页查询银行接口配置列表 -->
+    <select id="selectBankInterfaceConfigPage" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TBL_TREASURY_BANK_INTERFACE_CONFIG
+        WHERE ORG_ID = #{orgId}
+        <if test="interfaceCode != null and interfaceCode != ''">
+            AND INTERFACE_CODE LIKE CONCAT('%', #{interfaceCode}, '%')
+        </if>
+        <if test="interfaceName != null and interfaceName != ''">
+            AND INTERFACE_NAME LIKE CONCAT('%', #{interfaceName}, '%')
+        </if>
+        <if test="bankCode != null and bankCode != ''">
+            AND BANK_CODE = #{bankCode}
+        </if>
+        <if test="interfaceType != null and interfaceType != ''">
+            AND INTERFACE_TYPE = #{interfaceType}
+        </if>
+        <if test="connectionStatus != null and connectionStatus != ''">
+            AND INTERFACE_STATUS = #{connectionStatus}
+        </if>
+        <if test="isEnabled != null">
+            AND IS_ENABLED = #{isEnabled}
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据接口编码和组织ID查询银行接口配置 -->
+    <select id="selectByCodeAndOrg" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TBL_TREASURY_BANK_INTERFACE_CONFIG
+        WHERE INTERFACE_CODE = #{interfaceCode}
+        AND ORG_ID = #{orgId}
+        LIMIT 1
+    </select>
+
+    <!-- 查询所有启用的银行接口配置 -->
+    <select id="selectEnabledConfigs" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TBL_TREASURY_BANK_INTERFACE_CONFIG
+        WHERE ORG_ID = #{orgId}
+        AND IS_ENABLED = 1
+        AND INTERFACE_STATUS = 'ACTIVE'
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据银行编码查询银行接口配置列表 -->
+    <select id="selectByBankCode" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TBL_TREASURY_BANK_INTERFACE_CONFIG
+        WHERE BANK_CODE = #{bankCode}
+        AND ORG_ID = #{orgId}
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据接口类型查询银行接口配置列表 -->
+    <select id="selectByInterfaceType" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TBL_TREASURY_BANK_INTERFACE_CONFIG
+        WHERE INTERFACE_TYPE = #{interfaceType}
+        AND ORG_ID = #{orgId}
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 查询测试状态为成功的配置列表 -->
+    <select id="selectSuccessfulConfigs" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TBL_TREASURY_BANK_INTERFACE_CONFIG
+        WHERE ORG_ID = #{orgId}
+        AND TEST_STATUS = 'SUCCESS'
+        ORDER BY LAST_TEST_TIME DESC
+    </select>
+
+    <!-- 检查接口编码是否存在 -->
+    <select id="checkInterfaceCodeExists" resultType="int">
+        SELECT COUNT(1)
+        FROM TBL_TREASURY_BANK_INTERFACE_CONFIG
+        WHERE INTERFACE_CODE = #{interfaceCode}
+        AND ORG_ID = #{orgId}
+        <if test="excludeId != null">
+            AND INTERFACE_CONFIG_ID != #{excludeId}
+        </if>
+    </select>
+
+    <!-- 更新接口测试状态 -->
+    <update id="updateTestStatus">
+        UPDATE TBL_TREASURY_BANK_INTERFACE_CONFIG
+        SET TEST_STATUS = #{testStatus},
+            LAST_TEST_RESULT = #{lastTestResult},
+            LAST_TEST_TIME = #{lastTestTime},
+            UPDATE_TIME = CURRENT_TIMESTAMP
+        WHERE INTERFACE_CONFIG_ID = #{id}
+    </update>
+
+    <!-- 统计不同状态接口数量 -->
+    <select id="selectInterfaceStatistics" resultType="map">
+        SELECT
+            INTERFACE_STATUS,
+            COUNT(1) as statusCount
+        FROM TBL_TREASURY_BANK_INTERFACE_CONFIG
+        WHERE ORG_ID = #{orgId}
+        GROUP BY INTERFACE_STATUS
+    </select>
+
+    <!-- 查询即将过期的接口配置 -->
+    <select id="selectExpiringConfigs" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TBL_TREASURY_BANK_INTERFACE_CONFIG
+        WHERE ORG_ID = #{orgId}
+        AND INTERFACE_STATUS = 'ACTIVE'
+        ORDER BY LAST_TEST_TIME ASC
+        OFFSET 0 ROWS FETCH NEXT #{days} ROWS ONLY
+    </select>
+
+</mapper>

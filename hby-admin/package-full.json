@@ -111,7 +111,7 @@
     "prettier": "^2.3.2",
     "raw-loader": "^4.0.2",
     "sass": "~1.32.13",
-    "sass-loader": "^192.0.2.200",
+    "sass-loader": "^10.1.1",
     "stylelint": "^13.13.1",
     "stylelint-config-prettier": "^8.0.2",
     "stylelint-config-recess-order": "^2.4.0",

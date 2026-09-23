@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.mysql.mapper.PaymentOrderMapper">
+
+    <resultMap id="BaseResultMap" type="com.financial.sharing.vo.result.PaymentOrderVO">
+        <id column="PAYMENT_ID" property="paymentId"/>
+        <result column="PAYMENT_NO" property="paymentNo"/>
+        <result column="SUPPLIER_ID" property="supplierId"/>
+        <result column="SUPPLIER_NAME" property="supplierName"/>
+        <result column="PAYMENT_AMOUNT" property="paymentAmount"/>
+        <result column="WRITE_OFF_AMOUNT" property="writeOffAmount"/>
+        <result column="REMAINING_AMOUNT" property="remainingAmount"/>
+        <result column="PAYMENT_STATUS" property="paymentStatus"/>
+        <result column="PAYMENT_DATE" property="paymentDate"/>
+        <result column="PAYMENT_METHOD" property="paymentMethod"/>
+        <result column="BANK_ACCOUNT" property="bankAccount"/>
+        <result column="SUMMARY" property="summary"/>
+        <result column="REMARKS" property="remarks"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="CREATE_BY" property="createBy"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        p.PAYMENT_ID, p.PAYMENT_NO, p.SUPPLIER_ID, p.PAYMENT_AMOUNT, p.WRITE_OFF_AMOUNT,
+        p.REMAINING_AMOUNT, p.PAYMENT_STATUS, p.PAYMENT_DATE, p.PAYMENT_METHOD,
+        p.BANK_ACCOUNT, p.SUMMARY, p.REMARKS, p.CREATE_TIME, p.CREATE_BY, s.SUPPLIER_NAME
+    </sql>
+
+    <select id="selectPageList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_PAYMENT_ORDER p
+        LEFT JOIN TBL_SUPPLIER s ON p.SUPPLIER_ID = s.SUPPLIER_ID
+        WHERE p.IS_DELETED = 0
+        <if test="param.paymentNo != null and param.paymentNo != ''">
+            AND p.PAYMENT_NO LIKE CONCAT('%', #{param.paymentNo}, '%')
+        </if>
+        <if test="param.supplierId != null and param.supplierId != ''">
+            AND p.SUPPLIER_ID = #{param.supplierId}
+        </if>
+        <if test="param.supplierName != null and param.supplierName != ''">
+            AND s.SUPPLIER_NAME LIKE CONCAT('%', #{param.supplierName}, '%')
+        </if>
+        <if test="param.paymentStatus != null">
+            AND p.PAYMENT_STATUS = #{param.paymentStatus}
+        </if>
+        <if test="param.paymentMethod != null">
+            AND p.PAYMENT_METHOD = #{param.paymentMethod}
+        </if>
+        <if test="param.paymentDateStart != null">
+            AND p.PAYMENT_DATE &gt;= #{param.paymentDateStart}
+        </if>
+        <if test="param.paymentDateEnd != null">
+            AND p.PAYMENT_DATE &lt;= #{param.paymentDateEnd}
+        </if>
+        <if test="param.minAmount != null">
+            AND p.PAYMENT_AMOUNT &gt;= #{param.minAmount}
+        </if>
+        <if test="param.maxAmount != null">
+            AND p.PAYMENT_AMOUNT &lt;= #{param.maxAmount}
+        </if>
+        <if test="param.keyword != null and param.keyword != ''">
+            AND (p.PAYMENT_NO LIKE CONCAT('%', #{param.keyword}, '%')
+                 OR s.SUPPLIER_NAME LIKE CONCAT('%', #{param.keyword}, '%'))
+        </if>
+        ORDER BY p.CREATE_TIME DESC
+    </select>
+
+    <select id="selectDetailById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_PAYMENT_ORDER p
+        LEFT JOIN TBL_SUPPLIER s ON p.SUPPLIER_ID = s.SUPPLIER_ID
+        WHERE p.PAYMENT_ID = #{paymentId} AND p.IS_DELETED = 0
+    </select>
+
+    <select id="selectPaymentSummary" resultType="java.util.Map">
+        SELECT 
+            COALESCE(SUM(PAYMENT_AMOUNT), 0) as totalPayment,
+            COALESCE(SUM(WRITE_OFF_AMOUNT), 0) as totalWriteOff,
+            COALESCE(SUM(REMAINING_AMOUNT), 0) as totalRemaining
+        FROM TBL_PAYMENT_ORDER
+        WHERE IS_DELETED = 0
+        <if test="supplierId != null and supplierId != ''">
+            AND SUPPLIER_ID = #{supplierId}
+        </if>
+    </select>
+
+    <select id="selectBySupplier" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_PAYMENT_ORDER p
+        LEFT JOIN TBL_SUPPLIER s ON p.SUPPLIER_ID = s.SUPPLIER_ID
+        WHERE p.SUPPLIER_ID = #{supplierId} AND p.IS_DELETED = 0
+        ORDER BY p.CREATE_TIME DESC
+    </select>
+
+    <update id="updateWriteOffAmount">
+        UPDATE TBL_PAYMENT_ORDER
+        SET WRITE_OFF_AMOUNT = #{writeOffAmount},
+            REMAINING_AMOUNT = PAYMENT_AMOUNT - #{writeOffAmount},
+            UPDATE_TIME = NOW()
+        WHERE PAYMENT_ID = #{paymentId}
+    </update>
+
+    <!-- 插入付款单 -->
+    <insert id="insert" parameterType="com.financial.sharing.mysql.entity.TblPaymentOrder">
+        INSERT INTO TBL_PAYMENT_ORDER (
+            PAYMENT_ID, PAYMENT_NO, SUPPLIER_ID, PAYMENT_AMOUNT,
+            WRITE_OFF_AMOUNT, REMAINING_AMOUNT, PAYMENT_STATUS,
+            PAYMENT_DATE, PAYMENT_METHOD, BANK_ACCOUNT, RECEIVER_ACCOUNT,
+            RECEIVER_BANK, SUMMARY, REMARKS, CREATE_TIME, CREATE_BY, IS_DELETED
+        ) VALUES (
+            #{paymentId}, #{paymentNo}, #{supplierId}, #{paymentAmount},
+            #{writeOffAmount}, #{remainingAmount}, #{paymentStatus},
+            #{paymentDate}, #{paymentMethod}, #{bankAccount}, #{receiverAccount},
+            #{receiverBank}, #{summary}, #{remarks}, #{createTime}, #{createBy}, #{isDeleted}
+        )
+    </insert>
+
+    <!-- 根据ID更新 -->
+    <update id="updateById" parameterType="com.financial.sharing.mysql.entity.TblPaymentOrder">
+        UPDATE TBL_PAYMENT_ORDER
+        <set>
+            <if test="paymentNo != null">PAYMENT_NO = #{paymentNo},</if>
+            <if test="supplierId != null">SUPPLIER_ID = #{supplierId},</if>
+            <if test="paymentAmount != null">PAYMENT_AMOUNT = #{paymentAmount},</if>
+            <if test="writeOffAmount != null">WRITE_OFF_AMOUNT = #{writeOffAmount},</if>
+            <if test="remainingAmount != null">REMAINING_AMOUNT = #{remainingAmount},</if>
+            <if test="paymentStatus != null">PAYMENT_STATUS = #{paymentStatus},</if>
+            <if test="paymentDate != null">PAYMENT_DATE = #{paymentDate},</if>
+            <if test="paymentMethod != null">PAYMENT_METHOD = #{paymentMethod},</if>
+            <if test="bankAccount != null">BANK_ACCOUNT = #{bankAccount},</if>
+            <if test="receiverAccount != null">RECEIVER_ACCOUNT = #{receiverAccount},</if>
+            <if test="receiverBank != null">RECEIVER_BANK = #{receiverBank},</if>
+            <if test="summary != null">SUMMARY = #{summary},</if>
+            <if test="remarks != null">REMARKS = #{remarks},</if>
+            <if test="updateTime != null">UPDATE_TIME = #{updateTime},</if>
+            <if test="isDeleted != null">IS_DELETED = #{isDeleted},</if>
+        </set>
+        WHERE PAYMENT_ID = #{paymentId}
+    </update>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_PAYMENT_ORDER p
+        LEFT JOIN TBL_SUPPLIER s ON p.SUPPLIER_ID = s.SUPPLIER_ID
+        WHERE p.PAYMENT_ID = #{paymentId}
+    </select>
+</mapper>
+

@@ -1,0 +1,49 @@
+-- =============================================================
+-- TBL_BILL_POOL_DETAIL 票据池明细表 - 达梦数据库建表脚本
+-- 说明: 存储票据池与票据的关联关系
+-- 执行时间: 2026-02-03
+-- =============================================================
+
+-- 创建票据池明细表
+CREATE TABLE TBL_BILL_POOL_DETAIL (
+    DETAIL_ID           DECIMAL(20,0)   NOT NULL,       -- 明细ID，主键
+    POOL_ID             DECIMAL(20,0)   NOT NULL,       -- 票据池ID
+    BILL_ID             DECIMAL(20,0)   NOT NULL,       -- 票据ID
+    BILL_NUMBER         VARCHAR(64),                    -- 票据号码
+    BILL_TYPE           VARCHAR(50),                    -- 票据类型
+    BILL_AMOUNT         DECIMAL(18,2),                  -- 票据金额
+    JOIN_DATE           TIMESTAMP,                      -- 入池时间
+    EXIT_DATE           TIMESTAMP,                      -- 出池时间
+    DETAIL_STATUS       VARCHAR(20)     DEFAULT 'ACTIVE', -- 状态: ACTIVE-在池, EXITED-已出池
+    CREATE_TIME         TIMESTAMP       DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    UPDATE_TIME         TIMESTAMP,                      -- 更新时间
+    CREATE_USER         VARCHAR(50),                    -- 创建人
+    UPDATE_USER         VARCHAR(50),                    -- 更新人
+    DELETE_FLAG         INTEGER         DEFAULT 0,      -- 删除标记: 0-正常, 1-已删除
+    PRIMARY KEY (DETAIL_ID)
+);
+
+-- 添加表注释
+COMMENT ON TABLE TBL_BILL_POOL_DETAIL IS '票据池明细表';
+
+-- 添加列注释
+COMMENT ON COLUMN TBL_BILL_POOL_DETAIL.DETAIL_ID IS '明细ID，主键';
+COMMENT ON COLUMN TBL_BILL_POOL_DETAIL.POOL_ID IS '票据池ID';
+COMMENT ON COLUMN TBL_BILL_POOL_DETAIL.BILL_ID IS '票据ID';
+COMMENT ON COLUMN TBL_BILL_POOL_DETAIL.BILL_NUMBER IS '票据号码';
+COMMENT ON COLUMN TBL_BILL_POOL_DETAIL.BILL_TYPE IS '票据类型';
+COMMENT ON COLUMN TBL_BILL_POOL_DETAIL.BILL_AMOUNT IS '票据金额';
+COMMENT ON COLUMN TBL_BILL_POOL_DETAIL.JOIN_DATE IS '入池时间';
+COMMENT ON COLUMN TBL_BILL_POOL_DETAIL.EXIT_DATE IS '出池时间';
+COMMENT ON COLUMN TBL_BILL_POOL_DETAIL.DETAIL_STATUS IS '状态: ACTIVE-在池, EXITED-已出池';
+COMMENT ON COLUMN TBL_BILL_POOL_DETAIL.CREATE_TIME IS '创建时间';
+COMMENT ON COLUMN TBL_BILL_POOL_DETAIL.UPDATE_TIME IS '更新时间';
+COMMENT ON COLUMN TBL_BILL_POOL_DETAIL.CREATE_USER IS '创建人';
+COMMENT ON COLUMN TBL_BILL_POOL_DETAIL.UPDATE_USER IS '更新人';
+COMMENT ON COLUMN TBL_BILL_POOL_DETAIL.DELETE_FLAG IS '删除标记: 0-正常, 1-已删除';
+
+-- 创建索引
+CREATE INDEX IDX_BILL_POOL_DETAIL_POOL_ID ON TBL_BILL_POOL_DETAIL(POOL_ID);
+CREATE INDEX IDX_BILL_POOL_DETAIL_BILL_ID ON TBL_BILL_POOL_DETAIL(BILL_ID);
+CREATE INDEX IDX_BILL_POOL_DETAIL_STATUS ON TBL_BILL_POOL_DETAIL(DETAIL_STATUS);
+

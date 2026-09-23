@@ -1,0 +1,432 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.cybermonitor.mapper.NotificationReadMapper">
+
+    <!-- 基础结果映射 -->
+    <resultMap id="BaseResultMap" type="com.huabo.cybermonitor.entity.NotificationRead">
+        <id column="READ_ID" property="readId" />
+        <result column="NOTIFICATION_ID" property="notificationId" />
+        <result column="USER_ID" property="userId" />
+        <result column="READ_STATUS" property="readStatus" />
+        <result column="READ_TIME" property="readTime" />
+        <result column="STAR_TIME" property="starTime" />
+        <result column="ARCHIVE_TIME" property="archiveTime" />
+        <result column="DELETE_TIME" property="deleteTime" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_TIME" property="updateTime" />
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        READ_ID, NOTIFICATION_ID, USER_ID, READ_STATUS, READ_TIME,
+        STAR_TIME, ARCHIVE_TIME, DELETE_TIME, CREATE_TIME, UPDATE_TIME
+    </sql>
+
+    <!-- 分页查询通知阅读记录列表 -->
+    <select id="selectNotificationReadList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM SYS_NOTIFICATION_READ
+        <where>
+            <if test="queryVO.notificationId != null and queryVO.notificationId != ''">
+                AND NOTIFICATION_ID = #{queryVO.notificationId}
+            </if>
+            <if test="queryVO.userId != null and queryVO.userId != ''">
+                AND USER_ID = #{queryVO.userId}
+            </if>
+            <if test="queryVO.readStatus != null and queryVO.readStatus != ''">
+                AND READ_STATUS = #{queryVO.readStatus}
+            </if>
+            <if test="queryVO.startDate != null and queryVO.startDate != ''">
+                <choose>
+                    <when test="_databaseId == 'mysql'">
+                        AND DATE(READ_TIME) >= #{queryVO.startDate}
+                    </when>
+                    <when test="_databaseId == 'dm'">
+                        AND TRUNC(READ_TIME) >= TO_DATE(#{queryVO.startDate}, 'YYYY-MM-DD')
+                    </when>
+                </choose>
+            </if>
+            <if test="queryVO.endDate != null and queryVO.endDate != ''">
+                <choose>
+                    <when test="_databaseId == 'mysql'">
+                        AND DATE(read_TIME) &lt;= #{queryVO.endDate}
+                    </when>
+                    <when test="_databaseId == 'dm'">
+                        AND TRUNC(read_TIME) &lt;= TO_DATE(#{queryVO.endDate}, 'YYYY-MM-DD')
+                    </when>
+                </choose>
+            </if>
+        </where>
+        ORDER BY READ_TIME DESC
+    </select>
+
+    <!-- 根据通知ID和用户ID查询阅读记录 -->
+    <select id="selectByNotificationAndUser" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM SYS_NOTIFICATION_READ
+        WHERE NOTIFICATION_ID = #{notificationId}
+        AND USER_ID = #{userId}
+        LIMIT 1
+    </select>
+
+    <!-- 标记通知为已读 -->
+    <insert id="markNotificationAsRead">
+        INSERT INTO SYS_NOTIFICATION_READ (
+            READ_ID, NOTIFICATION_ID, USER_ID, READ_STATUS, READ_TIME, CREATE_TIME, UPDATE_TIME
+        ) VALUES (
+            #{readId}, #{notificationId}, #{userId}, 'READ',
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <when test="_databaseId == 'dm'">SYSDATE</when>
+            </choose>,
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <when test="_databaseId == 'dm'">SYSDATE</when>
+            </choose>,
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <when test="_databaseId == 'dm'">SYSDATE</when>
+            </choose>
+        )
+        ON DUPLICATE KEY UPDATE
+            READ_STATUS = 'READ',
+            READ_TIME = <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <when test="_databaseId == 'dm'">SYSDATE</when>
+            </choose>,
+            UPDATE_TIME = <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <when test="_databaseId == 'dm'">SYSDATE</when>
+            </choose>
+    </insert>
+
+    <!-- 批量标记通知为已读 -->
+    <insert id="batchMarkNotificationsAsRead">
+        INSERT INTO SYS_NOTIFICATION_READ (
+            READ_ID, NOTIFICATION_ID, USER_ID, READ_STATUS, READ_TIME, CREATE_TIME, UPDATE_TIME
+        ) VALUES
+        <foreach collection="notificationIds" item="notificationId" separator=",">
+            (
+                CONCAT(#{userId}, '_', #{notificationId}),
+                #{notificationId},
+                #{userId},
+                'READ',
+                <choose>
+                    <when test="_databaseId == 'mysql'">NOW()</when>
+                    <when test="_databaseId == 'dm'">SYSDATE</when>
+                </choose>,
+                <choose>
+                    <when test="_databaseId == 'mysql'">NOW()</when>
+                    <when test="_databaseId == 'dm'">SYSDATE</when>
+                </choose>,
+                <choose>
+                    <when test="_databaseId == 'mysql'">NOW()</when>
+                    <when test="_databaseId == 'dm'">SYSDATE</when>
+                </choose>
+            )
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+            READ_STATUS = 'READ',
+            READ_TIME = <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <when test="_databaseId == 'dm'">SYSDATE</when>
+            </choose>,
+            UPDATE_TIME = <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <when test="_databaseId == 'dm'">SYSDATE</when>
+            </choose>
+    </insert>
+
+    <!-- 更新阅读状态 -->
+    <update id="updateReadStatus">
+        UPDATE SYS_NOTIFICATION_READ
+        SET READ_STATUS = #{readStatus},
+            <if test="readStatus == 'READ'">
+                READ_TIME = <choose>
+                    <when test="_databaseId == 'mysql'">NOW()</when>
+                    <when test="_databaseId == 'dm'">SYSDATE</when>
+                </choose>,
+            </if>
+            <if test="readStatus == 'starred'">
+                STAR_TIME = <choose>
+                    <when test="_databaseId == 'mysql'">NOW()</when>
+                    <when test="_databaseId == 'dm'">SYSDATE</when>
+                </choose>,
+            </if>
+            <if test="readStatus == 'archived'">
+                ARCHIVE_TIME = <choose>
+                    <when test="_databaseId == 'mysql'">NOW()</when>
+                    <when test="_databaseId == 'dm'">SYSDATE</when>
+                </choose>,
+            </if>
+            <if test="readStatus == 'deleted'">
+                DELETE_TIME = <choose>
+                    <when test="_databaseId == 'mysql'">NOW()</when>
+                    <when test="_databaseId == 'dm'">SYSDATE</when>
+                </choose>,
+            </if>
+            UPDATE_TIME = <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <when test="_databaseId == 'dm'">SYSDATE</when>
+            </choose>
+        WHERE NOTIFICATION_ID = #{notificationId}
+        AND USER_ID = #{userId}
+    </update>
+
+    <!-- 批量更新阅读状态 -->
+    <update id="batchUpdateReadStatus">
+        UPDATE SYS_NOTIFICATION_READ
+        SET READ_STATUS = #{readStatus},
+            <if test="readStatus == 'read'">
+                READ_TIME = <choose>
+                    <when test="_databaseId == 'mysql'">NOW()</when>
+                    <when test="_databaseId == 'dm'">SYSDATE</when>
+                </choose>,
+            </if>
+            <if test="readStatus == 'starred'">
+                STAR_TIME = <choose>
+                    <when test="_databaseId == 'mysql'">NOW()</when>
+                    <when test="_databaseId == 'dm'">SYSDATE</when>
+                </choose>,
+            </if>
+            <if test="readStatus == 'archived'">
+                ARCHIVE_TIME = <choose>
+                    <when test="_databaseId == 'mysql'">NOW()</when>
+                    <when test="_databaseId == 'dm'">SYSDATE</when>
+                </choose>,
+            </if>
+            <if test="readStatus == 'deleted'">
+                DELETE_TIME = <choose>
+                    <when test="_databaseId == 'mysql'">NOW()</when>
+                    <when test="_databaseId == 'dm'">SYSDATE</when>
+                </choose>,
+            </if>
+            UPDATE_TIME = <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <when test="_databaseId == 'dm'">SYSDATE</when>
+            </choose>
+        WHERE USER_ID = #{userId}
+        AND NOTIFICATION_ID IN
+        <foreach collection="notificationIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 获取用户未读通知数量 -->
+    <select id="selectUnreadCountByUserId" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM SYS_NOTIFICATION n
+        LEFT JOIN SYS_NOTIFICATION_READ r ON n.NOTIFICATION_ID = r.NOTIFICATION_ID AND r.USER_ID = #{userId}
+        WHERE n.NOTIFICATION_STATUS = 'PUBLISHED'
+        AND (n.EXPIRE_TIME IS NULL OR n.EXPIRE_TIME > <choose>
+            <when test="_databaseId == 'mysql'">NOW()</when>
+            <when test="_databaseId == 'dm'">SYSDATE</when>
+        </choose>)
+        AND (
+            n.PUBLISH_SCOPE = 'ALL'
+            OR (n.PUBLISH_SCOPE = 'USERS' AND FIND_IN_SET(#{userId}, n.TARGET_USERS))
+        )
+        AND (r.READ_STATUS IS NULL OR r.READ_STATUS = 'UNREAD')
+    </select>
+
+    <!-- 获取用户未读通知列表 -->
+    <select id="selectUnreadNotificationsByUserId" resultType="java.util.Map">
+        SELECT
+            n.NOTIFICATION_ID as notificationId,
+            n.NOTIFICATION_TITLE as notificationTitle,
+            n.NOTIFICATION_TYPE as notificationType,
+            n.NOTIFICATION_LEVEL as notificationLevel,
+            n.IS_TOP as isTop,
+            n.IS_POPUP as isPopup,
+            n.PUBLISH_TIME as publishTime
+        FROM SYS_NOTIFICATION n
+        LEFT JOIN SYS_NOTIFICATION_READ r ON n.NOTIFICATION_ID = r.NOTIFICATION_ID AND r.USER_ID = #{userId}
+        WHERE n.NOTIFICATION_STATUS = 'PUBLISHED'
+        AND (n.EXPIRE_TIME IS NULL OR n.EXPIRE_TIME > <choose>
+            <when test="_databaseId == 'mysql'">NOW()</when>
+            <when test="_databaseId == 'dm'">SYSDATE</when>
+        </choose>)
+        AND (
+            n.PUBLISH_SCOPE = 'ALL'
+            OR (n.PUBLISH_SCOPE = 'USERS' AND FIND_IN_SET(#{userId}, n.TARGET_USERS))
+        )
+        AND (r.READ_STATUS IS NULL OR r.READ_STATUS = 'UNREAD')
+        ORDER BY n.IS_TOP DESC, n.PUBLISH_TIME DESC
+        <choose>
+            <when test="_databaseId == 'mysql'">
+                LIMIT #{limit}
+            </when>
+            <when test="_databaseId == 'dm'">
+                AND ROWNUM &lt;= #{limit}
+            </when>
+        </choose>
+    </select>
+
+    <!-- 获取用户已读通知列表 -->
+    <select id="selectReadNotificationsByUserId" resultType="java.util.Map">
+        SELECT
+            n.NOTIFICATION_ID as notificationId,
+            n.NOTIFICATION_TITLE as notificationTitle,
+            n.NOTIFICATION_TYPE as notificationType,
+            n.NOTIFICATION_LEVEL as notificationLevel,
+            n.PUBLISH_TIME as publishTime,
+            r.READ_TIME as readTime,
+            r.READ_STATUS as readStatus
+        FROM SYS_NOTIFICATION n
+        INNER JOIN SYS_NOTIFICATION_READ r ON n.NOTIFICATION_ID = r.NOTIFICATION_ID
+        WHERE r.USER_ID = #{userId}
+        AND r.READ_STATUS IN ('READ', 'starred', 'archived')
+        ORDER BY r.READ_TIME DESC
+        <choose>
+            <when test="_databaseId == 'mysql'">
+                LIMIT #{limit}
+            </when>
+            <when test="_databaseId == 'dm'">
+                AND ROWNUM &lt;= #{limit}
+            </when>
+        </choose>
+    </select>
+
+    <!-- 获取用户收藏的通知列表 -->
+    <select id="selectStarredNotificationsByUserId" resultType="java.util.Map">
+        SELECT
+            n.NOTIFICATION_ID as notificationId,
+            n.NOTIFICATION_TITLE as notificationTitle,
+            n.NOTIFICATION_TYPE as notificationType,
+            n.NOTIFICATION_LEVEL as notificationLevel,
+            n.PUBLISH_TIME as publishTime,
+            r.STAR_TIME as starTime
+        FROM SYS_NOTIFICATION n
+        INNER JOIN SYS_NOTIFICATION_READ r ON n.NOTIFICATION_ID = r.NOTIFICATION_ID
+        WHERE r.USER_ID = #{userId}
+        AND r.READ_STATUS = 'starred'
+        ORDER BY r.STAR_TIME DESC
+    </select>
+
+    <!-- 获取通知阅读统计 -->
+    <select id="selectNotificationReadStatistics" resultType="java.util.Map">
+        SELECT
+            COUNT(DISTINCT r.NOTIFICATION_ID) as readNotificationCount,
+            COUNT(DISTINCT r.USER_ID) as readUserCount,
+            COUNT(*) as totalReadCount,
+            COUNT(CASE WHEN r.READ_STATUS = 'starred' THEN 1 END) as starredCount,
+            COUNT(CASE WHEN r.READ_STATUS = 'archived' THEN 1 END) as archivedCount
+        FROM SYS_NOTIFICATION_READ r
+        WHERE r.READ_STATUS IN ('read', 'starred', 'archived')
+        AND <choose>
+            <when test="_databaseId == 'mysql'">
+                DATE(r.READ_TIME) >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+            </when>
+            <when test="_databaseId == 'dm'">
+                TRUNC(r.READ_TIME) >= TRUNC(SYSDATE) - 30
+            </when>
+        </choose>
+    </select>
+
+    <!-- 获取阅读趋势统计 -->
+    <select id="selectReadTrend" resultType="java.util.Map">
+        SELECT
+            <choose>
+                <when test="_databaseId == 'mysql'">
+                    DATE(READ_TIME) as readDate,
+                </when>
+                <when test="_databaseId == 'dm'">
+                    TO_CHAR(read_TIME, 'YYYY-MM-DD') as readDate,
+                </when>
+            </choose>
+            COUNT(*) as readCount,
+            COUNT(DISTINCT USER_ID) as userCount,
+            COUNT(DISTINCT NOTIFICATION_ID) as notificationCount
+        FROM SYS_NOTIFICATION_READ
+        WHERE READ_STATUS IN ('read', 'starred', 'archived')
+        <if test="startDate != null and startDate != ''">
+            <choose>
+                <when test="_databaseId == 'mysql'">
+                    AND DATE(read_TIME) >= #{startDate}
+                </when>
+                <when test="_databaseId == 'dm'">
+                    AND TRUNC(read_TIME) >= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+                </when>
+            </choose>
+        </if>
+        <if test="endDate != null and endDate != ''">
+            <choose>
+                <when test="_databaseId == 'mysql'">
+                    AND DATE(read_TIME) &lt;= #{endDate}
+                </when>
+                <when test="_databaseId == 'dm'">
+                    AND TRUNC(read_TIME) &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
+                </when>
+            </choose>
+        </if>
+        <choose>
+            <when test="_databaseId == 'mysql'">
+                GROUP BY DATE(read_TIME)
+                ORDER BY DATE(read_TIME) ASC
+            </when>
+            <when test="_databaseId == 'dm'">
+                GROUP BY TO_CHAR(read_TIME, 'YYYY-MM-DD')
+                ORDER BY TO_CHAR(read_TIME, 'YYYY-MM-DD') ASC
+            </when>
+        </choose>
+    </select>
+
+    <!-- 获取活跃用户统计 -->
+    <select id="selectActiveUserStatistics" resultType="java.util.Map">
+        SELECT
+            USER_ID as userId,
+            COUNT(*) as readCount,
+            COUNT(CASE WHEN READ_STATUS = 'starred' THEN 1 END) as starredCount,
+            MAX(READ_TIME) as lastReadTime
+        FROM SYS_NOTIFICATION_READ
+        WHERE READ_STATUS IN ('read', 'starred', 'archived')
+        AND <choose>
+            <when test="_databaseId == 'mysql'">
+                DATE(read_TIME) >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+            </when>
+            <when test="_databaseId == 'dm'">
+                TRUNC(read_TIME) >= TRUNC(SYSDATE) - 30
+            </when>
+        </choose>
+        GROUP BY USER_ID
+        ORDER BY readCount DESC
+        <choose>
+            <when test="_databaseId == 'mysql'">
+                LIMIT 20
+            </when>
+            <when test="_databaseId == 'dm'">
+                AND ROWNUM &lt;= 20
+            </when>
+        </choose>
+    </select>
+
+    <!-- 清理过期的阅读记录 -->
+    <delete id="deleteExpiredReadRecords">
+        DELETE FROM SYS_NOTIFICATION_READ
+        WHERE <choose>
+            <when test="_databaseId == 'mysql'">
+                CREATE_TIME &lt; DATE_SUB(NOW(), INTERVAL #{days} DAY)
+            </when>
+            <when test="_databaseId == 'dm'">
+                CREATE_TIME &lt; SYSDATE - #{days}
+            </when>
+        </choose>
+        AND READ_STATUS = 'deleted'
+    </delete>
+
+    <!-- 根据通知ID删除阅读记录 -->
+    <delete id="deleteByNotificationId">
+        DELETE FROM SYS_NOTIFICATION_READ
+        WHERE NOTIFICATION_ID = #{notificationId}
+    </delete>
+
+    <!-- 批量删除阅读记录 -->
+    <delete id="batchDeleteByNotificationIds">
+        DELETE FROM SYS_NOTIFICATION_READ
+        WHERE NOTIFICATION_ID IN
+        <foreach collection="notificationIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

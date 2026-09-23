@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.CreditCategoryMapper">
+
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.CreditCategory">
+        <id column="ID" property="id" jdbcType="VARCHAR"/>
+        <result column="CATEGORY_CODE" property="categoryCode" jdbcType="VARCHAR"/>
+        <result column="CATEGORY_NAME" property="categoryName" jdbcType="VARCHAR"/>
+        <result column="CATEGORY_TYPE" property="categoryType" jdbcType="VARCHAR"/>
+        <result column="PARENT_ID" property="parentId" jdbcType="VARCHAR"/>
+        <result column="CREDIT_LEVEL" property="creditLevel" jdbcType="INTEGER"/>
+        <result column="RISK_WEIGHT" property="riskWeight" jdbcType="DECIMAL"/>
+        <result column="PROVISION_RATIO" property="provisionRatio" jdbcType="DECIMAL"/>
+        <result column="MAX_TERM_MONTHS" property="maxTermMonths" jdbcType="INTEGER"/>
+        <result column="MIN_AMOUNT" property="minAmount" jdbcType="DECIMAL"/>
+        <result column="MAX_AMOUNT" property="maxAmount" jdbcType="DECIMAL"/>
+        <result column="CURRENCY_CODES" property="currencyCodes" jdbcType="VARCHAR"/>
+        <result column="COLLATERAL_REQUIRED" property="collateralRequired" jdbcType="VARCHAR"/>
+        <result column="GUARANTEE_REQUIRED" property="guaranteeRequired" jdbcType="VARCHAR"/>
+        <result column="APPROVAL_AUTHORITY" property="approvalAuthority" jdbcType="VARCHAR"/>
+        <result column="REGULATORY_RATIO" property="regulatoryRatio" jdbcType="DECIMAL"/>
+        <result column="CONCENTRATION_LIMIT" property="concentrationLimit" jdbcType="DECIMAL"/>
+        <result column="SORT_ORDER" property="sortOrder" jdbcType="INTEGER"/>
+        <result column="STATUS" property="status" jdbcType="VARCHAR"/>
+        <result column="REMARK" property="remark" jdbcType="VARCHAR"/>
+        <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="CREATE_USER" property="createUser" jdbcType="VARCHAR"/>
+        <result column="UPDATE_USER" property="updateUser" jdbcType="VARCHAR"/>
+        <result column="VERSION_NO" property="versionNo" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 根据条件查询 -->
+    <select id="selectByCondition" resultMap="BaseResultMap">
+        SELECT * FROM FM_CREDIT_CATEGORY
+        <where>
+            <if test="categoryCode != null and categoryCode != ''">
+                AND CATEGORY_CODE LIKE CONCAT('%', #{categoryCode}, '%')
+            </if>
+            <if test="categoryName != null and categoryName != ''">
+                AND CATEGORY_NAME LIKE CONCAT('%', #{categoryName}, '%')
+            </if>
+            <if test="categoryType != null and categoryType != ''">
+                AND CATEGORY_TYPE = #{categoryType}
+            </if>
+            <if test="status != null and status != ''">
+                AND STATUS = #{status}
+            </if>
+        </where>
+        ORDER BY SORT_ORDER ASC, CREATE_TIME DESC
+    </select>
+
+    <!-- 根据类别编码查询 -->
+    <select id="selectByCategoryCode" resultMap="BaseResultMap">
+        SELECT * FROM FM_CREDIT_CATEGORY
+        WHERE CATEGORY_CODE = #{categoryCode}
+    </select>
+
+    <!-- 根据父级ID查询子类别 -->
+    <select id="selectByParentId" resultMap="BaseResultMap">
+        SELECT * FROM FM_CREDIT_CATEGORY
+        WHERE PARENT_ID = #{parentId}
+        ORDER BY SORT_ORDER ASC
+    </select>
+
+</mapper>
+

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.fxgl.mapper.RiskAssessmentstdMapper">
+    <!--
+
+    @TableField(exist = false)
+    private Set<RiskPossibility> possibilities = new HashSet<RiskPossibility>();
+    @TableField(exist = false)
+    private Set<RiskInfludegree> riskInfludegrees = new HashSet<RiskInfludegree>();
+    @TableField(exist = false)
+    private Set<RiskLevelmapping> levelMappings = new HashSet<RiskLevelmapping>();-->
+    <resultMap id="RM_RISK_ASSESSMENTSTD" type="RiskAssessmentstd" autoMapping="true">
+        <id column="assstdid" property="assstdid"></id>
+        <collection property="possibilities" ofType="RiskPossibility" column="assstdid"
+                    select="com.huabo.fxgl.mapper.RiskPossibilityMapper.selectListByAssstdid"></collection>
+        <collection property="riskInfludegrees" ofType="RiskInfludegree" column="assstdid"
+                    select="com.huabo.fxgl.mapper.RiskInfludegreeMapper.selectListByAssstdid"></collection>
+        <collection property="levelMappings" ofType="RiskLevelmapping" column="assstdid"
+                    select="com.huabo.fxgl.mapper.RiskLevelmappingMapper.selectListByAssstdid"></collection>
+    </resultMap>
+    
+    
+    <select id="selectRiskAssessMents" resultType="com.huabo.fxgl.entity.RiskAssessmentstd">
+    SELECT DISTINCT TR.* from TBL_RISK_ASSESSMENTSTD TR  
+            LEFT JOIN TBL_RISK_LEVELMAPPING TL ON TR.ASSSTDID=TL.ASSSTDID   
+             WHERE TL.RLEVELMAPID IS NOT NULL ${sql} AND ${ew.sqlSegment} 
+    </select>
+</mapper>

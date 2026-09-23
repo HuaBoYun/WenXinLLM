@@ -1,0 +1,410 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.cybermonitor.mapper.RiskControlMeasureMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.huabo.cybermonitor.entity.RiskControlMeasure">
+        <id column="RISK_CONTROL_MEASURE_ID" property="riskControlMeasureId" />
+        <result column="RISK_ASSESSMENT_ID" property="riskAssessmentId" />
+        <result column="ENTERPRISE_ID" property="enterpriseId" />
+        <result column="ENTERPRISE_NAME" property="enterpriseName" />
+        <result column="MEASURE_NAME" property="measureName" />
+        <result column="MEASURE_TYPE" property="measureType" />
+        <result column="RISK_TYPE" property="riskType" />
+        <result column="PRIORITY_LEVEL" property="priorityLevel" />
+        <result column="MEASURE_DESCRIPTION" property="measureDescription" />
+        <result column="IMPLEMENTATION_PLAN" property="implementationPlan" />
+        <result column="EXPECTED_OUTCOME" property="expectedOutcome" />
+        <result column="SUCCESS_CRITERIA" property="successCriteria" />
+        <result column="PLANNED_START_DATE" property="plannedStartDate" />
+        <result column="PLANNED_END_DATE" property="plannedEndDate" />
+        <result column="ACTUAL_START_DATE" property="actualStartDate" />
+        <result column="ACTUAL_END_DATE" property="actualEndDate" />
+        <result column="IMPLEMENTATION_STATUS" property="implementationStatus" />
+        <result column="IMPLEMENTATION_PROGRESS" property="implementationProgress" />
+        <result column="PROGRESS_NOTES" property="progressNotes" />
+        <result column="RESPONSIBLE_PERSON" property="responsiblePerson" />
+        <result column="RESPONSIBLE_DEPARTMENT" property="responsibleDepartment" />
+        <result column="HUMAN_RESOURCES" property="humanResources" />
+        <result column="MATERIAL_RESOURCES" property="materialResources" />
+        <result column="BUDGET_AMOUNT" property="budgetAmount" />
+        <result column="ACTUAL_COST" property="actualCost" />
+        <result column="EFFECTIVENESS_SCORE" property="effectivenessScore" />
+        <result column="EFFECTIVENESS_EVALUATION" property="effectivenessEvaluation" />
+        <result column="EVALUATION_DATE" property="evaluationDate" />
+        <result column="EVALUATION_BY" property="evaluationBy" />
+        <result column="COMPLETION_SUMMARY" property="completionSummary" />
+        <result column="LESSONS_LEARNED" property="lessonsLearned" />
+        <result column="DEVELOP_BY" property="developBy" />
+        <result column="DEVELOP_TIME" property="developTime" />
+        <result column="CREATE_BY" property="createBy" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_BY" property="updateBy" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="DELETED" property="deleted" />
+        <result column="VERSION" property="version" />
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="Base_Column_List">
+        RISK_CONTROL_MEASURE_ID, RISK_ASSESSMENT_ID, ENTERPRISE_ID, ENTERPRISE_NAME, MEASURE_NAME,
+        MEASURE_TYPE, RISK_TYPE, PRIORITY_LEVEL, MEASURE_DESCRIPTION, IMPLEMENTATION_PLAN,
+        EXPECTED_OUTCOME, SUCCESS_CRITERIA, PLANNED_START_DATE, PLANNED_END_DATE, ACTUAL_START_DATE,
+        ACTUAL_END_DATE, IMPLEMENTATION_STATUS, IMPLEMENTATION_PROGRESS, PROGRESS_NOTES,
+        RESPONSIBLE_PERSON, RESPONSIBLE_DEPARTMENT, HUMAN_RESOURCES, MATERIAL_RESOURCES,
+        BUDGET_AMOUNT, ACTUAL_COST, EFFECTIVENESS_SCORE, EFFECTIVENESS_EVALUATION, EVALUATION_DATE,
+        EVALUATION_BY, COMPLETION_SUMMARY, LESSONS_LEARNED, DEVELOP_BY, DEVELOP_TIME,
+        CREATE_BY, CREATE_TIME, UPDATE_BY, UPDATE_TIME, DELETED, VERSION
+    </sql>
+
+    <!-- 查询条件 -->
+    <sql id="Query_Where_Clause">
+        <where>
+            DELETED = 0
+            <if test="enterpriseId != null and enterpriseId != ''">
+                AND ENTERPRISE_ID = #{enterpriseId}
+            </if>
+            <if test="enterpriseName != null and enterpriseName != ''">
+                AND ENTERPRISE_NAME LIKE CONCAT('%', #{enterpriseName}, '%')
+            </if>
+            <if test="measureType != null and measureType != ''">
+                AND MEASURE_TYPE = #{measureType}
+            </if>
+            <if test="riskType != null and riskType != ''">
+                AND RISK_TYPE = #{riskType}
+            </if>
+            <if test="priorityLevel != null and priorityLevel != ''">
+                AND PRIORITY_LEVEL = #{priorityLevel}
+            </if>
+            <if test="implementationStatus != null and implementationStatus != ''">
+                AND IMPLEMENTATION_STATUS = #{implementationStatus}
+            </if>
+            <if test="responsiblePerson != null and responsiblePerson != ''">
+                AND RESPONSIBLE_PERSON LIKE CONCAT('%', #{responsiblePerson}, '%')
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND PLANNED_START_DATE >= #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND PLANNED_END_DATE &lt;= #{endDate}
+            </if>
+            <if test="minProgress != null">
+                AND IMPLEMENTATION_PROGRESS >= #{minProgress}
+            </if>
+            <if test="maxProgress != null">
+                AND IMPLEMENTATION_PROGRESS &lt;= #{maxProgress}
+            </if>
+        </where>
+    </sql>
+
+    <!-- 分页查询风险控制措施列表 -->
+    <select id="selectRiskControlMeasureList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_RISK_CONTROL_MEASURE
+        <include refid="Query_Where_Clause" />
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据ID查询(旧表-已废弃) -->
+    <select id="selectByIdOldTable" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_RISK_CONTROL_MEASURE
+        WHERE RISK_CONTROL_MEASURE_ID = #{id} AND DELETED = 0
+    </select>
+
+    <!-- 新增风险控制措施 -->
+    <insert id="insertToOldTable">
+        INSERT INTO TBL_RISK_CONTROL_MEASURE (
+            RISK_CONTROL_MEASURE_ID, RISK_ASSESSMENT_ID, ENTERPRISE_ID, ENTERPRISE_NAME, MEASURE_NAME,
+            MEASURE_TYPE, RISK_TYPE, PRIORITY_LEVEL, MEASURE_DESCRIPTION, IMPLEMENTATION_PLAN,
+            EXPECTED_OUTCOME, SUCCESS_CRITERIA, PLANNED_START_DATE, PLANNED_END_DATE,
+            IMPLEMENTATION_STATUS, IMPLEMENTATION_PROGRESS, RESPONSIBLE_PERSON, RESPONSIBLE_DEPARTMENT,
+            HUMAN_RESOURCES, MATERIAL_RESOURCES, BUDGET_AMOUNT, DEVELOP_BY, DEVELOP_TIME,
+            CREATE_BY, CREATE_TIME, DELETED, VERSION
+        ) VALUES (
+            #{riskControlMeasureId}, #{riskAssessmentId}, #{enterpriseId}, #{enterpriseName}, #{measureName},
+            #{measureType}, #{riskType}, #{priorityLevel}, #{measureDescription}, #{implementationPlan},
+            #{expectedOutcome}, #{successCriteria}, #{plannedStartDate}, #{plannedEndDate},
+            #{implementationStatus}, #{implementationProgress}, #{responsiblePerson}, #{responsibleDepartment},
+            #{humanResources}, #{materialResources}, #{budgetAmount}, #{developBy}, #{developTime},
+            #{createBy}, 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>, 
+            0, 1
+        )
+    </insert>
+
+    <!-- 更新风险控制措施 -->
+    <update id="updateByIdOldTable">
+        UPDATE TBL_RISK_CONTROL_MEASURE
+        SET RISK_ASSESSMENT_ID = #{riskAssessmentId},
+            ENTERPRISE_ID = #{enterpriseId},
+            ENTERPRISE_NAME = #{enterpriseName},
+            MEASURE_NAME = #{measureName},
+            MEASURE_TYPE = #{measureType},
+            RISK_TYPE = #{riskType},
+            PRIORITY_LEVEL = #{priorityLevel},
+            MEASURE_DESCRIPTION = #{measureDescription},
+            IMPLEMENTATION_PLAN = #{implementationPlan},
+            EXPECTED_OUTCOME = #{expectedOutcome},
+            SUCCESS_CRITERIA = #{successCriteria},
+            PLANNED_START_DATE = #{plannedStartDate},
+            PLANNED_END_DATE = #{plannedEndDate},
+            RESPONSIBLE_PERSON = #{responsiblePerson},
+            RESPONSIBLE_DEPARTMENT = #{responsibleDepartment},
+            HUMAN_RESOURCES = #{humanResources},
+            MATERIAL_RESOURCES = #{materialResources},
+            BUDGET_AMOUNT = #{budgetAmount},
+            UPDATE_BY = #{updateBy},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            VERSION = VERSION + 1
+        WHERE RISK_CONTROL_MEASURE_ID = #{riskControlMeasureId} AND DELETED = 0
+    </update>
+
+    <!-- 逻辑删除 -->
+    <update id="deleteByIdOldTable">
+        UPDATE TBL_RISK_CONTROL_MEASURE
+        SET DELETED = 1,
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>
+        WHERE RISK_CONTROL_MEASURE_ID = #{id} AND DELETED = 0
+    </update>
+
+    <!-- 开始实施 -->
+    <update id="startImplementation">
+        UPDATE TBL_RISK_CONTROL_MEASURE
+        SET IMPLEMENTATION_STATUS = 'IN_PROGRESS',
+            ACTUAL_START_DATE = #{actualStartDate},
+            UPDATE_BY = #{startBy},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            VERSION = VERSION + 1
+        WHERE RISK_CONTROL_MEASURE_ID = #{riskControlMeasureId} AND DELETED = 0
+    </update>
+
+    <!-- 更新实施进度 -->
+    <update id="updateImplementationProgress">
+        UPDATE TBL_RISK_CONTROL_MEASURE
+        SET IMPLEMENTATION_PROGRESS = #{newProgress},
+            PROGRESS_NOTES = #{progressNotes},
+            UPDATE_BY = #{updateBy},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            VERSION = VERSION + 1
+        WHERE RISK_CONTROL_MEASURE_ID = #{riskControlMeasureId} AND DELETED = 0
+    </update>
+
+    <!-- 完成实施 -->
+    <update id="completeImplementation">
+        UPDATE TBL_RISK_CONTROL_MEASURE
+        SET IMPLEMENTATION_STATUS = 'COMPLETED',
+            IMPLEMENTATION_PROGRESS = 100,
+            ACTUAL_END_DATE = #{actualEndDate},
+            COMPLETION_SUMMARY = #{completionSummary},
+            UPDATE_BY = #{completeBy},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            VERSION = VERSION + 1
+        WHERE RISK_CONTROL_MEASURE_ID = #{riskControlMeasureId} AND DELETED = 0
+    </update>
+
+    <!-- 更新效果评估 -->
+    <update id="updateEffectivenessEvaluation">
+        UPDATE TBL_RISK_CONTROL_MEASURE
+        SET EFFECTIVENESS_SCORE = #{effectivenessScore},
+            EFFECTIVENESS_EVALUATION = #{effectivenessEvaluation},
+            EVALUATION_DATE = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            EVALUATION_BY = #{evaluateBy},
+            LESSONS_LEARNED = #{lessonsLearned},
+            UPDATE_BY = #{evaluateBy},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            VERSION = VERSION + 1
+        WHERE RISK_CONTROL_MEASURE_ID = #{riskControlMeasureId} AND DELETED = 0
+    </update>
+
+    <!-- 更新资源配置 -->
+    <update id="updateResourceAllocation">
+        UPDATE TBL_RISK_CONTROL_MEASURE
+        SET HUMAN_RESOURCES = #{humanResources},
+            MATERIAL_RESOURCES = #{materialResources},
+            ACTUAL_COST = #{actualCost},
+            UPDATE_BY = #{updateBy},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            VERSION = VERSION + 1
+        WHERE RISK_CONTROL_MEASURE_ID = #{riskControlMeasureId} AND DELETED = 0
+    </update>
+
+    <!-- 批量开始实施 -->
+    <update id="batchStartImplementation">
+        UPDATE TBL_RISK_CONTROL_MEASURE
+        SET IMPLEMENTATION_STATUS = 'IN_PROGRESS',
+            ACTUAL_START_DATE = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            UPDATE_BY = #{startBy},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            VERSION = VERSION + 1
+        WHERE RISK_CONTROL_MEASURE_ID IN
+        <foreach collection="riskControlMeasureIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND DELETED = 0
+    </update>
+
+    <!-- 批量完成实施 -->
+    <update id="batchCompleteImplementation">
+        UPDATE TBL_RISK_CONTROL_MEASURE
+        SET IMPLEMENTATION_STATUS = 'COMPLETED',
+            IMPLEMENTATION_PROGRESS = 100,
+            ACTUAL_END_DATE = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            UPDATE_BY = #{completeBy},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            VERSION = VERSION + 1
+        WHERE RISK_CONTROL_MEASURE_ID IN
+        <foreach collection="riskControlMeasureIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND DELETED = 0
+    </update>
+
+    <!-- 批量逻辑删除 -->
+    <update id="batchDelete">
+        UPDATE TBL_RISK_CONTROL_MEASURE
+        SET DELETED = 1,
+            UPDATE_BY = #{deleteBy},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>
+        WHERE RISK_CONTROL_MEASURE_ID IN
+        <foreach collection="riskControlMeasureIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND DELETED = 0
+    </update>
+
+    <!-- 获取综合统计数据 -->
+    <select id="getComprehensiveStatistics" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as totalMeasures,
+            COUNT(CASE WHEN IMPLEMENTATION_STATUS = 'PLANNED' THEN 1 END) as plannedCount,
+            COUNT(CASE WHEN IMPLEMENTATION_STATUS = 'IN_PROGRESS' THEN 1 END) as inProgressCount,
+            COUNT(CASE WHEN IMPLEMENTATION_STATUS = 'COMPLETED' THEN 1 END) as completedCount,
+            COUNT(CASE WHEN IMPLEMENTATION_STATUS = 'SUSPENDED' THEN 1 END) as suspendedCount,
+            COUNT(CASE WHEN PRIORITY_LEVEL = 'HIGH' THEN 1 END) as highPriorityCount,
+            ROUND(AVG(IMPLEMENTATION_PROGRESS), 2) as avgProgress,
+            ROUND(AVG(EFFECTIVENESS_SCORE), 2) as avgEffectivenessScore,
+            SUM(BUDGET_AMOUNT) as totalBudget,
+            SUM(ACTUAL_COST) as totalActualCost
+        FROM TBL_RISK_CONTROL_MEASURE
+        WHERE DELETED = 0
+        <if test="enterpriseId != null and enterpriseId != ''">
+            AND ENTERPRISE_ID = #{enterpriseId}
+        </if>
+    </select>
+
+    <!-- 根据风险评估ID查询控制措施 -->
+    <select id="selectByRiskAssessmentId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_RISK_CONTROL_MEASURE
+        WHERE RISK_ASSESSMENT_ID = #{riskAssessmentId} AND DELETED = 0
+        ORDER BY PRIORITY_LEVEL DESC, CREATE_TIME DESC
+    </select>
+
+    <!-- 获取进度统计 -->
+    <select id="getProgressStatistics" resultType="java.util.Map">
+        SELECT 
+            IMPLEMENTATION_STATUS as status,
+            COUNT(*) as count,
+            ROUND(AVG(IMPLEMENTATION_PROGRESS), 2) as avgProgress,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM TBL_RISK_CONTROL_MEASURE WHERE DELETED = 0), 2) as percentage
+        FROM TBL_RISK_CONTROL_MEASURE
+        WHERE DELETED = 0
+        <if test="enterpriseId != null and enterpriseId != ''">
+            AND ENTERPRISE_ID = #{enterpriseId}
+        </if>
+        GROUP BY IMPLEMENTATION_STATUS
+        ORDER BY 
+            CASE IMPLEMENTATION_STATUS 
+                WHEN 'PLANNED' THEN 1
+                WHEN 'IN_PROGRESS' THEN 2
+                WHEN 'COMPLETED' THEN 3
+                WHEN 'SUSPENDED' THEN 4
+                ELSE 5
+            END
+    </select>
+
+    <!-- 获取效果评估统计 -->
+    <select id="getEffectivenessStatistics" resultType="java.util.Map">
+        SELECT 
+            CASE 
+                WHEN EFFECTIVENESS_SCORE >= 90 THEN 'EXCELLENT'
+                WHEN EFFECTIVENESS_SCORE >= 80 THEN 'GOOD'
+                WHEN EFFECTIVENESS_SCORE >= 70 THEN 'AVERAGE'
+                WHEN EFFECTIVENESS_SCORE >= 60 THEN 'POOR'
+                ELSE 'VERY_POOR'
+            END as effectivenessLevel,
+            COUNT(*) as count,
+            ROUND(AVG(EFFECTIVENESS_SCORE), 2) as avgScore
+        FROM TBL_RISK_CONTROL_MEASURE
+        WHERE DELETED = 0 AND EFFECTIVENESS_SCORE IS NOT NULL
+        <if test="enterpriseId != null and enterpriseId != ''">
+            AND ENTERPRISE_ID = #{enterpriseId}
+        </if>
+        GROUP BY 
+            CASE 
+                WHEN EFFECTIVENESS_SCORE >= 90 THEN 'EXCELLENT'
+                WHEN EFFECTIVENESS_SCORE >= 80 THEN 'GOOD'
+                WHEN EFFECTIVENESS_SCORE >= 70 THEN 'AVERAGE'
+                WHEN EFFECTIVENESS_SCORE >= 60 THEN 'POOR'
+                ELSE 'VERY_POOR'
+            END
+        ORDER BY avgScore DESC
+    </select>
+
+</mapper>

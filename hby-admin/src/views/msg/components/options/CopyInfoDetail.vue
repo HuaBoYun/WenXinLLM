@@ -28,7 +28,7 @@
 
       <el-tab-pane label="流程信息" name="second" v-loading="loading">
         <div class="flow-info-container">
-          <!-- 5.x 版本：使用 bpmn-js 渲染，完全还原引迈中设置的横/纵向布局 -->
+          <!-- 5.x 版本：使用 bpmn-js 渲染，完全还原流程设计器中设置的横/纵向布局 -->
           <div
             v-if="flowVersion == '5' && flowTaskInfo && flowTaskInfo.id"
             class="flow-chart-inline"

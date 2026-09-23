@@ -1,0 +1,134 @@
+spring:
+ application:
+  name: hbyunOilAuditModule #应用名称
+ datasource:
+  type: com.alibaba.druid.pool.DruidDataSource
+  #Oracle数据库配置
+  oracle:
+   url: jdbc:oracle:thin:@192.0.2.200:1521:orcl
+   username: DQYTSJ
+   password: DQYTSJ
+   driverClassName: oracle.jdbc.driver.OracleDriver
+  #Mysql数据库配置
+#  mysql:
+#   url: jdbc:mysql://192.0.2.200:3306/hbgrctest?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&serverTimezone=GMT%2B8
+#   username: root
+#   password: HBGRC
+#   driverClassName: com.mysql.cj.jdbc.Driver
+ druid:
+  oracle:
+   initialSize: 5
+   minIdle: 5
+   maxActive: 20
+   maxWait: 60000
+   timeBetweenEvictionRunsMillis: 60000
+   minEvictableIdleTimeMillis: 300000
+   validationQuery: SELECT 1 FROM DUAL
+   testWhileIdle: true
+   testOnBorrow: false
+   testOnReturn: false
+   poolPreparedStatement: true
+   maxPoolPreparedStatementPerConnectionSize: 20
+   filters: stat,wall,log4j
+   connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+  mysql:
+   initialSize: 5
+   minIdle: 5
+   maxActive: 20
+   maxWait: 60000
+   timeBetweenEvictionRunsMillis: 60000
+   minEvictableIdleTimeMillis: 300000
+   validationQuery: SELECT 1 FROM DUAL
+   testWhileIdle: true
+   testOnBorrow: false
+   testOnReturn: false
+   poolPreparedStatement: true
+   maxPoolPreparedStatementPerConnectionSize: 20
+   filters: stat,wall,log4j
+   connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+ activiti:
+  check-process-definitions: false
+  database-schema-update: false
+ servlet:
+  multipart:
+   #       设置单个文件大小
+   max-file-size: 100MB
+   #       设置单次请求文件的总大小
+   max-request-size: 100MB
+ redis: 
+  host: 192.0.2.200
+  port: 6379
+  password: Dqyt@135246
+   
+ 
+#通用mapper配置
+mapper:
+ mappers: tk.mybatis.mapper.common.Mapper
+ not-empty: false
+ identity: oracle
+ before: true
+
+mysqlmapper:
+ mappers: tk.mybatis.mapper.common.MySqlMapper
+ not-empty: false
+ identity: mysql
+ before: true
+
+#日志配置
+logging:
+ level:
+  root: debug
+  org:
+   springframework: WARN
+   spring:
+    springboot:
+     dao: info
+  com:
+   dc:
+    pcasweb:
+     mapper: debug
+ file: logs/spring-boot-logging.log
+ 
+#eureka服务注册中心配置
+eureka:
+ instance:
+  ip-address: 127.0.0.1
+  instance-id: hbyunOilAuditService-8067
+  prefer-ip-address: true
+  hostname: hbyun-oilaudit-service
+ client:
+  serviceUrl:
+   defaultZone: http://hbyunadmin:hbEureka12345@127.0.0.1:8761/eureka
+security:
+  basic:
+    enabled: false
+
+mybatis:
+ configuration:
+  map-underscore-to-camel-case: true
+
+mybatis-plus:
+ mapper-locations: mapper/*.xml
+ configuration:
+  log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  map-underscore-to-camel-case: true
+ type-aliases-package: com.huabo.audit.oracle.entity
+
+application:
+ #文件上传
+ file-upload:
+  base-dir: D:\nginx-1.20.2\html\hbfk
+  #base-url: http://192.0.2.200/hbfk
+  base-url: http://192.0.2.200/hbfk
+
+configuration:
+  # 审计模型默认数据库
+ auditModel:
+    # 数据库默认类型
+ dataBaseType: Oracle
+    # 数据库连接地址
+ dataBaseConnectionAddress: 192.0.2.200
+    # 数据库用户
+ dataBaseUsers: DQYTSJ
+    # 数据库密码
+ dataBasePassWord: DQYTSJ

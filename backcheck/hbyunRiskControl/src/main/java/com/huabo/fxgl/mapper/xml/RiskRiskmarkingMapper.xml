@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.fxgl.mapper.RiskRiskmarkingMapper">
+    <resultMap id="RM_RISK_RISK_MARKING" type="RiskRiskmarking" autoMapping="true">
+        <id column="markingid" property="markingid"></id>
+        <association property="staff" column="staffid" javaType="Staff" fetchType="eager" select="com.huabo.fxgl.mapper.StaffMapper.selectById"></association>
+        <!--<association property="riskAssplanRisk" column="assriskid" javaType="RiskAssplanRisk" fetchType="eager"
+                     select="com.huabo.fxgl.mapper.RiskAssplanRiskMapper.selectById"></association>-->
+    </resultMap>
+
+    <resultMap id="RISK_MARKING_plan" type="RiskRiskmarking" autoMapping="true">
+        <id column="markingid" property="markingid"></id>
+        <association property="staff" column="staffid" javaType="Staff" fetchType="eager" select="com.huabo.fxgl.mapper.StaffMapper.selectById"></association>
+        <association property="riskAssplanRisk" column="assriskid" javaType="RiskAssplanRisk" fetchType="eager"
+                     select="com.huabo.fxgl.mapper.RiskAssplanRiskMapper.selectById"></association>
+    </resultMap>
+
+</mapper>

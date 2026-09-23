@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.consolidationReport.mapper.ConsolidationScopeMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.financial.sharing.consolidationReport.entity.TblConsolidationScope">
+        <id column="SCOPE_ID" property="scopeId"/>
+        <result column="MODEL_ID" property="modelId"/>
+        <result column="ORG_ID" property="orgId"/>
+        <result column="ORG_NAME" property="orgName"/>
+        <result column="CONSOLIDATION_METHOD" property="consolidationMethod"/>
+        <result column="EFFECTIVE_START_PERIOD" property="effectiveStartPeriod"/>
+        <result column="EFFECTIVE_END_PERIOD" property="effectiveEndPeriod"/>
+        <result column="IS_ACTIVE" property="isActive"/>
+        <result column="SORT_ORDER" property="sortOrder"/>
+        <result column="REMARK" property="remark"/>
+        <result column="TENANT_ID" property="tenantId"/>
+        <result column="CREATE_USER" property="createUser"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_USER" property="updateUser"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="MODEL_NAME" property="modelName"/>
+    </resultMap>
+
+    <!-- 查询合并范围配置列表 -->
+    <select id="selectScopeList" resultMap="BaseResultMap">
+        SELECT
+            s.SCOPE_ID,
+            s.MODEL_ID,
+            s.ORG_ID,
+            s.ORG_NAME,
+            s.CONSOLIDATION_METHOD,
+            s.EFFECTIVE_START_PERIOD,
+            s.EFFECTIVE_END_PERIOD,
+            s.IS_ACTIVE,
+            s.SORT_ORDER,
+            s.REMARK,
+            s.TENANT_ID,
+            s.CREATE_USER,
+            s.CREATE_TIME,
+            s.UPDATE_USER,
+            s.UPDATE_TIME,
+            m.MODEL_NAME
+        FROM TBL_CONSOLIDATION_SCOPE s
+        LEFT JOIN TBL_CONSOLIDATION_MODEL m ON s.MODEL_ID = m.MODEL_ID
+        WHERE 1=1
+        <if test="param.modelId != null and param.modelId != ''">
+            AND s.MODEL_ID = #{param.modelId}
+        </if>
+        <if test="param.orgId != null and param.orgId != ''">
+            AND s.ORG_ID = #{param.orgId}
+        </if>
+        <if test="param.orgName != null and param.orgName != ''">
+            AND s.ORG_NAME LIKE CONCAT('%', #{param.orgName}, '%')
+        </if>
+        <if test="param.consolidationMethod != null and param.consolidationMethod != ''">
+            AND s.CONSOLIDATION_METHOD = #{param.consolidationMethod}
+        </if>
+        <if test="param.isActive != null and param.isActive != ''">
+            AND s.IS_ACTIVE = #{param.isActive}
+        </if>
+        ORDER BY s.SORT_ORDER ASC, s.CREATE_TIME DESC
+    </select>
+
+    <!-- 检查组织是否已在合并范围内 -->
+    <select id="checkOrgExists" resultType="int">
+        SELECT COUNT(*)
+        FROM TBL_CONSOLIDATION_SCOPE
+        WHERE MODEL_ID = #{modelId}
+        AND ORG_ID = #{orgId}
+        <if test="excludeScopeId != null and excludeScopeId != ''">
+            AND SCOPE_ID != #{excludeScopeId}
+        </if>
+    </select>
+
+    <!-- 批量插入合并范围配置 -->
+    <insert id="batchInsert">
+        INSERT INTO TBL_CONSOLIDATION_SCOPE (
+            SCOPE_ID,
+            MODEL_ID,
+            ORG_ID,
+            ORG_NAME,
+            CONSOLIDATION_METHOD,
+            EFFECTIVE_START_PERIOD,
+            EFFECTIVE_END_PERIOD,
+            IS_ACTIVE,
+            SORT_ORDER,
+            REMARK,
+            TENANT_ID,
+            CREATE_USER,
+            CREATE_TIME,
+            UPDATE_USER,
+            UPDATE_TIME
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.scopeId},
+                #{item.modelId},
+                #{item.orgId},
+                #{item.orgName},
+                #{item.consolidationMethod},
+                #{item.effectiveStartPeriod},
+                #{item.effectiveEndPeriod},
+                #{item.isActive},
+                #{item.sortOrder},
+                #{item.remark},
+                #{item.tenantId},
+                #{item.createUser},
+                #{item.createTime},
+                #{item.updateUser},
+                #{item.updateTime}
+            )
+        </foreach>
+    </insert>
+
+    <!-- 根据模型ID删除合并范围配置 -->
+    <delete id="deleteByModelId">
+        DELETE FROM TBL_CONSOLIDATION_SCOPE
+        WHERE MODEL_ID = #{modelId}
+    </delete>
+
+</mapper>
+

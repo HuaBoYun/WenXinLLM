@@ -116,8 +116,8 @@ const requestConf = (config) => {
     }
   }
 
-  // Dify 代理服务请求：/dify 开头的请求统一指向 huabao.example.com
-  if (config.url && config.url.startsWith('/console/dify')) {
+  // WenxinAgent 代理服务请求：/wenxinAgent 开头的请求统一指向 huabao.example.com
+  if (config.url && config.url.startsWith('/console/wenxinAgent')) {
     config.baseURL = 'https://www.huabao.example.com'
   }
 
@@ -192,8 +192,8 @@ const handleData = async ({ config, data, status, statusText, headers }) => {
     return { data, headers, status }
   }
 
-  // Dify 接口返回标准 HTTP 状态码，无业务 code 字段，2xx 直接透传
-  if (config.url && config.url.includes('/dify/') && status >= 200 && status < 300) {
+  // WenxinAgent 接口返回标准 HTTP 状态码，无业务 code 字段，2xx 直接透传
+  if (config.url && config.url.includes('/wenxinAgent/') && status >= 200 && status < 300) {
     return data
   }
 

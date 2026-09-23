@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.fxgl.mapper.ReportMapper">
+
+<resultMap type="java.util.Map" id="ReportType">
+	 <result column="name" property="name" />
+	 <result column="value" property="value" />
+	</resultMap>
+<select id="getRiskReportTypeCountByCompany" resultMap="ReportType" >
+	select reporttype as name,count(1) as value from TBL_REPORT where 1=1 and type='fx_zdy'
+	<if test="company!=null and company!=''">
+		and orgid=#{company}
+	</if>
+	group by reporttype
+</select>
+
+
+<select id="selectAllList" resultType="com.huabo.fxgl.entity.Report">
+		 select *  from TBL_REPORT where 1=1
+            <if test="sql!=null and sql!=''">
+            ${sql}
+            </if>
+            and
+            ${ew.sqlSegment}
+	</select>
+</mapper>

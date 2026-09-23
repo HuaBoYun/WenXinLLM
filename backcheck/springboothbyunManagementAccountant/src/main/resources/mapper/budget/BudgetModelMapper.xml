@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.management.accountant.oracle.mapper.budget.BudgetModelMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.management.accountant.oracle.entity.budget.BudgetModel">
+        <id column="MODEL_ID" property="modelId" />
+        <result column="MODEL_NAME" property="modelName" />
+        <result column="MODEL_CODE" property="modelCode" />
+        <result column="MODEL_TYPE" property="modelType" />
+        <result column="MODEL_STATUS" property="modelStatus" />
+        <result column="APPLICABLE_SCOPE" property="applicableScope" />
+        <result column="BUDGET_CYCLE" property="budgetCycle" />
+        <result column="MODEL_DESCRIPTION" property="modelDescription" />
+        <result column="CONFIG_PARAMETERS" property="configParameters" />
+        <result column="CALCULATION_RULES" property="calculationRules" />
+        <result column="VERSION" property="version" />
+        <result column="CREATOR_ID" property="creatorId" />
+        <result column="CREATOR_NAME" property="creatorName" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATER_ID" property="updaterId" />
+        <result column="UPDATER_NAME" property="updaterName" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="IS_DELETED" property="isDeleted" />
+        <result column="COMPANY_ID" property="companyId" />
+        <result column="COMPANY_NAME" property="companyName" />
+    </resultMap>
+
+    <!-- 根据模型编码查询 -->
+    <select id="selectByCode" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BUDGET_MODEL
+        WHERE MODEL_CODE = #{modelCode}
+        AND COMPANY_ID = #{companyId}
+        AND IS_DELETED = 0
+    </select>
+
+    <!-- 分页查询模型列表 -->
+    <select id="selectPageList" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BUDGET_MODEL
+        WHERE IS_DELETED = 0
+        <if test="params.companyId != null and params.companyId != ''">
+            AND COMPANY_ID = #{params.companyId}
+        </if>
+        <if test="params.modelName != null and params.modelName != ''">
+            AND MODEL_NAME LIKE CONCAT('%', #{params.modelName}, '%')
+        </if>
+        <if test="params.modelType != null and params.modelType != ''">
+            AND MODEL_TYPE = #{params.modelType}
+        </if>
+        <if test="params.modelStatus != null and params.modelStatus != ''">
+            AND MODEL_STATUS = #{params.modelStatus}
+        </if>
+        ORDER BY CREATE_TIME DESC
+        <if test="params.offset != null and params.limit != null">
+            LIMIT #{params.offset}, #{params.limit}
+        </if>
+    </select>
+
+    <!-- 统计模型数量 -->
+    <select id="countByParams" resultType="int">
+        SELECT COUNT(*) FROM TBL_BUDGET_MODEL
+        WHERE IS_DELETED = 0
+        <if test="params.companyId != null and params.companyId != ''">
+            AND COMPANY_ID = #{params.companyId}
+        </if>
+        <if test="params.modelName != null and params.modelName != ''">
+            AND MODEL_NAME LIKE CONCAT('%', #{params.modelName}, '%')
+        </if>
+        <if test="params.modelType != null and params.modelType != ''">
+            AND MODEL_TYPE = #{params.modelType}
+        </if>
+        <if test="params.modelStatus != null and params.modelStatus != ''">
+            AND MODEL_STATUS = #{params.modelStatus}
+        </if>
+    </select>
+
+    <!-- 查询模型统计数据 -->
+    <select id="selectModelStats" resultType="map">
+        SELECT 
+            COUNT(*) as totalCount,
+            SUM(CASE WHEN MODEL_STATUS = 'ACTIVE' THEN 1 ELSE 0 END) as activeCount,
+            SUM(CASE WHEN MODEL_STATUS = 'DRAFT' THEN 1 ELSE 0 END) as draftCount,
+            SUM(CASE WHEN MODEL_STATUS = 'INACTIVE' THEN 1 ELSE 0 END) as inactiveCount
+        FROM TBL_BUDGET_MODEL
+        WHERE COMPANY_ID = #{companyId}
+        AND IS_DELETED = 0
+    </select>
+
+    <!-- 查询模型版本列表 -->
+    <select id="selectModelVersions" resultType="map">
+        SELECT 
+            VERSION_ID as id,
+            VERSION as version,
+            CREATE_TIME as createTime,
+            CREATOR_NAME as creatorName
+        FROM TBL_BUDGET_MODEL_VERSION
+        WHERE MODEL_ID = #{modelId}
+        AND IS_DELETED = 0
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 复制模型 -->
+    <insert id="copyModel">
+        INSERT INTO TBL_BUDGET_MODEL (
+            MODEL_ID, MODEL_NAME, MODEL_CODE, MODEL_TYPE, MODEL_STATUS,
+            APPLICABLE_SCOPE, BUDGET_CYCLE, MODEL_DESCRIPTION,
+            CONFIG_PARAMETERS, CALCULATION_RULES, VERSION,
+            COMPANY_ID, COMPANY_NAME, CREATOR_ID, CREATOR_NAME,
+            CREATE_TIME, IS_DELETED
+        )
+        SELECT 
+            #{targetModel.modelId}, #{targetModel.modelName}, #{targetModel.modelCode},
+            MODEL_TYPE, 'DRAFT', APPLICABLE_SCOPE, BUDGET_CYCLE, MODEL_DESCRIPTION,
+            CONFIG_PARAMETERS, CALCULATION_RULES, '1.0',
+            COMPANY_ID, COMPANY_NAME, #{targetModel.creatorId}, #{targetModel.creatorName},
+            NOW(), 0
+        FROM TBL_BUDGET_MODEL
+        WHERE MODEL_ID = #{sourceModelId}
+        AND IS_DELETED = 0
+    </insert>
+
+    <!-- 批量删除模型 -->
+    <update id="batchDelete">
+        UPDATE TBL_BUDGET_MODEL
+        SET IS_DELETED = 1, UPDATE_TIME = NOW()
+        WHERE MODEL_ID IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND COMPANY_ID = #{companyId}
+    </update>
+
+</mapper>
+

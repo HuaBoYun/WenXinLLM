@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.system.oracle.mapper.TblOrganizationMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.huabo.system.oracle.entity.TblOrganization">
+        <id column="ORGID" property="orgid" />
+        <result column="ORGNAME" property="orgname" />
+        <result column="FATHERORGID" property="fatherorgid" />
+        <result column="ORGNUMBER" property="orgnumber" />
+        <result column="ORGMENO" property="orgmeno" />
+        <result column="MEMO" property="memo" />
+        <result column="ICODE" property="icode" />
+        <result column="ORGTYPE" property="orgtype" />
+        <result column="AUDITTYPE" property="audittype" />
+        <result column="STATUS" property="status" />
+        <result column="ISZY" property="iszy" />
+        <result column="HYZSKTYPE" property="hyzsktype" />
+        <result column="ORDERID" property="orderid" />
+        <result column="OUTSIDEID" property="outsideid" />
+        <result column="OUTSIDEOPENDID" property="outsideopendid" />
+        <result column="ISAUTONUMBER" property="isautonumber" />
+        <result column="ORGCREATE" property="orgcreate" />
+        <result column="ISINITIALIZATION" property="isinitialization" />
+        <result column="DUTIES" property="duties" />
+        <result column="INDUSTRYID" property="industryid" />
+        <result column="BYWX" property="bywx" />
+        <result column="DATASOURCE" property="datasource" />
+        <result column="HISTORYCODE" property="historycode" />
+        <result column="HISTORYDEPARTMENTID" property="historydepartmentid" />
+    </resultMap>
+
+
+
+</mapper>

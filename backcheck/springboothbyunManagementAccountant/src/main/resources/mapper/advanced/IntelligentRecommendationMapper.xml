@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.management.accountant.oracle.mapper.advanced.IntelligentRecommendationMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.management.accountant.oracle.entity.advanced.IntelligentRecommendation">
+        <id column="RECOMMENDATION_ID" property="recommendationId" />
+        <result column="RECOMMENDATION_NAME" property="recommendationName" />
+        <result column="RECOMMENDATION_TYPE" property="recommendationType" />
+        <result column="BUDGET_ID" property="budgetId" />
+        <result column="BUDGET_NAME" property="budgetName" />
+        <result column="STATUS" property="status" />
+        <result column="CONFIDENCE_SCORE" property="confidenceScore" />
+        <result column="RECOMMENDATION_CONTENT" property="recommendationContent" />
+        <result column="ANALYSIS_DATA" property="analysisData" />
+        <result column="EXPECTED_IMPACT" property="expectedImpact" />
+        <result column="COMPANY_ID" property="companyId" />
+        <result column="COMPANY_NAME" property="companyName" />
+        <result column="CREATED_BY" property="createdBy" />
+        <result column="CREATOR_NAME" property="creatorName" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="ACCEPTED_BY" property="acceptedBy" />
+        <result column="ACCEPTOR_NAME" property="acceptorName" />
+        <result column="ACCEPT_TIME" property="acceptTime" />
+        <result column="REJECTED_BY" property="rejectedBy" />
+        <result column="REJECTOR_NAME" property="rejectorName" />
+        <result column="REJECT_TIME" property="rejectTime" />
+        <result column="REJECT_REASON" property="rejectReason" />
+        <result column="REMARK" property="remark" />
+    </resultMap>
+
+    <!-- 根据状态查询 -->
+    <select id="selectByStatus" resultMap="BaseResultMap">
+        SELECT * FROM TBL_INTELLIGENT_RECOMMENDATION
+        WHERE COMPANY_ID = #{companyId}
+        <if test="status != null and status != ''">
+            AND STATUS = #{status}
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据公司ID查询 -->
+    <select id="selectByCompanyId" resultMap="BaseResultMap">
+        SELECT * FROM TBL_INTELLIGENT_RECOMMENDATION
+        WHERE COMPANY_ID = #{companyId}
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 更新状态 -->
+    <update id="updateStatus">
+        UPDATE TBL_INTELLIGENT_RECOMMENDATION
+        SET STATUS = #{status},
+        <if test="status == 'accepted'">
+            ACCEPTED_BY = #{userId},
+            ACCEPTOR_NAME = #{userName},
+            ACCEPT_TIME = SYSDATE
+        </if>
+        <if test="status == 'rejected'">
+            REJECTED_BY = #{userId},
+            REJECTOR_NAME = #{userName},
+            REJECT_TIME = SYSDATE
+        </if>
+        WHERE RECOMMENDATION_ID = #{recommendationId}
+    </update>
+
+    <!-- 获取统计数据 -->
+    <select id="getStatistics" resultType="map">
+        SELECT
+            COUNT(*) as totalRecommendations,
+            SUM(CASE WHEN STATUS = 'accepted' THEN 1 ELSE 0 END) as acceptedCount,
+            SUM(CASE WHEN STATUS = 'pending' THEN 1 ELSE 0 END) as pendingCount,
+            SUM(CASE WHEN STATUS = 'rejected' THEN 1 ELSE 0 END) as rejectedCount,
+            AVG(CONFIDENCE_SCORE) as avgConfidenceScore
+        FROM TBL_INTELLIGENT_RECOMMENDATION
+        WHERE COMPANY_ID = #{companyId}
+    </select>
+
+    <!-- 分页查询 -->
+    <select id="selectPageList" resultMap="BaseResultMap">
+        SELECT * FROM TBL_INTELLIGENT_RECOMMENDATION
+        WHERE COMPANY_ID = #{companyId}
+        <if test="keyword != null and keyword != ''">
+            AND (
+                RECOMMENDATION_NAME LIKE '%' || #{keyword} || '%'
+                OR BUDGET_NAME LIKE '%' || #{keyword} || '%'
+                OR EXPECTED_IMPACT LIKE '%' || #{keyword} || '%'
+            )
+        </if>
+        <if test="status != null and status != ''">
+            AND STATUS = #{status}
+        </if>
+        ORDER BY CREATE_TIME DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
+    </select>
+
+    <!-- 查询总记录数 -->
+    <select id="selectCount" resultType="integer">
+        SELECT COUNT(*) FROM TBL_INTELLIGENT_RECOMMENDATION
+        WHERE COMPANY_ID = #{companyId}
+        <if test="keyword != null and keyword != ''">
+            AND (
+                RECOMMENDATION_NAME LIKE '%' || #{keyword} || '%'
+                OR BUDGET_NAME LIKE '%' || #{keyword} || '%'
+                OR EXPECTED_IMPACT LIKE '%' || #{keyword} || '%'
+            )
+        </if>
+        <if test="status != null and status != ''">
+            AND STATUS = #{status}
+        </if>
+    </select>
+
+    <!-- 批量删除 -->
+    <delete id="batchDeleteByIds">
+        DELETE FROM TBL_INTELLIGENT_RECOMMENDATION
+        WHERE RECOMMENDATION_ID IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>
+

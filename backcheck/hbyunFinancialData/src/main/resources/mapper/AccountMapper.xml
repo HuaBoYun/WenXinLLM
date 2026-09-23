@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.financialdata.mapper.AccountMapper">
+
+    <!--对象映射-->
+    <resultMap id="BaseResultMap" type="com.huabo.financialdata.entity.entity.Account">
+        <id column="ACCID" jdbcType="VARCHAR" property="ACCID"/>
+        <result column="ACCNAME1" jdbcType="VARCHAR" property="ACCNAME1"/>
+        <result column="DC" jdbcType="VARCHAR" property="DC"/>
+        <result column="TYPENAME" jdbcType="VARCHAR" property="TYPENAME"/>
+        <result column="HIGHACCID" jdbcType="VARCHAR" property="HIGHACCID"/>
+        <result column="TYPEID" jdbcType="VARCHAR" property="TYPEID"/>
+        <result column="ACCNAME2" jdbcType="VARCHAR" property="ACCNAME2"/>
+        <result column="IGRADE" jdbcType="INTEGER" property="IGRADE"/>
+        <result column="SICASH" jdbcType="INTEGER" property="SICASH"/>
+        <result column="ISBZKM" jdbcType="INTEGER" property="ISBZKM"/>
+        <result column="ISDCACC" jdbcType="INTEGER" property="ISDCACC"/>
+        <result column="DES" jdbcType="VARCHAR" property="DES"/>
+        <result column="AYEAR" jdbcType="TIMESTAMP" property="AYEAR"/>
+    </resultMap>
+
+    <!-- 公共：基础字段 -->
+    <sql id="Base_Column_List">
+        ACCID
+        ,ACCNAME1,DC,TYPENAME,HIGHACCID,TYPEID,ACCNAME2,IGRADE,SICASH,ISBZKM,ISDCACC,DES,AYEAR
+    </sql>
+
+    <sql id="statusList">
+        <if test="status == '等于'">=</if>
+        <if test="status == '不等于'">!=</if>
+        <if test="status == '小于'">  <![CDATA[ < ]]> </if>
+        <if test="status == '小于等于'"> <![CDATA[ <= ]]> </if>
+        <if test="status == '大于'">></if>
+        <if test="status == '大于等于'">>=</if>
+    </sql>
+    <!-- 公共：通用查询条件 -->
+    <sql id="conditions">
+        <if test="ACCID != null and ACCID != ''">
+        	<if test="status == '包含'">and ACCID like '%${ACCID}%'</if>
+            <if test="status == '不包含'">and ACCID not like '%${ACCID}%'</if>
+            <if test="status != '包含' and status != '不包含'">
+                and ACCID <include refid="statusList"/>  #{ACCID}
+            </if>
+        </if>
+        <if test="accIdList != null and accIdList.size() > 0 ">
+            and ACCID in
+            <foreach collection="accIdList" index="index" item="item" open="('" separator="','" close="')">
+                #{item}
+            </foreach>
+        </if>
+        <if test="accIdStrs != null and accIdStrs != ''">
+            and ACCID in ${accIdStrs}
+        </if>
+        <if test="ACCNAME1 != null and ACCNAME1 != ''">
+            <if test="status == '包含'">and ACCNAME1 like '%${ACCNAME1}%'</if>
+            <if test="status == '不包含'">and ACCNAME1 not like '%${ACCNAME1}%'</if>
+            <if test="status != '包含' and status != '不包含'">and ACCNAME1 <include refid="statusList"/> #{ACCNAME1}</if>
+        </if>
+        <if test="DC != null and DC != ''">
+            and DC <include refid="statusList"/> #{DC}
+        </if>
+        <if test="TYPENAME != null and TYPENAME != ''">
+            and TYPENAME like '%${TYPENAME}%'
+        </if>
+        <if test="HIGHACCID != null and HIGHACCID != ''">
+        	<if test="status == '包含'">and HIGHACCID like '%${HIGHACCID}%'</if>
+            <if test="status == '不包含'">and HIGHACCID not like '%${HIGHACCID}%'</if>
+            <if test="status != '包含' and status != '不包含'">
+                and HIGHACCID <include refid="statusList"/>  #{HIGHACCID}
+            </if>
+        </if>
+        <if test="TYPEID != null and TYPEID != ''">
+            and TYPEID <include refid="statusList"/> #{TYPEID}
+        </if>
+        <if test="ACCNAME2 != null and ACCNAME2 != ''">
+            <if test="status == '包含'"> and ACCNAME2 like '%${ACCNAME2}%'</if>
+            <if test="status == '不包含'"> and ACCNAME2 not like '%${ACCNAME2}%'</if>
+            <if test="status != '包含' and status != '不包含'">
+                and ACCNAME2 <include refid="statusList"/>  #{ACCNAME2}
+            </if>
+        </if>
+        <if test="IGRADE != null and IGRADE != ''"> and IGRADE
+            <include refid="statusList"/>
+            ${IGRADE}
+        </if>
+        <if test="SICASH != null and SICASH != ''"> and SICASH
+            <include refid="statusList"/>
+            #{SICASH}
+        </if>
+        <if test="ISBZKM != null and ISBZKM != ''"> and ISBZKM
+            <include refid="statusList"/>
+            #{ISBZKM}
+        </if>
+        <if test="ISDCACC != null">
+        	<if test="ISDCACC == 1 and status == '等于' "> and ISDCACC = 1</if>
+        	<if test="ISDCACC == 1 and status == '不等于' "> and ISDCACC IS NULL</if>
+        	<if test="ISDCACC == 0 and status == '等于' "> and ISDCACC IS NULL</if>
+        	<if test="ISDCACC == 0 and status == '不等于' "> and ISDCACC IS NOT NULL</if>
+        </if>
+        <if test="SICASH != null and SICASH != ''"> and SICASH
+            <include refid="statusList"/>
+            #{SICASH}
+        </if>
+        <if test="DES != null and DES != ''"> and DES like '%${DES}%'
+        </if>
+        <if test="AYEAR != null"> and AYEAR = #{AYEAR}</if>
+    </sql>
+
+    <!--按条件查询-->
+    <select id="selectByCondition" parameterType="com.huabo.financialdata.entity.entity.AccountQuery"
+            resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from ${dbSource}.TBL_ACCOUNT
+        <where>
+            <include refid="conditions"/>
+        </where>
+        <if test="orderByClause != null and orderByClause != ''">ORDER BY ${orderByClause}</if>
+    </select>
+
+    <select id="selectAccName" parameterType="com.huabo.financialdata.entity.vo.diaryBook.DiaryBookRequestVo"
+            resultType="java.lang.String">
+        SELECT ACCNAME1
+        FROM ${dbSource}.TBL_ACCOUNT
+        WHERE ACCID = #{accid}
+          AND AYEAR = #{bookYear}
+    </select>
+    
+    
+    <select id="selectListByExport" parameterType="com.huabo.financialdata.entity.vo.export.ExportRequestVo"
+            resultMap="BaseResultMap">
+         SELECT ACCID,ACCNAME1,DC ,HIGHACCID,ACCNAME2,IGRADE,ISDCACC
+        FROM ${dbSource}.TBL_ACCOUNT WHERE AYEAR = ${year} AND ACCID IN (${accidStrs}) ORDER BY ACCID ASC
+    </select>
+    
+    <select id="selectNextPrimaryKey"
+            resultType="java.math.BigDecimal">
+         select HIBERNATE_SEQUENCE.nextval from dual
+    </select>
+    
+</mapper>

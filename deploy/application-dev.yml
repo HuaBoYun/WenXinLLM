@@ -1,0 +1,57 @@
+server:
+  port: 31000
+
+logging:
+  level:
+    root: info
+    org.flowable.engine.impl.persistence.entity.*: debug
+    org.flowable.task.service.impl.persistence.entity.*: debug
+#flowable:
+#  database-schema: JNPF_FLOW
+spring:
+  datasource:
+    # MySQL
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.mysql.cj.jdbc.MysqlDataSource
+    url: jdbc:mysql://127.0.0.1:3306/jnpf_flow?zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&autoReconnect=true&nullCatalogMeansCurrent=true
+    username: root
+    password: 48b6d42175daeb80
+
+    # PostgreSQL
+#    driver-class-name: org.postgresql.Driver
+#    type: org.postgresql.ds.PGSimpleDataSource
+#    url: jdbc:postgresql://192.168.2.20:5432/jnpf_test_500_flow
+#    username: dbuser
+#    password: t0ZZJz3VKzfWk1QF
+
+    # Oracle
+#    driver-class-name: oracle.jdbc.OracleDriver
+#    type: oracle.jdbc.datasource.impl.OracleDataSource
+#    url: jdbc:oracle:thin:@192.168.0.219:1521:ORCL
+#    username: JNPF_TEST_500_FLOW
+#    password: JNPF_TEST_500_FLOW
+
+
+#    # DM
+#    driver-class-name: dm.jdbc.driver.DmDriver
+#    type: dm.jdbc.driver.DmdbDataSource
+#    # 连接后面需要添加参数 ?compatibleMode=oracle
+#    url: jdbc:dm://192.168.10.8:5236/JNPF_FLOW?compatibleMode=oracle
+#    username: JNPF_FLOW
+#    password: JNPF_FLOW
+
+
+    # SqlServer
+#    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+#    type: com.microsoft.sqlserver.jdbc.SQLServerDataSource
+#    url: jdbc:sqlserver://192.168.0.217:1433;databaseName=jnpf_test_500_flow;trustServerCertificate=true
+#    username: sa
+#    password: JEV8gxX1uw%jumJw
+
+
+    # KingbaseES
+#    driver-class-name: org.postgresql.Driver
+#    type: org.postgresql.ds.PGSimpleDataSource
+#    url: jdbc:postgresql://192.168.10.10:54321/jnpf_test_500_flow?currentSchema=public
+#    username: system
+#    password: Jnpf@2023

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.fxgl.mapper.YyCompanyMapper">
+    <resultMap id="RM_YY_COMPANY" type="YyCompany" autoMapping="true">
+        <id column="companyid" property="companyid"></id>
+        <association property="staff" javaType="Staff" column="staffid" select="com.huabo.fxgl.mapper.StaffMapper.selectById"></association>
+        <association property="organization" javaType="Organization" column="orgid" select="com.huabo.fxgl.mapper.OrganizationMapper.selectById"></association>
+        <association property="report" javaType="YyReportModel" column="reportid" select="com.huabo.fxgl.mapper.YyReportModelMapper.selectById"></association>
+        <!--<collection property="priceList" ofType="YyPrice" column="reportid" select="com.huabo.fxgl.mapper.YyPriceMapper.selectListByIds"></collection>-->
+    </resultMap>
+
+    <insert id="insertBiPageSet" >
+        BEGIN
+        <foreach collection="biPageSet"  item="biPage" >
+            insert into TBL_YY_COMPANY_PAGE(COMPANYID, PAGEID) VALUES(#{companyId}, #{biPage.pageid});
+        </foreach>
+        COMMIT;
+        END;
+    </insert>
+
+    <!-- 直接用 stepid 字符串列表插入，不依赖 TBL_BI_PAGE 查询 -->
+    <insert id="insertPageIdsByStrList" >
+        BEGIN
+        <foreach collection="pageIdList" item="pid" >
+            insert into TBL_YY_COMPANY_PAGE(COMPANYID, PAGEID) VALUES(#{companyId}, #{pid});
+        </foreach>
+        COMMIT;
+        END;
+    </insert>
+    
+    
+     <select id="findCompanyList" resultMap="RM_YY_COMPANY">
+       SELECT  *  FROM TBL_YY_COMPANY
+        <where>
+            ${ew.sqlSegment}
+        </where>
+    </select>
+    <delete id="deleteComPageByCompanyId" >
+        BEGIN
+            delete from TBL_YY_COMPANY_PAGE where COMPANYID=#{companyId};
+        COMMIT;
+        END;
+    </delete>
+    
+    <delete id="deleteComPageByTeamId" >
+        BEGIN
+            delete from TBL_YY_COMPANY_PAGE where COMPANYID in (select COMPANYID from TBL_YY_COMPANY where TEAMID=#{teamid});
+        COMMIT;
+        END;
+    </delete>
+
+   <!-- <select id="queryNormalNumber" >
+        BEGIN
+            SELECT COUNT(1) FROM TBL_YY_COMPANY WHERE FXTYPE='正常' AND ORGID=#{orgid}
+        COMMIT;
+        END;
+    </select>-->
+
+    <!--<select id="queryAbnormalNumber" >
+        BEGIN
+           SELECT COUNT(1) FROM TBL_YY_COMPANY WHERE FXTYPE NOT IN '正常' AND ORGID=#{orgid}
+        COMMIT;
+        END;
+    </select>-->
+
+    
+</mapper>

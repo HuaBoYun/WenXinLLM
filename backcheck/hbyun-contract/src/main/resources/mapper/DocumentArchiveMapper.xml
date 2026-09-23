@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.contract.mapper.DocumentArchiveMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.huabo.contract.entity.DocumentArchive">
+        <id column="id" property="id" />
+        <result column="project_id" property="projectId" />
+        <result column="document_no" property="documentNo" />
+        <result column="document_name" property="documentName" />
+        <result column="document_type" property="documentType" />
+        <result column="document_category" property="documentCategory" />
+        <result column="file_path" property="filePath" />
+        <result column="file_size" property="fileSize" />
+        <result column="file_format" property="fileFormat" />
+        <result column="version_no" property="versionNo" />
+        <result column="archive_date" property="archiveDate" />
+        <result column="archiver_id" property="archiverId" />
+        <result column="storage_location" property="storageLocation" />
+        <result column="retention_period" property="retentionPeriod" />
+        <result column="access_level" property="accessLevel" />
+        <result column="document_status" property="documentStatus" />
+        <result column="keywords" property="keywords" />
+        <result column="document_summary" property="documentSummary" />
+        <result column="related_documents" property="relatedDocuments" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+        <result column="create_by" property="createBy" />
+        <result column="update_by" property="updateBy" />
+        <result column="deleted" property="deleted" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, project_id, document_no, document_name, document_type, document_category,
+        file_path, file_size, file_format, version_no, archive_date, archiver_id,
+        storage_location, retention_period, access_level, document_status, keywords,
+        document_summary, related_documents, create_time, update_time, create_by, update_by, deleted
+    </sql>
+
+    <!-- 分页查询文档归档列表 -->
+    <select id="selectDocumentArchiveList" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM document_archive
+        <where>
+            deleted = 0
+            <if test="param.projectId != null">
+                AND project_id = #{param.projectId}
+            </if>
+            <if test="param.documentNo != null and param.documentNo != ''">
+                AND document_no LIKE CONCAT('%', #{param.documentNo}, '%')
+            </if>
+            <if test="param.documentName != null and param.documentName != ''">
+                AND document_name LIKE CONCAT('%', #{param.documentName}, '%')
+            </if>
+            <if test="param.documentType != null">
+                AND document_type = #{param.documentType}
+            </if>
+            <if test="param.documentCategory != null and param.documentCategory != ''">
+                AND document_category LIKE CONCAT('%', #{param.documentCategory}, '%')
+            </if>
+            <if test="param.fileFormat != null and param.fileFormat != ''">
+                AND file_format = #{param.fileFormat}
+            </if>
+            <if test="param.archiverId != null">
+                AND archiver_id = #{param.archiverId}
+            </if>
+            <if test="param.accessLevel != null">
+                AND access_level = #{param.accessLevel}
+            </if>
+            <if test="param.documentStatus != null">
+                AND document_status = #{param.documentStatus}
+            </if>
+            <if test="param.keywords != null and param.keywords != ''">
+                AND (keywords LIKE CONCAT('%', #{param.keywords}, '%')
+                OR document_name LIKE CONCAT('%', #{param.keywords}, '%')
+                OR document_summary LIKE CONCAT('%', #{param.keywords}, '%'))
+            </if>
+            <if test="param.archiveDateStart != null">
+                AND archive_date &gt;= #{param.archiveDateStart}
+            </if>
+            <if test="param.archiveDateEnd != null">
+                AND archive_date &lt;= #{param.archiveDateEnd}
+            </if>
+            <if test="param.createTimeStart != null">
+                AND create_time &gt;= #{param.createTimeStart}
+            </if>
+            <if test="param.createTimeEnd != null">
+                AND create_time &lt;= #{param.createTimeEnd}
+            </if>
+        </where>
+        ORDER BY ${param.orderBySql}
+    </select>
+
+    <!-- 根据项目ID查询文档归档列表 -->
+    <select id="selectByProjectId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM document_archive
+        WHERE project_id = #{projectId}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据文档类型查询文档归档列表 -->
+    <select id="selectByDocumentType" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM document_archive
+        WHERE document_type = #{documentType}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据归档人ID查询文档归档列表 -->
+    <select id="selectByArchiverId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM document_archive
+        WHERE archiver_id = #{archiverId}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据文档状态查询文档归档列表 -->
+    <select id="selectByDocumentStatus" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM document_archive
+        WHERE document_status = #{documentStatus}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据关键词搜索文档归档 -->
+    <select id="searchByKeywords" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM document_archive
+        WHERE keywords LIKE CONCAT('%', #{keywords}, '%')
+        OR document_name LIKE CONCAT('%', #{keywords}, '%')
+        OR document_summary LIKE CONCAT('%', #{keywords}, '%')
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据文档编号查询文档归档 -->
+    <select id="selectByDocumentNo" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM document_archive
+        WHERE document_no = #{documentNo}
+        LIMIT 1
+    </select>
+
+    <!-- 统计文档归档数量 -->
+    <select id="countDocumentArchive" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM document_archive
+        <where>
+            <if test="param.projectId != null">
+                AND project_id = #{param.projectId}
+            </if>
+            <if test="param.documentType != null">
+                AND document_type = #{param.documentType}
+            </if>
+            <if test="param.documentStatus != null">
+                AND document_status = #{param.documentStatus}
+            </if>
+        </where>
+    </select>
+
+    <!-- 批量删除文档归档 -->
+    <delete id="deleteBatchByIds">
+        DELETE FROM document_archive
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 更新文档状态 -->
+    <update id="updateDocumentStatus">
+        UPDATE document_archive
+        SET document_status = #{status}, update_time = SYSDATE
+        WHERE id = #{id}
+    </update>
+
+    <!-- 获取文档归档统计信息 -->
+    <select id="getDocumentArchiveStatistics" resultMap="BaseResultMap">
+        SELECT
+        document_type,
+        COUNT(*) as total_count,
+        SUM(CASE WHEN document_status = 1 THEN 1 ELSE 0 END) as active_count,
+        SUM(CASE WHEN document_status = 2 THEN 1 ELSE 0 END) as inactive_count,
+        SUM(CASE WHEN document_status = 3 THEN 1 ELSE 0 END) as archived_count
+        FROM document_archive
+        GROUP BY document_type
+        ORDER BY document_type
+    </select>
+
+</mapper>

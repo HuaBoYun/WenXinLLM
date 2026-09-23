@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.CreditApplicationMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.CreditApplication">
+        <id column="APPLICATION_ID" property="applicationId" />
+        <result column="APPLICATION_NO" property="applicationNo" />
+        <result column="APPLICATION_ORG" property="applicationOrg" />
+        <result column="CREDIT_TYPE" property="creditType" />
+        <result column="APPLICATION_AMOUNT" property="applicationAmount" />
+        <result column="CURRENCY" property="currency" />
+        <result column="APPLICATION_PERIOD" property="applicationPeriod" />
+        <result column="PURPOSE_DESC" property="purposeDesc" />
+        <result column="APPLICATION_STATUS" property="applicationStatus" />
+        <result column="GUARANTEE_TYPE" property="guaranteeType" />
+        <result column="GUARANTEE_AMOUNT" property="guaranteeAmount" />
+        <result column="APPLICANT_ID" property="applicantId" />
+        <result column="APPLICANT_NAME" property="applicantName" />
+        <result column="CONTACT_PHONE" property="contactPhone" />
+        <result column="EMAIL" property="email" />
+        <result column="APPROVER_ID" property="approverId" />
+        <result column="APPROVER_NAME" property="approverName" />
+        <result column="APPROVAL_OPINION" property="approvalOpinion" />
+        <result column="APPROVAL_TIME" property="approvalTime" />
+        <result column="REJECT_REASON" property="rejectReason" />
+        <result column="EFFECTIVE_DATE" property="effectiveDate" />
+        <result column="EXPIRY_DATE" property="expiryDate" />
+        <result column="ATTACHMENT_PATH" property="attachmentPath" />
+        <result column="RISK_LEVEL" property="riskLevel" />
+        <result column="CREDIT_SCORE" property="creditScore" />
+        <result column="REMARK" property="remark" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="CREATE_USER" property="createUser" />
+        <result column="UPDATE_USER" property="updateUser" />
+        <result column="ORG_ID" property="orgId" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        APPLICATION_ID, APPLICATION_NO, APPLICATION_ORG, CREDIT_TYPE, APPLICATION_AMOUNT, CURRENCY,
+        APPLICATION_PERIOD, PURPOSE_DESC, APPLICATION_STATUS, GUARANTEE_TYPE, GUARANTEE_AMOUNT,
+        APPLICANT_ID, APPLICANT_NAME, CONTACT_PHONE, EMAIL, APPROVER_ID, APPROVER_NAME,
+        APPROVAL_OPINION, APPROVAL_TIME, REJECT_REASON, EFFECTIVE_DATE, EXPIRY_DATE,
+        ATTACHMENT_PATH, RISK_LEVEL, CREDIT_SCORE, REMARK, CREATE_TIME, UPDATE_TIME,
+        CREATE_USER, UPDATE_USER, ORG_ID
+    </sql>
+
+    <!-- 分页查询授信申请 -->
+    <select id="selectApplicationPage" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_CREDIT_APPLICATION
+        <where>
+            ORG_ID = #{orgId}
+            <if test="applicationNo != null and applicationNo != ''">
+                AND APPLICATION_NO LIKE CONCAT('%', #{applicationNo}, '%')
+            </if>
+            <if test="applicationOrg != null and applicationOrg != ''">
+                AND APPLICATION_ORG LIKE CONCAT('%', #{applicationOrg}, '%')
+            </if>
+            <if test="creditType != null and creditType != ''">
+                AND CREDIT_TYPE = #{creditType}
+            </if>
+            <if test="applicationStatus != null and applicationStatus != ''">
+                AND APPLICATION_STATUS = #{applicationStatus}
+            </if>
+            <if test="applicantId != null">
+                AND APPLICANT_ID = #{applicantId}
+            </if>
+        </where>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据申请编号查询 -->
+    <select id="selectByApplicationNo" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_CREDIT_APPLICATION
+        WHERE APPLICATION_NO = #{applicationNo}
+        AND ORG_ID = #{orgId}
+        <if test="excludeId != null">
+            AND APPLICATION_ID != #{excludeId}
+        </if>
+    </select>
+
+    <!-- 批量更新申请状态 -->
+    <update id="updateStatusBatch">
+        UPDATE TBL_CREDIT_APPLICATION
+        SET APPLICATION_STATUS = #{applicationStatus},
+            APPROVER_ID = #{approverId},
+            APPROVAL_OPINION = #{approvalOpinion},
+            APPROVAL_TIME = CURRENT_TIMESTAMP,
+            UPDATE_TIME = CURRENT_TIMESTAMP
+        WHERE APPLICATION_ID IN
+        <foreach collection="applicationIds" item="applicationId" open="(" separator="," close=")">
+            #{applicationId}
+        </foreach>
+    </update>
+
+    <!-- 获取申请状态统计 -->
+    <select id="selectStatusStatistics" resultType="java.util.Map">
+        SELECT
+            APPLICATION_STATUS as applicationStatus,
+            COUNT(*) as count,
+            SUM(APPLICATION_AMOUNT) as totalAmount
+        FROM TBL_CREDIT_APPLICATION
+        WHERE ORG_ID = #{orgId}
+        GROUP BY APPLICATION_STATUS
+        ORDER BY count DESC
+    </select>
+
+    <!-- 获取授信类型统计 -->
+    <select id="selectTypeStatistics" resultType="java.util.Map">
+        SELECT
+            CREDIT_TYPE as creditType,
+            COUNT(*) as count,
+            SUM(APPLICATION_AMOUNT) as totalAmount
+        FROM TBL_CREDIT_APPLICATION
+        WHERE ORG_ID = #{orgId}
+        GROUP BY CREDIT_TYPE
+        ORDER BY totalAmount DESC
+    </select>
+
+    <!-- 获取申请金额统计 -->
+    <select id="selectAmountStatistics" resultType="java.util.Map">
+        SELECT
+            COUNT(*) as totalCount,
+            SUM(APPLICATION_AMOUNT) as totalAmount,
+            AVG(APPLICATION_AMOUNT) as avgAmount,
+            MAX(APPLICATION_AMOUNT) as maxAmount,
+            MIN(APPLICATION_AMOUNT) as minAmount
+        FROM TBL_CREDIT_APPLICATION
+        WHERE ORG_ID = #{orgId}
+        <if test="status != null and status != ''">
+            AND APPLICATION_STATUS = #{status}
+        </if>
+    </select>
+
+    <!-- 获取即将到期的申请 -->
+    <select id="selectExpiringApplications" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_CREDIT_APPLICATION
+        WHERE ORG_ID = #{orgId}
+        AND APPLICATION_STATUS = 'APPROVED'
+        AND EXPIRY_DATE BETWEEN CURRENT_TIMESTAMP AND (CURRENT_TIMESTAMP + INTERVAL '#{days}' DAY)
+        ORDER BY EXPIRY_DATE ASC
+    </select>
+
+    <!-- 获取待审批的申请 -->
+    <select id="selectPendingApplications" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_CREDIT_APPLICATION
+        WHERE ORG_ID = #{orgId}
+        AND APPLICATION_STATUS = 'PENDING'
+        ORDER BY CREATE_TIME ASC
+    </select>
+
+</mapper>

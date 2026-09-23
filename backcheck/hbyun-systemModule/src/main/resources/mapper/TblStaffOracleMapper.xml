@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.system.mapper.TblStaffOracleMapper">
+
+    <select id="findBelongGroupIdUserInfo" resultType="com.huabo.system.vo.result.StaffResult">
+        select ORGNAME as belongGroupName from TBL_ORGANIZATION where ORGID=#{orgid}
+    </select>
+
+    <select id="findWorkUnitIdUserInfo" resultType="com.huabo.system.vo.result.StaffResult">
+        select ORGNAME as workUnitName from TBL_ORGANIZATION where ORGID=#{orgid}
+    </select>
+
+    <select id="findUserInfo" resultType="com.huabo.system.vo.result.StaffResult">
+        select REALNAME as realName from TBL_STAFF where STAFFID=#{staffId}
+    </select>
+
+    <select id="findCreatorUserInfo" resultType="com.huabo.system.vo.result.StaffResult">
+        select REALNAME as realName from TBL_STAFF where STAFFID=#{staffId}
+    </select>
+
+    <select id="findCreatorUserInfos" resultType="com.huabo.system.vo.result.UserInfo">
+        select STAFFID as staffId,REALNAME as realName from TBL_STAFF where STAFFID in (${staffId})
+    </select>
+
+    <select id="findWorkUnitIdUserInfos" resultType="com.huabo.system.vo.result.UserInfo">
+        select ORGID as workUnitId,ORGNAME as workUnitName from TBL_ORGANIZATION where ORGID in (${orgid})
+    </select>
+
+    <select id="findBelongGroupIdUserInfos" resultType="com.huabo.system.vo.result.UserInfo">
+        select ORGID as belongGroupId,ORGNAME as belongGroupName from TBL_ORGANIZATION where ORGID in (${orgid})
+    </select>
+
+    <select id="findBelongGroupIdUserInfoOrgmeno" resultType="com.huabo.system.vo.result.UserInfo">
+        select ORGID as belongGroupId,orgmeno as belongGroupName from TBL_ORGANIZATION where ORGID in (${orgid})
+    </select>
+
+    <select id="findUserInfoExam" resultType="com.huabo.system.vo.result.StaffResult">
+        select * from TBL_STAFF where ROLEIDSTRS like '%${rid}%' and STAFFID=#{staffId}
+    </select>
+
+    <select id="findLikeUser" resultType="java.lang.Long">
+        SELECT RID from TBL_ROLE where rname = #{type} and COMPANYID =#{orgid}
+    </select>
+    
+    <select id="getUserInfoForId" resultType="com.huabo.system.entity.TblStaffOracle">
+        SELECT t1.*,t2.ORGNAME as workUnitName
+        from TBL_STAFF t1
+        left join TBL_ORGANIZATION t2 on t2.orgId=t1.ORGID
+        where t1.STAFFID=#{staffId}
+    </select>
+
+    <select id="getUserInfoForIdMap" resultType="com.huabo.system.entity.TblStaffOracle">
+        SELECT t1.*,t2.ORGNAME as workUnitName
+        from TBL_STAFF t1
+        left join TBL_ORGANIZATION t2 on t2.orgId=t1.ORGID
+        where  t1.STAFFID in
+        <foreach collection="staffIds" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </select>
+
+    <select id="findUserInfoForName" resultType="com.huabo.system.entity.TblStaffOracle">
+        select * from TBL_STAFF where REALNAME = #{staffName} and ORGID in (SELECT ORGID from TBL_ORGANIZATION where FATHERORGID=#{orgid} OR ORGID=#{orgid}) and ROWNUM=1
+    </select>
+
+    <select id="findUserInfoForWorkUnitName" resultType="com.huabo.system.vo.result.StaffResult">
+        select ORGID as workUnitId,ORGNAME as workUnitName from TBL_ORGANIZATION where ORGNAME = #{workUnitName} and ORGTYPE = 0 and ROWNUM=1
+    </select>
+
+
+</mapper>

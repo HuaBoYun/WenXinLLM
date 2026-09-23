@@ -1,0 +1,2365 @@
+package com.huabo.system.mapper;
+
+import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.SelectProvider;
+
+import com.huabo.system.mappersql.YMFormDataMapperSqlConfig;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * <p>
+ * Mapper 接口
+ * </p>
+ *
+ * @author huabo
+ * @since 2022-04-27
+ */
+public interface YMFormDataMapper {
+
+    @Select("SELECT CONTRACTID AS CONTRACTID,MATTERORG AS MATTERORG,ISBIGMATTER AS ISBIGMATTER,	CONTRACTNAME AS CONTRACTNAME,TCU.CONTRACTBD AS CONTRACTBD, CONTRACTNO AS CONTRACTNO,	CONTRACTMONEY AS CONTRACTMONEY,	DEPT.PKYMORGID AS CONTRACTDEPT,	TCU.STARTDATE AS STARTDATE,	TCU.ENDDATE AS ENDDATE,	TCU.CONTRACTITEM AS CONTRACTITEM,	TCU.CONTRACTTYPE AS CONTRACTTYPE,	TCU.CONTRACTDATETYPE AS CONTRACTDATETYPE,	BUDGET.BUDGETNAME AS CONTRACTXDFXINFO,	TCU.DCTYPE AS DCTYPE,	TCU.CONTRACTCHILDREN AS CONTRACTCHILDREN,	STAFF.PKYMSTAFFID AS CONTRACTSTAFF,	UNIT.PKYMORGID AS CONTRACTORG,	TCB.BANKACCOUNT AS BANKACCOUNT,	TCB.BANKKHYH AS BANKKHYH,	TCU.CONTRACTXZ AS CONTRACTXZ,	TCU.CONTRACTDATETYPE AS CONTRACTDATETYPE,	TCU.MONEYTYPE AS MONEYTYPE,	ENTRU.REALNAME AS REALNAME FROM TBL_CYHW_UNIT TCU	LEFT JOIN TBL_ORGANIZATION DEPT ON TCU.CONTRACTDEPT = DEPT.ORGID LEFT JOIN TBL_CYHW_PROJECTBUDGET BUDGET ON TCU.CONTRACTXDFXINFO = BUDGET.BUDGETID LEFT JOIN TBL_ORGANIZATION UNIT ON TCU.ZXUNIT = UNIT.ORGID LEFT JOIN TBL_STAFF STAFF ON TCU.CONTRACTSTAFF = STAFF.STAFFID LEFT JOIN TBL_COUNTERPART_BANKINFO TCB ON TCU.COUNTERPARTBANK = TCB.BANKID LEFT JOIN TBL_STAFF ENTRU ON TCU.ENTRUSTSTAFFID = ENTRU.STAFFID WHERE CONTRACTID = #{fromId} ")
+    Map<String, Object> selectCyhwUnitMapById(BigDecimal fromId) throws Exception;
+
+    @Select("SELECT UNIT.CONTRACTNAME AS CONTRACTNAME,UNIT.CONTRACTNO AS CONTRACTNO,UNIT.CONTRACTTYPE AS CONTRACTTYPE,UNIT.CONTRACTMONEY AS CONTRACTMONEY,TCPB.BUDGETID AS BUDGETID,TCPB.PROJECTGOAL AS PROJECTGOAL, TCPB.COUNTERPARTCODE AS COUNTERPARTCODE, TCPB.COUNTERPARTHANK AS COUNTERPARTHANK,TCPB.CREATETIME AS CREATETIME FROM TBL_CYHW_PROJECTBUDGET TCPB LEFT JOIN TBL_CYHW_UNIT UNIT ON TCPB.RECORDPARENT = UNIT.CONTRACTID WHERE BUDGETID = #{fromId}")
+    Map<String, Object> selectHTYYMapById(BigDecimal fromId);
+
+    @Select("SELECT CONTRACTID AS CONTRACTID , MATTERORG AS MATTERORG,ISBIGMATTER AS ISBIGMATTER  ,	CONTRACTNAME AS CONTRACTNAME,TCU.CONTRACTBD AS CONTRACTBD, CONTRACTNO AS CONTRACTNO,	CONTRACTMONEY AS CONTRACTMONEY,	DEPT.PKYMORGID AS CONTRACTDEPT,	TCU.STARTDATE AS STARTDATE,	TCU.ENDDATE AS ENDDATE,	TCU.CONTRACTITEM AS CONTRACTITEM,	TCU.CONTRACTTYPE AS CONTRACTTYPE,	TCU.CONTRACTDATETYPE AS CONTRACTDATETYPE,	BUDGET.BUDGETNAME AS CONTRACTXDFXINFO,	TCU.DCTYPE AS DCTYPE,	TCU.CONTRACTCHILDREN AS CONTRACTCHILDREN,	STAFF.PKYMSTAFFID AS CONTRACTSTAFF,	UNIT.PKYMORGID AS CONTRACTORG,	TCB.BANKACCOUNT AS BANKACCOUNT,	TCB.BANKKHYH AS BANKKHYH,	TCU.CONTRACTXZ AS CONTRACTXZ,	TCU.CONTRACTDATETYPE AS CONTRACTDATETYPE,	TCU.MONEYTYPE AS MONEYTYPE,	ENTRU.REALNAME AS REALNAME, TCU.CHANGETYPE AS CHANGETYPE,TCU.CHANGEDATE AS CHANGEDATE,TCU.CHANGEDESC AS CHANGEDESC FROM TBL_CYHW_UNIT TCU	LEFT JOIN TBL_ORGANIZATION DEPT ON TCU.CONTRACTDEPT = DEPT.ORGID LEFT JOIN TBL_CYHW_PROJECTBUDGET BUDGET ON TCU.CONTRACTXDFXINFO = BUDGET.BUDGETID LEFT JOIN TBL_ORGANIZATION UNIT ON TCU.ZXUNIT = UNIT.ORGID LEFT JOIN TBL_STAFF STAFF ON TCU.CONTRACTSTAFF = STAFF.STAFFID LEFT JOIN TBL_COUNTERPART_BANKINFO TCB ON TCU.COUNTERPARTBANK = TCB.BANKID LEFT JOIN TBL_STAFF ENTRU ON TCU.ENTRUSTSTAFFID = ENTRU.STAFFID WHERE CONTRACTID = #{fromId} ")
+    Map<String, Object> selectCyhwUnitBGMapById(BigDecimal fromId);
+
+    @Select("SELECT BLACKTYPE AS BLACKTYPE,EFFECTDATE AS EFFECTDATE,BUDGETNAME AS BUDGETNAME,COUNTERPARTNO AS COUNTERPARTNO,PROJECTRISK AS PROJECTRISK,CRETIFICATENO AS CRETIFICATENO,TOTALTMONEY AS TOTALMONEY,PSTARTDATE AS PSTARTDATE,PENDDATE AS PENDDATE,PROJECTSTAGEGOAL AS PROJECTSTAGEGOAL,RESULTDESCRIPTION AS RESULTDESCRIPTION,CONTACTS AS CONTACTS,COUNTERPARTDESC AS COUNTERPARTDESC,SERVICETYPE AS SERVICETYPE FROM TBL_CYHW_PROJECTBUDGET WHERE BUDGETID = (SELECT OPPOID FROM TBL_OPPBLACK_RECORD WHERE BRID = #{fromId}) ")
+    Map<String, Object> selectHMDGLMapById(BigDecimal fromId) throws Exception;
+
+    @Select("SELECT  "
+            + "	TNA.PLANID AS PLANID,  "
+            + "	TNA.PLANCODE AS PLANCODE,  "
+            + "	TNA.PLANNAME AS PLANNAME,  "
+            + "	TNA.PALNYEAR AS PALNYEAR,  "
+            + "	TNA.PLANTYPE AS PLANTYPE,  "
+            + "	TNA.STARTTIME AS STARTTIME,  "
+            + "	TNA.ENDTIME AS ENDTIME,  "
+            + "	TNA.CREATETIME AS CREATETIME,  "
+            + "	TS.PKYMSTAFFID AS REALNAME,  "
+            + "	ORG.PKYMORGID AS AUDITORG   "
+            + " FROM  TBL_NBSJ_AUDITPLAN TNA  "
+            + "	LEFT JOIN TBL_STAFF TS ON TNA.CREATESTAFFID = TS.STAFFID  "
+            + "	LEFT JOIN TBL_ORGANIZATION ORG ON TNA.AUDITORGID = ORG.ORGID "
+            + " WHERE TNA.PLANID = #{fromId}")
+    Map<String, Object> selectJHGLMapById(BigDecimal fromId) throws Exception;
+
+    @SelectProvider(method = "selectXMGLMapById", type = YMFormDataMapperSqlConfig.class)
+    Map<String, Object> selectXMGLMapById(BigDecimal fromId);
+
+    @Select("SELECT TFIA.INSTITUTIONAUDITID AS INSTITUTIONAUDITID,TFIA.MATTERSINFORMEDPERSONNEL AS MATTERSINFORMEDPERSONNEL,"
+            + "	TFIA.MATTERSINSTRUCTIONS AS MATTERSINSTRUCTIONS,TFIA.HOSTDEPARTMENTOPINION AS HOSTDEPARTMENTOPINION,"
+            + "	TFIA.RELATEDDEPARTMENTOPINION AS RELATEDDEPARTMENTOPINION,TFIA.TEAMLEADEROPINION AS TEAMLEADEROPINION,"
+            + "	TFIA.FIRMLEADEROPINION AS FIRMLEADEROPINION,TFIA.CREATOR AS CREATOR,TFIA.CREATEDTIME AS CREATEDTIME"
+            + "	FROM TBL_FWGL_INSTITUTION_AUDIT TFIA WHERE INSTITUTIONAUDITID = {fromId}")
+    Map<String, Object> selectHTDLMapById(BigDecimal fromId);
+
+    @SelectProvider(method = "selectZDSHMapById", type = YMFormDataMapperSqlConfig.class)
+    Map<String, Object> selectZDSHMapById(BigDecimal fromId, String roleIdStrs);
+    
+    @Select("SELECT RID FROM TBL_ROLE WHERE COMPANYID = #{orgid} AND RNAME = #{roleName}")
+    List<String> selectRidListByOrgIdRoleName(BigDecimal orgid, String roleName);
+
+    @SelectProvider(method = "selectJYSXSHMapById", type = YMFormDataMapperSqlConfig.class)
+    Map<String, Object> selectJYSXSHMapById(BigDecimal fromId, String roleIdStrs);
+
+    @Select("SELECT "
+            + "	tst.REALNAME AS DISPUTEUNDERTAKERNAME, "
+            + "	tld.DISPUTENO AS DISPUTENO, "
+            + "	tld.DISPUTEITEM AS DISPUTEITEM, "
+            + "	tld.DISPUTETYPE AS DISPUTETYPE, "
+            + "	tld.DISPUTEID AS DISPUTEID, "
+            + " CASE "
+            + "		WHEN tld.ISUEGENT = '1' THEN "
+            + "		'是' ELSE '否'  "
+            + "	END AS ISUEGENT, "
+            + "	tld.PLAINTIFF AS PLAINTIFF, "
+            + " CASE "
+            + "		WHEN tld.WHETHERSUED = '1' THEN "
+            + "		'原告'  "
+            + "		WHEN tld.WHETHERSUED = '2' THEN "
+            + "		'被告' ELSE '第三人'  "
+            + "	END AS LITIGATIONPOS, "
+            + "	tld.DEFENDANT AS DEFENDANT, "
+            + "	tld.ISUEGENT AS ISUEGENT, "
+            + "	tld.DISPUTESTATUS AS DISPUTESTATUS, "
+            + "	tld.DISPUTECOURS AS DISPUTECOURS, "
+            + "	tld.SOLUTIONSUGGESTIONS AS SOLUTIONSUGGESTIONS, "
+            + "	tld.URGENTMEMO AS URGENTMEMO, "
+            + "	tld.LEGALEXAM AS LEGALEXAM, "
+            + "	tld.COUNSELEXAM AS COUNSELEXAM, "
+            + "	tld.CHAIRMANEXAM AS CHAIRMANEXAM, "
+            + "	tld.GMANEXAM AS GMANEXAM, "
+            + "	tld.LEGALEXAM AS LEGALEXAM, "
+            + "	tcu.CONTRACTNAME AS CONTRACTNAME  "
+            + " FROM "
+            + "	TBL_LEGAL_DISPUTREGISTRATION tld "
+            + "	LEFT JOIN TBL_STAFF tst ON tld.DISPUTEUNDERTAKER = tst.STAFFID "
+            + "	LEFT JOIN TBL_CYHW_UNIT tcu ON tld.CONTRACTINFO = tcu.CONTRACTID"
+            + " WHERE "
+            + "	tld.DISPUTEID = #{fromId}")
+    Map<String, Object> selectJFDJMapById(BigDecimal fromId);
+
+    @Select("SELECT "
+            + "	TLN.COUNTERPART AS COUNTERPART, "
+            + "	TLN.COUNTERPARTPHONE AS COUNTERPARTPHONE, "
+            + "	TLN.NEGETIARESULT AS NEGETIARESULT, "
+            + "	TLN.MEDIATIONSCHEME AS MEDIATIONSCHEME, "
+            + "CASE "
+            + "		WHEN TLN.ISAGGREE = '1' THEN "
+            + "		'是' ELSE '否'  "
+            + "	END AS ISAGGREE, "
+            + "CASE "
+            + "		WHEN TLN.ISPRESETCASE = '1' THEN "
+            + "		'是' ELSE '否'  "
+            + "	END AS ISPRESETCASE, "
+            + "CASE "
+            + "		WHEN TLN.SOLUTIONMODE = '1' THEN "
+            + "		'私下调解' ELSE '司法调解'  "
+            + "	END AS SOLUTIONMODE, "
+            + "	TLD.DISPUTETYPE AS DISPUTETYPE, "
+            + "	TLD.DISPUTEID AS DISPUTEID, "
+            + "CASE "
+            + "		WHEN TLD.ISUEGENT = '1' THEN "
+            + "		'是' ELSE '否'  "
+            + "	END AS ISUEGENT, "
+            + "CASE "
+            + "		WHEN TLD.WHETHERSUED = '1' THEN "
+            + "		'原告'  "
+            + "		WHEN TLD.WHETHERSUED = '2' THEN "
+            + "		'被告' ELSE '第三人'  "
+            + "	END AS LITIGATIONPOS, "
+            + "	TLD.DISPUTEITEM AS DISPUTEITEM  "
+            + " FROM "
+            + "	TBL_LEGAL_NEGOTIATEDSETTLEMEN TLN "
+            + "	LEFT JOIN TBL_LEGAL_DISPUTREGISTRATION TLD ON TLN.DISPUINFO = tld.DISPUTEID WHERE NEGOTIAID =#{fromId}")
+    Map<String, Object> selectXSGCMapById(BigDecimal fromId);
+
+    @Select("SELECT  	TLAP.ANNUALPLANID AS ANNUALPLANID,TLAP.ANNUALPLANNAME AS ANNUALPLANNAME, "
+            + "	TLAP.ANNUALPLANCREATOR AS ANNUALPLANCREATOR,"
+            + "	TLAP.ANNUALPLANCREATEDTIME AS ANNUALPLANCREATEDTIME  FROM  TBL_FWGL_ANNUAL_PLAN TLAP "
+            + "WHERE  ANNUALPLANID = #{fronId}")
+    Map<String, Object> selectNDJHMapById(BigDecimal fromId);
+
+    @Select("SELECT  TC.PRACTICEAPPLYID AS PRACTICEAPPLYID,  TC.PRACTICEAPPLYNAME AS PRACTICEAPPLYNAME, "
+            + "TC.SEX AS SEX,  TC.AGE AS AGE,  TC.NATION AS NATION,  TC.IDENTITYCARD AS IDENTITYCARD, "
+            + "TC.POLITICSSTATUS AS POLITICSSTATUS,  TC.CERTIFICATIONNUMBER AS CERTIFICATIONNUMBER, "
+            + "TC.PHONE AS PHONE,  TC.TECHNICALPOSITION AS TECHNICALPOSITION,  TC.AWARD AS AWARD, "
+            + "TC.PUNISHMENT AS PUNISHMENT,  TS.REALNAME AS REALNAME FROM "
+            + "	TBL_FWGL_PRACTICE_APPLY  TC  	LEFT JOIN TBL_STAFF TS ON TC.STAFFID = TS.STAFFID WHERE "
+            + "	PRACTICEAPPLYID =#{ fromId }")
+    Map<String, Object> selectZYSQMapById(BigDecimal fromId);
+
+    @Select("SELECT  "
+            + "	ADVISERID AS ADVISERID,ADVISERNAME AS ADVISERNAME,BELONGGROUPID AS BELONGGROUPID, WORKUNITID AS WORKUNITID,"
+            + "	POSITION AS POSITION,EMAIL AS EMAIL,SEX AS SEX,ITEMRANK AS ITEMRANK,FILLINPERSON AS FILLINPERSON,FILLINTIME AS FILLINTIME,"
+            + "	AUDITPERSON AS AUDITPERSON,STATE AS STATE,ISHIRE AS ISHIRE,CERTIFICATENUMBER AS CERTIFICATENUMBER,"
+            + "	MOBILEPHONE AS MOBILEPHONE,CREATEDTIME AS CREATEDTIME FROM  TBL_FWGL_LEGAL_ADVISER  WHERE 	ADVISERID = #{fromId}")
+    Map<String, Object> selectZFLGWMapById(BigDecimal fromId);
+
+    @Select("SELECT  "
+            + "	ORGANIZATIONNAME AS ORGANIZATIONNAME,  "
+            + "	TOA.PKYMORGID AS BELONGGROUPID,  "
+            + "	TOB.PKYMORGID AS WORKUNITNAME,  "
+            + "	RESPONSIBLEPERSON AS RESPONSIBLEPERSON,  "
+            + "	RESPONSIBLEPERSONPHONE AS RESPONSIBLEPERSONPHONE,  "
+            + "	CONTACT AS CONTACT,  "
+            + "	CONTACTMOBILEPHONE AS CONTACTMOBILEPHONE,  "
+            + "	CONTACTEMAIL AS CONTACTEMAIL,  "
+            + "	MAKINGPEOPLE AS MAKINGPEOPLE,  "
+            + "	TS.PKYMSTAFFID AS AUDITPERSON,  "
+            + "	AUDITTIME AS AUDITTIME,  "
+            + "	STATE AS STATE "
+            + " FROM  "
+            + "	TBL_FWGL_LEGAL_ORGANIZATION TFL  "
+            + "	LEFT JOIN TBL_ORGANIZATION TOA ON TFL.BELONGGROUPID = TOA.ORGID  "
+            + "	LEFT JOIN TBL_ORGANIZATION TOB ON TFL.WORKUNITID = TOB.ORGID  "
+            + "	LEFT JOIN TBL_STAFF TS ON TFL.AUDITPERSON = TS.STAFFID  WHERE ORGANIZATIONID = #{fromId}")
+    Map<String, Object> selectFWJGJFZRMapById(BigDecimal fromId);
+
+    @Select("SELECT "
+            + "	TFLP.PERSONNELID AS PERSONNELID, "
+            + "	TFLP.PERSONNELNAME AS PERSONNELNAME, "
+            + "	TFLP.BELONGGROUPID AS BELONGGROUPID, "
+            + "	TFLP.PHONE AS PHONE, "
+            + " CASE "
+            + "		WHEN TFLP.SEX = '1' THEN "
+            + "		'男' ELSE '女' "
+            + "	END SEX, "
+            + "	TFLP.JOBNATURE AS JOBNATURE, "
+            + "	TFLP.POSITION AS POSITION, "
+            + "	TFLP.BIRTHDAY AS BIRTHDAY, "
+            + "	TFLP.JOBNATURE AS JOBNATURE, "
+            + "	TFLP.IDENTITYCARD AS IDENTITYCARD, "
+            + "	TFLP.STARTWORKTIME AS STARTWORKTIME, "
+            + "	TFLP.POLITICSSTATUS AS POLITICSSTATUS, "
+            + "	TFLP.DEGREE AS DEGREE, "
+            + "	TFLP.DUTY AS DUTY, "
+            + "	TFLP.DUTYTITLE AS DUTYTITLE, "
+            + "	TFLP.STARTWORKTIME AS STARTWORKTIME, "
+            + "	TFLP.STARTYEAR AS STARTYEAR, "
+            + " CASE "
+            + "		WHEN TFLP.EDUCATION = '1' THEN '博士研究生' "
+            + "		WHEN TFLP.EDUCATION = '2' THEN '硕士研究生' "
+            + "		WHEN TFLP.EDUCATION = '3' THEN '大学本科' "
+            + "		WHEN TFLP.EDUCATION = '4' THEN '大学专科' "
+            + "		WHEN TFLP.EDUCATION = '5' THEN '中专' "
+            + "		WHEN TFLP.EDUCATION = '6' THEN '大学及以下' "
+            + "	END EDUCATION, "
+            + " CASE "
+            + "		WHEN TFLP.ISLAWSPECIALTY = '1' THEN "
+            + "		'是' ELSE '否' "
+            + "	END ISLAWSPECIALTY, "
+            + " CASE "
+            + "	WHEN TFLP.ISLAWOCCUPATIONAL = '1' THEN "
+            + "	'是' ELSE '否' "
+            + "	END ISLAWOCCUPATIONAL, "
+            + "	TFLP.QUALIFICATIONS AS QUALIFICATIONS, "
+            + " CASE "
+            + "		WHEN TFLP.ISLAWADVISER = '1' THEN "
+            + "		'是' ELSE '否' "
+            + "	END ISLAWADVISER, "
+            + "	TFLP.CERTIFICATIONNUMBER AS CERTIFICATIONNUMBER, "
+            + "	TFLP.GRADUATIONGRADUATE AS GRADUATIONGRADUATE, "
+            + "	TFLP.STARTHIRETIME AS STARTHIRETIME, "
+            + "	TFLP.ENDHIRETIME AS ENDHIRETIME, "
+            + "	TS.PKYMSTAFFID AS AUDITPERSONNAME, "
+            + "	TFLP.AUDITTIME AS AUDITTIME, "
+            + "	TFLP.FILLINTIME AS FILLINTIME, "
+            + "	TS.REALNAME AS CREATORNAME, "
+            + "	TOA.PKYMORGID AS BELONGGROUPNAME, "
+            + "	TOB.PKYMORGID AS WORKUNITNAME "
+            + " FROM "
+            + "	TBL_FWGL_LEGAL_PERSONNEL TFLP "
+            + "	LEFT JOIN TBL_ORGANIZATION TOA ON TFLP.BELONGGROUPID = TOA.ORGID "
+            + "	LEFT JOIN TBL_ORGANIZATION TOB ON TFLP.WORKUNITID = TOB.ORGID "
+            + "	LEFT JOIN TBL_STAFF TS ON TFLP.CREATOR = TS.STAFFID "
+            + "	LEFT JOIN TBL_STAFF TSA ON TFLP.AUDITPERSON = TS.STAFFID WHERE	PERSONNELID = #{fromId}")
+    Map<String, Object> selectFWRYMapById(BigDecimal fromId);
+
+    @Select("SELECT   "
+            + "	TFOFM.OTHERFILEMESSAGEID AS OTHERFILEMESSAGEID,  "
+            + "	TFOFM.FILENAME AS FILENAME,  "
+            + "	TFOFM.CREATEDTIME AS CREATEDTIME,  "
+            + "	TFOFM.STATE AS STATE,  "
+            + "	TFOFM.CONTENT AS CONTENT,  "
+            + "	TS.PKYMSTAFFID AS OTHERFILEMESSAGECREATOR   "
+            + " FROM  "
+            + "	TBL_FWGL_OTHER_FILE_MESSAGE TFOFM  "
+            + "	LEFT JOIN TBL_STAFF TS ON TFOFM.CREATOR = TS.STAFFID "
+            + " WHERE "
+            + "	OTHERFILEMESSAGEID =#{fromId}")
+    Map<String, Object> selectQTWJBSMapById(BigDecimal fromId);
+
+    @Select("SELECT "
+            + "	TNP.PROJECTID AS PROJECTID, "
+            + "	TNP.PROJECTCODE AS PROJECTCODE, "
+            + "	TNP.PRJOECTNAME AS PRJOECTNAME, "
+            + "	TNP.PROJECTTYPE AS PROJECTTYPE, "
+            + "	TS.PKYMSTAFFID AS PMID, "
+            + "	TSA.PKYMSTAFFID AS AUDITSTAFFNAME, "
+            + "	TNP.PLANYEAR AS PLANYEAR, "
+            + "	TNP.AUDITTYPE AS AUDITTYPE, "
+            + "	TNP.PROJECTSOURCE AS PROJECTSOURCE, "
+            + "	TNP.CNTTYPE  AS CNTTYPE, "
+            + "	TNP.STARTDATE AS STARTDATE, "
+            + "	TNP.PRO_SJFS AS PRO_SJFS, "
+            + "	TNP.COSTS AS COSTS, "
+            + "	CASE  "
+            + "	  WHEN TNP.EXTERNALASSIG = '1' THEN '是'"
+            + "  ELSE '否' END  AS EXTERNALASSIG, "
+            + "	TNP.TEMPID AS TEMPID, "
+            + "	TNP.IMPLEMENTAION AS IMPLEMENTAION, "
+            + "	TOG.PKYMORGID AS COSPOMSORDEPARTMENT, "
+            + "	TSAA.PKYMSTAFFID AS COSPOMSORDEPARTMENTSTAFFID, "
+            + "	TNP.AUDITREQUIREMENTS AS AUDITREQUIREMENTS, "
+            + "	TNP.IMPLEMENTAIONSTEPS AS IMPLEMENTAIONSTEPS, "
+            + "	TNP.PURPOSE AS PURPOSE, "
+            + "	TNP.SCOPES AS SCOPES, "
+            + "	TNP.PURSUANT AS PURSUANT, "
+            + "	TNP.COMMENTS AS COMMENTS, "
+            + "	TNP.PRO_DESC AS PRO_DESC  "
+            + " FROM "
+            + "	TBL_NBSJ_PROJECT TNP "
+            + "	LEFT JOIN TBL_STAFF TS ON TNP.PMID = TS.STAFFID "
+            + "	LEFT JOIN TBL_STAFF TSA ON TNP.AUDITSTAFFID = TSA.STAFFID "
+            + "	LEFT JOIN TBL_STAFF TSAA ON TNP.COSPOMSORDEPARTMENTSTAFFID = TSAA.STAFFID "
+            + "	LEFT JOIN TBL_ORGANIZATION TOG ON TNP.COSPOMSORDEPARTMENT = TOG.ORGID"
+            + " WHERE TNP.PROJECTID = #{fromId} ")
+    Map<String, Object> selectSJXMGLapById(BigDecimal fromId);
+
+    @Select("SELECT "
+            + "	tnc.CERTIFICATEID AS CERTIFICATEID,"
+            + "	tnc.AUDITABSTRACT AS AUDITABSTRACT,"
+            + "	tnc.EVIDENCEOPINION AS EVIDENCEOPINION,"
+            + "	tnc.CERTIFICATEDATE AS CERTIFICATEDATE,"
+            + "	tszbsj.PKYMSTAFFID AS ASSISTEDZBUSER,"
+            + "	tsfgld.PKYMSTAFFID AS ASSISTEDFGLD,"
+            + "	tsbmfzr.PKYMSTAFFID AS ASSISTEDBMFZR,"
+            + "	tsyjfh.PKYMSTAFFID AS YJFH,"
+            + "	tsejfh.PKYMSTAFFID AS EJFH,"
+            + "	zjtgz.PKYMSTAFFID AS CERTIFICATEUSER,"
+            + "	tnc.AUDITMATTER AS AUDITMATTER,"
+            + "	tnc.AUDITUSERID AS AUDITUSERID,"
+            + "	tnc.CREATEDATE AS CREATEDATE,"
+            + "	tnp.PRJOECTNAME AS PROJECTNAME,"
+            + "	ts.PKYMSTAFFID AS AUDITUSERNAME "
+            + " FROM"
+            + "	TBL_NBSJ_CERTIFICATE tnc"
+            + "	LEFT JOIN TBL_NBSJ_PROJECT tnp ON tnc.PROJECTID = tnp.PROJECTID"
+            + "	LEFT JOIN TBL_STAFF ts ON tnc.AUDITUSERID = ts.STAFFID"
+            + "	LEFT JOIN TBL_STAFF tsbmfzr ON tnc.ASSISTEDBMFZRID = tsbmfzr.STAFFID"
+            + "	LEFT JOIN TBL_STAFF tsfgld ON tnc.ASSISTEDFGLDID = tsfgld.STAFFID"
+            + "	LEFT JOIN TBL_STAFF tszbsj ON tnc.ASSISTEDZBUSERID = tszbsj.STAFFID "
+            + "	LEFT JOIN TBL_STAFF tsyjfh ON tnc.FIRSTSTAFFID = tsyjfh.STAFFID"
+            + "	LEFT JOIN TBL_STAFF tsejfh ON tnc.SECONDSTAFFID = tsejfh.STAFFID "
+            + "	LEFT JOIN TBL_STAFF zjtgz ON tnc.CERTIFICATESTAFFID = zjtgz.STAFFID "
+            + " WHERE"
+            + "	tnc.CERTIFICATEID = #{ fromId}")
+    Map<String, Object> selectSJQZDMapById(BigDecimal fromId);
+
+    @Select("SELECT "
+            + "	TNS.SHEETID AS SHEETID, "
+            + "	TNS.SHEETCODE AS SHEETCODE, "
+            + "	TNS.SHEETNAME AS SHEETNAME, "
+            + "	TNS.CREATESTAFF AS CREATESTAFF, "
+            + "	TNS.CREATETIME AS CREATETIME, "
+            + "	TNS.PROJECTID AS PROJECTID, "
+            + "	TNS.UPDATETIME AS UPDATETIME, "
+            + "	TNS.RISKATTRBUTION AS RISKATTRBUTION, "
+            + "	TNS.BUSINESSAFFILIATION AS BUSINESSAFFILIATION, "
+            + "	TNS.AUDITCOURSE AS AUDITCOURSE, "
+            + "	TNS.AUDITDISCOVERABLE AS AUDITDISCOVERABLE, "
+            + "	TNS.APPROVER AS APPROVER, "
+            + "	TNS.RISKLEVEL AS RISKLEVEL, "
+            + "	TNS.QUESTITLE AS QUESTITLE, "
+            + "	TNS.TARGETNAME AS TARGETNAME, "
+            + "	TNS.BUSINESSTYPE AS BUSINESSTYPE, "
+            + "	TNS.BELONGTYPE AS BELONGTYPE, "
+            + "	TNS.NOZGREASION AS NOZGREASION, "
+            + "	TNS.HGDETAILTYPE AS HGDETAILTYPE, "
+            + "	TNS.PROCATEGORIES AS PROCATEGORIES, "
+            + "	TNS.INTERNALTYPE AS INTERNALTYPE, "
+            + "	TSA.PKYMSTAFFID AS REALNAME, "
+            + "	ts.PKYMSTAFFID AS YJFH, "
+            + "	tsej.PKYMSTAFFID AS EJFH "
+            + "	FROM TBL_NBSJ_SHEET TNS  "
+            + "	LEFT JOIN TBL_STAFF ts ON TNS.FIRSTSTAFFID = ts.STAFFID  "
+            + "	LEFT JOIN TBL_STAFF tsej ON TNS.SECONDSTAFFID = tsej.STAFFID "
+            + "	LEFT JOIN TBL_STAFF TSA ON TNS.auditstaffid = TSA.STAFFID "
+            + "	WHERE "
+            + "	TNS.SHEETID = #{fromId} ")
+    Map<String, Object> selectWDDGMapById(BigDecimal fromId);
+
+    @Select("SELECT "
+            + "	s.JYKID AS JYKID, "
+            + "	s.TATLE AS TATLE, "
+            + "	s.CODE AS CODE, "
+            + "	s.EXPERIENCETYPE AS EXPERIENCETYPE, "
+            + "	s.EXPERIENCETATLE AS EXPERIENCETATLE, "
+            + "	s.OVERVIEW AS OVERVIEW, "
+            + "	s.JYKID AS JYKID, "
+            + "	STA.PKYMSTAFFID AS REALNAME "
+            + " FROM "
+            + "	TBL_NBSJ_SJJYK s "
+            + "	LEFT JOIN TBL_STAFF sta ON s.STAFFID = STA.STAFFID  WHERE JYKID = #{fromId}")
+    Map<String, Object> selectSJJYKMapById(BigDecimal fromId);
+
+    @Select("SELECT  "
+            + "	S.SOLUTIONID AS SOLUTIONID,  "
+            + "	S.SOLUTIONCODE AS SOLUTIONCODE,  "
+            + "	S.SOLUTIONNAME AS SOLUTIONNAME,  "
+            + "	S.ZGSTATUS AS ZGSTATUS,  "
+            + "	S.CREATEDATE AS CREATEDATE,  "
+            + "	S.ENDDATE AS ENDDATE,  "
+            + "	S.RUNSTATUS AS RUNSTATUS,  "
+            + "	S.MEMO AS MEMO,  "
+            + "	STA.PKYMSTAFFID AS REALNAME,  "
+            + "	ST.PKYMSTAFFID AS REFORMUSERID,  "
+            + "	PR.PROJECTID AS PROJECTID,  "
+            + "	PR.PRJOECTNAME AS PRJOECTNAME,  "
+            + "	S.BSJDWZFR AS BSJDWZFR,  "
+            + "	STF.PKYMSTAFFID AS BSJDWZRRID,  "
+            + "	STFA.PKYMSTAFFID AS PMID  "
+            + " FROM  "
+            + "	TBL_NBSJ_REFORM_SOLUTION S  "
+            + "	LEFT JOIN TBL_NBSJ_PROJECT PR ON S.PROJECTID = PR.PROJECTID  "
+            + "	LEFT JOIN TBL_STAFF STA ON S.STAFFID = STA.STAFFID  "
+            + "	LEFT JOIN TBL_STAFF ST ON S.REFORMUSERID = ST.STAFFID  "
+            + "	LEFT JOIN TBL_STAFF STF ON S.BSJDWZRRID = STF.STAFFID   "
+            + "	LEFT JOIN TBL_STAFF STFA ON S.PMID = STFA.STAFFID  "
+            + " WHERE"
+            + "	SOLUTIONID =  #{fromId}")
+    Map<String, Object> selectZGLSMapById(BigDecimal fromId);
+
+    @Select("SELECT "
+            + "	SS.STAFFSCORE_ID AS STAFFSCORE_ID,"
+            + "	ts.REALNAME AS REALNAME,"
+            + "	TP.PRJOECTNAME AS AUDITPROJECTNAME,"
+            + "	TSF.PKYMSTAFFID AS PMID"
+            + " FROM"
+            + "	TBL_NBSJ_STAFFSCORE SS"
+            + "	LEFT JOIN TBL_STAFF TS ON SS.AUDITORS = TS.STAFFID"
+            + "	LEFT JOIN TBL_NBSJ_PROJECT TP ON TP.PROJECTID = SS.PROJECTID "
+            + "	LEFT JOIN TBL_STAFF TSF ON TP.PMID= TSF.STAFFID"
+            + " WHERE "
+            + "	STAFFSCORE_ID = #{fromId}")
+    Map<String, Object> selectPJGLMapById(BigDecimal fromId);
+
+    @Select("SELECT "
+            + "CASE  "
+            + "	WHEN TS.PERSONTYPE = '0' THEN '审计中心人员' "
+            + "	WHEN TS.PERSONTYPE = '1' THEN '外聘人员' "
+            + "	WHEN TS.PERSONTYPE = '2' THEN '临时借调人员' "
+            + " END  AS PERSONTYPE, "
+            + " TS.PKYMSTAFFID AS REALNAME, "
+            + " TS.MIBLEPHONE AS MIBLEPHONE, "
+            + " TS.BIRTHDAY AS BIRTHDAY, "
+            + " TS.POLITICALOUTLOOK AS POLITICALOUTLOOK, "
+            + " TS.EDUCATION AS EDUCATION, "
+            + " TS.MAJOR AS MAJOR, "
+            + " TS.SCHOOL AS SCHOOL, "
+            + " TS.OFFICEPHONE AS OFFICEPHONE, "
+            + " TS.WORKTIME AS WORKTIME, "
+            + " TS.AUDITORTYPE AS AUDITORTYPE, "
+            + " TS.ISAUDIT AS ISAUDIT, "
+            + " TS.PERSONTYPE AS PERSONTYPE, "
+            + " TS.GENDER AS GENDER, "
+            + " TS.JOBEXPERIENCES AS JOBEXPERIENCES, "
+            + " TS.MEMO AS MEMO, "
+            + " TS.TITLE AS TITLE, "
+            + " TS.QUALIFICATION AS QUALIFICATION, "
+            + " TOR.ORGNAME AS ORGNAME, "
+            + " TOR.ORGMENO AS ORGMENO  "
+            + " FROM "
+            + " TBL_STAFF TS  "
+            + "	LEFT JOIN TBL_ORGANIZATION TOR ON TOR.ORGID = TS.ORGID"
+            + "	WHERE"
+            + "	TS.STAFFID = #{fromId} ")
+    Map<String, Object> selectSJRNGLMapById(BigDecimal fromId);
+
+    @Select("SELECT TLE.DISPUTENAME AS DISPUTENAME,TLE.EXECUNO AS EXECUNO,TLE.EXECUCOURT AS EXECUCOURT,"
+            + "TLE.EXECUTYPE AS EXECUTYPE,TLE.EXECUEDAMOUNT AS EXECUEDAMOUNT,"
+            + "TLE.NOEXECUAMOUNT AS NOEXECUAMOUNT,TLE.LITIGATIONID AS LITIGATIONID,"
+            + "TLE.ARBITRAID AS ARBITRAID,TLE.CREATETIME AS CREATETIME,TLE.CREATESTAFFID AS CREATESTAFFID,"
+            + "TS.REALNAME AS USERNAME FROM TBL_LEGAL_EXECUMGR TLE"
+            + " LEFT JOIN TBL_STAFF  ts ON TLE.CREATESTAFFID = ts.STAFFID WHERE ID = #{ fromId}")
+    Map<String, Object> selectZXGLMapById(BigDecimal fromId);
+
+    @Select("SELECT TLP.PROCEEDNO AS PROCEEDNO,TLP.PROCEEDID AS PROCEEDID,"
+            + "TLP.PORCEEDSTAGE AS PORCEEDSTAGE,TLP.COURT AS COURT,TLP.COURTLINK AS COURTLINK,"
+            + "TLP.COURTCONTACT AS COURTCONTACT,TLP.FILINGTIME AS FILINGTIME,"
+            + "TLP.PAYMENTREMINDTIME AS PAYMENTREMINDTIME,TLP.OPENINGTIME AS OPENINGTIME,"
+            + "TLP.JUDGETIEM AS JUDGETIEM,TLP.ISEXTERNALLAWYER AS ISEXTERNALLAWYER,"
+            + "TLP.CREATETIME AS CREATETIME,TLP.CASEPROMOTION AS CASEPROMOTION,"
+            + "TLP.EXISTINGDIFFICULTIES AS EXISTINGDIFFICULTIES,ts.REALNAME AS REALNAME,"
+            + "TLP.MEASURESPROMOTE AS MEASURESPROMOTE FROM TBL_LEGAL_PROCEEDINGSRECORD TLP"
+            + " LEFT JOIN TBL_STAFF  ts ON TLP.CREATESTAFF = ts.STAFFID WHERE PROCEEDID = #{fromId}")
+    Map<String, Object> selectSSHZSMapById(BigDecimal fromId);
+
+    @Select("SELECT	TNB.STATUS AS STATUS,	TNB.CREATEDATE AS CREATEDATE,"
+            + "	TNB.RETURNDATE AS RETURNDATE,	TNB.BORROWID AS BORROWID,	TNB.MEMO AS MEMO,"
+            + "	TNP.PROJECTID AS PROJECTID,	TNP.PRJOECTNAME AS PRJOECTNAME,"
+            + "	TNP.PROJECTCODE AS PROJECTCODE 	FROM	TBL_NBSJ_BORROWRECORD TNB"
+            + "	LEFT JOIN TBL_NBSJ_PROJECT TNP ON TNB.PROJECTID = TNP.PROJECTID  WHERE 	BORROWID = #{fromId}")
+    Map<String, Object> selectDAJYMapById(BigDecimal fromId);
+
+    @Select("SELECT  "
+            + "	TLP.POPULARIZELAWPLANNAME AS POPULARIZELAWPLANNAME,  "
+            + "	TLP.CREATEDTIME AS CREATEDTIME,  "
+            + "	TLP.PLANYEAR AS PLANYEAR,  "
+            + "	TS.PKYMSTAFFID AS CREATOR  "
+            + " FROM  "
+            + "	TBL_FWGL_POPULARIZE_LAW_PLAN TLP  "
+            + "	LEFT JOIN TBL_STAFF TS ON TS.STAFFID = TLP.CREATOR  "
+            + " WHERE  "
+            + "	TLP.POPULARIZELAWPLANID = #{fromId}")
+    Map<String, Object> selectPFJHMapById(BigDecimal fromId);
+
+    @Select("SELECT TC.TRANID AS TRANID, "
+            + "TC.LEGALMEMO AS LEGALMEMO, "
+            + "TC.TRANSTATUS AS TRANSTATUS, "
+            + "TC.CONTRACTNAME AS CONTRACTNAME, "
+            + "TC.CONTRACTNO AS CONTRACTNO, "
+            + "TC.CONTRACTID AS CONTRACTID, "
+            + "TC.CONTRACTCNT AS CONTRACTCNT, "
+            + "TS.PKYMSTAFFID AS HANDSTAFFNAME, "
+            + "ORG.PKYMORGID AS TRANORGNAME, "
+            + "DORG.PKYMORGID AS HANDDEPTNAME "
+            + "FROM TBL_CONTRACT_TRAN  TC  "
+            + "LEFT JOIN TBL_STAFF TS ON TS.STAFFID = TC.HANDSTAFFID "
+            + "LEFT JOIN TBL_ORGANIZATION ORG ON ORG.ORGID = TC.TRANORGID "
+            + "LEFT JOIN TBL_ORGANIZATION DORG ON DORG.ORGID = TC.HANDDEPTID "
+            + "WHERE TC.TRANID = #{fromId}")
+    Map<String, Object> selectHTYJMapById(BigDecimal fromId);
+
+    @Select("SELECT  "
+            + " TF.ANNUALEXAMINEID AS ANNUALEXAMINEID,"
+            + " TF.ANNUALEXAMINENAME AS ANNUALEXAMINENAME,"
+            + " TF.TYPE AS TYPE,"
+            + " TF.EXAMINETIME AS EXAMINETIME,"
+            + " TS.PKYMSTAFFID AS ANNUALEXAMINECREATOR   "
+            + " FROM TBL_FWGL_ANNUAL_EXAMINE TF "
+            + " LEFT JOIN TBL_STAFF TS ON TS.STAFFID = TF.CREATOR "
+            + " WHERE TF.ANNUALEXAMINEID = #{fromId}")
+    Map<String, Object> selectNDKHMapById(BigDecimal fromId);
+
+    @Select("SELECT " +
+            "TCPL.ID, " +
+            "TCPL.STAFFID,QJR.REALNAME AS REALNAME,DEPT.ORGNAME AS COMMITDEPTNAME ," +
+            "TCPL.STAFFNUMBER, " +
+            "TCPL.LEAVEPERIODTIMESTART, " +
+            "TCPL.LEAVEPERIODTIMEEND, " +
+            "TCPL.LEAVEREASON, " +
+            "TCPL.REMARK, " +
+            "TCPL.STATE, " +
+            "TCPL.CREATOR, " +
+            "TCPL.WORKUNIT, " +
+            "TCPL.BELONGGROUP, " +
+            "TCPL.CREATEDTIME, " +
+            "TCPL.UPDATEDTIME " +
+            "FROM " +
+            "TBL_CEA_PEOPLE_LEAVE TCPL LEFT JOIN TBL_STAFF QJR ON TCPL.STAFFID = QJR.STAFFID LEFT JOIN TBL_ORGANIZATION DEPT ON TCPL.WORKUNIT = DEPT.ORGID " +
+            "WHERE TCPL.ID = #{fromId}")
+    Map<String, Object> selectRYQJDById(BigDecimal fromId);
+
+
+    @Select("SELECT " +
+            "TCSF.ID, " +
+            "TCSF.SEALNAME, " +
+            "TCSF.SEALREASONS, " +
+            "TCSF.SEALNUM, " +
+            "TCSF.SEALWORKUNIT, " +
+            "TCSF.TRANSACTOR, " +
+            "TCSF.AUDITWORKUNIT, " +
+            "TCSF.REMARK, " +
+            "TCSF.FILEIDS, " +
+            "TCSF.STATE, " +
+            "TCSF.CREATOR, " +
+            "TCSF.WORKUNIT, " +
+            "TCSF.BELONGGROUP, " +
+            "TCSF.CREATEDTIME, " +
+            "TCSF.UPDATEDTIME " +
+            "FROM TBL_CEA_SEAL_FORM TCSF " +
+            "WHERE TCSF.ID = #{fromId}")
+    Map<String, Object> selectYXSYDById(BigDecimal fromId);
+
+    @Select("SELECT " +
+            "TCAA.ID, " +
+            "TCAA.ASSETMGTID, " +
+            "TCAA.QUANTITY, " +
+            "TCAA.USEAGETIME, " +
+            "TCAA.UTILITYAGETIME, " +
+            "TCAA.USEBELONGGROUP, " +
+            "TCAA.ORIGINALBELONGGROUP, " +
+            "TCAA.ORIGINALUSEBELONGGROUP, " +
+            "TCAA.STAYADJUSTEDBELONGGROUP, " +
+            "TCAA.ORIGINALVALUE, " +
+            "TCAA.REMARK, " +
+            "TCAA.FILEIDS, " +
+            "TCAA.STATE, " +
+            "TCAA.CREATOR, " +
+            "TCAA.WORKUNIT, " +
+            "TCAA.BELONGGROUP, " +
+            "TCAA.CREATEDTIME, " +
+            "TCAA.UPDATEDTIME " +
+            "FROM TBL_CEA_ASSET_ADJUSTMENT TCAA " +
+            "WHERE TCAA.ID = #{fromId}")
+    Map<String, Object> selectZCTJSQById(BigDecimal fromId);
+
+    @Select("SELECT " +
+            "TCOE.ID, " +
+            "TCOE.REASON, " +
+            "TCOE.DETAILS, " +
+            "TCOE.AMOUNT, " +
+            "TCOE.SUPPLYBELONGGROUP, " +
+            "TCOE.OFFICEEXPENSESTIME, " +
+            "TCOE.TRANSACTOR, " +
+            "TCOE.DEPARTMENTHEAD, " +
+            "TCOE.FILEIDS, " +
+            "TCOE.STATE, " +
+            "TCOE.CREATOR, " +
+            "TCOE.WORKUNIT, " +
+            "TCOE.BELONGGROUP, " +
+            "TCOE.CREATEDTIME, " +
+            "TCOE.UPDATEDTIME,ORG.ORGNAME AS BELONGGROUPNAME " +
+            "FROM TBL_CEA_OFFICE_EXPENSES TCOE LEFT JOIN TBL_ORGANIZATION ORG ON TCOE.APPLYBELONGGROUP = ORG.ORGID " +
+            "WHERE TCOE.ID = #{fromId}")
+    Map<String, Object> selectBGJYZCById(BigDecimal fromId);
+
+    @Select("SELECT " +
+            "TCRE.ID, " +
+            "TCRE.REPAIRBELONGGROUP, " +
+            "TCRE.VIN, " +
+            "TCRE.REPAIRTIME, " +
+            "TCRE.AMOUNT, " +
+            "TCRE.REPAIRMANUFACTURER, " +
+            "TCRE.TRANSACTOR, " +
+            "TCRE.FAULTCONDITION, " +
+            "TCRE.REPAIRPROJECT, " +
+            "TCRE.STATE, " +
+            "TCRE.CREATOR, " +
+            "TCRE.WORKUNIT, " +
+            "TCRE.BELONGGROUP, " +
+            "TCRE.CREATEDTIME, " +
+            "TCRE.UPDATEDTIME,"
+            + "ORG.ORGNAME AS BELONGGROUPNAME " +
+            "FROM TBL_CEA_REPAIR_EXPENSES TCRE LEFT JOIN TBL_ORGANIZATION ORG ON TCRE.REPAIRBELONGGROUP = ORG.ORGID " +
+            "WHERE TCRE.ID = #{fromId}")
+    Map<String, Object> selectXLFZCById(BigDecimal fromId);
+
+    //===================================================风险管控BEGIN
+    @Select("SELECT TR.RISKID AS RISKID, "
+            + "TR.RISKNUMBER AS RISKNUMBER, "
+            + "TR.RISKNAME AS RISKNAME, "
+            + "TR.RISKDES AS RISKDES, "
+            + "TR.BELONGSTO AS BELONGSTO, "
+            + "TR.MEMO AS MEMO, "
+            + "TR.RISKCATID AS RISKCATID, "
+            + "TR.VERSION AS VERSION, "
+            + "TR.UNIT AS UNIT, "
+            + "TR.REORG AS REORG, "
+            + "TR.RISKCREATEDT AS RISKCREATEDT, "
+            + "TR.YDUSERID AS YDUSERID, "
+            + "TR.RISKPROGRAM AS RISKPROGRAM, "
+            + "TR.RISKLEVEL AS RISKLEVEL, "
+            + "TR.STATUS AS STATUS, "
+            + "TRC.RISKCATNAME AS RISKCATNAME, "
+            + "ZRBM.ORGNAME AS ZRBMNAME "
+//				+ "TCM.CONMATID AS CONMATID, "
+//				+ "TCM.FLOWNAME AS FLOWNAME, "
+//				+ "TCM.CONTROLTARGET AS CONTROLTARGET, "
+//				+ "TCM.CONTROLNAME AS CONTROLNAME, "
+//				+ "TCM.CONTROLMANAGER AS CONTROLMANAGER, "
+//				+ "TCM.CONTROLFREQUENCY AS CONTROLFREQUENCY, "
+//				+ "TCM.CONTROLTYPE AS CONTROLTYPE, "
+//				+ "TCM.CONTROLMETHOD AS CONTROLMETHOD, "
+//				+ "TCM.CONTROLDES AS CONTROLDES, "
+//				+ "TCM.INSIDECONTROLTARGET AS INSIDECONTROLTARGET, "
+//				+ "TCM.KEYCONTROL AS KEYCONTROL, "
+//				+ "TCM.EFFECTIVE AS EFFECTIVE, "
+//				+ "TCM.CONTROLTEST AS CONTROLTEST, "
+//				+ "TCM.FINANCIALREPORTIDENTIFY AS FINANCIALREPORTIDENTIFY, "
+//				+ "TCM.CONKZCS AS CONKZCS, "
+//				+ "TCM.VERSIONTYPE AS VERSIONTYPE "
+            + "FROM TBL_RISK TR  "
+            + "LEFT JOIN TBL_RISKCATEGORY TRC ON TRC.RISKCATID = TR.RISKCATID "
+            + "LEFT JOIN TBL_ORGANIZATION ZRBM ON ZRBM.ORGID = TR.BELONGSTO "
+//				+ "LEFT JOIN TBL_CONTROLMATRIX TCM ON TCM.RISKID = TR.RISKID "
+            + "WHERE TR.RISKID = #{fromId}")
+    Map<String, Object> selectFXCJMapById(BigDecimal fromId);
+
+    @Select("SELECT TRA.ASSPLANID AS ASSPLANID, "
+            + "TRA.PLANCODE AS PLANCODE, "
+            + "TRA.PLANNAME AS PLANNAME, "
+            + "TRA.STARTDATE AS STARTDATE, "
+            + "TRA.ENDDATE AS ENDDATE, "
+            + "TRA.PLANSTATUS AS PLANSTATUS, "
+            + "TRA.APRSTATUS AS APRSTATUS, "
+            + "TRA.UNIT AS UNIT, "
+            + "TRA.MEMO AS MEMO, "
+            + "TRA.PLANDES AS PLANDES, "
+            + "TRA.PLANTYPE AS PLANTYPE "
+
+            + "FROM TBL_RISK_ASSPLAN TRA  "
+
+            + "WHERE TRA.ASSPLANID = #{fromId}")
+    Map<String, Object> selectPGJHMapById(BigDecimal fromId);
+
+    @Select("SELECT TRC.RISKCOPINGID AS RISKCOPINGID, "
+            + "TRC.COPINGPLOT AS COPINGPLOT, "
+            + "TRC.COPINGSTATUS AS COPINGSTATUS, "
+            + "TRC.COPINGHEAD AS COPINGHEAD, "
+            + "TRC.COPINGDES AS COPINGDES, "
+            + "TRC.RISKID AS RISKID, "
+            + "TRC.COPINGSOURCE AS COPINGSOURCE, "
+            + "TRC.RISKHOPEVALUE AS RISKHOPEVALUE, "
+            + "TRC.YDDES AS YDDES, "
+            + "TRC.STATUS AS STATUS, "
+            + "TRC.REVIEWER AS REVIEWER, "
+            + "TRC.REVIEWER2 AS REVIEWER2 "
+
+            + "FROM TBL_RISK_COPING TRC  "
+
+            + "WHERE TRC.RISKCOPINGID = #{fromId}")
+    Map<String, Object> selectFXYDMapById(BigDecimal fromId);
+
+    @Select("SELECT TRE.RISEVEID AS RISEVEID, "
+            + "TRE.RISKEVENTCODE AS RISKEVENTCODE, "
+            + "TRE.RISKEVENTNAME AS RISKEVENTNAME, "
+            + "TRE.RISKEVENTDESCRIPTION AS RISKEVENTDESCRIPTION, "
+            + "TRE.INDIRECTLOSS AS INDIRECTLOSS, "
+            + "TRE.DIRECTLOSS AS DIRECTLOSS, "
+            + "TRE.RISKFACTOR1 AS RISKFACTOR1, "
+            + "TRE.RISKFACTOR2 AS RISKFACTOR2, "
+            + "TRE.MEMO AS MEMO, "
+            + "TRE.OCCUREDDATE AS OCCUREDDATE, "
+            + "TRE.OCCUREDDEPARTMENT AS OCCUREDDEPARTMENT, "
+            + "TRE.LOSSEVENTCATEGORY AS LOSSEVENTCATEGORY, "
+            + "TRE.DISCOVEREDDATE AS DISCOVEREDDATE, "
+            + "TRE.INRISKEVENTDB AS INRISKEVENTDB, "
+            + "TRE.INDIRECTLOSSDES AS INDIRECTLOSSDES, "
+            + "TRE.DIRECTLOSSDES AS DIRECTLOSSDES, "
+            + "TRE.UNIT AS UNIT, "
+            + "TRE.EVENTSTATUS AS EVENTSTATUS, "
+            + "TRE.RECORDORG AS RECORDORG, "
+            + "TRE.RECORDDEPART AS RECORDDEPART, "
+            + "TRE.SUBSYSTEM AS SUBSYSTEM, "
+            + "TRE.BUSSINESS AS BUSSINESS, "
+            + "TRE.MAXESTIMATELOSS AS MAXESTIMATELOSS, "
+            + "TRE.CONFIRMEDDIRECTLOSS AS CONFIRMEDDIRECTLOSS, "
+            + "TRE.CONFIRMEDDIRECTLOSSA AS CONFIRMEDDIRECTLOSSA, "
+            + "TRE.RISKCATID AS RISKCATID, "
+            + "TRE.STATUS AS STATUS "
+
+            + "FROM TBL_RISKEVENT TRE  "
+
+            + "WHERE TRE.RISEVEID = #{fromId}")
+    Map<String, Object> selectFXSJKMapById(BigDecimal fromId);
+
+
+    @Select("SELECT TR.REPORTID AS REPORTID, "
+            + "TR.REPORTNAME AS REPORTNAME, "
+            + "TR.REPORTTIME AS REPORTTIME, "
+            + "TR.REPORTTYPE AS REPORTTYPE, "
+            + "TR.REPORTMODE AS REPORTMODE, "
+            + "TR.REPORTER AS REPORTER, "
+            + "TR.REPORTDEPARTMENT AS REPORTDEPARTMENT, "
+            + "TR.REPORTTEMPID AS REPORTTEMPID, "
+            + "TR.REPORTSTATUS AS REPORTSTATUS, "
+            + "TR.REPORTFILE AS REPORTFILE, "
+            + "TR.MEMO AS MEMO, "
+            + "TR.TYPE AS TYPE, "
+            + "TR.REPDESC AS REPDESC, "
+            + "TR.PROJECTID AS PROJECTID, "
+            + "TR.ORGID AS ORGID, "
+            + "TR.YJDES AS YJDES, "
+            + "TR.FHSTAFFID AS FHSTAFFID, "
+            + "TR.ZQYJSTAFFID AS ZQYJSTAFFID, "
+            + "TR.REPORTCODE AS REPORTCODE, "
+            + "TR.SENDTIME AS SENDTIME, "
+            + "TR.FHSTAFFNAME AS FHSTAFFNAME, "
+            + "TR.REPORTERID AS REPORTERID, "
+            + "TR.REPORTDEPARTMENTID AS REPORTDEPARTMENTID, "
+            + "TR.ZQYJSTAFFNAME AS ZQYJSTAFFNAME, "
+            + "TR.REPORTLEVEL AS REPORTLEVEL, "
+            + "TR.STATUS AS STATUS "
+
+            + "FROM TBL_REPORT TR  "
+
+            + "WHERE TR.REPORTID = #{fromId}")
+    Map<String, Object> selectFXBGMapById(BigDecimal fromId);
+
+    //===================================================风险管控END
+
+    //===================================================内控管理BEGIN
+    @Select("SELECT TR.ASSID AS ASSID, "
+            + "TR.STATUS AS STATUS "
+
+            + "FROM TBL_ASSESS_PLAN TR  "
+
+            + "WHERE TR.ASSID = #{fromId}")
+    Map<String, Object> selectPJLXMapById(BigDecimal fromId);
+
+    @Select("SELECT TR.REPORTID AS REPORTID, "
+            + "TR.REPORTNAME AS REPORTNAME, "
+            + "TR.REPORTTIME AS REPORTTIME, "
+            + "TR.REPORTTYPE AS REPORTTYPE, "
+            + "TR.REPORTMODE AS REPORTMODE, "
+            + "TR.REPORTER AS REPORTER, "
+            + "TR.REPORTDEPARTMENT AS REPORTDEPARTMENT, "
+            + "TR.REPORTTEMPID AS REPORTTEMPID, "
+            + "TR.REPORTSTATUS AS REPORTSTATUS, "
+            + "TR.REPORTFILE AS REPORTFILE, "
+            + "TR.MEMO AS MEMO, "
+            + "TR.TYPE AS TYPE, "
+            + "TR.REPDESC AS REPDESC, "
+            + "TR.PROJECTID AS PROJECTID, "
+            + "TR.ORGID AS ORGID, "
+            + "TR.YJDES AS YJDES, "
+            + "TR.FHSTAFFID AS FHSTAFFID, "
+            + "TR.ZQYJSTAFFID AS ZQYJSTAFFID, "
+            + "TR.REPORTCODE AS REPORTCODE, "
+            + "TR.SENDTIME AS SENDTIME, "
+            + "TR.FHSTAFFNAME AS FHSTAFFNAME, "
+            + "TR.REPORTERID AS REPORTERID, "
+            + "TR.REPORTDEPARTMENTID AS REPORTDEPARTMENTID, "
+            + "TR.ZQYJSTAFFNAME AS ZQYJSTAFFNAME, "
+            + "TR.REPORTLEVEL AS REPORTLEVEL, "
+            + "TR.STATUS AS STATUS "
+
+            + "FROM TBL_REPORT TR  "
+
+            + "WHERE TR.REPORTID = #{fromId}")
+    Map<String, Object> selectPJBGMapById(BigDecimal fromId);
+
+    @Select("SELECT TR.FINDID AS FINDID, "
+            + "TR.TESTTASKID AS TESTTASKID, "
+            + "TR.CREATESTAFFID AS CREATESTAFFID, "
+            + "TR.CREATETIME AS CREATETIME, "
+            + "TR.ONEPROCESS AS ONEPROCESS, "
+            + "TR.PROBLEMMEMO AS PROBLEMMEMO, "
+            + "TR.DEFECTMEMO AS DEFECTMEMO, "
+            + "TR.PROBLEMTYPE AS PROBLEMTYPE, "
+            + "TR.DEFECTLEVEL AS DEFECTLEVEL, "
+            + "TR.QUABASIS AS QUABASIS, "
+            + "TR.MAINORG AS MAINORG, "
+            + "TR.FEEDBACK AS FEEDBACK, "
+            + "TR.REFORMPLAN AS REFORMPLAN, "
+            + "TR.ESTFINISHDATE AS ESTFINISHDATE, "
+//				+ "TR.REFORMSTAFFID AS REFORMSTAFFID, "
+            + "TS.PKYMSTAFFID AS REFORMSTAFFID, "
+            + "TR.STATUS AS STATUS "
+
+            + "FROM TBL_TESTTASK_PROBLEMFIND TR  "
+            + "LEFT JOIN TBL_STAFF TS ON TS.STAFFID=TR.REFORMSTAFFID  "
+
+            + "WHERE TR.FINDID = #{fromId}")
+    Map<String, Object> selectWTFXMapById(BigDecimal fromId);
+
+    @Select("SELECT PKYMSTAFFID AS BMFZRID FROM TBL_STAFF WHERE MANAGEORGS like #{orgid} ")
+    Map<String, Object> selectBMFZRByOrgId(BigDecimal orgid);
+    //===================================================内控管理END
+
+
+    @Select("SELECT TR.ID AS ID, "
+            + "TR.CLUENABER AS CLUENABER, "
+            + "TR.CLUENAME AS CLUENAME, "
+            + "TR.STATUS AS STATUS "
+            + "FROM TBL_WGZZ_WGHS TR  "
+            + "WHERE TR.ID = #{fromId}")
+    Map<String, Object> selectWGHSMapById(BigDecimal fromId);
+
+    @Select("SELECT TR.ID AS ID, "
+            + "TR.CLUENABER AS CLUENABER, "
+            + "TR.STATUS AS STATUS "
+            + "FROM TBL_WGZZ_SHBG TR  "
+            + "WHERE TR.ID = #{fromId}")
+    Map<String, Object> selectSHBGMapById(BigDecimal fromId);
+
+    @Select("SELECT TR.ID AS ID, "
+            + "TR.CLUEZRDX AS CLUEZRDX, "
+            + "TR.CLUESSRD AS CLUESSRD, "
+            + "TR.CLUECLJY AS CLUECLJY, "
+            + "TR.STATUS AS STATUS "
+            + "FROM TBL_WGZZ_WGHC TR  "
+            + "WHERE TR.ID = #{fromId}")
+    Map<String, Object> selectWGHCMapById(BigDecimal fromId);
+
+    @Select("SELECT TR.ID AS ID, "
+            + "TR.WGHCID AS WGHCID, "
+            + "TR.CLUENABER AS CLUENABER, "
+            + "TR.YSSTUTS AS YSSTUTS, "
+            + "TR.CLUERESOURCE AS CLUERESOURCE "
+            + "FROM TBL_WGZZ_WGJY_YS TR  "
+            + "WHERE TR.ID = #{fromId}")
+    Map<String, Object> selectWGYSMapById(BigDecimal fromId);
+
+    //合规报告
+    @Select("SELECT TR.ID AS ID, "
+            + "TR.REPORTNAME AS REPORTNAME, "
+            + "TR.CONTENT AS CONTENT, "
+            + "TR.HIERARCHY AS HIERARCHY, "
+            + "TR.REPORTTTYPE AS REPORTTTYPE, "
+            + "TR.REPORTSTAGE AS REPORTSTAGE, "
+            + "TR.DEPARTMENTHEAD AS DEPARTMENTHEAD, "
+            + "TR.DRAFTSMAN AS DRAFTSMAN, "
+            + "TR.STATE AS STATE, "
+            + "TR.CREATOR AS CREATOR, "
+            + "TR.WORKUNIT AS WORKUNIT, "
+            + "TR.BELONGGROUP AS BELONGGROUP, "
+            + "TR.CREATEDTIME AS CREATEDTIME, "
+            + "TR.UPDATEDTIME AS UPDATEDTIME "
+            + "FROM TBL_COMPLIANCE_REPORT TR  "
+            + "WHERE TR.ID = #{fromId}")
+    Map<String, Object> selectHGBGBMapById(BigDecimal fromId);
+
+
+    //合规手册
+    @Select("SELECT TR.ID AS ID, "
+            + "TR.MANUALNAME AS MANUALNAME, "
+            + "TR.VERSIONNUMBER AS VERSIONNUMBER, "
+            + "TR.TRANSACTOR AS TRANSACTOR, "
+            + "TR.DEPARTMENTHEAD AS DEPARTMENTHEAD, "
+            + "TR.STATE AS STATE, "
+            + "TR.CREATOR AS CREATOR, "
+            + "TR.WORKUNIT AS WORKUNIT, "
+            + "TR.BELONGGROUP AS BELONGGROUP, "
+            + "TR.CREATEDTIME AS CREATEDTIME, "
+            + "TR.UPDATEDTIME AS UPDATEDTIME "
+            + "FROM TBL_COMPLIANCE_MANUAL_MGT TR  "
+            + "WHERE TR.ID = #{fromId}")
+    Map<String, Object> selectHGSCGLMapById(BigDecimal fromId);
+
+
+    //合规计划审批表
+    @Select("SELECT TR.ID AS ID, "
+            + " TR.PLANSERIALNUMBER AS PLANSERIALNUMBER, "
+            + " TR.PLANNAME AS PLANNAME, "
+            + " TR.FILEIDS AS FILEIDS, "
+            + " TR.COMPLIANCEPROCESS AS COMPLIANCEPROCESS, "
+            + " TR.HIERARCHY AS HIERARCHY, "
+            + " TR.COMPILER AS COMPILER, "
+            + " TR.DEPARTMENTHEAD AS DEPARTMENTHEAD, "
+            + " TR.STATE AS STATE, "
+            + " TR.CREATOR AS CREATOR, "
+            + " TR.WORKUNIT AS WORKUNIT, "
+            + " TR.BELONGGROUP AS BELONGGROUP, "
+            + " TR.CREATEDTIME AS CREATEDTIME, "
+            + " TR.UPDATEDTIME AS UPDATEDTIME "
+            + " FROM TBL_COMPLIANCE_PLAN_MGT TR  "
+            + " WHERE TR.ID = #{fromId}")
+    Map<String, Object> selectHGJHSPBMapById(BigDecimal fromId);
+
+
+    //重点岗位合规责任
+    @Select("SELECT TR.ID AS ID, "
+            + " TR.DEPARTMENT AS DEPARTMENT, "
+            + " TR.POSTNAME AS POSTNAME, "
+            + " TR.COMPLIANCETDR AS COMPLIANCETDR, "
+            + " TR.REMARK AS REMARK, "
+            + " TR.STATE AS STATE, "
+            + " TR.CREATOR AS CREATOR, "
+            + " TR.WORKUNIT AS WORKUNIT, "
+            + " TR.BELONGGROUP AS BELONGGROUP, "
+            + " TR.CREATEDTIME AS CREATEDTIME, "
+            + " TR.UPDATEDTIME AS UPDATEDTIME "
+
+            + "FROM TBL_COMPLIANCE_DTY TR  "
+            + "WHERE TR.ID = #{fromId}")
+    Map<String, Object> selectZDGWHGZRMapById(BigDecimal fromId);
+
+    //合规管理员信息管理
+    @Select("SELECT TR.ID AS ID, "
+            + " TR.DEPARTMENT AS DEPARTMENT, "
+            + " TR.ADMINISTRATORNAME AS ADMINISTRATORNAME, "
+            + " TR.CONTACTINFORMATION AS CONTACTINFORMATION, "
+            + " TR.REMARK AS REMARK, "
+            + " TR.STATE AS STATE, "
+            + " TR.CREATOR AS CREATOR, "
+            + " TR.WORKUNIT AS WORKUNIT, "
+            + " TR.BELONGGROUP AS BELONGGROUP, "
+            + " TR.CREATEDTIME AS CREATEDTIME, "
+            + " TR.UPDATEDTIME AS UPDATEDTIME "
+
+            + " FROM TBL_COMPLIANCE_IM TR  "
+            + " WHERE TR.ID = #{fromId}")
+    Map<String, Object> selectHGGLYXXGLMapById(BigDecimal fromId);
+
+
+    @Select("SELECT" +
+            " KW.REVIEWID AS REVIEWID," +
+            " KW.RISKREVIEWCODE AS RISKREVIEWCODE," +
+            " KW.STAFFID AS STAFFID," +
+            " KW.STAFFDEPT AS STAFFDEPT," +
+            " KW.CREATETIME AS CREATETIME," +
+            " KW.MATTERNAME AS MATTERNAME," +
+            " KW.MATTERPROJECTCODE AS MATTERPROJECTCODE," +
+            " KW.MATTERCODE AS MATTERCODE," +
+            " KW.MATTERCONTEXT AS MATTERCONTEXT," +
+            " KW.CREATESTAFFID AS CREATESTAFFID " +
+            " FROM" +
+            " TBL_RISK_REVIEW KW " +
+            " WHERE" +
+            " KW.REVIEWID = #{ fromId}")
+    Map<String, Object> selectFXSCTZMapById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " LCIP.ID AS ID," +
+            " LCIP.PLANCODE AS PLANCODE," +
+            " LCIP.PLANNAME AS PLANNAME," +
+            " LCIP.PLANYEAR AS PLANYEAR," +
+            " LCIP.INSPECTTYPE AS INSPECTTYPE," +
+            " LCIP.PLANTIMESTART AS PLANTIMESTART," +
+            " LCIP.PLANTIMEEND AS PLANTIMEEND," +
+            " LCIP.INSPECTCOMPANY AS INSPECTCOMPANY," +
+            " LCIP.INSPECTDEPARTMENT AS INSPECTDEPARTMENT," +
+            " LCIP.CREATEDTIME AS CREATEDTIME" +
+            " FROM" +
+            " TBL_COMPLIANCE_INSPECT_PLAN LCIP" +
+            " WHERE" +
+            " LCIP.ID = #{fromId}")
+    Map<String, Object> selectHGGLJCFAMapById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " LCII.ID AS ID," +
+            " LCII.SUSPECTEDISSUE AS SUSPECTEDISSUE," +
+            " LCII.QUESTIONTYPE AS QUESTIONTYPE," +
+            " LCII.DISCOVERTIME AS DISCOVERTIME," +
+            " LCII.BUSINESSAREA AS BUSINESSAREA," +
+            " LCII.ISCONFIRM AS ISCONFIRM," +
+            " LCII.ISRECTIFICATION AS ISRECTIFICATION " +
+            " FROM" +
+            " TBL_COMPLIANCE_INSPECT_IMP LCII " +
+            " WHERE" +
+            " LCII.ID = #{fromId}")
+    Map<String, Object> selectHGGLJCSSMapById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " LCR.ID AS ID," +
+            " LCR.IMPID AS IMPID," +
+            " LCR.RECTIFICATIONSTATE AS RECTIFICATIONSTATE," +
+            " LCR.CONTENT AS CONTENT " +
+            " FROM" +
+            " TBL_COMPLIANCE_RECTIFICATION LCR " +
+            " WHERE" +
+            " LCR.ID = #{ fromId }")
+    Map<String, Object> selectHGGLWTZGMapById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " LEK.ID AS ID," +
+            " LEK.RISKNUMBER AS RISKNUMBER," +
+            " LEK.RISKNAME AS RISKNAME," +
+            " LEK.DEPARTMENT AS DEPARTMENT," +
+            " LEK.FINDTIME AS FINDTIME," +
+            " LEK.DISCOVERYTIME AS DISCOVERYTIME," +
+            " LEK.RISKTYPE AS RISKTYPE " +
+            " FROM" +
+            " TBL_COMPLIANCE_RISK LEK " +
+            " WHERE" +
+            " LEK.ID = #{ fromid }")
+    Map<String, Object> selectHGGLFXSJTZMapById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TYRS.ID," +
+            " TYRS.CONCERNS," +
+            " TYRS.CONCERNS_CONTENT," +
+            " TYRS.UNIT_ID," +
+            " TYRS.PROJECT_TYPE," +
+            " TYRS.DRAFT_ID," +
+            " TYRS.REMARK," +
+            " TYRS.CREATE_USER," +
+            " TYRS.CREATE_TIME," +
+            " TYRS.PERSON_IDS," +
+            " TYRS.STATUS" +
+            " FROM" +
+            " TBL_YQNS_REQUIRE_SUGGESTION TYRS WHERE TYRS.ID = #{fromId}")
+    Map<String, Object> selectXQJYBMapById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TYSR.ID," +
+            " TYSR.AUDIT_ITEM," +
+            " TYSR.AUDIT_PURPOSE," +
+            " TYSR.UNIT_ID," +
+            " TYSR.CONCERNS_CONTENT," +
+            " TYSR.UNIT_RANGE," +
+            " TYSR.TIME_RANGE," +
+            " TYSR.PROJECT_TYPE," +
+            " TYSR.REMARK," +
+            " TYSR.CREATE_USER," +
+            " TYSR.CREATE_TIME," +
+            " TYSR.PERSON_IDS," +
+            " TYSR.STATUS" +
+            " FROM" +
+            " TBL_YQNS_SERVICE_REQUIREMENT TYSR WHERE TYSR.ID = #{fromId}")
+    Map<String, Object> selectFWXQBMapById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TYPS.ID," +
+            " TYPS.PROJECT_NAME," +
+            " TYPS.PROJECT_PURPOSE," +
+            " TYPS.CONCERNS_CONTENT," +
+            " TYPS.UNIT_RANGE," +
+            " TYPS.TIME_RANGE," +
+            " TYPS.PROJECT_TYPE," +
+            " TYPS.REMARK," +
+            " TYPS.CREATE_USER," +
+            " TYPS.CREATE_TIME," +
+            " TYPS.PERSON_IDS," +
+            " TYPS.STATUS" +
+            " FROM" +
+            " TBL_YQNS_PROJECT_SUGGESTION TYPS WHERE TYPS.ID = #{fromId}")
+    Map<String, Object> selectLXJYBMapById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TYF.FGLDHZID," +
+            " TYF.CJR," +
+            " TYF.CJSJ," +
+            " TYF.EXT1," +
+            " TYF.EXT2," +
+            " TYF.EXT3," +
+            " TYF.ORGID," +
+            " TYF.GXR," +
+            " TYF.GXSJ," +
+            " TYF.SPZT," +
+            " TYF.BZ," +
+            " TYF.GSLDID," +
+            " TYF.GSLDXM," +
+            " TYF.LXYQ," +
+            " TYF.LSJY," +
+            " TYF.STATUS" +
+            " FROM" +
+            " TBL_YQNS_FGLDHZ TYF WHERE TYF.FGLDHZID = #{fromId}")
+    Map<String, Object> selectFGLDHZMapById(BigDecimal fromId);
+
+    @Select("")
+    Map<String, Object> selectGCXMZJMapById(BigDecimal fromId);
+
+    Map<String, Object> selectGCXMZJZJBMapById(BigDecimal fromId);
+
+    Map<String, Object> selectGCJGYSJHMapById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TCNA.ID," +
+            " TCNA.IPADDRESS," +
+            " TCNA.MACADDRESS," +
+            " TCNA.DEPARTMENTSNAME," +
+            " TCNA.USEPEOPLE," +
+            " TCNA.CONTACTPHONE," +
+            " TCNA.MAILADDRESS," +
+            " TCNA.ANTIVIRUSSOFTWARE," +
+            " TCNA.ANTIVIRUSMANUFACTURER," +
+            " TCNA.STATE," +
+            " TCNA.CREATOR," +
+            " TCNA.WORKUNIT," +
+            " TCNA.BELONGGROUP" +
+            " FROM" +
+            " TBL_CEA_NETWORK_AGENT TCNA " +
+            " WHERE TCNA.ID = #{fromId}")
+    Map<String, Object> selectWWDLFWGLById(BigDecimal fromId);
+
+    @Select("SELECT TCCA.ID, TCCA.CONFERENCENAME, TCCA.CONFERENCECOMPERE, TCCA.ATTENDEES, TCCA.CONFERENCETIMESTART, TCCA.CONFERENCETIMEEND, " +
+            "TCCA.CONFERENCEPLACE, TCCA.CONFERENCECONTENT, TCCA.CONFERENCEREQUIRE, TCCA.FILEIDS, TCCA.STATE, TCCA.CREATOR," +
+            "TCCA.WORKUNIT, TCCA.BELONGGROUP FROM TBL_CEA_CONFERENCE_APPLY TCCA WHERE TCCA.ID = #{fromId}")
+    Map<String, Object> selectHYSQById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TCCM. ID," +
+            " TCCM.CONFERENCENAME," +
+            " TCCM.CONFERENCECOMPERE," +
+            " TCCM.ATTENDEES," +
+            " TCCM.CONFERENCEPLACE," +
+            " TCCM.CONFERENCEREQUIRE," +
+            " TCCM.CONFERENCECONTENT," +
+            " TCCM.FILEIDS," +
+            " TCCM.STATE," +
+            " TCCM.CREATOR," +
+            " TCCM.WORKUNIT," +
+            " TCCM.BELONGGROUP" +
+            " FROM" +
+            " TBL_CEA_CONFERENCE_MGT TCCM WHERE TCCM.ID = #{fromId}")
+    Map<String, Object> selectHYGLById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TCIM.ID," +
+            " APS.PKYMSTAFFID AS APPLYPEOPLE," +
+            " AD.PKYMORGID AS APPLYBELONGGROUP " +
+            /*" ,TCIM.APPLYWORKUNIT," +
+            " TCIM.NETWORKINTERFACE," +
+            " TCIM.OFFICEAREA," +
+            " TCIM.ROOMNUMBER," +
+            " TCIM.PURPOSE," +
+            " TCIM.EQUIPMENTTYPE," +
+            " TCIM.EXTERNALNETWORKPERMISSIONS," +
+            " TCIM.STATE," +
+            " TCIM.CREATOR," +
+            " TCIM.WORKUNIT," +
+            " TCIM.BELONGGROUP" +*/
+            " FROM" +
+            " TBL_CEA_IP_MANAGE TCIM LEFT JOIN TBL_STAFF APS ON TCIM.APPLYPEOPLE = APS.STAFFID LEFT JOIN TBL_ORGANIZATION AD ON TCIM.APPLYBELONGGROUP = AD.ORGID WHERE TCIM.ID = #{fromId}")
+    Map<String, Object> selectIPDZGLById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TCIW.ID," +
+            " TCIW.INFOTITLE," +
+            " TCIW.INFOPROVIDERWORKUNIT," +
+            " TCIW.PROVIDERPEOPLE," +
+            " TCIW.CONTACT," +
+            " TCIW.FAX," +
+            " TCIW.MAILADDRESS," +
+            " TCIW.INFORELEASECOLUMN," +
+            " TCIW.EXPECTONLINETIME," +
+            " TCIW.FAILURETIME," +
+            " TCIW.CONTENTABSTRACT," +
+            " TCIW.STATE," +
+            " TCIW.CREATOR," +
+            " TCIW.WORKUNIT," +
+            " TCIW.BELONGGROUP," +
+            " TCIW.CREATEDTIME," +
+            " TCIW.UPDATEDTIME" +
+            " FROM" +
+            " TBL_CEA_INTERNAL_WEBSITE_APPLY TCIW WHERE TCIW.ID = #{fromId}")
+    Map<String, Object> selectNBWZSQDById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TCEA.ID," +
+            " TCEA.APPLYPEOPLE," +
+            " TCEA.APPLYWORKUNIT," +
+            " TCEA.POST," +
+            " TCEA.APPLYEXPATRIATETIME," +
+            " TCEA.APPLYRETURNTIME," +
+            " TCEA.ACTUALRETURNTIME," +
+            " TCEA.EXPATRIATEREASON," +
+            " TCEA.STATE," +
+            " TCEA.CREATOR," +
+            " TCEA.WORKUNIT," +
+            " TCEA.BELONGGROUP," +
+            " TCEA.CREATEDTIME," +
+            " TCEA.UPDATEDTIME" +
+            " FROM" +
+            " TBL_CEA_EXPATRIATE_APPLY TCEA WHERE TCEA.ID = #{fromId}")
+    Map<String, Object> selectWPSQDById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TCCH.ID," +
+            " TCCH.PEOPLE,XJR.REALNAME AS REALNAME,DEPT.ORGNAME AS COMMITDEPTNAME, " +
+            " TCCH.PEOPLEWORKUNIT," +
+            " TCCH.FILLFORMTIME," +
+            " TCCH.CANCELHOLIDAYTYPE," +
+            " TCCH.REASONS," +
+            " TCCH.STATE," +
+            " TCCH.CREATOR," +
+            " TCCH.WORKUNIT," +
+            " TCCH.BELONGGROUP," +
+            " TCCH.CREATEDTIME," +
+            " TCCH.UPDATEDTIME" +
+            " FROM" +
+            " TBL_CEA_CANCEL_HOLIDAY TCCH LEFT JOIN TBL_STAFF XJR ON TCCH.PEOPLE = XJR.STAFFID LEFT JOIN TBL_ORGANIZATION DEPT ON TCCH.PEOPLEWORKUNIT = DEPT.ORGID WHERE TCCH.ID = #{fromId}")
+    Map<String, Object> selectXJDById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TCSN.ID," +
+            " TCSN.NOTICENUMBER," +
+            " TCSN.NOTICENAME," +
+            " TCSN.NOTICETIME," +
+            " TCSN.SUPERVISIONWORKUNIT," +
+            " TCSN.TRANSACTOR," +
+            " TCSN.REMARK," +
+            " TCSN.FILEIDS," +
+            " TCSN.STATE," +
+            " TCSN.CREATOR," +
+            " TCSN.WORKUNIT," +
+            " TCSN.BELONGGROUP," +
+            " TCSN.CREATEDTIME," +
+            " TCSN.UPDATEDTIME" +
+            " FROM" +
+            " TBL_CEA_SUPERVISION_NOTICE TCSN WHERE TCSN.ID = #{fromId}")
+    Map<String, Object> selectDBTZDById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TCMM.ID," +
+            //" TCMM.APPLYID," +
+            " TCMM.STAFFCODE," +
+            " APS.REALNAME AS APPLYNAME"+
+            /*" TCMM.SERVICETYPE," +
+            " TCMM.CONTACTPHONE," +
+            " TCMM.MAILSUFFIX," +
+            " TCMM.LOGINNAME," +
+            " TCMM.LOGINNAMEONE," +
+            " TCMM.LOGINNAMETWO," +
+            " TCMM.LOGINNAMETHREE," +
+            " TCMM.CHANGETYPE," +
+            " TCMM.APPLYMAIL," +
+            " TCMM.CHANGECONTENT," +
+            " TCMM.LOGOUTREASON," +
+            " TCMM.STATE," +
+            " TCMM.CREATOR," +
+            " TCMM.WORKUNIT," +
+            " TCMM.BELONGGROUP," +
+            " TCMM.CREATEDTIME," +
+            " TCMM.UPDATEDTIME," +
+            " TCMM.APPLYBELONGGROUP"+ */
+            " FROM" +
+            " TBL_CEA_MAIL_MGT TCMM LEFT JOIN TBL_STAFF APS ON TCMM.APPLYID = APS.STAFFID WHERE TCMM.ID = #{fromId}")
+    Map<String, Object> selectZSYYXGLById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TCDC.ID," +
+            " TCDC.SERVICETYPE," +
+            " TCDC.USERNAME," +
+            " TCDC.EMAIL," +
+            " TCDC.STAFFCODE," +
+            " TCDC.ORGANIZATIONNAME," +
+            " TCDC.ORGANIZATIONNUM," +
+            " TCDC.CONTACTPHONE," +
+            " TCDC.REMARK," +
+            " TCDC.ISAGENCY," +
+            " TCDC.STATE," +
+            " TCDC.CREATOR," +
+            " TCDC.WORKUNIT," +
+            " TCDC.BELONGGROUP," +
+            " TCDC.CREATEDTIME," +
+            " TCDC.UPDATEDTIME," +
+            " TCDC.AGENCYNAME," +
+            " TCDC.AGENCYBELONGGROUP," +
+            " TCDC.AGENCYMAIL," +
+            " TCDC.AGENCYCONTACTPHONE" +
+            " FROM" +
+            " TBL_CEA_DIGITAL_CERTIFICATE TCDC WHERE TCDC.ID = #{fromId}")
+    Map<String, Object> selectSZZSGLById(BigDecimal fromId);
+
+
+    @Select("SELECT" +
+            " TCVM.ID," +
+            " TCVM.STAFFID," +
+            " TS.REALNAME AS REALNAME," +
+            " TCVM.MAIL," +
+            " TCVM.MOBILEPHONE," +
+            " TCVM.STAFFNUMBER," +
+            " TCVM.SERVICETYPE," +
+            " TCVM.APPLYTIME," +
+            " TCVM.REMARK," +
+            " TCVM.STATE," +
+            " TCVM.CREATOR," +
+            " TCVM.WORKUNIT," +
+            " TCVM.BELONGGROUP," +
+            " TCVM.CREATEDTIME," +
+            " TCVM.UPDATEDTIME," +
+            " TCVM.POST," +
+            " TCVM.STATUS" +
+            " FROM" +
+            " TBL_CEA_VPN_MGT TCVM LEFT JOIN TBL_STAFF TS ON TCVM.STAFFID = TS.STAFFID WHERE TCVM.ID = #{fromId}")
+    Map<String, Object> selectVPNZHGLById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TCIR.ID," +
+            " TCIR.SYMBOL," +
+            " TCIR.INSIDEREPORTEDNAME," +
+            " TCIR.FILEIDS," +
+            " TCIR.STATE," +
+            " TCIR.CREATOR," +
+            " TCIR.WORKUNIT," +
+            " TCIR.BELONGGROUP," +
+            " TCIR.CREATEDTIME," +
+            " TCIR.UPDATEDTIME," +
+            " TCIR.STATUS" +
+            " FROM" +
+            " TBL_CEA_INSIDE_REPORTED TCIR WHERE TCIR.ID = #{fromId}")
+    Map<String, Object> selectNBWJCBById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TCAA.ID," +
+            " TCAA.APPLYID," +
+            " TCAA.APPLYWORKUNIT," +
+            " TCAA.APPLYROLE," +
+            " TCAA.APPLYTIME," +
+            " TCAA.STATE," +
+            " TCAA.CREATOR," +
+            " TCAA.WORKUNIT," +
+            " TCAA.BELONGGROUP," +
+            " TCAA.CREATEDTIME," +
+            " TCAA.UPDATEDTIME," +
+            " TCAA.REMARK," +
+            " TCAA.STATUS" +
+            " FROM" +
+            " TBL_CEA_AUTHORITY_APPLY TCAA WHERE TCAA.ID = #{fromId}")
+    Map<String, Object> selectQXSQById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TCAA.ID," +
+            " TCAA.STATE,"
+            + "TCAA.VISITORSREASON,"
+            + "TCAA.RECEIVERTYPE" +
+            " FROM" +
+            " TBL_CEA_OFFICIAL_RECEPTIONS TCAA WHERE TCAA.ID = #{fromId}")
+    Map<String, Object> selectGWJDById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TYJJ.JHCGID," +
+            " TYJJ.CJR," +
+            " TYJJ.CJSJ," +
+            " TYJJ.EXT1," +
+            " TYJJ.EXT2," +
+            " TYJJ.EXT3," +
+            " TYJJ.ORGID," +
+            " TYJJ.GXR," +
+            " TYJJ.GXSJ," +
+            " TYJJ.SPZT," +
+            " TYJJ.JHMC," +
+            " TYJJ.SJ," +
+            " TYJJ.BZ," +
+            " TYJJ.LXDWID," +
+            " TYJJ.LXDWMC," +
+            " TYJJ.BSJDWID," +
+            " TYJJ.BSJDWMC," +
+            " TYJJ.SSLX," +
+            " TYJJ.JWXM," +
+            " TYJJ.SSSJJGID," +
+            " TYJJ.XMND," +
+            " TYJJ.XMFZCKSID," +
+            " TYJJ.XMFZCKSMC," +
+            " TYJJ.JHSSYF," +
+            " TYJJ.SSXMLX," +
+            " TYJJ.LXYJ," +
+            " TYJJ.SJXMMC," +
+            " TYJJ.JHLX," +
+            " TYJJ.JHTRRR," +
+            " TYJJ.SFDQBJYHDSJ," +
+            " TYJJ.BGYY," +
+            " TYJJ.SSSJJGMC," +
+            " TYJJ.STATUS," +
+            " TYJJ.STATUSS" +
+            " FROM" +
+            " TBL_YQNS_JHGL_JHCG TYJJ WHERE TYJJ.JHCGID = #{fromId}")
+    Map<String, Object> selectJHCGById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TYJJ.JHCHUGID," +
+            " TYJJ.CJR," +
+            " TYJJ.CJSJ," +
+            " TYJJ.EXT1," +
+            " TYJJ.EXT2," +
+            " TYJJ.EXT3," +
+            " TYJJ.ORGID," +
+            " TYJJ.GXR," +
+            " TYJJ.GXSJ," +
+            " TYJJ.SPZT," +
+            " TYJJ.JHMC," +
+            " TYJJ.SJ," +
+            " TYJJ.BZ," +
+            " TYJJ.LXDWID," +
+            " TYJJ.LXDWMC," +
+            " TYJJ.BSJDWID," +
+            " TYJJ.BSJDWMC," +
+            " TYJJ.SSLX," +
+            " TYJJ.JWXM," +
+            " TYJJ.SSSJJGID," +
+            " TYJJ.XMND," +
+            " TYJJ.XMFZCKSID," +
+            " TYJJ.XMFZCKSMC," +
+            " TYJJ.JHSSYF," +
+            " TYJJ.SSXMLX," +
+            " TYJJ.LXYJ," +
+            " TYJJ.SJXMMC," +
+            " TYJJ.JHLX," +
+            " TYJJ.JHTRRR," +
+            " TYJJ.SFDQBJYHDSJ," +
+            " TYJJ.BGYY," +
+            " TYJJ.SSSJJGMC," +
+            " TYJJ.STATUS" +
+            " FROM" +
+            " TBL_YQNS_JHGL_JHCHUG TYJJ WHERE TYJJ.JHCHUGID = #{fromId}")
+    Map<String, Object> selectJHCHUGById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TYJJ.JHID," +
+            " TYJJ.CJR," +
+            " TYJJ.CJSJ," +
+            " TYJJ.EXT1," +
+            " TYJJ.EXT2," +
+            " TYJJ.EXT3," +
+            " TYJJ.ORGID," +
+            " TYJJ.GXR," +
+            " TYJJ.GXSJ," +
+            " TYJJ.SPZT," +
+            " TYJJ.JHMC," +
+            " TYJJ.SJ," +
+            " TYJJ.BZ," +
+            " TYJJ.LXDWID," +
+            " TYJJ.LXDWMC," +
+            " TYJJ.BSJDWID," +
+            " TYJJ.BSJDWMC," +
+            " TYJJ.SSLX," +
+            " TYJJ.JWXM," +
+            " TYJJ.SSSJJGID," +
+            " TYJJ.XMND," +
+            " TYJJ.XMFZCKSID," +
+            " TYJJ.XMFZCKSMC," +
+            " TYJJ.JHSSYF," +
+            " TYJJ.SSXMLX," +
+            " TYJJ.LXYJ," +
+            " TYJJ.SJXMMC," +
+            " TYJJ.JHLX," +
+            " TYJJ.JHTRRR," +
+            " TYJJ.SFDQBJYHDSJ," +
+            " TYJJ.BGYY," +
+            " TYJJ.SSSJJGMC," +
+            " TYJJ.STATUS" +
+            " FROM" +
+            " TBL_YQNS_JHGL_JH TYJJ WHERE TYJJ.JHID = #{fromId}")
+    Map<String, Object> selectJHById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TYJ.JHXQID," +
+            " TYJ.CJR," +
+            " TYJ.CJSJ," +
+            " TYJ.EXT1," +
+            " TYJ.EXT2," +
+            " TYJ.EXT3," +
+            " TYJ.ORGID," +
+            " TYJ.GXR," +
+            " TYJ.GXSJ," +
+            " TYJ.SPZT," +
+            " TYJ.JHXQMC," +
+            " TYJ.SJXMLX," +
+            " TYJ.BZ," +
+            " TYJ.XMLXR," +
+            " TYJ.LXDH," +
+            " TYJ.TBDW," +
+            " TYJ.TBSJ," +
+            " TYJ.ZZFS," +
+            " TYJ.JYSJSSSJ," +
+            " TYJ.SJYJ," +
+            " TYJ.SJMB," +
+            " TYJ.SJFW," +
+            " TYJ.QTQKSM," +
+            " TYJ.XMTZQD," +
+            " TYJ.GSPFTZJE," +
+            " TYJ.XYWCTZJE," +
+            " TYJ.YJZTZJE," +
+            " TYJ.QZXTWDWCJE," +
+            " TYJ.NJGYSSJ," +
+            " TYJ.SYXHGSJ," +
+            " TYJ.JSWCSJ," +
+            " TYJ.JUESWCSJ," +
+            " TYJ.STATUS" +
+            " FROM" +
+            " TBL_YQNS_JHXQ TYJ WHERE TYJ.JHXQID = #{fromId}")
+    Map<String, Object> selectJHXQById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TYAMM.ID," +
+//            " TYAMM.AUDITEENAME," +
+            " TYAMM.PROJECTNAME," +
+            " TYAMM.AUDITMATTERS," +
+            " TYAMM.BASICWORK," +
+            " TYAMM.EVIDENCEACCURATE," +
+            " TYAMM.DGVERIFICATIONDESCRIPTION," +
+            " TYAMM.DGAUDITCONCLUSION," +
+            " TYAMM.DGHANDLINGOPINIONS," +
+            " TYAMM.PROBLEMDRAFT," +
+            " CJR.PKYMSTAFFID CREATEUSER," +
+            " TYAMM.CREATETIME," +
+            " TYAMM.UPDATEUSER," +
+            " TYAMM.UPDATETIME," +
+            " TYAMM.AUDITEENAMEID," +
+            " TYAMM.TYPEID," +
+            " TYAMM.TEMPLATEID," +
+            " TYAMM.DRAFTNUMBER," +
+            " TYIP.ZYKSTYPE," +
+            " TS.PKYMSTAFFID AS PKYMSTAFFID,  " +
+            " TYAMM.SUMMARYDRAFTMARK,"
+            + "CASE WHEN  TYIP.ISGC=0 THEN sta.PKYMSTAFFID ELSE sta1.PKYMSTAFFID END ZZID, ZS.PKYMSTAFFID AS ZSID " +
+            " FROM" +
+            " TBL_YQNS_AUDIT_MY_MANUSCRIPT TYAMM "
+            + "	LEFT JOIN TBL_STAFF TS ON TYAMM.THEDEPTSTAFFID = TS.STAFFID "
+            + "	LEFT JOIN TBL_STAFF CJR ON TYAMM.CREATEUSER = CJR.STAFFID "
+            + " LEFT JOIN TBL_YQNS_IMPLEMENT_PLAN TYIP on TYAMM.PROJECTID=TYIP.id"
+            + " LEFT JOIN TBL_STAFF zs on zs.staffid=TYIP.ZSSTAFFID "
+            + " LEFT JOIN TBL_YQNS_FUND_AUDIT_PROJECT FUD on TYIP.XMAPBID=FUD.ID "
+            + " LEFT JOIN TBL_STAFF sta on sta.staffid=FUD.GROUPLEADERID "
+            + " LEFT JOIN TBL_YQNS_ENGIN_AUDIT_PROJECT ENG on TYIP.XMAPBID=ENG.ID "
+            + " LEFT JOIN TBL_STAFF sta1 on sta1.staffid=ENG.GROUPLEADERID  "
+            + " WHERE TYAMM.ID = #{fromId}")
+    Map<String, Object> selectSJSSWDDGById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TYR.RESULTID," +
+            " TYR.RESULTCODE," +
+            " TYR.CREATESTAFF," +
+            " TYR.CREATETIME," +
+            " TYR.PROJECTID," +
+            " TYR.STATUS," +
+            " TYR.ORGIDS," +
+            " TYR.ORGIDNAMES," +
+            " TYR.CONTRACTCODE," +
+            " TYR.CONTRACTNAME," +
+            " TYR.SGORGID," +
+            " TYR.SGORGNAME," +
+            " TYR.CONTRACTMONEY," +
+            " TYR.HZMONEY," +
+            " TYR.HJMONEY," +
+            " TYR.SDMONEY," +
+            " TYR.SERVED,"+
+            " TYIP.ZYKSTYPE,"+
+            " TYR.PROJECTNAME,"
+            + "CASE WHEN  TYIP.ISGC=0 THEN sta.PKYMSTAFFID ELSE sta1.PKYMSTAFFID END ZZID,"
+            + "zk.PKYMSTAFFID ZYKSRYID, ZS.PKYMSTAFFID AS ZSID" +
+            " FROM" +
+            " TBL_YQNS_RESULT TYR"
+            + " LEFT JOIN TBL_YQNS_IMPLEMENT_PLAN TYIP on TYR.PROJECTID=TYIP.id"
+            + " LEFT JOIN TBL_STAFF zs on zs.staffid=TYIP.ZSSTAFFID "
+            + " LEFT JOIN TBL_YQNS_FUND_AUDIT_PROJECT FUD on TYIP.XMAPBID=FUD.ID "
+            + " LEFT JOIN TBL_STAFF sta on sta.staffid=FUD.GROUPLEADERID "
+            + " LEFT JOIN TBL_YQNS_ENGIN_AUDIT_PROJECT ENG on TYIP.XMAPBID=ENG.ID "
+            + " LEFT JOIN TBL_STAFF sta1 on sta1.staffid=ENG.GROUPLEADERID  "
+            + " LEFT JOIN TBL_STAFF zk on zk.staffid=TYIP.PROJECT_ORDER_ID "
+            + " WHERE TYR.RESULTID = #{fromId}")
+    Map<String, Object> selectSJJGQRSById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TYPZ.ID," +
+            " TYPZ.RESULT_ID," +
+            " TYPZ.PROJECT_NAME," +
+            " TYPZ.AUDIT_ORG_ID," +
+            " TYPZ.REASON," +
+            " TYPZ.MONEY," +
+            " TYPZ.ZK_ORG_ID," +
+            " TYPZ.REMARK" +
+            " FROM" +
+            " TBL_YQNS_PROJECT_ZK TYPZ WHERE TYPZ.ID = #{fromId}")
+    Map<String, Object> selectSJXMZKById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TYAWR.ID," +
+            " TYAWR.AUDITEENAME," +
+            " TYAWR.IMPLEMENTATIONTIME," +
+            " TYAWR.PROJECTNAME," +
+            " TYAWR.RESPONSIBLECONTENT," +
+            " TYAWR.CONTENTOBJECTIVES," +
+            " TYAWR.EXECUTEDPROCEDURESPROCESSES," +
+            " TYAWR.VERIFICATIONSITUATION," +
+            " TYAWR.CLUESSOURCES," +
+            " TYAWR.CREATEUSER," +
+            " TYAWR.CREATETIME," +
+            " TYAWR.UPDATEUSER," +
+            " TYAWR.UPDATETIME," +
+            " TYAWR.DELFLAG," +
+            " TYAWR.AUDITEENAMEID,"+
+            " TYIP.ZYKSTYPE," 
+            + "CASE WHEN  TYIP.ISGC=0 THEN sta.PKYMSTAFFID ELSE sta1.PKYMSTAFFID END ZZID,"
+            + "zk.PKYMSTAFFID ZYKSRYID, ZS.PKYMSTAFFID AS ZSID " +
+            " FROM" +
+            " TBL_YQNS_AUDIT_WORK_RECORDS TYAWR  "
+            + " LEFT JOIN TBL_YQNS_IMPLEMENT_PLAN TYIP on TYAWR.PROJECTID=TYIP.id"
+            + " LEFT JOIN TBL_STAFF zs on zs.staffid=TYIP.ZSSTAFFID "
+            + " LEFT JOIN TBL_YQNS_FUND_AUDIT_PROJECT FUD on TYIP.XMAPBID=FUD.ID "
+            + " LEFT JOIN TBL_STAFF sta on sta.staffid=FUD.GROUPLEADERID "
+            + " LEFT JOIN TBL_YQNS_ENGIN_AUDIT_PROJECT ENG on TYIP.XMAPBID=ENG.ID "
+            + " LEFT JOIN TBL_STAFF sta1 on sta1.staffid=ENG.GROUPLEADERID "
+            + " LEFT JOIN TBL_STAFF zk on zk.staffid=TYIP.PROJECT_ORDER_ID "
+            + " WHERE TYAWR.ID = #{fromId}")
+    Map<String, Object> selectSJGZJLById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TYAOR.ID," +
+            " TYAOR.PROJECTNAME," +
+            " TYAOR.CHIEFAUDITOR," +
+            " TYAOR.SUPERVISIONPARTICIPANTS," +
+            " TYAOR.SUPERVISIONDATE," +
+            " TYAOR.ONSITECONDITION," +
+            " TYAOR.ISSUESANDCOORDINATION," +
+            " TYAOR.SUPERVISIONOPINIONS," +
+            " TYAOR.CREATEUSER," +
+            " TYAOR.CREATETIME," +
+            " TYAOR.UPDATEUSER," +
+            " TYAOR.UPDATETIME," +
+            " TYAOR.DELFLAG," +
+            " TYAOR.REMARKS," +
+            " TYAOR.SUPERVISIONPARTICIPANTSID," +
+            " TYIP.ZYKSTYPE," +
+            " TYAOR.STATUS" +
+            " FROM" +
+            " TBL_YQNS_AUDIT_OVERSEE_RECORDS TYAOR "
+            + " LEFT JOIN TBL_YQNS_IMPLEMENT_PLAN TYIP on TYAOR.PROJECTID=TYIP.id"
+            + "  WHERE TYAOR.ID = #{fromId}")
+    Map<String, Object> selectSJDDJLById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TYASR.ID," +
+            " TYASR.REPORTNAME," +
+            " TYASR.REPORTTIME," +
+            " TYASR.REPORTTYPE," +
+            " TYASR.REPORTWAY," +
+            " TYASR.REPORTDEPT," +
+            " TYASR.REPORTER," +
+            " TYASR.REPORTCONTENT," +
+            " TYASR.ANNEX," +
+            " TYASR.PROJECTID," +
+            " TYASR.STATUS" +
+            " FROM" +
+            " TBL_YQNS_AUDIT_SUPER_REPORT TYASR WHERE TYASR.ID = #{fromId}")
+    Map<String, Object> selectSJDDBGById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TYAP. ID," +
+            " TYAP.WEEKWORK," +
+            " TYAP.NEXTWEEKWORK," +
+            " TYAP.OTHERMATTERS,"
+            + "TYIP.PROJECT_NAME PROJECTNAME," 
+            + "CASE WHEN  TYIP.ISGC=0 THEN sta.PKYMSTAFFID ELSE sta1.PKYMSTAFFID END ZZID,zk.PKYMSTAFFID ZYKSRYID" +
+            " FROM" +
+            " TBL_YQNS_PROJECT_WEEKLY TYAP "
+            + " LEFT JOIN TBL_YQNS_IMPLEMENT_PLAN TYIP on TYAP.IMPLEMENTID=TYIP.id"
+            + " LEFT JOIN TBL_YQNS_FUND_AUDIT_PROJECT FUD on TYIP.XMAPBID=FUD.ID "
+            + " LEFT JOIN TBL_STAFF sta on sta.staffid=FUD.GROUPLEADERID "
+            + " LEFT JOIN TBL_YQNS_ENGIN_AUDIT_PROJECT ENG on TYIP.XMAPBID=ENG.ID "
+            + " LEFT JOIN TBL_STAFF sta1 on sta1.staffid=ENG.GROUPLEADERID  "
+			+ " LEFT JOIN TBL_STAFF zk on zk.staffid=TYIP.PROJECT_ORDER_ID "
+            + " WHERE TYAP.ID = #{fromId}")
+    Map<String, Object> selectSJXMQKBById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TYSRC.ID," +
+            " TYSRC.DELETED," +
+            " TYSRC.CREATETIME," +
+            " TYSRC.UPDATETIME," +
+            " TYSRC.SETTLEPROJECTNUM," +
+            " TYSRC.PROJECTNAME," +
+            " TYSRC.SETTLEAMOUNT," +
+            " TYSRC.BUILDORGID," +
+            " TYSRC.CONSTRUCTIONORGID," +
+            " TYSRC.REVIEWCONTENT," +
+            " TYSRC.REVIEWSTAFFID," +
+            " TYSRC.BUILDUNITMANAGEID," +
+            " TYSRC.SCENEREVIEWTIME," +
+            " TYSRC.RECHECKSTAFFID," +
+            " TYSRC.BUILDORGNAME," +
+            " TYSRC.CONSTRUCTIONORGNAME," +
+            " TYSRC.REVIEWSTAFFNAME," +
+            " TYSRC.BUILDUNITMANAGENAME," +
+            " TYSRC.RECHECKSTAFFNAME,"
+            + "CASE WHEN  TYIP.ISGC=0 THEN sta.PKYMSTAFFID ELSE sta1.PKYMSTAFFID END ZZID,zk.PKYMSTAFFID ZYKSRYID" +
+            " FROM" +
+            " TBL_YQNS_SITE_REVIEW_CONTENT TYSRC "
+            + " LEFT JOIN TBL_YQNS_IMPLEMENT_PLAN TYIP on TYSRC.PROJECTID=TYIP.id"
+            + " LEFT JOIN TBL_YQNS_FUND_AUDIT_PROJECT FUD on TYIP.XMAPBID=FUD.ID "
+            + " LEFT JOIN TBL_STAFF sta on sta.staffid=FUD.GROUPLEADERID "
+            + " LEFT JOIN TBL_YQNS_ENGIN_AUDIT_PROJECT ENG on TYIP.XMAPBID=ENG.ID "
+            + " LEFT JOIN TBL_STAFF sta1 on sta1.staffid=ENG.GROUPLEADERID  "
+			+ " LEFT JOIN TBL_STAFF zk on zk.staffid=TYIP.PROJECT_ORDER_ID "
+            + "  WHERE TYSRC.ID = #{fromId}")
+    Map<String, Object> selectXCSCZYNRById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TNA.PLANID," +
+            " TNA.PLANCODE," +
+            " TNA.PLANNAME," +
+            " TNA.PALNYEAR," +
+            " TNA.PLANTYPE," +
+            " TNA.AUDITORGID," +
+            " TNA.PALNCOST," +
+            " TNA.STARTTIME," +
+            " TNA.ENDTIME," +
+            " TNA.PRINCIPALID," +
+            " TNA.LEADERID," +
+            " TNA.REMARKS," +
+            " TNA.CREATESTAFFID," +
+            " TNA.CREATETIME," +
+            " TNA.UPDATETIMR," +
+            " TNA.STATUS," +
+            " TNA.OPINIONSTATUS," +
+            " TNA.ISAUDITOR" +
+            " FROM" +
+            " TBL_NBSJ_AUDITPLAN TNA WHERE TNA.PLANID = #{fromId}")
+    Map<String, Object> selectJHBZById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TYS.SQDCBGID," +
+            " TYS.CJR," +
+            " TYS.CJSJ," +
+            " TYS.EXT1," +
+            " TYS.EXT2," +
+            " TYS.EXT3," +
+            " TYS.ORGID," +
+            " TYS.GXR," +
+            " TYS.GXSJ," +
+            " TYS.SPZT," +
+            " TYS.BZ," +
+            " TYS.XMMC," +
+            " TYS.JHMC" +
+            " FROM" +
+            " TBL_YQNS_SQDCBG TYS WHERE TYS.SQDCBGID = #{fromId}")
+    Map<String, Object> selectSQDCBGById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TYG.GZFAID," +
+            " TYG.CJR," +
+            " TYG.CJSJ," +
+            " TYG.EXT1," +
+            " TYG.EXT2," +
+            " TYG.EXT3," +
+            " TYG.ORGID," +
+            " TYG.GXR," +
+            " TYG.GXSJ," +
+            " TYG.SPZT," +
+            " TYG.BZ," +
+            " TYG.XMMC," +
+            " TYG.JHMC," +
+            " TYG.RYIDS,"
+            + "TYG.FALX " +
+            " FROM" +
+            " TBL_YQNS_GZFA TYG WHERE TYG.GZFAID = #{fromId}")
+    Map<String, Object> selectGZFAById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TYIP.ID," +
+            " TYIP.PLAN_ID," +
+            " TYIP.PLAN_PROJECT_ID," +
+            " TYIP.PLAN_NAME," +
+            " TYIP.PLAN_PROJECT_NAME," +
+            " TYIP.PROJECT_NAME," +
+            " TYIP.PROJECT_TYPE," +
+            " TYIP.AUDIT_ORG_ID," +
+            " TYIP.PLAN_YEAR," +
+            " TYIP.PLAN_TIME," +
+            " TYIP.PROJECT_SUMMARY," +
+            " TYIP.PROJECT_ORDER_ID," +
+            " TYIP.PLAN_STARTTIME," +
+            " TYIP.PLAN_ENDTIME," +
+            " TYIP.AUDIT_METHOD," +
+            " TYIP.COST_ESTIMATION," +
+            " TYIP.IS_WW," +
+            " TYIP.TEMP_ID," +
+            " TYIP.IMPLEMENT_TYPE," +
+            " TYIP.DEPT_ID," +
+            " TYIP.AUDIT_REQUIREMENT," +
+            " TYIP.IMPLEMENT_STEPS," +
+            " TYIP.AUDIT_REASON," +
+            " TYIP.AUDIT_CONTENT," +
+            " TYIP.AUDIT_PROCESS," +
+            " TYIP.AUDIT_RESULT_USE," +
+            " TYIP.OTHER_CONTENT," +
+            " TYIP.PROJECT_ORDER_NAME," +
+            " TYIP.AUDIT_ORG_NAME," +
+            " TYIP.TEMP_NAME," +
+            " TYIP.DEPT_NAME," +
+            " TYIP.PROJECTTEMP_ID," +
+            " TYIP.PROJECTTEMP_NAME," +
+            " TYIP.SJLX_ID," +
+            " TYIP.SJLX_NAME," +
+            " TYIP.SPZT,"
+            + "TYIP.ZYKSTYPE,"
+            + "TYIP.ZSSTAFFID,"
+            + "CASE WHEN  TYIP.ISGC=0 THEN sta.PKYMSTAFFID ELSE sta1.PKYMSTAFFID END ZZID,ZK.PKYMSTAFFID ZYKSRYID" +
+            " FROM" +
+            " TBL_YQNS_IMPLEMENT_PLAN TYIP " 
+            + " LEFT JOIN TBL_STAFF zk on TYIP.PROJECT_ORDER_ID=ZK.STAFFID "
+            + " LEFT JOIN TBL_YQNS_FUND_AUDIT_PROJECT FUD on TYIP.XMAPBID=FUD.ID"
+            + " LEFT JOIN TBL_STAFF sta on sta.staffid=FUD.GROUPLEADERID"
+            + " LEFT JOIN TBL_YQNS_ENGIN_AUDIT_PROJECT ENG on TYIP.XMAPBID=ENG.ID"
+            + " LEFT JOIN TBL_STAFF sta1 on sta1.staffid=ENG.GROUPLEADERID  WHERE TYIP.ID = #{fromId}")
+    Map<String, Object> selectSSFAById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TYS.SJXMBID," + 
+            " TYS.CJR," +
+            " TYS.CJSJ," +
+            " TYS.EXT1," +
+            " TYS.EXT2," +
+            " TYS.EXT3," +
+            " TYS.ORGID," +
+            " TYS.GXR," +
+            " TYS.GXSJ," +
+            " TYS.SPZT," +
+            " TYS.BZ," +
+            " TYS.HTBH," +
+            " TYS.GCMC," +
+            " TYS.SGDW," +
+            " TYS.ESSCJE," +
+            " TYS.BCSJRY," +
+            " TYS.RYIDS" +
+            " FROM" +
+            " TBL_YQNS_SJXMB TYS WHERE TYS.SJXMBID = #{fromId}")
+    Map<String, Object> selectSJXMBById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TYS.SJXMZDID," +
+            " TYS.CJR," +
+            " TYS.CJSJ," +
+            " TYS.EXT1," +
+            " TYS.EXT2," +
+            " TYS.EXT3," +
+            " TYS.ORGID," +
+            " TYS.GXR," +
+            " TYS.GXSJ," +
+            " TYS.SPZT," +
+            " TYS.BZ," +
+            " TYS.XMMC," +
+            " TYS.JHMC," +
+            " TYS.ZDMC," +
+            " TYS.FWBNR" +
+            " FROM" +
+            " TBL_YQNS_SJXMZD TYS WHERE TYS.SJXMZDID = #{fromId}")
+    Map<String, Object> selectSJXMZDById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TYJJ.HZID," +
+            " TYJJ.STATUS" +
+            " FROM" +
+            " TBL_YQNS_JSXM_JBQKHZ TYJJ WHERE TYJJ.HZID = #{fromId}")
+    Map<String, Object> selectJSXMJBQKById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TYJT.HZID," +
+            " TYJT.STATUS" +
+            " FROM" +
+            " TBL_YQNS_JSXM_TZWCQKHZ TYJT WHERE TYJT.HZID = #{fromId}")
+    Map<String, Object> selectJSXMTZWCQKById(BigDecimal fromId);
+
+    @Select("SELECT " +
+            " TYLA.JDID," +
+            " TYLA.STATUS" +
+            " FROM" +
+            " TBL_YQNS_LEAVE_AUDIT_JD3L TYLA WHERE TYLA.JDID = #{fromId}")
+    Map<String, Object> selectSJDWLRSJById(BigDecimal fromId);
+
+    @Select("SELECT TYLA.ID," +
+            " TYLA.PROJECT_NAME," +
+            " TYLA.AUDIT_ORG," +
+            " TYLA.ENTRUST_NO," +
+            " TYLA.ENTRUST_TIME," +
+            " TYLA.AUDIT_START_TIME," +
+            " TYLA.AUDIT_END_TIME," +
+            " TYLA.CREATE_USER," +
+            " TYLA.CREATE_TIME," +
+            " TYLA.PERSON_IDS," +
+            " TYLA.STATUS" +
+            " FROM" +
+            " TBL_YQNS_LEAVE_AUDIT_2L TYLA WHERE TYLA.ID = #{fromId}")
+    Map<String, Object> selectEJDWJCYDWLRSJById(BigDecimal fromId);
+
+    @Select("SELECT " +
+            " TYAS.ID," +
+            " TYAS.ORG," +
+            " TYAS.NAME," +
+            " TYAS.JOB," +
+            " TYAS.LV," +
+            " TYAS.WORK_START_TIME," +
+            " TYAS.WORK_END_TIME," +
+            " TYAS.WORK_DURATION," +
+            " TYAS.HAS_FINANCE_PROBLEM," +
+            " TYAS.HAS_ECONOMIC_PROBLEM," +
+            " TYAS.HAS_BEEN_COMPLAIN," +
+            " TYAS.IS_LEAVE_NEXT_YEAR," +
+            " TYAS.NEED_AUDIT," +
+            " TYAS.CREATE_USER," +
+            " TYAS.CREATE_TIME," +
+            " TYAS.STATUS" +
+            " FROM" +
+            " TBL_YQNS_2L_AUDIT_SUGGESTION TYAS WHERE TYAS.ID = #{fromId}")
+    Map<String, Object> selectEJJGRZLXJYById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TYEL.ID," +
+            " TYEL.NAME," +
+            " TYEL.RETIRE_TIME," +
+            " TYEL.AUDIT_TIME," +
+            " TYEL.PROJECT_NAME," +
+            " TYEL.WORK_START_TIME," +
+            " TYEL.WORK_END_TIME," +
+            " TYEL.DO_AUDIT_TIME," +
+            " TYEL.TEAM_LEADER_ID," +
+            " TYEL.LEADER_ID," +
+            " TYEL.CHIEF_REVIEWER_ID," +
+            " TYEL.DEPUTY_REVIEWER_ID," +
+            " TYEL.CREATE_USER," +
+            " TYEL.CREATE_TIME," +
+            " TYEL.PERSON_IDS," +
+            " TYEL.STATUS" +
+            " FROM" +
+            " TBL_YQNS_EXPECT_LEAVE TYEL WHERE TYEL.ID = #{fromId}")
+    Map<String, Object> selectWWTJYJLRById(BigDecimal fromId);
+
+    @Select("")
+    Map<String, Object> selectRZSJMXById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TYPS.ID," +
+            " TYPS.SUGGEST_DEPT_ID," +
+            " TYPS.SORT," +
+            " TYPS.PROJECT_NAME," +
+            " TYPS.PROJECT_PURPOSE," +
+            " TYPS.CONCERNS_CONTENT," +
+            " TYPS.UNIT_RANGE," +
+            " TYPS.TIME_RANGE," +
+            " TYPS.CREATE_USER," +
+            " TYPS.CREATE_TIME," +
+            " TYPS.STATUS" +
+            " FROM" +
+            " TBL_YQNS_PROJECT_SORT TYPS WHERE TYPS.ID = #{fromId}")
+    Map<String, Object> selectGCZXPXBById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TYFS.ID," +
+            " TYFS.SUGGEST_DEPT," +
+            " TYFS.SORT," +
+            " TYFS.PROJECT_NAME," +
+            " TYFS.PROJECT_PURPOSE," +
+            " TYFS.CONCERNS_CONTENT," +
+            " TYFS.UNIT_RANGE," +
+            " TYFS.TIME_RANGE," +
+            " TYFS.CREATE_USER," +
+            " TYFS.CREATE_TIME," +
+            " TYFS.STATUS" +
+            " FROM" +
+            " TBL_YQNS_FINANCE_SORT TYFS WHERE TYFS.ID = #{fromId}")
+    Map<String, Object> selectCWZXPXBById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " CODE," +
+            " BATC " +
+            " FROM TBL_YQNS_ENGINTB WHERE TBID = #{fromId}")
+    Map<String, Object> selectGCSJXMAPById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TYFAP.CODE," +
+            " TYFAP.BATC " +
+            " FROM" +
+            " TBL_YQNS_FUNDTB TYFAP WHERE TYFAP.TBID = #{fromId}")
+    Map<String, Object> selectCWSJXMAPById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TYQAR.ID," +
+            " TYQAR.DOCUMENTNUMBER," +
+            " TYQAR.TITLE," +
+            " TYQAR.CREATEUSER," +
+            " TYQAR.CREATETIME," +
+            " TYQAR.UPDATEUSER," +
+            " TYQAR.UPDATETIME," +
+            " TYQAR.STATUS" +
+            " FROM" +
+            " TBL_YQNS_QUALITY_ANALY_REPORT TYQAR WHERE TYQAR.ID = #{fromId}")
+    Map<String, Object> selectZLFXBGById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TNAC.CHANGEID," +
+            " TNAC.ADVICEID," +
+            " TNAC.PROGECTID," +
+            " TNAC.CHANGETHING," +
+            " TNAC.CHANGEBEFORE," +
+            " TNAC.CHANGEAFTER," +
+            " TNAC.CHANGEREASON," +
+            " TNAC.CHANGETIME," +
+            " TNAC.JBR," +
+            " TNAC.CREATESTAFFID," +
+            " TNAC.ORGID," +
+            " TNAC.STATUS," +
+            " TNAC.CREATRTIME,"
+            + "zzs.PKYMSTAFFID,NOTE.ADVICENAME " +
+            " FROM" +
+            " TBL_YQNS_ADVICENOTE_CHANGE TNAC LEFT JOIN  TBL_YQNS_ADVICENOTE NOTE on TNAC.ADVICEID=NOTE.ADVICEID"
+            + " LEFT JOIN TBL_STAFF ZZS ON NOTE.ZCSTAFFID = ZZS.STAFFID  WHERE TNAC.CHANGEID = #{fromId}")
+    Map<String, Object> selectTZBGById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TNAC.ADVICEID," +
+            " TNAC.STATUS,"
+            + "ZZS.PKYMSTAFFID,"
+            + "TNAC.ADVICENAME  " +
+            " FROM" +
+            " TBL_YQNS_ADVICENOTE TNAC LEFT JOIN TBL_STAFF ZZS ON TNAC.ZCSTAFFID = ZZS.STAFFID WHERE TNAC.ADVICEID = #{fromId}")
+    Map<String, Object> selectSJTZById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TNAC.XMDQID," +
+            " TNAC.STATUS,"
+            + "ZZS.PKYMSTAFFID,"
+            + "TNAC.XMNAME  " +
+            " FROM" +
+            " TBL_YQNS_XMYQSQ TNAC LEFT JOIN TBL_STAFF ZZS ON TNAC.ZZSTAFFID = ZZS.STAFFID WHERE TNAC.XMDQID = #{fromId}")
+    Map<String, Object> selectXMYQSQById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TNAC.TBID," +
+            " TNAC.STATUS " +
+            " FROM" +
+            " TBL_YQNS_NDTB TNAC WHERE TNAC.TBID = #{fromId}")
+    Map<String, Object> selectLXJYZYPGById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TNAC.TBID," +
+            " TNAC.STATUS " +
+            " FROM" +
+            " TBL_YQNS_RZTB TNAC WHERE TNAC.TBID = #{fromId}")
+    Map<String, Object> selectRZMXTBById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TNAC.ID," +
+            " TNAC.GDSTATUS " +
+            " FROM" +
+            " TBL_YQNS_IMPLEMENT_PLAN TNAC WHERE TNAC.ID = #{fromId}")
+    Map<String, Object> selectYQNSXMGDById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TNAC.BORROWID," +
+            " TNAC.STATUS " +
+            " FROM" +
+            " TBL_NBSJ_BORROWRECORD TNAC WHERE TNAC.BORROWID = #{fromId}")
+    Map<String, Object> selectYQNSDAJYById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TNAC.ID," +
+            " TNAC.STATE " +
+            " FROM" +
+            " TBL_CEA_PROJECT_DECLARE_GROUP TNAC WHERE TNAC.ID = #{fromId}")
+    Map<String, Object> selectXMPYSBFZById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TNAC.ID," +
+            " TNAC.STATE " +
+            " FROM" +
+            " TBL_CEA_PROJECT_DECLARE TNAC WHERE TNAC.ID = #{fromId}")
+    Map<String, Object> selectXMPYSBById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TNAC.PLANFILINGID," +
+            " TNAC.STATUS " +
+            " FROM" +
+            " TBL_YQNS_PLANFILING TNAC WHERE TNAC.PLANFILINGID = #{fromId}")
+    Map<String, Object> selectJHBAById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TNAC.ADVICEID," +
+            " TNAC.STATUS,"
+            + "PL.PROJECT_NAME PROJECTNAME,ZZS.PKYMSTAFFID " +
+            " FROM" +
+            " TBL_YQNS_ADVICEAPR TNAC LEFT JOIN TBL_YQNS_IMPLEMENT_PLAN pl on TNAC.PROGECTID=PL.id"
+            + " LEFT JOIN TBL_STAFF ZZS ON TNAC.ZCSTAFFID = ZZS.STAFFID  WHERE TNAC.ADVICEID = #{fromId}")
+    Map<String, Object> selectSJTZSPById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TNAC.TBID," +
+            " TNAC.STATUS " +
+            " FROM" +
+            " TBL_YQNS_RESEARCHTB TNAC WHERE TNAC.TBID = #{fromId}")
+    Map<String, Object> selectLLYJSBById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TNAC.TBID," +
+            " TNAC.STATUS " +
+            " FROM" +
+            " TBL_YQNS_PAPERTB TNAC WHERE TNAC.TBID = #{fromId}")
+    Map<String, Object> selectLWPXById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TNAC.BGID," +
+            " TNAC.STATUS,TNAC.CODE, TNAC.BGNAME " +
+            " FROM" +
+            " TBL_YQNS_PROPOSALBG TNAC WHERE TNAC.BGID = #{fromId}")
+    Map<String, Object> selectSJJYSById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TNAC.ID," +
+            " TNAC.STATUS,TNAC.ISSUENUMBER,TNAC.WTSJGLCJ,TNAC.ASSETLOSS,TNAC.RISKLEVEL,TNAC.SJBGDGTITLE,TNAC.MONEY,TNAC.REVIEWMONEY " +
+            " FROM" +
+            " TBL_YQNS_ISSUE_LIST TNAC WHERE TNAC.ID = #{fromId}")
+    Map<String, Object> selectWTQDById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TNAC.WTZGID," +
+            " TNAC.HFSPSTATUS,TNAC.DQZGJE,TYIL.ISSUENUMBER " +
+            " FROM" +
+            " TBL_YQNS_SJZG_WTZG TNAC LEFT JOIN TBL_YQNS_ISSUE_LIST TYIL ON TNAC.ISSUESID = TYIL.ID WHERE TNAC.WTZGID = #{fromId}")
+    Map<String, Object> selectGZHFById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TNAC.WTZGID," +
+            " TNAC.STATUS,TNAC.DQZGJE,TYIL.ISSUENUMBER " +
+            " FROM" +
+            " TBL_YQNS_SJZG_WTZG TNAC LEFT JOIN TBL_YQNS_ISSUE_LIST TYIL ON TNAC.ISSUESID = TYIL.ID WHERE TNAC.WTZGID = #{fromId}")
+    Map<String, Object> selectWTZGById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TNAC.ID,TNAC.PERSONNELNATURE,TNAC.HEALTHSITUATION,TNAC.VEHICLE,LQR.REALNAME AS REALNAME,DEPT.ORGNAME AS COMMITDEPTNAME, " +
+            " TNAC.STATE " +
+            " FROM " +
+            " TBL_CEA_LI_QING TNAC LEFT JOIN TBL_STAFF LQR ON TNAC.STAFFID = LQR.STAFFID LEFT JOIN TBL_ORGANIZATION DEPT ON TNAC.WORKUNIT = DEPT.ORGID WHERE TNAC.ID = #{fromId}")
+    Map<String, Object> selectYGLQSPById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TNAC.ID," +
+            " TNAC.FLAGSUMMARY,ORG.ORGNAME AS WORKUNITNAME " +
+            " FROM " +
+            " TBL_CEA_WEEKLY TNAC LEFT JOIN TBL_ORGANIZATION ORG ON TNAC.REPORTWORKUNIT = ORG.ORGID WHERE TNAC.ID = #{fromId}")
+    Map<String, Object> selectZBById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TNAC.WTZGID," +
+            " TNAC.HXSPSTATUS,TNAC.DQZGJE,TYIL.ISSUENUMBER " +
+            " FROM " +
+            " TBL_YQNS_SJZG_WTZG TNAC LEFT JOIN TBL_YQNS_ISSUE_LIST TYIL ON TNAC.ISSUESID = TYIL.ID WHERE TNAC.WTZGID = #{fromId}")
+    Map<String, Object> selectHXZGSPById(BigDecimal fromId);
+    
+    
+    
+    
+    @Select("SELECT" +
+            " TYSJ.TITLE," +
+            " TYSJ.CJR," +
+            " TYSJ.CJSJ," +
+            " TYSJ.JHYJGID," +
+            " TYSJ.GXR," +
+            " TYSJ.GXSJ," +
+            " TYSJ.PROJECT_ID," +
+            " TYSJ.STATUS,zs.PKYMSTAFFID as  ZSID,CASE WHEN  TYIP.ISGC=0 THEN sta.PKYMSTAFFID ELSE sta1.PKYMSTAFFID END ZZID" +
+            " FROM" +
+            " TBL_YQNS_SJBG_JHYJG TYSJ  "
+            + " LEFT JOIN TBL_YQNS_IMPLEMENT_PLAN TYIP on TYSJ.PROJECT_ID=TYIP.id"
+            + " LEFT JOIN TBL_STAFF zs on zs.staffid=TYIP.ZSSTAFFID "
+            + " LEFT JOIN TBL_YQNS_FUND_AUDIT_PROJECT FUD on TYIP.XMAPBID=FUD.ID "
+            + " LEFT JOIN TBL_STAFF sta on sta.staffid=FUD.GROUPLEADERID "
+            + " LEFT JOIN TBL_YQNS_ENGIN_AUDIT_PROJECT ENG on TYIP.XMAPBID=ENG.ID "
+            + " LEFT JOIN TBL_STAFF sta1 on sta1.staffid=ENG.GROUPLEADERID"
+            + " WHERE TYSJ.JHYJGID = #{fromId}")
+    Map<String, Object> selectJHYJGById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TYSS.DOCUMENT," +
+            " TYSS.TITLE," +
+            " TYSS.CJR," +
+            " TYSS.CJSJ," +
+            " TYSS.SLBGID," +
+            " TYSS.GXR," +
+            " TYSS.GXSJ," +
+            " TYSS.DEPUTY_DIRECTOR," +
+            " TYSS.SECTION_CHIEF," +
+            " TYSS.STATUS," +
+            " TYSS.PROJECT_ID" +
+            " FROM" +
+            " TBL_YQNS_SJBG_SLBG TYSS WHERE TYSS.SLBGID = #{fromId}")
+    Map<String, Object> selectSLBGById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TYSS.DOCUMENT," +
+            " TYSS.TITLE," +
+            " TYSS.CJR," +
+            " TYSS.CJSJ," +
+            " TYSS.SJBGDGID," +
+            " TYSS.GXR," +
+            " TYSS.GXSJ," +
+            " TYSS.STATUS" +
+            " FROM" +
+            " TBL_YQNS_SJBG_SJBGDG TYSS WHERE TYSS.SJBGDGID = #{fromId}")
+    Map<String, Object> selectSJBGDGById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TYSS.ID," +
+            " TYSS.STATUS,TYSS.WSTITLE" +
+            " FROM" +
+            " TBL_YQNS_WGZZ_YSJGWS TYSS WHERE TYSS.ID = #{fromId}")
+    Map<String, Object> selectYSJGWSById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TYSS.ID," +
+            " TYSS.STATUS,TYSS.HCNAME " +
+            " FROM" +
+            " TBL_YQNS_WGZZ_WTHC TYSS WHERE TYSS.ID = #{fromId}")
+    Map<String, Object> selectWTXSHCById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TYSS.ID," +
+            " TYSS.STATUS,TYSS.DZNAME " +
+            " FROM" +
+            " TBL_YQNS_WGZZ_WTDZ TYSS WHERE TYSS.ID = #{fromId}")
+    Map<String, Object> selectWTXSDZById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TYSS.ID," +
+            " TYSS.STATUS,TYSS.SLNAME" +
+            " FROM" +
+            " TBL_YQNS_WGZZ_WTSL TYSS WHERE TYSS.ID = #{fromId}")
+    Map<String, Object> selectWTXSSLById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TYSS.ID," +
+            " TYSS.STATUS" +
+            " FROM" +
+            " TBL_YQNS_WGZZ_CLJG TYSS WHERE TYSS.ID = #{fromId}")
+    Map<String, Object> selectCLJGById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TYSS.ID," +
+            " TYSS.STATE" +
+            " FROM" +
+            " TBL_CEA_CANCEL_HOLIDAY_EXP TYSS WHERE TYSS.ID = #{fromId}")
+    Map<String, Object> selectWPXJDById(BigDecimal fromId);
+    
+    
+    @Select("SELECT TYPEID FROM TBL_CONTRACT_TYPEOF WHERE TYPENAME = (SELECT CONTRACTTYPE FROM TBL_CYHW_UNIT WHERE CONTRACTID = #{fromId})")
+	BigDecimal selectContractTypeIdByContractId(BigDecimal fromId);
+
+    @Select("SELECT NAME FROM TBL_YQNS_PS_NOTICE WHERE ID = #{fromId} ")
+	Map<String, Object> selectSJLXJYTZById(BigDecimal fromId);
+
+    @Select("SELECT" +
+            " TYSS.REPORTID," +
+            " TYSS.STATUS" +
+            " FROM" +
+            " TBL_REPORT TYSS WHERE TYSS.REPORTID = #{fromId}")
+    Map<String, Object> selectFXGLMapById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TYSS.ID," +
+            " TYSS.STATUS" +
+            " FROM" +
+            " TBL_RISK_MONTHLY_EVALUATION TYSS WHERE TYSS.ID = #{fromId}")
+    Map<String, Object> selectZDFXYDPGById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TYSS.RISKID," +
+            " TYSS.CLOSESTATUS" +
+            " FROM" +
+            " TBL_RISK TYSS WHERE TYSS.RISKID = #{fromId}")
+    Map<String, Object> selectYDPGFXGBById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TYSS.REPORTID," +
+            " TYSS.STATUS" +
+            " FROM" +
+            " TBL_REPORT TYSS WHERE TYSS.REPORTID = #{fromId}")
+    Map<String, Object> selectSJJGWSCSById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TYSS.BUGID," +
+            " TYSS.STATUS" +
+            " FROM" +
+            " TBL_NBSJ_BUG TYSS WHERE TYSS.BUGID = #{fromId}")
+    Map<String, Object> selectNKQXGLById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TYSS.ID," +
+            " TYSS.STATUS" +
+            " FROM" +
+            " TBL_MAJORRISKCREATE TYSS WHERE TYSS.ID = #{fromId}")
+    Map<String, Object> selectZDFXCJById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TYSS.ID," +
+            " TYSS.STATUS" +
+            " FROM" +
+            " TBL_MAJORRISK_BRANCHCREATE TYSS WHERE TYSS.ID = #{fromId}")
+    Map<String, Object> selectZDFXTBById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TYSS.LENDID," +
+            " TYSS.LENDDATE," +
+            " TYSS.RETURNDATE," +
+            " TYSS.MEMO," +
+            " TYSS.LENDSTATUS" +
+            " FROM" +
+            " TBL_CONTRACT_LEND TYSS WHERE TYSS.LENDID = #{fromId}")
+    Map<String, Object> selectHTJYById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TYSS.ID," +
+            " TYSS.STATUS " +
+            " FROM" +
+            " TBL_GROUP_TESTPLAN TYSS WHERE TYSS.ID = #{fromId}")
+    Map<String, Object> selectJTNKCSJHById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TYSS.ID," +
+            " TYSS.STATUS " +
+            " FROM" +
+            " TBL_RISKMONITORING_CREATION  TYSS WHERE TYSS.ID = #{fromId}")
+    Map<String, Object> selectFXJCZBCJById(BigDecimal fromId);
+    
+    @Select("SELECT" +
+            " TYSS.ID," +
+            " TYSS.STATUS " +
+            " FROM" +
+            " TBL_RISK_MONITORINGFILL  TYSS WHERE TYSS.ID = #{fromId}")
+    Map<String, Object> selectFXJCZBTBById(BigDecimal fromId);
+    
+    
+    @Select("SELECT REPORTID AS REPORTID, REPORTCODE AS REPORTCODE , REPORTNAME AS REPORTNAME ,REPORTTYPE AS REPORTTYPE FROM TBL_ZGZZ_REPORT WHERE REPORTID = #{fromId}")
+   	Map<String, Object> selectZGBGMapById(BigDecimal fromId);
+
+   	@Select("SELECT TZRI.RECTIFICATIONMEASURES AS RECTIFICATIONMEASURES,TZRI.ACHIVEMENT AS ACHIVEMENT,TZRI.CONCLUSION AS CONCLUSION,TZI.ISSUESTYPE AS ISSUESTYPE,TZRI.ISXH FROM TBL_ZGZZ_RECTIFICATIONIMPL TZRI LEFT JOIN TBL_RECTIFICATION_ISSUES TRI ON TZRI.RELAID = TRI.RELAID LEFT JOIN TBL_ZGZZ_ISSUESILIST TZI ON TRI.ISSUESID = TZI.ISSUESID WHERE TZRI.IMPLID =  #{fromId}")
+   	Map<String, Object> selectZCZGLSMapById(BigDecimal fromId);
+
+   	@Select("SELECT TZR.PLANID AS PLANID,TZR.PLANCODE AS PLANCODE,TZR.PLANNAME AS PLANNAME,TZR.PLANTYPE AS PLANTYPE,HAND.PKYMSTAFFID AS HANDLERID  FROM TBL_ZGZZ_RECTIFICATIONPLAN TZR " + 
+   			"LEFT JOIN TBL_STAFF HAND ON TZR.HANDLERID = HAND.STAFFID WHERE PLANID = #{fromId}")
+   	Map<String, Object> selectZGFAMapById(BigDecimal fromId);
+
+   	@Select("SELECT INSPECTIONPROCESS AS INSPECTIONPROCESS,RESULTSTATUS AS RESULTSTATUS FROM TBL_ZGZZ_RCTEVALUATION WHERE EVALID = #{fromId}")
+   	Map<String, Object> selectZGPJMapById(BigDecimal fromId);
+
+   	@Select("SELECT RECORDID AS RECORDID,RECORDTEXT AS RECORDTEXT FROM TBL_AUTHORIZATION_RECORD WHERE RECORDID = #{fromId}")
+	Map<String, Object> selectAuthorizationDataMapById(BigDecimal fromId);
+}

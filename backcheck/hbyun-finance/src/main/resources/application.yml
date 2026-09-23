@@ -1,0 +1,23 @@
+server:
+  port: 8099
+  max-http-header-size: 500MB
+  jetty: 
+    max-http-form-post-size: 500MB
+ 
+spring:
+  profiles:
+    active: dev
+  servlet: 
+    multipart: 
+      max-request-size: 500MB
+      max-file-size: 500MB
+  main:
+    allow-bean-definition-overriding: true
+  application: 
+    name: hbyunFinancialData #应用名称
+  jackson: 
+    time-zone: Asia/Shanghai
+    
+finance: 
+  method: HBGRCZH
+  dbtype: DM

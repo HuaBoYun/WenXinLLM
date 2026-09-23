@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.TreasurerSmartHomeMapper">
+
+    <!-- 资金归集率: 当前无资金归集表，安全回退 -->
+    <select id="getFundConcentrationRate" resultType="java.lang.Double">
+        SELECT NULL FROM DUAL
+    </select>
+
+    <!-- 融资余额(亿): 从银行贷款表统计贷款余额 -->
+    <select id="getFinancingBalance" resultType="java.lang.Double">
+        SELECT ROUND(COALESCE(SUM(LOAN_AMOUNT), 0) / 100000000, 2)
+        FROM TBL_BANK_LOAN
+        WHERE LOAN_STATUS IN ('ACTIVE', 'NORMAL', '1')
+          AND (DELETE_FLAG = 0 OR DELETE_FLAG IS NULL)
+    </select>
+
+    <!-- 投资收益率: 安全回退 -->
+    <select id="getInvestReturnRate" resultType="java.lang.Double">
+        SELECT NULL FROM DUAL
+    </select>
+
+    <!-- 票据到期额(亿): 从票据信息表统计到期票据 -->
+    <select id="getBillMaturityAmount" resultType="java.lang.Double">
+        SELECT ROUND(COALESCE(SUM(BILL_AMOUNT), 0) / 100000000, 2)
+        FROM TBL_BILL_INSTRUMENT
+        WHERE BILL_STATUS IN ('NORMAL', 'PENDING', '1')
+          AND (DELETE_FLAG = 0 OR DELETE_FLAG IS NULL)
+    </select>
+
+    <!-- 风险评分: 安全回退 -->
+    <select id="getRiskScore" resultType="java.lang.Double">
+        SELECT NULL FROM DUAL
+    </select>
+
+    <!-- 结算完成率: 安全回退 -->
+    <select id="getSettlementRate" resultType="java.lang.Double">
+        SELECT NULL FROM DUAL
+    </select>
+
+    <!-- 资金归集总额(亿): 安全回退 -->
+    <select id="getTotalFundConcentration" resultType="java.lang.Double">
+        SELECT NULL FROM DUAL
+    </select>
+
+    <!-- 投资规模(亿): 从投资计划表统计 -->
+    <select id="getTotalInvestScale" resultType="java.lang.Double">
+        SELECT ROUND(COALESCE(SUM(PLAN_AMOUNT), 0) / 100000000, 2)
+        FROM TBL_INVESTMENT_PLAN
+        WHERE PLAN_STATUS NOT IN ('CANCELLED', 'DRAFT')
+    </select>
+
+    <!-- 票据规模(亿): 从票据信息表统计 -->
+    <select id="getTotalBillScale" resultType="java.lang.Double">
+        SELECT ROUND(COALESCE(SUM(BILL_AMOUNT), 0) / 100000000, 2)
+        FROM TBL_BILL_INSTRUMENT
+        WHERE (DELETE_FLAG = 0 OR DELETE_FLAG IS NULL)
+    </select>
+
+    <!-- 现金流入(亿): 安全回退 -->
+    <select id="getCashInflow" resultType="java.lang.Double">
+        SELECT NULL FROM DUAL
+    </select>
+
+    <!-- 现金流出(亿): 安全回退 -->
+    <select id="getCashOutflow" resultType="java.lang.Double">
+        SELECT NULL FROM DUAL
+    </select>
+
+    <!-- 融资计划完成率: 从融资计划表统计 -->
+    <select id="getFinancingPlanRate" resultType="java.lang.Double">
+        SELECT ROUND(
+            COALESCE(SUM(CASE WHEN PLAN_STATUS = 'COMPLETED' THEN 1 ELSE 0 END), 0) * 100.0
+            / NULLIF(COUNT(*), 0), 0)
+        FROM TBL_FINANCING_PLAN
+        WHERE (DELETE_FLAG = 0 OR DELETE_FLAG IS NULL)
+    </select>
+
+    <!-- 还款执行率: 从还款计划表统计 -->
+    <select id="getFinancingRepayRate" resultType="java.lang.Double">
+        SELECT ROUND(
+            COALESCE(SUM(CASE WHEN PAYMENT_STATUS IN ('COMPLETED', 'PAID') THEN 1 ELSE 0 END), 0) * 100.0
+            / NULLIF(COUNT(*), 0), 0)
+        FROM TBL_REPAYMENT_PLAN
+        WHERE (DELETE_FLAG = 0 OR DELETE_FLAG IS NULL)
+    </select>
+
+    <!-- 融资成本控制率: 安全回退 -->
+    <select id="getFinancingCostRate" resultType="java.lang.Double">
+        SELECT NULL FROM DUAL
+    </select>
+
+</mapper>

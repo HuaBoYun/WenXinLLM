@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.oracle.mapper.FinanceScheduledMapper">
+    
+    <!-- 查询调度任务列表 -->
+    <select id="selectScheduledList" resultType="java.util.Map">
+        SELECT 
+            scheduled_id,
+            scheduled_name,
+            scheduled_type,
+            cron_expression,
+            target_system,
+            target_interface,
+            status,
+            last_run_time,
+            next_run_time,
+            create_by,
+            create_time,
+            update_by,
+            update_time
+        FROM finance_scheduled
+        <where>
+            <if test="params.scheduledName != null and params.scheduledName != ''">
+                AND scheduled_name LIKE '%' || #{params.scheduledName} || '%'
+            </if>
+            <if test="params.scheduledType != null and params.scheduledType != ''">
+                AND scheduled_type = #{params.scheduledType}
+            </if>
+            <if test="params.targetSystem != null and params.targetSystem != ''">
+                AND target_system = #{params.targetSystem}
+            </if>
+            <if test="params.status != null and params.status != ''">
+                AND status = #{params.status}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+    
+    <!-- 根据ID查询调度任务详情 -->
+    <select id="selectScheduledById" resultType="java.util.Map">
+        SELECT 
+            scheduled_id,
+            scheduled_name,
+            scheduled_type,
+            cron_expression,
+            target_system,
+            target_interface,
+            status,
+            last_run_time,
+            next_run_time,
+            create_by,
+            create_time,
+            update_by,
+            update_time
+        FROM finance_scheduled
+        WHERE scheduled_id = #{scheduledId}
+    </select>
+    
+    <!-- 插入调度任务 -->
+    <insert id="insertScheduled">
+        INSERT INTO finance_scheduled (
+            scheduled_id,
+            scheduled_name,
+            scheduled_type,
+            cron_expression,
+            target_system,
+            target_interface,
+            status,
+            create_by,
+            create_time
+        ) VALUES (
+            #{scheduled.scheduledId},
+            #{scheduled.scheduledName},
+            #{scheduled.scheduledType},
+            #{scheduled.cronExpression},
+            #{scheduled.targetSystem},
+            #{scheduled.targetInterface},
+            #{scheduled.status},
+            #{scheduled.createBy},
+            SYSDATE
+        )
+    </insert>
+    
+    <!-- 更新调度任务 -->
+    <update id="updateScheduled">
+        UPDATE finance_scheduled
+        SET 
+            scheduled_name = #{scheduled.scheduledName},
+            scheduled_type = #{scheduled.scheduledType},
+            cron_expression = #{scheduled.cronExpression},
+            target_system = #{scheduled.targetSystem},
+            target_interface = #{scheduled.targetInterface},
+            status = #{scheduled.status},
+            update_by = #{scheduled.updateBy},
+            update_time = SYSDATE
+        WHERE scheduled_id = #{scheduled.scheduledId}
+    </update>
+    
+    <!-- 删除调度任务 -->
+    <delete id="deleteScheduled">
+        DELETE FROM finance_scheduled WHERE scheduled_id = #{scheduledId}
+    </delete>
+    
+    <!-- 更新调度任务状态 -->
+    <update id="updateScheduledStatus">
+        UPDATE finance_scheduled
+        SET 
+            status = #{params.status},
+            <if test="params.status == 'RUNNING'">
+                last_run_time = SYSDATE,
+            </if>
+            update_time = SYSDATE
+        WHERE scheduled_id = #{params.scheduledId}
+    </update>
+    
+    <!-- 查询调度任务执行历史 -->
+    <select id="selectScheduledHistory" resultType="java.util.Map">
+        SELECT 
+            history_id,
+            scheduled_id,
+            scheduled_name,
+            execute_time,
+            execute_status,
+            execute_result,
+            error_message,
+            execute_duration
+        FROM finance_scheduled_history
+        <where>
+            <if test="params.scheduledId != null and params.scheduledId != ''">
+                AND scheduled_id = #{params.scheduledId}
+            </if>
+            <if test="params.executeStatus != null and params.executeStatus != ''">
+                AND execute_status = #{params.executeStatus}
+            </if>
+        </where>
+        ORDER BY execute_time DESC
+    </select>
+    
+</mapper>

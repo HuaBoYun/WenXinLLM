@@ -1,0 +1,433 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.contract.mapper.ProjectPlanningMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.huabo.contract.entity.ProjectPlanning">
+        <id column="id" property="id" />
+        <result column="project_id" property="projectId" />
+        <result column="planning_no" property="planningNo" />
+        <result column="planning_name" property="planningName" />
+        <result column="planning_type" property="planningType" />
+        <result column="planning_status" property="planningStatus" />
+        <result column="planner_id" property="plannerId" />
+        <result column="planning_date" property="planningDate" />
+        <result column="create_by" property="createBy" />
+        <result column="create_time" property="createTime" />
+        <result column="update_by" property="updateBy" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="Base_Column_List">
+        id, project_id, planning_no, planning_name, planning_type, planning_status,
+        planner_id, planning_date, create_time, update_time, create_by, update_by
+    </sql>
+
+    <!-- 分页查询项目策划列表 -->
+    <select id="selectProjectPlanningList" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM project_planning
+        WHERE 1=1
+        <if test="param.projectId != null">
+            AND project_id = #{param.projectId}
+        </if>
+        <if test="param.planningNo != null and param.planningNo != ''">
+            AND planning_no LIKE CONCAT('%', #{param.planningNo}, '%')
+        </if>
+        <if test="param.planningName != null and param.planningName != ''">
+            AND planning_name LIKE CONCAT('%', #{param.planningName}, '%')
+        </if>
+        <if test="param.planningType != null">
+            AND planning_type = #{param.planningType}
+        </if>
+
+        <if test="param.planningStatus != null">
+            AND planning_status = #{param.planningStatus}
+        </if>
+        <if test="param.planningStatus != null">
+            AND planning_status = #{param.planningStatus}
+        </if>
+        <if test="param.responsiblePersonId != null">
+            AND responsible_person_id = #{param.responsiblePersonId}
+        </if>
+        <if test="param.responsiblePersonName != null and param.responsiblePersonName != ''">
+            AND responsible_person_name LIKE CONCAT('%', #{param.responsiblePersonName}, '%')
+        </if>
+        <if test="param.reviewerId != null">
+            AND approver_id = #{param.reviewerId}
+        </if>
+        <if test="param.reviewerName != null and param.reviewerName != ''">
+            AND approver_name LIKE CONCAT('%', #{param.reviewerName}, '%')
+        </if>
+        <if test="param.minBudgetAmount != null">
+            AND budget_amount >= #{param.minBudgetAmount}
+        </if>
+        <if test="param.maxBudgetAmount != null">
+            AND budget_amount &lt;= #{param.maxBudgetAmount}
+        </if>
+        <if test="param.plannedStartDateBegin != null">
+            AND planned_start_date >= #{param.plannedStartDateBegin}
+        </if>
+        <if test="param.plannedStartDateEnd != null">
+            AND planned_start_date &lt;= #{param.plannedStartDateEnd}
+        </if>
+        <if test="param.plannedEndDateBegin != null">
+            AND planned_end_date >= #{param.plannedEndDateBegin}
+        </if>
+        <if test="param.plannedEndDateEnd != null">
+            AND planned_end_date &lt;= #{param.plannedEndDateEnd}
+        </if>
+        <if test="param.actualStartDateBegin != null">
+            AND actual_start_date >= #{param.actualStartDateBegin}
+        </if>
+        <if test="param.actualStartDateEnd != null">
+            AND actual_start_date &lt;= #{param.actualStartDateEnd}
+        </if>
+        <if test="param.actualEndDateBegin != null">
+            AND actual_end_date >= #{param.actualEndDateBegin}
+        </if>
+        <if test="param.actualEndDateEnd != null">
+            AND actual_end_date &lt;= #{param.actualEndDateEnd}
+        </if>
+        <if test="param.reviewTimeBegin != null">
+            AND approval_date >= #{param.reviewTimeBegin}
+        </if>
+        <if test="param.reviewTimeEnd != null">
+            AND approval_date &lt;= #{param.reviewTimeEnd}
+        </if>
+        <if test="param.createTimeBegin != null">
+            AND create_time >= #{param.createTimeBegin}
+        </if>
+        <if test="param.createTimeEnd != null">
+            AND create_time &lt;= #{param.createTimeEnd}
+        </if>
+        <if test="param.createBy != null">
+            AND create_by = #{param.createBy}
+        </if>
+        <if test="param.keyword != null and param.keyword != ''">
+            AND (planning_no LIKE CONCAT('%', #{param.keyword}, '%')
+                 OR planning_name LIKE CONCAT('%', #{param.keyword}, '%')
+                 OR planning_description LIKE CONCAT('%', #{param.keyword}, '%')
+                 OR responsible_person_name LIKE CONCAT('%', #{param.keyword}, '%')
+                 OR planning_objectives LIKE CONCAT('%', #{param.keyword}, '%')
+                 OR remarks LIKE CONCAT('%', #{param.keyword}, '%'))
+        </if>
+        ORDER BY create_time DESC, id DESC
+    </select>
+
+    <!-- 根据策划编号查询项目策划 -->
+    <select id="selectByPlanningNo" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM project_planning
+        WHERE planning_no = #{planningNo}
+        LIMIT 1
+    </select>
+
+    <!-- 根据项目ID查询项目策划列表 -->
+    <select id="selectByProjectId" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM project_planning
+        WHERE project_id = #{projectId}
+        ORDER BY planned_start_date ASC, create_time DESC
+    </select>
+
+    <!-- 检查策划编号是否存在 -->
+    <select id="existsPlanningNo" resultType="int">
+        SELECT COUNT(1)
+        FROM project_planning
+        WHERE planning_no = #{planningNo}
+        <if test="excludeId != null">
+            AND id != #{excludeId}
+        </if>
+    </select>
+
+    <!-- 查询指定前缀的最大序号 -->
+    <select id="selectMaxSequenceByPrefix" resultType="int">
+        SELECT COALESCE(MAX(
+            CASE
+                WHEN planning_no LIKE CONCAT(#{prefix}, '%')
+                     AND LENGTH(planning_no) = LENGTH(#{prefix}) + 4
+                THEN CAST(SUBSTR(planning_no, LENGTH(#{prefix}) + 1, 4) AS NUMBER)
+                ELSE 0
+            END
+        ), 0) AS max_seq
+        FROM project_planning
+        WHERE planning_no LIKE CONCAT(#{prefix}, '%')
+    </select>
+
+    <!-- 获取待审核的策划列表 -->
+    <select id="selectPendingReviewPlannings" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM project_planning
+        WHERE approval_status = 1
+        ORDER BY create_time ASC
+    </select>
+
+    <!-- 获取执行中的策划列表 -->
+    <select id="selectInProgressPlannings" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM project_planning
+        WHERE planning_status = 2
+        ORDER BY planned_end_date ASC
+    </select>
+
+    <!-- 获取已完成的策划列表 -->
+    <select id="selectCompletedPlannings" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM project_planning
+        WHERE planning_status = 3
+        ORDER BY actual_end_date DESC
+    </select>
+
+    <!-- 获取延期的策划列表 -->
+    <select id="selectDelayedPlannings" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM project_planning
+        WHERE planning_status IN (1, 2)
+        AND planned_end_date &lt; SYSDATE
+        ORDER BY planned_end_date ASC
+    </select>
+
+    <!-- 获取即将到期的策划列表 -->
+    <select id="selectExpiringSoonPlannings" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM project_planning
+        WHERE planning_status IN (1, 2)
+        AND planned_end_date BETWEEN SYSDATE AND SYSDATE + #{days}
+        ORDER BY planned_end_date ASC
+    </select>
+
+    <!-- 获取重点策划列表 -->
+    <select id="selectKeyPlannings" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM project_planning
+        WHERE budget_amount >= #{minBudgetAmount}
+        ORDER BY budget_amount DESC
+    </select>
+
+    <!-- 获取我负责的策划列表 -->
+    <select id="selectMyResponsiblePlannings" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM project_planning
+        WHERE responsible_person_id = #{userId}
+        ORDER BY planned_end_date ASC
+    </select>
+
+    <!-- 获取我参与的策划列表 -->
+    <select id="selectMyParticipatePlannings" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM project_planning
+        WHERE team_members LIKE CONCAT('%', #{userId}, '%')
+        ORDER BY planned_end_date ASC
+    </select>
+
+    <!-- 批量更新策划状态 -->
+    <update id="batchUpdatePlanningStatus">
+        UPDATE project_planning
+        SET planning_status = #{planningStatus},
+            update_time = SYSDATE
+        <if test="updateBy != null">
+            , update_by = #{updateBy}
+        </if>
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 根据策划类型查询项目策划列表 -->
+    <select id="selectByPlanningType" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM project_planning
+        WHERE planning_type = #{planningType}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据策划状态查询项目策划列表 -->
+    <select id="selectByPlanningStatus" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM project_planning
+        WHERE planning_status = #{planningStatus}
+        ORDER BY planned_end_date ASC
+    </select>
+
+    <!-- 根据负责人ID查询项目策划列表 -->
+    <select id="selectByResponsiblePersonId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM project_planning
+        WHERE responsible_person_id = #{responsiblePersonId}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据策划状态查询项目策划列表 -->
+    <select id="selectByPlanningStatus" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM project_planning
+        WHERE planning_status = #{planningStatus}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据审核人ID查询项目策划列表 -->
+    <select id="selectByReviewerId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM project_planning
+        WHERE approver_id = #{reviewerId}
+        ORDER BY approval_date DESC
+    </select>
+
+    <!-- 获取草稿状态的策划列表 -->
+    <select id="selectDraftPlannings" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM project_planning
+        WHERE planning_status = 1
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 获取已暂停的策划列表 -->
+    <select id="selectPausedPlannings" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM project_planning
+        WHERE planning_status = 4
+        ORDER BY update_time DESC
+    </select>
+
+    <!-- 获取已取消的策划列表 -->
+    <select id="selectCancelledPlannings" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM project_planning
+        WHERE planning_status = 5
+        ORDER BY update_time DESC
+    </select>
+
+    <!-- 获取超预算的策划列表 -->
+    <select id="selectOverBudgetPlannings" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM project_planning
+        WHERE actual_cost > budget_amount
+        ORDER BY (actual_cost - budget_amount) DESC
+    </select>
+
+    <!-- 获取预算紧张的策划列表 -->
+    <select id="selectTightBudgetPlannings" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM project_planning
+        WHERE actual_cost / budget_amount >= 0.8
+        AND actual_cost &lt;= budget_amount
+        ORDER BY (actual_cost / budget_amount) DESC
+    </select>
+
+    <!-- 获取高风险策划列表 -->
+    <select id="selectHighRiskPlannings" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM project_planning
+        WHERE planning_risks IS NOT NULL
+        AND planning_risks != ''
+        AND (planning_risks LIKE '%高风险%' OR planning_risks LIKE '%严重%' OR planning_risks LIKE '%紧急%')
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 模糊搜索项目策划 -->
+    <select id="searchProjectPlannings" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM project_planning
+        WHERE planning_no LIKE CONCAT('%', #{keyword}, '%')
+           OR planning_name LIKE CONCAT('%', #{keyword}, '%')
+           OR planning_description LIKE CONCAT('%', #{keyword}, '%')
+           OR responsible_person_name LIKE CONCAT('%', #{keyword}, '%')
+           OR planning_objectives LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY create_time DESC
+        <if test="limit != null">
+            LIMIT #{limit}
+        </if>
+    </select>
+
+    <!-- 获取今日到期的策划列表 -->
+    <select id="selectTodayExpiringPlannings" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM project_planning
+        WHERE planning_status IN (1, 2)
+        AND DATE(planned_end_date) = DATE(SYSDATE)
+        ORDER BY planned_end_date ASC
+    </select>
+
+    <!-- 获取本周到期的策划列表 -->
+    <select id="selectThisWeekExpiringPlannings" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM project_planning
+        WHERE planning_status IN (1, 2)
+        AND planned_end_date BETWEEN SYSDATE AND SYSDATE + 7
+        ORDER BY planned_end_date ASC
+    </select>
+
+    <!-- 更新实际开始时间 -->
+    <update id="updateActualStartDate">
+        UPDATE project_planning
+        SET actual_start_date = #{actualStartDate},
+            update_time = SYSDATE
+        WHERE id = #{id}
+    </update>
+
+    <!-- 更新实际结束时间 -->
+    <update id="updateActualEndDate">
+        UPDATE project_planning
+        SET actual_end_date = #{actualEndDate},
+            update_time = SYSDATE
+        WHERE id = #{id}
+    </update>
+
+    <!-- 获取策划进度统计 -->
+    <select id="selectPlanningProgressStatistics" resultType="map">
+        SELECT
+            planning_status as planningStatus,
+            COUNT(*) as count,
+            COALESCE(SUM(budget_amount), 0) as totalBudget,
+            COALESCE(SUM(actual_cost), 0) as totalActualCost,
+            COALESCE(AVG(budget_amount), 0) as avgBudget
+        FROM project_planning
+        WHERE 1=1
+        <if test="param.projectId != null">
+            AND project_id = #{param.projectId}
+        </if>
+        <if test="param.planningType != null">
+            AND planning_type = #{param.planningType}
+        </if>
+        <if test="param.responsiblePersonId != null">
+            AND responsible_person_id = #{param.responsiblePersonId}
+        </if>
+        <if test="param.createTimeBegin != null">
+            AND create_time >= #{param.createTimeBegin}
+        </if>
+        <if test="param.createTimeEnd != null">
+            AND create_time &lt;= #{param.createTimeEnd}
+        </if>
+        GROUP BY planning_status
+        ORDER BY planning_status
+    </select>
+
+</mapper>

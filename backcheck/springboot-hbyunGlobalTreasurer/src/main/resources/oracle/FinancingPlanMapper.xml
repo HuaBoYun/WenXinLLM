@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.oracle.mapper.FinancingPlanMapper">
+
+    <resultMap id="BaseResultMap" type="com.global.treasurer.oracle.entity.TblFinancingPlan">
+        <id column="PLAN_ID" property="planId"/>
+        <result column="PLAN_NO" property="planNo"/>
+        <result column="PLAN_NAME" property="planName"/>
+        <result column="PLAN_TYPE" property="planType"/>
+        <result column="PLAN_YEAR" property="planYear"/>
+        <result column="PLAN_QUARTER" property="planQuarter"/>
+        <result column="PLAN_MONTH" property="planMonth"/>
+        <result column="FINANCING_TARGET" property="financingTarget"/>
+        <result column="ACTUAL_AMOUNT" property="actualAmount"/>
+        <result column="COMPLETION_RATE" property="completionRate"/>
+        <result column="PLAN_STATUS" property="planStatus"/>
+        <result column="APPROVAL_BY" property="approvalBy"/>
+        <result column="APPROVAL_TIME" property="approvalTime"/>
+        <result column="APPROVAL_OPINION" property="approvalOpinion"/>
+        <result column="PLAN_START_DATE" property="planStartDate"/>
+        <result column="PLAN_END_DATE" property="planEndDate"/>
+        <result column="CURRENCY" property="currency"/>
+        <result column="DEPARTMENT" property="department"/>
+        <result column="OPERATOR" property="operator"/>
+        <result column="REMARK" property="remark"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="CREATE_BY" property="createBy"/>
+        <result column="UPDATE_BY" property="updateBy"/>
+        <result column="DELETE_FLAG" property="deleteFlag"/>
+    </resultMap>
+
+    <resultMap id="DTOResultMap" type="com.global.treasurer.dto.FinancingPlanDTO">
+        <id column="PLAN_ID" property="planId"/>
+        <result column="PLAN_NO" property="planNo"/>
+        <result column="PLAN_NAME" property="planName"/>
+        <result column="PLAN_TYPE" property="planType"/>
+        <result column="PLAN_YEAR" property="planYear"/>
+        <result column="PLAN_QUARTER" property="planQuarter"/>
+        <result column="PLAN_MONTH" property="planMonth"/>
+        <result column="FINANCING_TARGET" property="financingTarget"/>
+        <result column="ACTUAL_AMOUNT" property="actualAmount"/>
+        <result column="COMPLETION_RATE" property="completionRate"/>
+        <result column="PLAN_STATUS" property="planStatus"/>
+        <result column="APPROVAL_BY" property="approvalBy"/>
+        <result column="APPROVAL_TIME" property="approvalTime"/>
+        <result column="APPROVAL_OPINION" property="approvalOpinion"/>
+        <result column="PLAN_START_DATE" property="planStartDate"/>
+        <result column="PLAN_END_DATE" property="planEndDate"/>
+        <result column="CURRENCY" property="currency"/>
+        <result column="DEPARTMENT" property="department"/>
+        <result column="OPERATOR" property="operator"/>
+        <result column="REMARK" property="remark"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        PLAN_ID, PLAN_NO, PLAN_NAME, PLAN_TYPE, PLAN_YEAR, PLAN_QUARTER, PLAN_MONTH,
+        FINANCING_TARGET, ACTUAL_AMOUNT, COMPLETION_RATE, PLAN_STATUS, APPROVAL_BY,
+        APPROVAL_TIME, APPROVAL_OPINION, PLAN_START_DATE, PLAN_END_DATE, CURRENCY,
+        DEPARTMENT, OPERATOR, REMARK, CREATE_TIME, UPDATE_TIME, CREATE_BY, UPDATE_BY, DELETE_FLAG
+    </sql>
+
+    <sql id="Query_Where_Clause">
+        <where>
+            DELETE_FLAG = 0
+            <if test="planNo != null and planNo != ''">
+                AND PLAN_NO LIKE CONCAT('%', #{planNo}, '%')
+            </if>
+            <if test="planName != null and planName != ''">
+                AND PLAN_NAME LIKE CONCAT('%', #{planName}, '%')
+            </if>
+            <if test="planType != null">
+                AND PLAN_TYPE = #{planType}
+            </if>
+            <if test="planStatus != null">
+                AND PLAN_STATUS = #{planStatus}
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND PLAN_START_DATE >= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND PLAN_END_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectPlanList" resultMap="DTOResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_FINANCING_PLAN
+        <include refid="Query_Where_Clause"/>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <select id="selectPlanById" resultMap="DTOResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_FINANCING_PLAN
+        WHERE PLAN_ID = #{planId} AND DELETE_FLAG = 0
+    </select>
+
+    <insert id="insertPlan" parameterType="com.global.treasurer.oracle.entity.TblFinancingPlan">
+        <selectKey keyProperty="planId" resultType="java.lang.Long" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        INSERT INTO TBL_FINANCING_PLAN (
+            PLAN_NO, PLAN_NAME, PLAN_TYPE, PLAN_YEAR, PLAN_QUARTER, PLAN_MONTH,
+            FINANCING_TARGET, ACTUAL_AMOUNT, COMPLETION_RATE, PLAN_STATUS, APPROVAL_BY,
+            APPROVAL_TIME, APPROVAL_OPINION, PLAN_START_DATE, PLAN_END_DATE, CURRENCY,
+            DEPARTMENT, OPERATOR, REMARK, CREATE_TIME, UPDATE_TIME, CREATE_BY, UPDATE_BY, DELETE_FLAG
+        ) VALUES (
+            #{planNo}, #{planName}, #{planType}, #{planYear}, #{planQuarter}, #{planMonth},
+            #{financingTarget}, #{actualAmount}, #{completionRate}, #{planStatus}, #{approvalBy},
+            #{approvalTime}, #{approvalOpinion}, #{planStartDate}, #{planEndDate}, #{currency},
+            #{department}, #{operator}, #{remark}, #{createTime}, #{updateTime}, #{createBy}, #{updateBy}, 0
+        )
+    </insert>
+
+    <update id="updatePlan" parameterType="com.global.treasurer.oracle.entity.TblFinancingPlan">
+        UPDATE TBL_FINANCING_PLAN
+        <set>
+            <if test="planNo != null">PLAN_NO = #{planNo},</if>
+            <if test="planName != null">PLAN_NAME = #{planName},</if>
+            <if test="planType != null">PLAN_TYPE = #{planType},</if>
+            <if test="planYear != null">PLAN_YEAR = #{planYear},</if>
+            <if test="planQuarter != null">PLAN_QUARTER = #{planQuarter},</if>
+            <if test="planMonth != null">PLAN_MONTH = #{planMonth},</if>
+            <if test="financingTarget != null">FINANCING_TARGET = #{financingTarget},</if>
+            <if test="actualAmount != null">ACTUAL_AMOUNT = #{actualAmount},</if>
+            <if test="completionRate != null">COMPLETION_RATE = #{completionRate},</if>
+            <if test="planStatus != null">PLAN_STATUS = #{planStatus},</if>
+            <if test="approvalBy != null">APPROVAL_BY = #{approvalBy},</if>
+            <if test="approvalTime != null">APPROVAL_TIME = #{approvalTime},</if>
+            <if test="approvalOpinion != null">APPROVAL_OPINION = #{approvalOpinion},</if>
+            <if test="planStartDate != null">PLAN_START_DATE = #{planStartDate},</if>
+            <if test="planEndDate != null">PLAN_END_DATE = #{planEndDate},</if>
+            <if test="currency != null">CURRENCY = #{currency},</if>
+            <if test="department != null">DEPARTMENT = #{department},</if>
+            <if test="operator != null">OPERATOR = #{operator},</if>
+            <if test="remark != null">REMARK = #{remark},</if>
+            <if test="updateTime != null">UPDATE_TIME = #{updateTime},</if>
+            <if test="updateBy != null">UPDATE_BY = #{updateBy},</if>
+        </set>
+        WHERE PLAN_ID = #{planId}
+    </update>
+
+    <update id="deletePlan">
+        UPDATE TBL_FINANCING_PLAN
+        SET DELETE_FLAG = 1, UPDATE_TIME = CURRENT_TIMESTAMP
+        WHERE PLAN_ID = #{planId}
+    </update>
+
+    <select id="selectPlanStatistics" resultMap="DTOResultMap">
+        SELECT
+            COUNT(*) as FINANCING_TARGET,
+            SUM(CASE WHEN PLAN_STATUS = 0 THEN 1 ELSE 0 END) as ACTUAL_AMOUNT,
+            SUM(CASE WHEN PLAN_STATUS = 2 THEN 1 ELSE 0 END) as COMPLETION_RATE,
+            SUM(FINANCING_TARGET) as PLAN_YEAR
+        FROM TBL_FINANCING_PLAN
+        WHERE DELETE_FLAG = 0
+        <include refid="Query_Where_Clause"/>
+    </select>
+
+</mapper>

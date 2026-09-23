@@ -1,0 +1,389 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.GuaranteeMonitoringAlertMapper">
+    
+    <resultMap type="GuaranteeMonitoringAlert" id="GuaranteeMonitoringAlertResult">
+        <result property="id"                    column="id"                    />
+        <result property="alertNo"              column="alert_no"              />
+        <result property="contractId"           column="contract_id"           />
+        <result property="collateralId"         column="collateral_id"         />
+        <result property="companyId"            column="company_id"            />
+        <result property="alertType"            column="alert_type"            />
+        <result property="alertLevel"           column="alert_level"           />
+        <result property="alertTitle"           column="alert_title"           />
+        <result property="alertContent"         column="alert_content"         />
+        <result property="alertDate"            column="alert_date"            />
+        <result property="triggerCondition"     column="trigger_condition"     />
+        <result property="suggestedAction"      column="suggested_action"      />
+        <result property="alertStatus"          column="alert_status"          />
+        <result property="handlerId"            column="handler_id"            />
+        <result property="handleTime"           column="handle_time"           />
+        <result property="handleOpinion"        column="handle_opinion"        />
+        <result property="closeTime"            column="close_time"            />
+        <result property="closeReason"          column="close_reason"          />
+        <result property="reactivateTime"       column="reactivate_time"       />
+        <result property="reactivateReason"     column="reactivate_reason"     />
+        <result property="priorityLevel"        column="priority_level"        />
+        <result property="expiryDate"           column="expiry_date"           />
+        <result property="autoCloseFlag"        column="auto_close_flag"       />
+        <result property="notificationSent"     column="notification_sent"     />
+        <result property="escalationLevel"      column="escalation_level"      />
+        <result property="relatedAlerts"        column="related_alerts"        />
+        <result property="riskScore"            column="risk_score"            />
+        <result property="impactAssessment"     column="impact_assessment"     />
+        <result property="mitigationPlan"       column="mitigation_plan"       />
+        <result property="followUpDate"         column="follow_up_date"        />
+        <result property="createdBy"            column="created_by"            />
+        <result property="createdTime"          column="created_time"          />
+        <result property="updatedBy"            column="updated_by"            />
+        <result property="updatedTime"          column="updated_time"          />
+        <result property="orgid"                column="orgid"                 />
+        <result property="companyName"          column="company_name"          />
+        <result property="contractNo"           column="contract_no"           />
+        <result property="collateralName"       column="collateral_name"       />
+        <result property="handlerName"          column="handler_name"          />
+        <result property="createUserName"       column="create_user_name"      />
+    </resultMap>
+
+    <sql id="selectGuaranteeMonitoringAlertVo">
+        select a.id, a.alert_no, a.contract_id, a.collateral_id, a.company_id, a.alert_type, a.alert_level, 
+               a.alert_title, a.alert_content, a.alert_date, a.trigger_condition, a.suggested_action, 
+               a.alert_status, a.handler_id, a.handle_time, a.handle_opinion, a.close_time, a.close_reason, 
+               a.reactivate_time, a.reactivate_reason, a.priority_level, a.expiry_date, a.auto_close_flag, 
+               a.notification_sent, a.escalation_level, a.related_alerts, a.risk_score, a.impact_assessment, 
+               a.mitigation_plan, a.follow_up_date, a.created_by, a.created_time, a.updated_by, a.updated_time, a.orgid,
+               c.company_name,
+               gc.contract_no,
+               ci.collateral_name,
+               h.staff_name as handler_name,
+               u.staff_name as create_user_name
+        from TBL_GUARANTEE_MONITORING_ALERT a
+        left join TBL_COMPANY c on a.company_id = c.id
+        left join TBL_GUARANTEE_CONTRACTS gc on a.contract_id = gc.id
+        left join TBL_COLLATERAL_INFO ci on a.collateral_id = ci.id
+        left join TBL_STAFF h on a.handler_id = h.id
+        left join TBL_STAFF u on a.created_by = u.id
+    </sql>
+
+    <select id="selectGuaranteeMonitoringAlertList" parameterType="GuaranteeMonitoringAlert" resultMap="GuaranteeMonitoringAlertResult">
+        <include refid="selectGuaranteeMonitoringAlertVo"/>
+        <where>  
+            <if test="alertNo != null  and alertNo != ''"> and a.alert_no like concat('%', #{alertNo}, '%')</if>
+            <if test="contractId != null "> and a.contract_id = #{contractId}</if>
+            <if test="collateralId != null "> and a.collateral_id = #{collateralId}</if>
+            <if test="companyId != null "> and a.company_id = #{companyId}</if>
+            <if test="alertType != null  and alertType != ''"> and a.alert_type = #{alertType}</if>
+            <if test="alertLevel != null  and alertLevel != ''"> and a.alert_level = #{alertLevel}</if>
+            <if test="alertStatus != null  and alertStatus != ''"> and a.alert_status = #{alertStatus}</if>
+            <if test="handlerId != null "> and a.handler_id = #{handlerId}</if>
+            <if test="alertDate != null "> and a.alert_date = #{alertDate}</if>
+            <if test="orgid != null "> and a.orgid = #{orgid}</if>
+        </where>
+        order by a.created_time desc
+    </select>
+    
+    <select id="selectGuaranteeMonitoringAlertById" parameterType="Long" resultMap="GuaranteeMonitoringAlertResult">
+        <include refid="selectGuaranteeMonitoringAlertVo"/>
+        where a.id = #{id}
+    </select>
+
+    <select id="selectByAlertNo" parameterType="String" resultMap="GuaranteeMonitoringAlertResult">
+        <include refid="selectGuaranteeMonitoringAlertVo"/>
+        where a.alert_no = #{alertNo}
+    </select>
+
+    <select id="selectByContractId" parameterType="Long" resultMap="GuaranteeMonitoringAlertResult">
+        <include refid="selectGuaranteeMonitoringAlertVo"/>
+        where a.contract_id = #{contractId}
+        order by a.created_time desc
+    </select>
+
+    <select id="selectByCollateralId" parameterType="Long" resultMap="GuaranteeMonitoringAlertResult">
+        <include refid="selectGuaranteeMonitoringAlertVo"/>
+        where a.collateral_id = #{collateralId}
+        order by a.created_time desc
+    </select>
+
+    <select id="selectByCompanyId" parameterType="Long" resultMap="GuaranteeMonitoringAlertResult">
+        <include refid="selectGuaranteeMonitoringAlertVo"/>
+        where a.company_id = #{companyId}
+        order by a.created_time desc
+    </select>
+
+    <select id="selectByAlertType" parameterType="String" resultMap="GuaranteeMonitoringAlertResult">
+        <include refid="selectGuaranteeMonitoringAlertVo"/>
+        where a.alert_type = #{alertType}
+        order by a.created_time desc
+    </select>
+
+    <select id="selectByAlertLevel" parameterType="String" resultMap="GuaranteeMonitoringAlertResult">
+        <include refid="selectGuaranteeMonitoringAlertVo"/>
+        where a.alert_level = #{alertLevel}
+        order by a.created_time desc
+    </select>
+
+    <select id="selectByAlertStatus" parameterType="String" resultMap="GuaranteeMonitoringAlertResult">
+        <include refid="selectGuaranteeMonitoringAlertVo"/>
+        where a.alert_status = #{alertStatus}
+        order by a.created_time desc
+    </select>
+
+    <select id="selectByHandlerId" parameterType="Long" resultMap="GuaranteeMonitoringAlertResult">
+        <include refid="selectGuaranteeMonitoringAlertVo"/>
+        where a.handler_id = #{handlerId}
+        order by a.created_time desc
+    </select>
+
+    <select id="selectActiveAlerts" parameterType="Long" resultMap="GuaranteeMonitoringAlertResult">
+        <include refid="selectGuaranteeMonitoringAlertVo"/>
+        where a.alert_status = 'ACTIVE' and a.orgid = #{orgid}
+        order by a.priority_level desc, a.created_time desc
+    </select>
+
+    <select id="selectHighRiskAlerts" parameterType="Long" resultMap="GuaranteeMonitoringAlertResult">
+        <include refid="selectGuaranteeMonitoringAlertVo"/>
+        where a.alert_level in ('HIGH', 'CRITICAL') and a.alert_status = 'ACTIVE' and a.orgid = #{orgid}
+        order by a.priority_level desc, a.created_time desc
+    </select>
+
+    <select id="selectExpiringAlerts" resultMap="GuaranteeMonitoringAlertResult">
+        <include refid="selectGuaranteeMonitoringAlertVo"/>
+        where a.expiry_date is not null 
+        and a.expiry_date &lt;= DATEADD(day, #{days}, GETDATE())
+        and a.alert_status = 'ACTIVE' 
+        and a.orgid = #{orgid}
+        order by a.expiry_date asc
+    </select>
+
+    <select id="selectFollowUpAlerts" parameterType="Long" resultMap="GuaranteeMonitoringAlertResult">
+        <include refid="selectGuaranteeMonitoringAlertVo"/>
+        where a.follow_up_date is not null 
+        and a.follow_up_date &lt;= GETDATE()
+        and a.alert_status = 'ACTIVE' 
+        and a.orgid = #{orgid}
+        order by a.follow_up_date asc
+    </select>
+
+    <insert id="insertGuaranteeMonitoringAlert" parameterType="GuaranteeMonitoringAlert" useGeneratedKeys="true" keyProperty="id">
+        insert into TBL_GUARANTEE_MONITORING_ALERT
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="alertNo != null">alert_no,</if>
+            <if test="contractId != null">contract_id,</if>
+            <if test="collateralId != null">collateral_id,</if>
+            <if test="companyId != null">company_id,</if>
+            <if test="alertType != null">alert_type,</if>
+            <if test="alertLevel != null">alert_level,</if>
+            <if test="alertTitle != null">alert_title,</if>
+            <if test="alertContent != null">alert_content,</if>
+            <if test="alertDate != null">alert_date,</if>
+            <if test="triggerCondition != null">trigger_condition,</if>
+            <if test="suggestedAction != null">suggested_action,</if>
+            <if test="alertStatus != null">alert_status,</if>
+            <if test="priorityLevel != null">priority_level,</if>
+            <if test="expiryDate != null">expiry_date,</if>
+            <if test="autoCloseFlag != null">auto_close_flag,</if>
+            <if test="escalationLevel != null">escalation_level,</if>
+            <if test="riskScore != null">risk_score,</if>
+            <if test="impactAssessment != null">impact_assessment,</if>
+            <if test="mitigationPlan != null">mitigation_plan,</if>
+            <if test="followUpDate != null">follow_up_date,</if>
+            <if test="createdBy != null">created_by,</if>
+            <if test="orgid != null">orgid,</if>
+            created_time,
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="alertNo != null">#{alertNo},</if>
+            <if test="contractId != null">#{contractId},</if>
+            <if test="collateralId != null">#{collateralId},</if>
+            <if test="companyId != null">#{companyId},</if>
+            <if test="alertType != null">#{alertType},</if>
+            <if test="alertLevel != null">#{alertLevel},</if>
+            <if test="alertTitle != null">#{alertTitle},</if>
+            <if test="alertContent != null">#{alertContent},</if>
+            <if test="alertDate != null">#{alertDate},</if>
+            <if test="triggerCondition != null">#{triggerCondition},</if>
+            <if test="suggestedAction != null">#{suggestedAction},</if>
+            <if test="alertStatus != null">#{alertStatus},</if>
+            <if test="priorityLevel != null">#{priorityLevel},</if>
+            <if test="expiryDate != null">#{expiryDate},</if>
+            <if test="autoCloseFlag != null">#{autoCloseFlag},</if>
+            <if test="escalationLevel != null">#{escalationLevel},</if>
+            <if test="riskScore != null">#{riskScore},</if>
+            <if test="impactAssessment != null">#{impactAssessment},</if>
+            <if test="mitigationPlan != null">#{mitigationPlan},</if>
+            <if test="followUpDate != null">#{followUpDate},</if>
+            <if test="createdBy != null">#{createdBy},</if>
+            <if test="orgid != null">#{orgid},</if>
+            CURRENT_TIMESTAMP,
+        </trim>
+    </insert>
+
+    <update id="updateGuaranteeMonitoringAlert" parameterType="GuaranteeMonitoringAlert">
+        update TBL_GUARANTEE_MONITORING_ALERT
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="alertNo != null">alert_no = #{alertNo},</if>
+            <if test="contractId != null">contract_id = #{contractId},</if>
+            <if test="collateralId != null">collateral_id = #{collateralId},</if>
+            <if test="companyId != null">company_id = #{companyId},</if>
+            <if test="alertType != null">alert_type = #{alertType},</if>
+            <if test="alertLevel != null">alert_level = #{alertLevel},</if>
+            <if test="alertTitle != null">alert_title = #{alertTitle},</if>
+            <if test="alertContent != null">alert_content = #{alertContent},</if>
+            <if test="alertDate != null">alert_date = #{alertDate},</if>
+            <if test="triggerCondition != null">trigger_condition = #{triggerCondition},</if>
+            <if test="suggestedAction != null">suggested_action = #{suggestedAction},</if>
+            <if test="alertStatus != null">alert_status = #{alertStatus},</if>
+            <if test="handlerId != null">handler_id = #{handlerId},</if>
+            <if test="handleTime != null">handle_time = #{handleTime},</if>
+            <if test="handleOpinion != null">handle_opinion = #{handleOpinion},</if>
+            <if test="closeTime != null">close_time = #{closeTime},</if>
+            <if test="closeReason != null">close_reason = #{closeReason},</if>
+            <if test="reactivateTime != null">reactivate_time = #{reactivateTime},</if>
+            <if test="reactivateReason != null">reactivate_reason = #{reactivateReason},</if>
+            <if test="priorityLevel != null">priority_level = #{priorityLevel},</if>
+            <if test="expiryDate != null">expiry_date = #{expiryDate},</if>
+            <if test="autoCloseFlag != null">auto_close_flag = #{autoCloseFlag},</if>
+            <if test="escalationLevel != null">escalation_level = #{escalationLevel},</if>
+            <if test="riskScore != null">risk_score = #{riskScore},</if>
+            <if test="impactAssessment != null">impact_assessment = #{impactAssessment},</if>
+            <if test="mitigationPlan != null">mitigation_plan = #{mitigationPlan},</if>
+            <if test="followUpDate != null">follow_up_date = #{followUpDate},</if>
+            <if test="updatedBy != null">updated_by = #{updatedBy},</if>
+            updated_time = CURRENT_TIMESTAMP,
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteGuaranteeMonitoringAlertById" parameterType="Long">
+        delete from TBL_GUARANTEE_MONITORING_ALERT where id = #{id}
+    </delete>
+
+    <delete id="deleteGuaranteeMonitoringAlertByIds" parameterType="String">
+        delete from TBL_GUARANTEE_MONITORING_ALERT where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <update id="handleAlert">
+        update TBL_GUARANTEE_MONITORING_ALERT
+        set alert_status = 'HANDLED',
+            handler_id = #{handlerId},
+            handle_time = CURRENT_TIMESTAMP,
+            handle_opinion = #{handleOpinion},
+            updated_time = CURRENT_TIMESTAMP
+        where id = #{id}
+    </update>
+
+    <update id="closeAlert">
+        update TBL_GUARANTEE_MONITORING_ALERT
+        set alert_status = 'CLOSED',
+            handler_id = #{handlerId},
+            close_time = CURRENT_TIMESTAMP,
+            close_reason = #{closeReason},
+            updated_time = CURRENT_TIMESTAMP
+        where id = #{id}
+    </update>
+
+    <update id="reactivateAlert">
+        update TBL_GUARANTEE_MONITORING_ALERT
+        set alert_status = 'REACTIVATED',
+            handler_id = #{handlerId},
+            reactivate_time = CURRENT_TIMESTAMP,
+            reactivate_reason = #{reactivateReason},
+            updated_time = CURRENT_TIMESTAMP
+        where id = #{id}
+    </update>
+
+    <update id="batchHandleAlerts">
+        update TBL_GUARANTEE_MONITORING_ALERT
+        set alert_status = 'HANDLED',
+            handler_id = #{handlerId},
+            handle_time = CURRENT_TIMESTAMP,
+            handle_opinion = #{handleOpinion},
+            updated_time = CURRENT_TIMESTAMP
+        where id in
+        <foreach item="id" collection="ids" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <update id="batchCloseAlerts">
+        update TBL_GUARANTEE_MONITORING_ALERT
+        set alert_status = 'CLOSED',
+            handler_id = #{handlerId},
+            close_time = CURRENT_TIMESTAMP,
+            close_reason = #{closeReason},
+            updated_time = CURRENT_TIMESTAMP
+        where id in
+        <foreach item="id" collection="ids" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <update id="autoCloseExpiredAlerts">
+        update TBL_GUARANTEE_MONITORING_ALERT
+        set alert_status = 'CLOSED',
+            close_time = CURRENT_TIMESTAMP,
+            close_reason = '自动关闭过期预警',
+            updated_time = CURRENT_TIMESTAMP
+        where expiry_date &lt; GETDATE()
+        and alert_status = 'ACTIVE'
+        and auto_close_flag = '1'
+        and orgid = #{orgid}
+    </update>
+
+    <select id="getAlertStatistics" parameterType="Long" resultType="map">
+        select
+            count(*) as total_count,
+            sum(case when alert_status = 'ACTIVE' then 1 else 0 end) as active_count,
+            sum(case when alert_status = 'HANDLED' then 1 else 0 end) as handled_count,
+            sum(case when alert_status = 'CLOSED' then 1 else 0 end) as closed_count,
+            sum(case when alert_level in ('HIGH', 'CRITICAL') and alert_status = 'ACTIVE' then 1 else 0 end) as high_risk_count,
+            sum(case when expiry_date is not null and expiry_date &lt;= DATEADD(day, 7, GETDATE()) and alert_status = 'ACTIVE' then 1 else 0 end) as expiring_count,
+            sum(case when follow_up_date is not null and follow_up_date &lt;= GETDATE() and alert_status = 'ACTIVE' then 1 else 0 end) as follow_up_count,
+            avg(case when risk_score is not null then risk_score else 0 end) as avg_risk_score
+        from TBL_GUARANTEE_MONITORING_ALERT
+        where orgid = #{orgid}
+    </select>
+
+    <select id="getAlertTrend" resultType="map">
+        select
+            CONVERT(varchar, alert_date, 23) as alert_date,
+            count(*) as alert_count,
+            sum(case when alert_level in ('HIGH', 'CRITICAL') then 1 else 0 end) as high_risk_count
+        from TBL_GUARANTEE_MONITORING_ALERT
+        where alert_date between #{startDate} and #{endDate}
+        and orgid = #{orgid}
+        group by CONVERT(varchar, alert_date, 23)
+        order by alert_date
+    </select>
+
+    <select id="getAlertDistribution" parameterType="Long" resultType="map">
+        select
+            alert_type,
+            count(*) as count,
+            sum(case when alert_status = 'ACTIVE' then 1 else 0 end) as active_count
+        from TBL_GUARANTEE_MONITORING_ALERT
+        where orgid = #{orgid}
+        group by alert_type
+        order by count desc
+    </select>
+
+    <select id="checkAlertNoExists" resultType="int">
+        select count(*) from TBL_GUARANTEE_MONITORING_ALERT
+        where alert_no = #{alertNo}
+        <if test="id != null">
+            and id != #{id}
+        </if>
+    </select>
+
+    <select id="generateAlertNo" resultType="String">
+        select 'GA' + CONVERT(varchar, GETDATE(), 112) + RIGHT('000' + CAST(ISNULL(MAX(CAST(RIGHT(alert_no, 3) AS INT)), 0) + 1 AS VARCHAR), 3)
+        from TBL_GUARANTEE_MONITORING_ALERT
+        where alert_no like 'GA' + CONVERT(varchar, GETDATE(), 112) + '%'
+    </select>
+
+</mapper>

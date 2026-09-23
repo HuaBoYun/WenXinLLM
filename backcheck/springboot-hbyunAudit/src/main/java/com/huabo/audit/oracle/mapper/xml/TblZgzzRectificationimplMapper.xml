@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.audit.oracle.mapper.TblZgzzRectificationimplMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.huabo.audit.oracle.entity.TblZgzzRectificationimpl">
+        <id column="IMPLID" property="implid" />
+        <result column="RELAID" property="relaid" />
+        <result column="LINKDEPT" property="linkdept" />
+        <result column="LINKORG" property="linkorg" />
+        <result column="CREATESTAFF" property="createstaff" />
+        <result column="CREATETIME" property="createtime" />
+        <result column="UPDATESTAFF" property="updatestaff" />
+        <result column="UPDATETIME" property="updatetime" />
+        <result column="RECTIFICATIONMEASURES" property="rectificationmeasures" />
+        <result column="SITUATIONOVERVIEW" property="situationoverview" />
+        <result column="ACHIVEMENT" property="achivement" />
+        <result column="DEADLINE" property="deadline" />
+        <result column="CONCLUSION" property="conclusion" />
+        <result column="NEXTMEASURES" property="nextmeasures" />
+        <result column="FINISHTIME" property="finishtime" />
+    </resultMap>
+
+</mapper>

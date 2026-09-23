@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.fxgl.mapper.RiskcategoryMapper">
+<!--    <resultMap id="RM_Riskcategory" type="Riskcategory" autoMapping="true">-->
+<!--        <id column="RISKCATID" property="riskcatid"/>-->
+<!--        <collection property="children" ofType="Riskcategory" column="riskcatid" select="com.huabo.fxgl.mapper.RiskcategoryMapper.getRiskCateByOrgIdAndModuletype"/>-->
+<!--    </resultMap>-->
+ 
+<select id="selectRisk" resultType="com.huabo.fxgl.entity.Risk">
+ select r.riskid,r.risknumber,r.riskname,o.orgname as UNIT,r.riskcreatedt,r.version,r.riskdes,trc.riskcopingid,trc.status from tbl_risk r  
+             left join tbl_organization o on r.unit = to_char(o.orgid) 
+             left join TBL_RISK_COPING trc on trc.riskid = r.riskid  
+             where  1=1
+ <if test="idList!=null and idList.size()>0">
+	  and  r.riskid   in (select max(riskid) as riskcreatedt from tbl_risk where riskcatid in  
+	    <foreach collection="idList" open="(" close=")" item="item" separator=",">
+	     #{item}
+	    </foreach>
+	     group by risknumber) 
+	   </if>
+
+<if test="queryParam.risknumber!=null and queryParam.risknumber!=''">
+    and risknumber  LIKE
+			concat(concat('%',#{queryParam.risknumber}),'%')
+</if>
+
+<if test="queryParam.riskname!=null and queryParam.riskname!=''">
+    and riskname  LIKE
+			concat(concat('%',#{queryParam.riskname}),'%')
+</if>
+
+<if test="queryParam.unit!=null and queryParam.unit!=''">
+    and unit =#{queryParam.unit}
+</if>
+
+<if test="queryParam.status!=null and queryParam.status!=''">
+    and status=#{queryParam.status}
+</if>
+
+<if test="queryParam.level!=null and queryParam.level!=''">
+    and level  not in ('未评估')
+</if>
+
+<if test="authorityType!=null and authorityType==0">
+    and  r.STAFFID=#{queryParam.staffid}
+</if>
+
+<if test="queryParam.startdate!=null and queryParam.startdate!=''">
+	and riskcreatedt &gt;=#{queryParam.startdate}
+</if>
+<if test="queryParam.enddate!=null and queryParam.enddate!=''">
+	and riskcreatedt &lt;=#{queryParam.enddate}
+</if>
+order by RISKCREATEDT desc
+</select>
+</mapper>

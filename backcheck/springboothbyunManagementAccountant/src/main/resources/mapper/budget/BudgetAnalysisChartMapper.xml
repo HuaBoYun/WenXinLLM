@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.management.accountant.oracle.mapper.budget.BudgetAnalysisChartMapper">
+
+    <resultMap id="BaseResultMap" type="com.management.accountant.oracle.entity.budget.BudgetAnalysisChart">
+        <id column="CHART_ID" property="chartId"/>
+        <result column="CHART_NAME" property="chartName"/>
+        <result column="CHART_TYPE" property="chartType"/>
+        <result column="DATA_SOURCE" property="dataSource"/>
+        <result column="CHART_CONFIG" property="chartConfig"/>
+        <result column="THUMBNAIL" property="thumbnail"/>
+        <result column="DESCRIPTION" property="description"/>
+        <result column="STATUS" property="status"/>
+        <result column="USAGE_COUNT" property="usageCount"/>
+        <result column="CREATOR" property="creator"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_BY" property="updateBy"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="DEL_FLAG" property="delFlag"/>
+    </resultMap>
+
+    <select id="selectChartStats" resultType="java.util.Map">
+        SELECT
+            COUNT(*) AS TOTAL_CHARTS,
+            COUNT(DISTINCT CHART_TYPE) AS CHART_TYPES,
+            SUM(CASE WHEN CHART_CONFIG IS NOT NULL AND CHART_CONFIG != '{}' THEN 1 ELSE 0 END) AS INTERACTIVE_CHARTS,
+            NVL(SUM(USAGE_COUNT), 0) AS TOTAL_EXPORTS
+        FROM TBL_BUDGET_ANALYSIS_CHART
+        WHERE DEL_FLAG = 0
+    </select>
+
+    <select id="selectChartTypeStats" resultType="java.util.Map">
+        SELECT CHART_TYPE, COUNT(*) AS TYPE_COUNT, NVL(SUM(USAGE_COUNT), 0) AS USAGE_COUNT
+        FROM TBL_BUDGET_ANALYSIS_CHART
+        WHERE DEL_FLAG = 0
+        GROUP BY CHART_TYPE
+        ORDER BY TYPE_COUNT DESC
+    </select>
+
+    <select id="selectChartPage" resultMap="BaseResultMap">
+        SELECT * FROM (
+            SELECT t.*, ROWNUM AS RN FROM (
+                SELECT * FROM TBL_BUDGET_ANALYSIS_CHART
+                WHERE DEL_FLAG = 0
+                <if test="chartType != null and chartType != ''">
+                    AND CHART_TYPE = #{chartType}
+                </if>
+                <if test="dataSource != null and dataSource != ''">
+                    AND DATA_SOURCE = #{dataSource}
+                </if>
+                <if test="creator != null and creator != ''">
+                    AND CREATOR LIKE '%' || #{creator} || '%'
+                </if>
+                <if test="chartName != null and chartName != ''">
+                    AND CHART_NAME LIKE '%' || #{chartName} || '%'
+                </if>
+                <if test="status != null and status != ''">
+                    AND STATUS = #{status}
+                </if>
+                <if test="startTime != null and startTime != ''">
+                    AND CREATE_TIME &gt;= TO_DATE(#{startTime}, 'YYYY-MM-DD')
+                </if>
+                <if test="endTime != null and endTime != ''">
+                    AND CREATE_TIME &lt;= TO_DATE(#{endTime}, 'YYYY-MM-DD') + 1
+                </if>
+                ORDER BY CREATE_TIME DESC
+            ) t WHERE ROWNUM &lt;= #{endRow}
+        ) WHERE RN &gt; #{startRow}
+    </select>
+
+    <select id="selectChartPageCount" resultType="int">
+        SELECT COUNT(*) FROM TBL_BUDGET_ANALYSIS_CHART
+        WHERE DEL_FLAG = 0
+        <if test="chartType != null and chartType != ''">
+            AND CHART_TYPE = #{chartType}
+        </if>
+        <if test="dataSource != null and dataSource != ''">
+            AND DATA_SOURCE = #{dataSource}
+        </if>
+        <if test="creator != null and creator != ''">
+            AND CREATOR LIKE '%' || #{creator} || '%'
+        </if>
+        <if test="chartName != null and chartName != ''">
+            AND CHART_NAME LIKE '%' || #{chartName} || '%'
+        </if>
+        <if test="status != null and status != ''">
+            AND STATUS = #{status}
+        </if>
+        <if test="startTime != null and startTime != ''">
+            AND CREATE_TIME &gt;= TO_DATE(#{startTime}, 'YYYY-MM-DD')
+        </if>
+        <if test="endTime != null and endTime != ''">
+            AND CREATE_TIME &lt;= TO_DATE(#{endTime}, 'YYYY-MM-DD') + 1
+        </if>
+    </select>
+
+</mapper>

@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.cybermonitor.mapper.EnterpriseHierarchyMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.huabo.cybermonitor.entity.EnterpriseHierarchy">
+        <id column="HIERARCHY_ID" property="hierarchyId" />
+        <result column="PARENT_ENTERPRISE_ID" property="parentEnterpriseId" />
+        <result column="CHILD_ENTERPRISE_ID" property="childEnterpriseId" />
+        <result column="HIERARCHY_LEVEL" property="hierarchyLevel" />
+        <result column="RELATIONSHIP_TYPE" property="relationshipType" />
+        <result column="EFFECTIVE_DATE" property="effectiveDate" />
+        <result column="EXPIRY_DATE" property="expiryDate" />
+        <result column="CREATE_USER" property="createUser" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_USER" property="updateUser" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="REMARK" property="remark" />
+        <result column="parentEnterpriseName" property="parentEnterpriseName" />
+        <result column="childEnterpriseName" property="childEnterpriseName" />
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="Base_Column_List">
+        HIERARCHY_ID, PARENT_ENTERPRISE_ID, CHILD_ENTERPRISE_ID, HIERARCHY_LEVEL, RELATIONSHIP_TYPE,
+        EFFECTIVE_DATE, EXPIRY_DATE, CREATE_USER, CREATE_TIME, UPDATE_USER, UPDATE_TIME, REMARK
+    </sql>
+
+    <!-- 获取企业的所有上级企业（向上穿透） - MySQL版本 -->
+    <select id="selectParentHierarchy" resultType="java.util.Map" databaseId="mysql">
+        WITH RECURSIVE parent_hierarchy AS (
+            SELECT h.PARENT_ENTERPRISE_ID, h.CHILD_ENTERPRISE_ID, h.HIERARCHY_LEVEL,
+                   e.ENTERPRISE_NAME, 1 as level
+            FROM ENTERPRISE_HIERARCHY h
+            JOIN ENTERPRISE_INFO e ON h.PARENT_ENTERPRISE_ID = e.ENTERPRISE_ID
+            WHERE h.CHILD_ENTERPRISE_ID = #{enterpriseId}
+            AND (h.EXPIRY_DATE IS NULL OR h.EXPIRY_DATE > CURDATE())
+            UNION ALL
+            SELECT h.PARENT_ENTERPRISE_ID, h.CHILD_ENTERPRISE_ID, h.HIERARCHY_LEVEL,
+                   e.ENTERPRISE_NAME, ph.level + 1
+            FROM ENTERPRISE_HIERARCHY h
+            JOIN ENTERPRISE_INFO e ON h.PARENT_ENTERPRISE_ID = e.ENTERPRISE_ID
+            JOIN parent_hierarchy ph ON h.CHILD_ENTERPRISE_ID = ph.PARENT_ENTERPRISE_ID
+            WHERE ph.level &lt; #{maxLevel}
+            AND (h.EXPIRY_DATE IS NULL OR h.EXPIRY_DATE > CURDATE())
+        )
+        SELECT * FROM parent_hierarchy ORDER BY level
+    </select>
+
+    <!-- 获取企业的所有上级企业（向上穿透） - 达梦数据库版本 -->
+    <select id="selectParentHierarchy" resultType="java.util.Map" databaseId="dm">
+        SELECT h.PARENT_ENTERPRISE_ID, h.CHILD_ENTERPRISE_ID, h.HIERARCHY_LEVEL,
+               e.ENTERPRISE_NAME, LEVEL as level
+        FROM ENTERPRISE_HIERARCHY h
+        JOIN ENTERPRISE_INFO e ON h.PARENT_ENTERPRISE_ID = e.ENTERPRISE_ID
+        WHERE (h.EXPIRY_DATE IS NULL OR h.EXPIRY_DATE > SYSDATE)
+        AND LEVEL &lt;= #{maxLevel}
+        START WITH h.CHILD_ENTERPRISE_ID = #{enterpriseId}
+        CONNECT BY PRIOR h.PARENT_ENTERPRISE_ID = h.CHILD_ENTERPRISE_ID
+        ORDER BY LEVEL
+    </select>
+
+    <!-- 获取企业的所有下级企业（向下穿透） - MySQL版本 -->
+    <select id="selectChildHierarchy" resultType="java.util.Map" databaseId="mysql">
+        WITH RECURSIVE child_hierarchy AS (
+            SELECT h.PARENT_ENTERPRISE_ID, h.CHILD_ENTERPRISE_ID, h.HIERARCHY_LEVEL,
+                   e.ENTERPRISE_NAME, 1 as level
+            FROM ENTERPRISE_HIERARCHY h
+            JOIN ENTERPRISE_INFO e ON h.CHILD_ENTERPRISE_ID = e.ENTERPRISE_ID
+            WHERE h.PARENT_ENTERPRISE_ID = #{enterpriseId}
+            AND (h.EXPIRY_DATE IS NULL OR h.EXPIRY_DATE > CURDATE())
+            UNION ALL
+            SELECT h.PARENT_ENTERPRISE_ID, h.CHILD_ENTERPRISE_ID, h.HIERARCHY_LEVEL,
+                   e.ENTERPRISE_NAME, ch.level + 1
+            FROM ENTERPRISE_HIERARCHY h
+            JOIN ENTERPRISE_INFO e ON h.CHILD_ENTERPRISE_ID = e.ENTERPRISE_ID
+            JOIN child_hierarchy ch ON h.PARENT_ENTERPRISE_ID = ch.CHILD_ENTERPRISE_ID
+            WHERE ch.level &lt; #{maxLevel}
+            AND (h.EXPIRY_DATE IS NULL OR h.EXPIRY_DATE > CURDATE())
+        )
+        SELECT * FROM child_hierarchy ORDER BY level
+    </select>
+
+    <!-- 获取企业的所有下级企业（向下穿透） - 达梦数据库版本 -->
+    <select id="selectChildHierarchy" resultType="java.util.Map" databaseId="dm">
+        SELECT h.PARENT_ENTERPRISE_ID, h.CHILD_ENTERPRISE_ID, h.HIERARCHY_LEVEL,
+               e.ENTERPRISE_NAME, LEVEL as level
+        FROM ENTERPRISE_HIERARCHY h
+        JOIN ENTERPRISE_INFO e ON h.CHILD_ENTERPRISE_ID = e.ENTERPRISE_ID
+        WHERE (h.EXPIRY_DATE IS NULL OR h.EXPIRY_DATE > SYSDATE)
+        AND LEVEL &lt;= #{maxLevel}
+        START WITH h.PARENT_ENTERPRISE_ID = #{enterpriseId}
+        CONNECT BY PRIOR h.CHILD_ENTERPRISE_ID = h.PARENT_ENTERPRISE_ID
+        ORDER BY LEVEL
+    </select>
+
+    <!-- 检查是否存在循环引用 - MySQL版本 -->
+    <select id="checkCircularReference" resultType="java.lang.Integer" databaseId="mysql">
+        WITH RECURSIVE hierarchy_check AS (
+            SELECT PARENT_ENTERPRISE_ID, CHILD_ENTERPRISE_ID, 1 as level
+            FROM ENTERPRISE_HIERARCHY
+            WHERE PARENT_ENTERPRISE_ID = #{childEnterpriseId}
+            AND (EXPIRY_DATE IS NULL OR EXPIRY_DATE > CURDATE())
+            UNION ALL
+            SELECT h.PARENT_ENTERPRISE_ID, h.CHILD_ENTERPRISE_ID, hc.level + 1
+            FROM ENTERPRISE_HIERARCHY h
+            JOIN hierarchy_check hc ON h.PARENT_ENTERPRISE_ID = hc.CHILD_ENTERPRISE_ID
+            WHERE hc.level &lt; 10
+            AND (h.EXPIRY_DATE IS NULL OR h.EXPIRY_DATE > CURDATE())
+        )
+        SELECT COUNT(*) FROM hierarchy_check WHERE CHILD_ENTERPRISE_ID = #{parentEnterpriseId}
+    </select>
+
+    <!-- 检查是否存在循环引用 - 达梦数据库版本 -->
+    <select id="checkCircularReference" resultType="java.lang.Integer" databaseId="dm">
+        SELECT COUNT(*)
+        FROM (
+            SELECT CHILD_ENTERPRISE_ID, LEVEL
+            FROM ENTERPRISE_HIERARCHY
+            WHERE (EXPIRY_DATE IS NULL OR EXPIRY_DATE > SYSDATE)
+            AND LEVEL &lt;= 10
+            START WITH PARENT_ENTERPRISE_ID = #{childEnterpriseId}
+            CONNECT BY PRIOR CHILD_ENTERPRISE_ID = PARENT_ENTERPRISE_ID
+        ) t
+        WHERE t.CHILD_ENTERPRISE_ID = #{parentEnterpriseId}
+    </select>
+
+    <!-- 获取企业的所有子公司数量（包括间接子公司） - MySQL版本 -->
+    <select id="countAllChildren" resultType="java.lang.Integer" databaseId="mysql">
+        WITH RECURSIVE all_children AS (
+            SELECT CHILD_ENTERPRISE_ID, 1 as level
+            FROM ENTERPRISE_HIERARCHY
+            WHERE PARENT_ENTERPRISE_ID = #{enterpriseId}
+            AND (EXPIRY_DATE IS NULL OR EXPIRY_DATE > CURDATE())
+            UNION ALL
+            SELECT h.CHILD_ENTERPRISE_ID, ac.level + 1
+            FROM ENTERPRISE_HIERARCHY h
+            JOIN all_children ac ON h.PARENT_ENTERPRISE_ID = ac.CHILD_ENTERPRISE_ID
+            WHERE ac.level &lt; 10
+            AND (h.EXPIRY_DATE IS NULL OR h.EXPIRY_DATE > CURDATE())
+        )
+        SELECT COUNT(DISTINCT CHILD_ENTERPRISE_ID) FROM all_children
+    </select>
+
+    <!-- 获取企业的所有子公司数量（包括间接子公司） - 达梦数据库版本 -->
+    <select id="countAllChildren" resultType="java.lang.Integer" databaseId="dm">
+        SELECT COUNT(DISTINCT CHILD_ENTERPRISE_ID)
+        FROM (
+            SELECT CHILD_ENTERPRISE_ID, LEVEL
+            FROM ENTERPRISE_HIERARCHY
+            WHERE (EXPIRY_DATE IS NULL OR EXPIRY_DATE > SYSDATE)
+            AND LEVEL &lt;= 10
+            START WITH PARENT_ENTERPRISE_ID = #{enterpriseId}
+            CONNECT BY PRIOR CHILD_ENTERPRISE_ID = PARENT_ENTERPRISE_ID
+        )
+    </select>
+
+    <!-- 批量插入层级关系 -->
+    <insert id="batchInsert">
+        INSERT INTO ENTERPRISE_HIERARCHY (
+            HIERARCHY_ID, PARENT_ENTERPRISE_ID, CHILD_ENTERPRISE_ID, HIERARCHY_LEVEL, RELATIONSHIP_TYPE,
+            EFFECTIVE_DATE, EXPIRY_DATE, CREATE_USER, CREATE_TIME, UPDATE_USER, UPDATE_TIME, REMARK
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.hierarchyId}, #{item.parentEnterpriseId}, #{item.childEnterpriseId}, 
+                #{item.hierarchyLevel}, #{item.relationshipType}, #{item.effectiveDate}, 
+                #{item.expiryDate}, #{item.createUser}, #{item.createTime}, #{item.updateUser}, 
+                #{item.updateTime}, #{item.remark}
+            )
+        </foreach>
+    </insert>
+
+</mapper>

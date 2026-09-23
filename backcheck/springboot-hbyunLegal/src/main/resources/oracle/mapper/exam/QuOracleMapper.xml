@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.legal.exam.modules.qu.mapper.QuMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.huabo.legal.exam.modules.qu.entity.Qu">
+        <id column="id" property="id" />
+        <result column="qutype" property="quType" />
+        <result column="levela" property="levela" />
+        <result column="image" property="image" />
+        <result column="content" property="content" />
+        <result column="createtime" property="createTime" />
+        <result column="updatetime" property="updateTime" />
+        <result column="remark" property="remark" />
+        <result column="analysis" property="analysis" />
+        <result column="TITLE" property="title" />
+        <result column="TBLREPOID" property="tblrepoid" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        `id`,`qutype`,`levela`,`image`,`content`,`createtime`,`updatetime`,`remark`,`analysis`,`title`,`tblrepoid`
+    </sql>
+<!-- 
+ <if test="excludes!=null and excludes.size()>0">
+            AND a.id NOT IN
+            <foreach item="item" collection="excludes" separator="," open="(" close=")" index="">'${excludes}'</foreach>
+        </if>
+        
+ -->
+    <!-- 随机取数据 -->
+    <select id="listByRandom" resultMap="BaseResultMap">
+        select  t.* from
+        (SELECT DISTINCT a.*
+        FROM tbl_fwgl_qu a
+        LEFT JOIN tbl_fwgl_qu_repo b ON a.id=b.quid
+        WHERE b.repoid=#{repoId} AND a.qutype=#{quType}
+        <if test="level!=null and level>0">
+            AND a.`levela`=#{level}
+        </if>
+        ORDER BY dbms_random.normal) t
+        WHERE ROWNUM &lt;= #{size}
+    </select>
+    
+    
+	
+
+
+    <resultMap id="ExportResultMap" type="com.huabo.legal.exam.modules.qu.dto.export.QuExportDTO">
+        <id column="qid" property="qId"  />
+        <result column="qutype" property="quType"  />
+        <result column="qcontent" property="qContent"  />
+        <result column="qanalysis" property="qAnalysis"  />
+        <result column="aisright" property="aIsRight"  />
+        <result column="acontent" property="aContent"  />
+        <result column="aanalysis" property="aAnalysis"  />
+        <collection property="repoList" column="qid" select="selectRepos"/>
+    </resultMap>
+
+    <select id="selectRepos" resultType="String">
+		SELECT repoid FROM tbl_fwgl_qu_repo po WHERE po.quid=#{qId}
+	</select>
+
+
+    <sql id="query">
+        <where>
+            <if test="query!=null">
+                <if test="query.quType!=null">
+                    AND q.qutype = #{query.quType}
+                </if>
+                <if test="query.repoIds!=null and query.repoIds.size()>0">
+                    AND po.repoid IN
+                    <foreach collection="query.repoIds" open="(" close=")" separator="," item="repoId">#{repoId}</foreach>
+                </if>
+
+                <if test="query.content!=null and query.content!=''">
+                    AND q.content LIKE '%${query.content}%'
+                </if>
+
+                <if test="query.excludes!=null and query.excludes.size()>0">
+                    AND q.id NOT IN
+                    <foreach collection="query.excludes" open="(" close=")" separator="," item="quId">
+                    #{quId}
+                    </foreach>
+                </if>
+            </if>
+        </where>
+    </sql>
+   <select id="paging" resultMap="BaseResultMap">
+        SELECT Q.*,TBL.TITLE , TBL.ID AS TBLREPOID
+        FROM TBL_FWGL_QU Q 
+        LEFT JOIN tbl_fwgl_qu_repo PO ON Q.id=PO.quid
+        LEFT JOIN tbl_fwgl_repo TBL ON PO.REPOID = TBL.ID
+        <include refid="query" />
+        ORDER BY q.updatetime DESC
+    </select>
+    
+    
+
+
+    <select id="listForExport" resultMap="ExportResultMap">
+        SELECT
+        q.id as qid,
+        q.qutype,
+        q.content AS qcontent,
+        q.analysis as qanalysis,
+        a.content as acontent,
+        a.isright as aisright,
+        a.analysis as aanalysis
+        FROM tbl_fwgl_qu q
+        LEFT JOIN tbl_fwgl_qu_answer a ON q.id=a.quid
+        LEFT JOIN tbl_fwgl_qu_repo po ON q.id=po.quid
+        <include refid="query" />
+        GROUP BY a.id ORDER BY q.id
+    </select>
+<!-- LIMIT 10000 -->
+</mapper>

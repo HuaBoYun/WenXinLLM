@@ -1,0 +1,582 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.cybermonitor.mapper.SystemMonitorMapper">
+
+    <!-- 基础结果映射 -->
+    <resultMap id="BaseResultMap" type="com.huabo.cybermonitor.entity.SystemMonitor">
+        <id column="MONITOR_ID" property="monitorId" />
+        <result column="MONITOR_TYPE" property="monitorType" />
+        <result column="MONITOR_ITEM" property="monitorItem" />
+        <result column="MONITOR_VALUE" property="monitorValue" />
+        <result column="MONITOR_UNIT" property="monitorUnit" />
+        <result column="MONITOR_STATUS" property="monitorStatus" />
+        <result column="ALERT_LEVEL" property="alertLevel" />
+        <result column="ALERT_MESSAGE" property="alertMessage" />
+        <result column="THRESHOLD_CONFIG" property="thresholdConfig" />
+        <result column="SERVER_IP" property="serverIp" />
+        <result column="SERVER_NAME" property="serverName" />
+        <result column="APPLICATION_NAME" property="applicationName" />
+        <result column="MONITOR_TIME" property="monitorTime" />
+        <result column="PROCESS_STATUS" property="processStatus" />
+        <result column="PROCESS_BY" property="processBy" />
+        <result column="PROCESS_TIME" property="processTime" />
+        <result column="PROCESS_REMARK" property="processRemark" />
+        <result column="CREATE_TIME" property="createTime" />
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        MONITOR_ID, MONITOR_TYPE, MONITOR_ITEM, MONITOR_VALUE, MONITOR_UNIT,
+        MONITOR_STATUS, ALERT_LEVEL, ALERT_MESSAGE, THRESHOLD_CONFIG,
+        SERVER_IP, SERVER_NAME, APPLICATION_NAME, MONITOR_TIME,
+        PROCESS_STATUS, PROCESS_BY, PROCESS_TIME, PROCESS_REMARK, CREATE_TIME
+    </sql>
+
+    <!-- 分页查询系统监控记录列表 -->
+    <select id="selectMonitorList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM SYS_MONITOR
+        <where>
+            <if test="queryVO.monitorType != null and queryVO.monitorType != ''">
+                AND MONITOR_TYPE = #{queryVO.monitorType}
+            </if>
+            <if test="queryVO.monitorItem != null and queryVO.monitorItem != ''">
+                AND MONITOR_ITEM LIKE CONCAT('%', #{queryVO.monitorItem}, '%')
+            </if>
+            <if test="queryVO.monitorStatus != null and queryVO.monitorStatus != ''">
+                AND MONITOR_STATUS = #{queryVO.monitorStatus}
+            </if>
+            <if test="queryVO.alertLevel != null and queryVO.alertLevel != ''">
+                AND ALERT_LEVEL = #{queryVO.alertLevel}
+            </if>
+            <if test="queryVO.serverIp != null and queryVO.serverIp != ''">
+                AND SERVER_IP LIKE CONCAT('%', #{queryVO.serverIp}, '%')
+            </if>
+            <if test="queryVO.serverName != null and queryVO.serverName != ''">
+                AND SERVER_NAME LIKE CONCAT('%', #{queryVO.serverName}, '%')
+            </if>
+            <if test="queryVO.applicationName != null and queryVO.applicationName != ''">
+                AND APPLICATION_NAME LIKE CONCAT('%', #{queryVO.applicationName}, '%')
+            </if>
+            <if test="queryVO.processStatus != null and queryVO.processStatus != ''">
+                AND PROCESS_STATUS = #{queryVO.processStatus}
+            </if>
+            <if test="queryVO.startDate != null and queryVO.startDate != ''">
+                <choose>
+                    <when test="_databaseId == 'mysql'">
+                        AND DATE(MONITOR_TIME) >= #{queryVO.startDate}
+                    </when>
+                    <when test="_databaseId == 'dm'">
+                        AND TRUNC(MONITOR_TIME) >= TO_DATE(#{queryVO.startDate}, 'YYYY-MM-DD')
+                    </when>
+                </choose>
+            </if>
+            <if test="queryVO.endDate != null and queryVO.endDate != ''">
+                <choose>
+                    <when test="_databaseId == 'mysql'">
+                        AND DATE(MONITOR_TIME) &lt;= #{queryVO.endDate}
+                    </when>
+                    <when test="_databaseId == 'dm'">
+                        AND TRUNC(MONITOR_TIME) &lt;= TO_DATE(#{queryVO.endDate}, 'YYYY-MM-DD')
+                    </when>
+                </choose>
+            </if>
+        </where>
+        ORDER BY MONITOR_TIME DESC
+    </select>
+
+    <!-- 根据监控类型查询监控记录列表 -->
+    <select id="selectMonitorsByType" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM SYS_MONITOR
+        WHERE MONITOR_TYPE = #{monitorType}
+        ORDER BY MONITOR_TIME DESC
+        <choose>
+            <when test="_databaseId == 'mysql'">
+                LIMIT 100
+            </when>
+            <when test="_databaseId == 'dm'">
+                AND ROWNUM &lt;= 100
+            </when>
+        </choose>
+    </select>
+
+    <!-- 根据监控状态查询监控记录列表 -->
+    <select id="selectMonitorsByStatus" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM SYS_MONITOR
+        WHERE MONITOR_STATUS = #{monitorStatus}
+        ORDER BY MONITOR_TIME DESC
+        <choose>
+            <when test="_databaseId == 'mysql'">
+                LIMIT 100
+            </when>
+            <when test="_databaseId == 'dm'">
+                AND ROWNUM &lt;= 100
+            </when>
+        </choose>
+    </select>
+
+    <!-- 根据告警级别查询监控记录列表 -->
+    <select id="selectMonitorsByAlertLevel" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM SYS_MONITOR
+        WHERE ALERT_LEVEL = #{alertLevel}
+        ORDER BY MONITOR_TIME DESC
+        <choose>
+            <when test="_databaseId == 'mysql'">
+                LIMIT 100
+            </when>
+            <when test="_databaseId == 'dm'">
+                AND ROWNUM &lt;= 100
+            </when>
+        </choose>
+    </select>
+
+    <!-- 根据服务器查询监控记录列表 -->
+    <select id="selectMonitorsByServer" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM SYS_MONITOR
+        WHERE SERVER_IP = #{serverIp}
+        ORDER BY MONITOR_TIME DESC
+        <choose>
+            <when test="_databaseId == 'mysql'">
+                LIMIT 100
+            </when>
+            <when test="_databaseId == 'dm'">
+                AND ROWNUM &lt;= 100
+            </when>
+        </choose>
+    </select>
+
+    <!-- 根据应用查询监控记录列表 -->
+    <select id="selectMonitorsByApplication" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM SYS_MONITOR
+        WHERE APPLICATION_NAME = #{applicationName}
+        ORDER BY MONITOR_TIME DESC
+        <choose>
+            <when test="_databaseId == 'mysql'">
+                LIMIT 100
+            </when>
+            <when test="_databaseId == 'dm'">
+                AND ROWNUM &lt;= 100
+            </when>
+        </choose>
+    </select>
+
+    <!-- 查询未处理的监控记录列表 -->
+    <select id="selectUnprocessedMonitors" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM SYS_MONITOR
+        WHERE PROCESS_STATUS = 'PENDING'
+        ORDER BY ALERT_LEVEL DESC, MONITOR_TIME DESC
+        <choose>
+            <when test="_databaseId == 'mysql'">
+                LIMIT 50
+            </when>
+            <when test="_databaseId == 'dm'">
+                AND ROWNUM &lt;= 50
+            </when>
+        </choose>
+    </select>
+
+    <!-- 查询高优先级告警记录列表 -->
+    <select id="selectHighPriorityAlerts" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM SYS_MONITOR
+        WHERE ALERT_LEVEL IN ('HIGH', 'CRITICAL')
+        AND MONITOR_STATUS IN ('WARNING', 'CRITICAL', 'ERROR')
+        ORDER BY ALERT_LEVEL DESC, MONITOR_TIME DESC
+        <choose>
+            <when test="_databaseId == 'mysql'">
+                LIMIT 20
+            </when>
+            <when test="_databaseId == 'dm'">
+                AND ROWNUM &lt;= 20
+            </when>
+        </choose>
+    </select>
+
+    <!-- 更新监控记录处理状态 -->
+    <update id="updateMonitorProcessStatus">
+        UPDATE SYS_MONITOR
+        SET PROCESS_STATUS = #{processStatus},
+            PROCESS_BY = #{processBy},
+            PROCESS_TIME = <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <when test="_databaseId == 'dm'">SYSDATE</when>
+            </choose>,
+            PROCESS_REMARK = #{processRemark}
+        WHERE MONITOR_ID = #{monitorId}
+    </update>
+
+    <!-- 批量更新监控记录处理状态 -->
+    <update id="batchUpdateMonitorProcessStatus">
+        UPDATE SYS_MONITOR
+        SET PROCESS_STATUS = #{processStatus},
+            PROCESS_BY = #{processBy},
+            PROCESS_TIME = <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <when test="_databaseId == 'dm'">SYSDATE</when>
+            </choose>,
+            PROCESS_REMARK = #{processRemark}
+        WHERE MONITOR_ID IN
+        <foreach collection="monitorIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 获取监控统计信息 -->
+    <select id="selectMonitorStatistics" resultType="java.util.Map">
+        SELECT
+            COUNT(*) as totalCount,
+            COUNT(CASE WHEN MONITOR_STATUS = 'NORMAL' THEN 1 END) as normalCount,
+            COUNT(CASE WHEN MONITOR_STATUS = 'WARNING' THEN 1 END) as warningCount,
+            COUNT(CASE WHEN MONITOR_STATUS = 'CRITICAL' THEN 1 END) as criticalCount,
+            COUNT(CASE WHEN MONITOR_STATUS = 'ERROR' THEN 1 END) as errorCount,
+            COUNT(CASE WHEN PROCESS_STATUS = 'PENDING' THEN 1 END) as pendingCount,
+            COUNT(CASE WHEN PROCESS_STATUS = 'RESOLVED' THEN 1 END) as resolvedCount,
+            COUNT(CASE WHEN ALERT_LEVEL IN ('HIGH', 'CRITICAL') THEN 1 END) as highPriorityCount
+        FROM SYS_MONITOR
+        WHERE <choose>
+            <when test="_databaseId == 'mysql'">
+                DATE(MONITOR_TIME) = CURDATE()
+            </when>
+            <when test="_databaseId == 'dm'">
+                TRUNC(MONITOR_TIME) = TRUNC(SYSDATE)
+            </when>
+        </choose>
+    </select>
+
+    <!-- 获取监控类型分布统计 -->
+    <select id="selectMonitorTypeDistribution" resultType="java.util.Map">
+        SELECT
+            MONITOR_TYPE as typeName,
+            COUNT(*) as count,
+            COUNT(CASE WHEN MONITOR_STATUS != 'NORMAL' THEN 1 END) as alertCount
+        FROM SYS_MONITOR
+        WHERE <choose>
+            <when test="_databaseId == 'mysql'">
+                DATE(MONITOR_TIME) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+            </when>
+            <when test="_databaseId == 'dm'">
+                TRUNC(MONITOR_TIME) >= TRUNC(SYSDATE) - 7
+            </when>
+        </choose>
+        GROUP BY MONITOR_TYPE
+        ORDER BY count DESC
+    </select>
+
+    <!-- 获取监控状态分布统计 -->
+    <select id="selectMonitorStatusDistribution" resultType="java.util.Map">
+        SELECT
+            MONITOR_STATUS as statusName,
+            COUNT(*) as count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM SYS_MONITOR WHERE <choose>
+                <when test="_databaseId == 'mysql'">
+                    DATE(MONITOR_TIME) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+                </when>
+                <when test="_databaseId == 'dm'">
+                    TRUNC(MONITOR_TIME) >= TRUNC(SYSDATE) - 7
+                </when>
+            </choose>), 2) as percentage
+        FROM SYS_MONITOR
+        WHERE <choose>
+            <when test="_databaseId == 'mysql'">
+                DATE(MONITOR_TIME) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+            </when>
+            <when test="_databaseId == 'dm'">
+                TRUNC(MONITOR_TIME) >= TRUNC(SYSDATE) - 7
+            </when>
+        </choose>
+        GROUP BY MONITOR_STATUS
+        ORDER BY count DESC
+    </select>
+
+    <!-- 获取告警级别分布统计 -->
+    <select id="selectAlertLevelDistribution" resultType="java.util.Map">
+        SELECT
+            ALERT_LEVEL as levelName,
+            COUNT(*) as count
+        FROM SYS_MONITOR
+        WHERE MONITOR_STATUS != 'NORMAL'
+        AND <choose>
+            <when test="_databaseId == 'mysql'">
+                DATE(MONITOR_TIME) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+            </when>
+            <when test="_databaseId == 'dm'">
+                TRUNC(MONITOR_TIME) >= TRUNC(SYSDATE) - 7
+            </when>
+        </choose>
+        GROUP BY ALERT_LEVEL
+        ORDER BY count DESC
+    </select>
+
+    <!-- 获取服务器监控分布统计 -->
+    <select id="selectServerDistribution" resultType="java.util.Map">
+        SELECT
+            SERVER_IP as serverIp,
+            SERVER_NAME as serverName,
+            COUNT(*) as count,
+            COUNT(CASE WHEN MONITOR_STATUS != 'NORMAL' THEN 1 END) as alertCount
+        FROM SYS_MONITOR
+        WHERE SERVER_IP IS NOT NULL
+        AND <choose>
+            <when test="_databaseId == 'mysql'">
+                DATE(MONITOR_TIME) >= DATE_SUB(CURDATE(), INTERVAL 1 DAY)
+            </when>
+            <when test="_databaseId == 'dm'">
+                TRUNC(MONITOR_TIME) >= TRUNC(SYSDATE) - 1
+            </when>
+        </choose>
+        GROUP BY SERVER_IP, SERVER_NAME
+        ORDER BY alertCount DESC, count DESC
+    </select>
+
+    <!-- 获取应用监控分布统计 -->
+    <select id="selectApplicationDistribution" resultType="java.util.Map">
+        SELECT
+            APPLICATION_NAME as applicationName,
+            COUNT(*) as count,
+            COUNT(CASE WHEN MONITOR_STATUS != 'NORMAL' THEN 1 END) as alertCount
+        FROM SYS_MONITOR
+        WHERE APPLICATION_NAME IS NOT NULL
+        AND <choose>
+            <when test="_databaseId == 'mysql'">
+                DATE(MONITOR_TIME) >= DATE_SUB(CURDATE(), INTERVAL 1 DAY)
+            </when>
+            <when test="_databaseId == 'dm'">
+                TRUNC(MONITOR_TIME) >= TRUNC(SYSDATE) - 1
+            </when>
+        </choose>
+        GROUP BY APPLICATION_NAME
+        ORDER BY alertCount DESC, count DESC
+    </select>
+
+    <!-- 获取监控趋势统计 -->
+    <select id="selectMonitorTrend" resultType="java.util.Map">
+        SELECT
+            <choose>
+                <when test="_databaseId == 'mysql'">
+                    DATE(MONITOR_TIME) as monitorDate,
+                </when>
+                <when test="_databaseId == 'dm'">
+                    TO_CHAR(MONITOR_TIME, 'YYYY-MM-DD') as monitorDate,
+                </when>
+            </choose>
+            COUNT(*) as totalCount,
+            COUNT(CASE WHEN MONITOR_STATUS = 'NORMAL' THEN 1 END) as normalCount,
+            COUNT(CASE WHEN MONITOR_STATUS != 'NORMAL' THEN 1 END) as alertCount
+        FROM SYS_MONITOR
+        <where>
+            <if test="startDate != null and startDate != ''">
+                <choose>
+                    <when test="_databaseId == 'mysql'">
+                        AND DATE(MONITOR_TIME) >= #{startDate}
+                    </when>
+                    <when test="_databaseId == 'dm'">
+                        AND TRUNC(MONITOR_TIME) >= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+                    </when>
+                </choose>
+            </if>
+            <if test="endDate != null and endDate != ''">
+                <choose>
+                    <when test="_databaseId == 'mysql'">
+                        AND DATE(MONITOR_TIME) &lt;= #{endDate}
+                    </when>
+                    <when test="_databaseId == 'dm'">
+                        AND TRUNC(MONITOR_TIME) &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
+                    </when>
+                </choose>
+            </if>
+        </where>
+        <choose>
+            <when test="_databaseId == 'mysql'">
+                GROUP BY DATE(MONITOR_TIME)
+                ORDER BY DATE(MONITOR_TIME) ASC
+            </when>
+            <when test="_databaseId == 'dm'">
+                GROUP BY TO_CHAR(MONITOR_TIME, 'YYYY-MM-DD')
+                ORDER BY TO_CHAR(MONITOR_TIME, 'YYYY-MM-DD') ASC
+            </when>
+        </choose>
+    </select>
+
+    <!-- 获取告警趋势统计 -->
+    <select id="selectAlertTrend" resultType="java.util.Map">
+        SELECT
+            <choose>
+                <when test="_databaseId == 'mysql'">
+                    DATE(MONITOR_TIME) as alertDate,
+                </when>
+                <when test="_databaseId == 'dm'">
+                    TO_CHAR(MONITOR_TIME, 'YYYY-MM-DD') as alertDate,
+                </when>
+            </choose>
+            COUNT(*) as alertCount,
+            COUNT(CASE WHEN ALERT_LEVEL = 'CRITICAL' THEN 1 END) as criticalCount,
+            COUNT(CASE WHEN ALERT_LEVEL = 'HIGH' THEN 1 END) as highCount,
+            COUNT(CASE WHEN ALERT_LEVEL = 'MEDIUM' THEN 1 END) as mediumCount
+        FROM SYS_MONITOR
+        WHERE MONITOR_STATUS != 'NORMAL'
+        <if test="startDate != null and startDate != ''">
+            <choose>
+                <when test="_databaseId == 'mysql'">
+                    AND DATE(MONITOR_TIME) >= #{startDate}
+                </when>
+                <when test="_databaseId == 'dm'">
+                    AND TRUNC(MONITOR_TIME) >= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+                </when>
+            </choose>
+        </if>
+        <if test="endDate != null and endDate != ''">
+            <choose>
+                <when test="_databaseId == 'mysql'">
+                    AND DATE(MONITOR_TIME) &lt;= #{endDate}
+                </when>
+                <when test="_databaseId == 'dm'">
+                    AND TRUNC(MONITOR_TIME) &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
+                </when>
+            </choose>
+        </if>
+        <choose>
+            <when test="_databaseId == 'mysql'">
+                GROUP BY DATE(MONITOR_TIME)
+                ORDER BY DATE(MONITOR_TIME) ASC
+            </when>
+            <when test="_databaseId == 'dm'">
+                GROUP BY TO_CHAR(MONITOR_TIME, 'YYYY-MM-DD')
+                ORDER BY TO_CHAR(MONITOR_TIME, 'YYYY-MM-DD') ASC
+            </when>
+        </choose>
+    </select>
+
+    <!-- 获取性能监控统计 -->
+    <select id="selectPerformanceStatistics" resultType="java.util.Map">
+        SELECT
+            AVG(CASE WHEN MONITOR_TYPE = 'PERFORMANCE' AND MONITOR_ITEM = 'CPU_USAGE' THEN CAST(MONITOR_VALUE AS DECIMAL(10,2)) END) as avgCpuUsage,
+            AVG(CASE WHEN MONITOR_TYPE = 'PERFORMANCE' AND MONITOR_ITEM = 'MEMORY_USAGE' THEN CAST(MONITOR_VALUE AS DECIMAL(10,2)) END) as avgMemoryUsage,
+            AVG(CASE WHEN MONITOR_TYPE = 'PERFORMANCE' AND MONITOR_ITEM = 'DISK_USAGE' THEN CAST(MONITOR_VALUE AS DECIMAL(10,2)) END) as avgDiskUsage,
+            MAX(CASE WHEN MONITOR_TYPE = 'PERFORMANCE' AND MONITOR_ITEM = 'CPU_USAGE' THEN CAST(MONITOR_VALUE AS DECIMAL(10,2)) END) as maxCpuUsage,
+            MAX(CASE WHEN MONITOR_TYPE = 'PERFORMANCE' AND MONITOR_ITEM = 'MEMORY_USAGE' THEN CAST(MONITOR_VALUE AS DECIMAL(10,2)) END) as maxMemoryUsage,
+            MAX(CASE WHEN MONITOR_TYPE = 'PERFORMANCE' AND MONITOR_ITEM = 'DISK_USAGE' THEN CAST(MONITOR_VALUE AS DECIMAL(10,2)) END) as maxDiskUsage
+        FROM SYS_MONITOR
+        WHERE MONITOR_TYPE = 'PERFORMANCE'
+        AND <choose>
+            <when test="_databaseId == 'mysql'">
+                DATE(MONITOR_TIME) = CURDATE()
+            </when>
+            <when test="_databaseId == 'dm'">
+                TRUNC(MONITOR_TIME) = TRUNC(SYSDATE)
+            </when>
+        </choose>
+    </select>
+
+    <!-- 获取系统健康状况 -->
+    <select id="selectSystemHealthStatus" resultType="java.util.Map">
+        SELECT
+            COUNT(DISTINCT SERVER_IP) as totalServers,
+            COUNT(DISTINCT CASE WHEN MONITOR_STATUS = 'NORMAL' THEN SERVER_IP END) as healthyServers,
+            COUNT(DISTINCT APPLICATION_NAME) as totalApplications,
+            COUNT(DISTINCT CASE WHEN MONITOR_STATUS = 'NORMAL' THEN APPLICATION_NAME END) as healthyApplications,
+            ROUND(COUNT(CASE WHEN MONITOR_STATUS = 'NORMAL' THEN 1 END) * 100.0 / COUNT(*), 2) as healthPercentage
+        FROM SYS_MONITOR
+        WHERE <choose>
+            <when test="_databaseId == 'mysql'">
+                MONITOR_TIME >= DATE_SUB(NOW(), INTERVAL 1 HOUR)
+            </when>
+            <when test="_databaseId == 'dm'">
+                MONITOR_TIME >= SYSDATE - 1/24
+            </when>
+        </choose>
+    </select>
+
+    <!-- 删除过期的监控记录 -->
+    <delete id="deleteExpiredMonitors">
+        DELETE FROM SYS_MONITOR
+        WHERE <choose>
+            <when test="_databaseId == 'mysql'">
+                MONITOR_TIME &lt; DATE_SUB(NOW(), INTERVAL #{days} DAY)
+            </when>
+            <when test="_databaseId == 'dm'">
+                MONITOR_TIME &lt; SYSDATE - #{days}
+            </when>
+        </choose>
+    </delete>
+
+    <!-- 导出监控记录列表 -->
+    <select id="selectMonitorListForExport" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM SYS_MONITOR
+        <where>
+            <if test="monitorType != null and monitorType != ''">
+                AND MONITOR_TYPE = #{monitorType}
+            </if>
+            <if test="monitorStatus != null and monitorStatus != ''">
+                AND MONITOR_STATUS = #{monitorStatus}
+            </if>
+            <if test="alertLevel != null and alertLevel != ''">
+                AND ALERT_LEVEL = #{alertLevel}
+            </if>
+            <if test="serverIp != null and serverIp != ''">
+                AND SERVER_IP LIKE CONCAT('%', #{serverIp}, '%')
+            </if>
+            <if test="applicationName != null and applicationName != ''">
+                AND APPLICATION_NAME LIKE CONCAT('%', #{applicationName}, '%')
+            </if>
+            <if test="processStatus != null and processStatus != ''">
+                AND PROCESS_STATUS = #{processStatus}
+            </if>
+        </where>
+        ORDER BY MONITOR_TIME DESC
+    </select>
+
+    <!-- 获取最新监控数据 -->
+    <select id="selectLatestMonitorData" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM SYS_MONITOR
+        WHERE MONITOR_TYPE = #{monitorType}
+        AND MONITOR_ITEM = #{monitorItem}
+        <if test="serverIp != null and serverIp != ''">
+            AND SERVER_IP = #{serverIp}
+        </if>
+        ORDER BY MONITOR_TIME DESC
+        <choose>
+            <when test="_databaseId == 'mysql'">
+                LIMIT 1
+            </when>
+            <when test="_databaseId == 'dm'">
+                AND ROWNUM = 1
+            </when>
+        </choose>
+    </select>
+
+    <!-- 获取监控项目列表 -->
+    <select id="selectMonitorItems" resultType="java.lang.String">
+        SELECT DISTINCT MONITOR_ITEM
+        FROM SYS_MONITOR
+        WHERE MONITOR_TYPE = #{monitorType}
+        ORDER BY MONITOR_ITEM
+    </select>
+
+    <!-- 获取服务器列表 -->
+    <select id="selectServerList" resultType="java.util.Map">
+        SELECT DISTINCT
+            SERVER_IP as serverIp,
+            SERVER_NAME as serverName
+        FROM SYS_MONITOR
+        WHERE SERVER_IP IS NOT NULL
+        ORDER BY SERVER_IP
+    </select>
+
+    <!-- 获取应用列表 -->
+    <select id="selectApplicationList" resultType="java.util.Map">
+        SELECT DISTINCT
+            APPLICATION_NAME as applicationName
+        FROM SYS_MONITOR
+        WHERE APPLICATION_NAME IS NOT NULL
+        ORDER BY APPLICATION_NAME
+    </select>
+
+</mapper>

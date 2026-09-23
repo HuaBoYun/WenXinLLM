@@ -1,0 +1,54 @@
+oauth:
+  #启用单点登录, 普通登录不可用
+  ssoEnabled: false
+  #轮询票据有效期
+  ticketTimeout: 120
+  #默认单点登录协议
+  defaultSSO: cas
+  #后端登录接口地址
+  loginPath: http://127.0.0.1:30000/api/oauth/Login
+  #login:
+    #JWT生成秘钥 不填写为默认值
+    #jwtSecretKey: WviMjFNC72VKwGqm5LPoheQo5XN9iN4d
+  sso:
+    #单点登录系统地址
+    baseUrl: http://127.0.0.1:8527
+    #登录成功后跳转到前端的页面
+    sucessFrontUrl: http://127.0.0.1:3100/sso
+    #logoutFrontUrl: http://sso.maxkey.top:8527/maxkey
+    #错误信息是否输出到页面
+    ticketOutMessage: false
+    #单点注销后端接口地址, 配置启用后JNPF退出会请求单点系统退出, 触发单点注销退出全部应用
+    #ssoLogoutApiUrl: ${oauth.sso.baseUrl}/sign/logout
+    auth2:
+      enabled: true
+      clientId: 747887288041603072
+      clientSecret: MYgMMjIwNzIwMjIxNTU4MTAxNzQlKQ
+      baseUrl: ${oauth.sso.baseUrl}
+      authorizeUrl: ${oauth.sso.auth2.baseUrl}/sign/authz/oauth/v20/authorize
+      accessTokenUrl: ${oauth.sso.auth2.baseUrl}/sign/authz/oauth/v20/token
+      userInfoUrl: ${oauth.sso.auth2.baseUrl}/sign/api/oauth/v20/me
+    cas:
+      enabled: true
+      baseUrl: ${oauth.sso.baseUrl}
+      serverLoginUrl: ${oauth.sso.cas.baseUrl}/sign/authz/cas/login
+      serverValidateUrl: ${oauth.sso.cas.baseUrl}/sign/authz/cas
+jnpf:
+  sso:
+    # ===================== 单点登录(用户信息拉取)配置-Start =====================
+    connector:
+      # 是否开启用户信息拉取
+      enabled: false
+    # ===================== 单点登录(用户信息拉取)配置-End =====================
+    # ===================== 单点登录(用户信息推送)配置-Start =====================
+    pull:
+      # 是否开启用户信息推送
+      enabled: false
+      create-rest-address: http://localhost:9526/sso-mgt-api/api/idm/Account
+      replace-rest-address: http://localhost:9526/sso-mgt-api/api/idm/Account
+      change-password-rest-address: http://localhost:9526/sso-mgt-api/api/idm/Account/changePassword
+      delete-rest-address: http://localhost:9526/sso-mgt-api/api/idm/Account
+      credential-type: Basic
+      user-name: 747887288041603072
+      password: MYgMMjIwNzIwMjIxNTU4MTAxNzQlKQ
+    # ===================== 单点登录(用户信息推送)配置-End =====================

@@ -1,0 +1,58 @@
+-- ============================================================
+-- 为业务系统注册表添加状态字段(智能版本)
+-- 数据库: 达梦数据库 (DM8)
+-- 说明: 检查字段是否存在,不存在则添加,不会删除原表或原数据
+-- 作者: 华博云开发团队
+-- 日期: 2024-12-24
+-- ============================================================
+
+-- 添加启用状态字段(如果不存在)
+-- 达梦数据库使用DECLARE语句检查字段是否存在
+DECLARE
+    v_count NUMBER;
+BEGIN
+    -- 检查STATUS字段是否存在
+    SELECT COUNT(*) INTO v_count
+    FROM USER_TAB_COLUMNS
+    WHERE TABLE_NAME = 'TBL_BUSINESS_SYSTEM_REGISTRY'
+    AND COLUMN_NAME = 'STATUS';
+
+    -- 如果不存在则添加
+    IF v_count = 0 THEN
+        EXECUTE IMMEDIATE 'ALTER TABLE TBL_BUSINESS_SYSTEM_REGISTRY ADD STATUS VARCHAR2(10)';
+        DBMS_OUTPUT.PUT_LINE('已添加STATUS字段');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('STATUS字段已存在,跳过添加');
+    END IF;
+END;
+/
+
+-- 添加连接状态字段(如果不存在)
+DECLARE
+    v_count NUMBER;
+BEGIN
+    -- 检查CONNECTION_STATUS字段是否存在
+    SELECT COUNT(*) INTO v_count
+    FROM USER_TAB_COLUMNS
+    WHERE TABLE_NAME = 'TBL_BUSINESS_SYSTEM_REGISTRY'
+    AND COLUMN_NAME = 'CONNECTION_STATUS';
+
+    -- 如果不存在则添加
+    IF v_count = 0 THEN
+        EXECUTE IMMEDIATE 'ALTER TABLE TBL_BUSINESS_SYSTEM_REGISTRY ADD CONNECTION_STATUS VARCHAR2(20)';
+        DBMS_OUTPUT.PUT_LINE('已添加CONNECTION_STATUS字段');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('CONNECTION_STATUS字段已存在,跳过添加');
+    END IF;
+END;
+/
+
+-- 添加字段注释
+COMMENT ON COLUMN TBL_BUSINESS_SYSTEM_REGISTRY.STATUS IS '状态(0-禁用,1-启用)';
+COMMENT ON COLUMN TBL_BUSINESS_SYSTEM_REGISTRY.CONNECTION_STATUS IS '连接状态(OFFLINE-离线,ONLINE-在线,ERROR-错误)';
+
+-- 为现有数据设置默认值
+UPDATE TBL_BUSINESS_SYSTEM_REGISTRY SET STATUS = '1' WHERE STATUS IS NULL;
+UPDATE TBL_BUSINESS_SYSTEM_REGISTRY SET CONNECTION_STATUS = 'OFFLINE' WHERE CONNECTION_STATUS IS NULL;
+
+COMMIT;

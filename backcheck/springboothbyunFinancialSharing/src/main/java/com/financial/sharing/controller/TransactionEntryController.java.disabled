@@ -1,0 +1,195 @@
+package com.financial.sharing.controller;
+
+import com.hbfk.util.JsonBean;
+import com.hbfk.util.user.UserProvider;
+import com.hbfk.entity.TblStaffUtil;
+import com.vip.vjtools.vjkit.mapper.JsonMapper;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.math.BigDecimal;
+import java.util.*;
+
+/**
+ * 事项分录管理控制器
+ *
+ * @author system
+ * @since 2024-12-19
+ */
+@Slf4j
+@Api(tags = "事项分录管理")
+@RestController
+@RequestMapping("/financial/transaction-entry")
+@CrossOrigin
+public class TransactionEntryController {
+
+    @Resource
+    private UserProvider userProvider;
+
+    @ApiOperation("查询事项分录列表")
+    @PostMapping("/getList")
+    public String getTransactionEntryList(HttpServletRequest request,
+                                         HttpServletResponse response,
+                                         @RequestBody Map<String, Object> param) {
+        try {
+            TblStaffUtil loginStaff = userProvider.get();
+            if (loginStaff == null || loginStaff.getLinkDetp() == null || loginStaff.getCurrentOrg() == null) {
+                JsonBean json = new JsonBean();
+                json.setCode(401);
+                json.setMsg("用户已失效");
+                response.setCharacterEncoding("UTF-8");
+                response.setHeader("Content-Type", "application/json;charset=UTF-8");
+                response.getWriter().write(JsonMapper.nonNullMapper().toJson(json));
+                return null;
+            }
+
+            // 模拟事项分录数据
+            List<Map<String, Object>> entryList = new ArrayList<>();
+            for (int i = 1; i <= 10; i++) {
+                Map<String, Object> entry = new HashMap<>();
+                entry.put("entryId", "ENTRY" + String.format("%03d", i));
+                entry.put("entryType", "MANUAL");
+                entry.put("entryTypeName", "手工分录");
+                entry.put("transactionDate", "2024-12-" + String.format("%02d", i));
+                entry.put("voucherNo", "2024-12-" + String.format("%03d", i));
+                entry.put("description", "业务事项" + i);
+                entry.put("totalAmount", new BigDecimal(10000 * i));
+                entry.put("status", "POSTED");
+                entry.put("statusName", "已过账");
+                entry.put("createdBy", "张三");
+                entryList.add(entry);
+            }
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("tlist", entryList);
+            data.put("totalRecord", 100);
+            data.put("pageNo", param.get("pageNo") != null ? (Integer) param.get("pageNo") : 1);
+            data.put("pageSize", param.get("pageSize") != null ? (Integer) param.get("pageSize") : 10);
+
+            JsonBean json = new JsonBean();
+            json.setCode(1);
+            json.setMsg("查询成功");
+            json.setData(data);
+            return JsonMapper.nonNullMapper().toJson(json);
+        } catch (Exception e) {
+            log.error("查询事项分录列表失败", e);
+            return createErrorResponse("查询失败: " + e.getMessage());
+        }
+    }
+
+    @ApiOperation("新增事项分录")
+    @PostMapping("/create")
+    public String createTransactionEntry(HttpServletRequest request,
+                                        HttpServletResponse response,
+                                        @RequestBody Map<String, Object> param) {
+        try {
+            TblStaffUtil loginStaff = userProvider.get();
+            if (loginStaff == null || loginStaff.getLinkDetp() == null || loginStaff.getCurrentOrg() == null) {
+                JsonBean json = new JsonBean();
+                json.setCode(401);
+                json.setMsg("用户已失效");
+                response.setCharacterEncoding("UTF-8");
+                response.setHeader("Content-Type", "application/json;charset=UTF-8");
+                response.getWriter().write(JsonMapper.nonNullMapper().toJson(json));
+                return null;
+            }
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("entryId", "ENTRY" + System.currentTimeMillis());
+            result.put("entryType", param.get("entryType"));
+            result.put("status", "DRAFT");
+            result.put("message", "事项分录创建成功");
+
+            JsonBean json = new JsonBean();
+            json.setCode(1);
+            json.setMsg("创建成功");
+            json.setData(result);
+            return JsonMapper.nonNullMapper().toJson(json);
+        } catch (Exception e) {
+            log.error("新增事项分录失败", e);
+            return createErrorResponse("创建失败: " + e.getMessage());
+        }
+    }
+
+    @ApiOperation("过账事项分录")
+    @PostMapping("/post")
+    public String postTransactionEntry(HttpServletRequest request,
+                                     HttpServletResponse response,
+                                     @RequestBody Map<String, Object> param) {
+        try {
+            TblStaffUtil loginStaff = userProvider.get();
+            if (loginStaff == null || loginStaff.getLinkDetp() == null || loginStaff.getCurrentOrg() == null) {
+                JsonBean json = new JsonBean();
+                json.setCode(401);
+                json.setMsg("用户已失效");
+                response.setCharacterEncoding("UTF-8");
+                response.setHeader("Content-Type", "application/json;charset=UTF-8");
+                response.getWriter().write(JsonMapper.nonNullMapper().toJson(json));
+                return null;
+            }
+
+            param.put("postedBy", loginStaff.getUsername());
+            param.put("postTime", new Date());
+            param.put("status", "POSTED");
+
+            JsonBean json = new JsonBean();
+            json.setCode(1);
+            json.setMsg("过账成功");
+            json.setData(param);
+            return JsonMapper.nonNullMapper().toJson(json);
+        } catch (Exception e) {
+            log.error("过账事项分录失败", e);
+            return createErrorResponse("过账失败: " + e.getMessage());
+        }
+    }
+
+    @ApiOperation("冲销事项分录")
+    @PostMapping("/reverse")
+    public String reverseTransactionEntry(HttpServletRequest request,
+                                        HttpServletResponse response,
+                                        @RequestBody Map<String, Object> param) {
+        try {
+            TblStaffUtil loginStaff = userProvider.get();
+            if (loginStaff == null || loginStaff.getLinkDetp() == null || loginStaff.getCurrentOrg() == null) {
+                JsonBean json = new JsonBean();
+                json.setCode(401);
+                json.setMsg("用户已失效");
+                response.setCharacterEncoding("UTF-8");
+                response.setHeader("Content-Type", "application/json;charset=UTF-8");
+                response.getWriter().write(JsonMapper.nonNullMapper().toJson(json));
+                return null;
+            }
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("reverseEntryId", "REVERSE" + System.currentTimeMillis());
+            result.put("originalEntryId", param.get("entryId"));
+            result.put("status", "POSTED");
+            result.put("message", "冲销分录已生成");
+
+            JsonBean json = new JsonBean();
+            json.setCode(1);
+            json.setMsg("冲销成功");
+            json.setData(result);
+            return JsonMapper.nonNullMapper().toJson(json);
+        } catch (Exception e) {
+            log.error("冲销事项分录失败", e);
+            return createErrorResponse("冲销失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 创建错误响应
+     */
+    private String createErrorResponse(String message) {
+        JsonBean json = new JsonBean();
+        json.setCode(0);
+        json.setMsg(message);
+        return JsonMapper.nonNullMapper().toJson(json);
+    }
+}

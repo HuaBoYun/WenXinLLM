@@ -308,7 +308,7 @@
         this.staffid = val[0].staffid
         this.$set(this.formData, 'orgName', val[0].realname)
       },
-      //流程提交引迈
+      //流程提交
       async ymsubmit() {
         this.$refs['ruleForm'].validate(async (valid) => {
           if (valid) {

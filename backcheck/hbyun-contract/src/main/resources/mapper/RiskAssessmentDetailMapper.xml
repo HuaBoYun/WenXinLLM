@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.contract.mapper.RiskAssessmentDetailMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.huabo.contract.entity.RiskAssessmentDetail">
+        <id column="id" property="id" />
+        <result column="assessment_id" property="assessmentId" />
+        <result column="risk_category" property="riskCategory" />
+        <result column="risk_item" property="riskItem" />
+        <result column="risk_description" property="riskDescription" />
+        <result column="risk_source" property="riskSource" />
+        <result column="probability_score" property="probabilityScore" />
+        <result column="impact_score" property="impactScore" />
+        <result column="risk_score" property="riskScore" />
+        <result column="risk_level" property="riskLevel" />
+        <result column="risk_status" property="riskStatus" />
+        <result column="mitigation_measures" property="mitigationMeasures" />
+        <result column="responsible_person" property="responsiblePerson" />
+        <result column="target_date" property="targetDate" />
+        <result column="actual_date" property="actualDate" />
+        <result column="mitigation_status" property="mitigationStatus" />
+        <result column="residual_risk_score" property="residualRiskScore" />
+        <result column="residual_risk_level" property="residualRiskLevel" />
+        <result column="monitoring_frequency" property="monitoringFrequency" />
+        <result column="last_review_date" property="lastReviewDate" />
+        <result column="next_review_date" property="nextReviewDate" />
+        <result column="review_comments" property="reviewComments" />
+        <result column="create_by" property="createBy" />
+        <result column="create_time" property="createTime" />
+        <result column="update_by" property="updateBy" />
+        <result column="update_time" property="updateTime" />
+        <result column="remarks" property="remarks" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, assessment_id, risk_category, risk_item, risk_description, risk_source,
+        probability_score, impact_score, risk_score, risk_level, risk_status,
+        mitigation_measures, responsible_person, target_date, actual_date,
+        mitigation_status, residual_risk_score, residual_risk_level, monitoring_frequency,
+        last_review_date, next_review_date, review_comments, create_by, create_time,
+        update_by, update_time, remarks
+    </sql>
+
+    <!-- 根据评估ID查询风险详情列表 -->
+    <select id="selectByAssessmentId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM risk_assessment_detail
+        WHERE assessment_id = #{assessmentId}
+        ORDER BY risk_score DESC, create_time ASC
+    </select>
+
+    <!-- 分页查询风险评估详情列表 -->
+    <select id="selectRiskAssessmentDetailPage" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM risk_assessment_detail
+        <where>
+            <if test="param.assessmentId != null and param.assessmentId > 0">
+                assessment_id = #{param.assessmentId}
+            </if>
+            <if test="param.riskCategory != null">
+                AND risk_category = #{param.riskCategory}
+            </if>
+            <if test="param.riskItem != null and param.riskItem != ''">
+                AND risk_item LIKE CONCAT('%', #{param.riskItem}, '%')
+            </if>
+            <if test="param.riskLevel != null">
+                AND risk_level = #{param.riskLevel}
+            </if>
+            <if test="param.riskStatus != null">
+                AND risk_status = #{param.riskStatus}
+            </if>
+            <if test="param.mitigationStatus != null">
+                AND mitigation_status = #{param.mitigationStatus}
+            </if>
+            <if test="param.responsiblePerson != null and param.responsiblePerson != ''">
+                AND responsible_person LIKE CONCAT('%', #{param.responsiblePerson}, '%')
+            </if>
+            <if test="param.minRiskScore != null">
+                AND risk_score >= #{param.minRiskScore}
+            </if>
+            <if test="param.maxRiskScore != null">
+                AND risk_score &lt;= #{param.maxRiskScore}
+            </if>
+        </where>
+        ORDER BY risk_score DESC, create_time DESC
+    </select>
+
+    <!-- 统计风险评估详情数据 -->
+    <select id="selectRiskDetailStatistics" resultType="java.util.Map">
+        SELECT
+            COUNT(*) as totalRisks,
+            SUM(CASE WHEN risk_category = 1 THEN 1 ELSE 0 END) as technicalRisks,
+            SUM(CASE WHEN risk_category = 2 THEN 1 ELSE 0 END) as marketRisks,
+            SUM(CASE WHEN risk_category = 3 THEN 1 ELSE 0 END) as financialRisks,
+            SUM(CASE WHEN risk_category = 4 THEN 1 ELSE 0 END) as operationalRisks,
+            SUM(CASE WHEN risk_category = 5 THEN 1 ELSE 0 END) as legalRisks,
+            SUM(CASE WHEN risk_level = 1 THEN 1 ELSE 0 END) as lowRisks,
+            SUM(CASE WHEN risk_level = 2 THEN 1 ELSE 0 END) as mediumRisks,
+            SUM(CASE WHEN risk_level = 3 THEN 1 ELSE 0 END) as highRisks,
+            SUM(CASE WHEN risk_level = 4 THEN 1 ELSE 0 END) as criticalRisks,
+            SUM(CASE WHEN risk_status = 1 THEN 1 ELSE 0 END) as activeRisks,
+            SUM(CASE WHEN risk_status = 2 THEN 1 ELSE 0 END) as mitigatedRisks,
+            SUM(CASE WHEN risk_status = 3 THEN 1 ELSE 0 END) as closedRisks,
+            AVG(risk_score) as avgRiskScore,
+            AVG(residual_risk_score) as avgResidualRiskScore
+        FROM risk_assessment_detail
+        <where>
+            <if test="assessmentId != null and assessmentId > 0">
+                assessment_id = #{assessmentId}
+            </if>
+        </where>
+    </select>
+
+    <!-- 查询高风险项目 -->
+    <select id="selectHighRiskItems" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM risk_assessment_detail
+        <where>
+            risk_level >= #{minRiskLevel}
+            AND risk_status = 1
+            <if test="assessmentId != null and assessmentId > 0">
+                AND assessment_id = #{assessmentId}
+            </if>
+        </where>
+        ORDER BY risk_score DESC
+    </select>
+
+    <!-- 查询需要复查的风险项目 -->
+    <select id="selectRisksForReview" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM risk_assessment_detail
+        <where>
+            risk_status = 1
+            AND next_review_date IS NOT NULL
+            AND next_review_date &lt;= DATE_ADD(NOW(), INTERVAL #{days} DAY)
+            <if test="assessmentId != null and assessmentId > 0">
+                AND assessment_id = #{assessmentId}
+            </if>
+        </where>
+        ORDER BY next_review_date ASC
+    </select>
+
+    <!-- 查询逾期的缓解措施 -->
+    <select id="selectOverdueMitigations" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM risk_assessment_detail
+        <where>
+            mitigation_status IN (1, 2)
+            AND target_date IS NOT NULL
+            AND target_date &lt; NOW()
+            <if test="assessmentId != null and assessmentId > 0">
+                AND assessment_id = #{assessmentId}
+            </if>
+        </where>
+        ORDER BY target_date ASC
+    </select>
+
+    <!-- 按风险类别统计 -->
+    <select id="selectRiskCategoryStatistics" resultType="java.util.Map">
+        SELECT
+            risk_category,
+            COUNT(*) as count,
+            AVG(risk_score) as avgRiskScore,
+            AVG(residual_risk_score) as avgResidualRiskScore,
+            SUM(CASE WHEN risk_level >= 3 THEN 1 ELSE 0 END) as highRiskCount,
+            SUM(CASE WHEN risk_status = 1 THEN 1 ELSE 0 END) as activeCount
+        FROM risk_assessment_detail
+        <where>
+            <if test="assessmentId != null and assessmentId > 0">
+                assessment_id = #{assessmentId}
+            </if>
+        </where>
+        GROUP BY risk_category
+        ORDER BY avgRiskScore DESC
+    </select>
+
+    <!-- 风险缓解效果分析 -->
+    <select id="selectMitigationEffectivenessAnalysis" resultType="java.util.Map">
+        SELECT
+            mitigation_status,
+            COUNT(*) as count,
+            AVG(risk_score) as avgInitialRiskScore,
+            AVG(residual_risk_score) as avgResidualRiskScore,
+            AVG(risk_score - residual_risk_score) as avgRiskReduction,
+            AVG(CASE WHEN risk_score > 0 THEN ((risk_score - residual_risk_score) / risk_score) * 100 ELSE 0 END) as avgReductionPercentage
+        FROM risk_assessment_detail
+        <where>
+            residual_risk_score IS NOT NULL
+            <if test="assessmentId != null and assessmentId > 0">
+                AND assessment_id = #{assessmentId}
+            </if>
+        </where>
+        GROUP BY mitigation_status
+        ORDER BY avgReductionPercentage DESC
+    </select>
+
+    <!-- 批量更新风险状态 -->
+    <update id="batchUpdateRiskStatus">
+        UPDATE risk_assessment_detail
+        SET risk_status = #{riskStatus},
+            update_time = NOW()
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 批量更新缓解状态 -->
+    <update id="batchUpdateMitigationStatus">
+        UPDATE risk_assessment_detail
+        SET mitigation_status = #{mitigationStatus},
+            actual_date = 
+            <if test="mitigationStatus == 3">
+                NOW()
+            </if>
+            <if test="mitigationStatus != 3">
+                NULL
+            </if>,
+            update_time = NOW()
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 更新风险评分 -->
+    <update id="updateRiskScore">
+        UPDATE risk_assessment_detail
+        SET probability_score = #{probabilityScore},
+            impact_score = #{impactScore},
+            risk_score = #{probabilityScore} * #{impactScore},
+            risk_level = CASE 
+                WHEN #{probabilityScore} * #{impactScore} >= 16 THEN 4
+                WHEN #{probabilityScore} * #{impactScore} >= 9 THEN 3
+                WHEN #{probabilityScore} * #{impactScore} >= 4 THEN 2
+                ELSE 1
+            END,
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 更新剩余风险评分 -->
+    <update id="updateResidualRiskScore">
+        UPDATE risk_assessment_detail
+        SET residual_risk_score = #{residualRiskScore},
+            residual_risk_level = CASE 
+                WHEN #{residualRiskScore} >= 16 THEN 4
+                WHEN #{residualRiskScore} >= 9 THEN 3
+                WHEN #{residualRiskScore} >= 4 THEN 2
+                ELSE 1
+            END,
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 更新复查日期 -->
+    <update id="updateReviewDate">
+        UPDATE risk_assessment_detail
+        SET last_review_date = NOW(),
+            next_review_date = #{nextReviewDate},
+            review_comments = #{reviewComments},
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 根据评估ID删除风险详情记录（真实删除） -->
+    <delete id="deleteByAssessmentId">
+        DELETE FROM risk_assessment_detail
+        WHERE assessment_id = #{assessmentId}
+    </delete>
+
+    <!-- 复制风险详情到新评估 -->
+    <insert id="copyRiskDetailsToNewAssessment">
+        INSERT INTO risk_assessment_detail (
+            assessment_id, risk_category, risk_item, risk_description, risk_source,
+            probability_score, impact_score, risk_score, risk_level, risk_status,
+            mitigation_measures, responsible_person, monitoring_frequency,
+            create_by, create_time
+        )
+        SELECT
+            #{newAssessmentId}, risk_category, risk_item, risk_description, risk_source,
+            probability_score, impact_score, risk_score, risk_level, 1,
+            mitigation_measures, responsible_person, monitoring_frequency,
+            #{createBy}, NOW()
+        FROM risk_assessment_detail
+        WHERE assessment_id = #{sourceAssessmentId}
+    </insert>
+
+    <!-- 查询风险趋势分析 -->
+    <select id="selectRiskTrendAnalysis" resultType="java.util.Map">
+        SELECT
+            DATE_FORMAT(create_time, '%Y-%m') as month,
+            COUNT(*) as totalRisks,
+            AVG(risk_score) as avgRiskScore,
+            SUM(CASE WHEN risk_level >= 3 THEN 1 ELSE 0 END) as highRiskCount,
+            SUM(CASE WHEN risk_status = 3 THEN 1 ELSE 0 END) as closedRiskCount
+        FROM risk_assessment_detail
+        <where>
+            <if test="assessmentId != null and assessmentId > 0">
+                assessment_id = #{assessmentId}
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND create_time >= #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND create_time &lt;= #{endDate}
+            </if>
+        </where>
+        GROUP BY DATE_FORMAT(create_time, '%Y-%m')
+        ORDER BY month DESC
+        LIMIT 12
+    </select>
+
+</mapper>

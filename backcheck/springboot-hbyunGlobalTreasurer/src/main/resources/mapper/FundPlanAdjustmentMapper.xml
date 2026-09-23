@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.FundPlanAdjustmentMapper">
+
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TblFundPlanAdjustment">
+        <id column="ADJUSTMENT_ID" property="adjustmentId"/>
+        <result column="ADJUSTMENT_NO" property="adjustmentNo"/>
+        <result column="PLAN_ID" property="planId"/>
+        <result column="ADJUSTMENT_TYPE" property="adjustmentType"/>
+        <result column="ORIGINAL_AMOUNT" property="originalAmount"/>
+        <result column="ADJUSTED_AMOUNT" property="adjustedAmount"/>
+        <result column="ADJUSTMENT_AMOUNT" property="adjustmentAmount"/>
+        <result column="APPROVAL_STATUS" property="approvalStatus"/>
+        <result column="ADJUSTMENT_REASON" property="adjustmentReason"/>
+        <result column="IMPACT_ASSESSMENT" property="impactAssessment"/>
+        <result column="RISK_EVALUATION" property="riskEvaluation"/>
+        <result column="APPROVE_TIME" property="approveTime"/>
+        <result column="APPROVER_ID" property="approverId"/>
+        <result column="APPROVER_NAME" property="approverName"/>
+        <result column="APPROVE_COMMENT" property="approveComment"/>
+        <result column="DELETE_FLAG" property="deleteFlag"/>
+        <result column="CREATED_BY" property="createdBy"/>
+        <result column="CREATED_BY_NAME" property="createdByName"/>
+        <result column="CREATED_TIME" property="createdTime"/>
+        <result column="UPDATED_BY" property="updatedBy"/>
+        <result column="UPDATED_BY_NAME" property="updatedByName"/>
+        <result column="UPDATED_TIME" property="updatedTime"/>
+        <result column="ORG_ID" property="orgId"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        ADJUSTMENT_ID, ADJUSTMENT_NO, PLAN_ID, ADJUSTMENT_TYPE, ORIGINAL_AMOUNT, ADJUSTED_AMOUNT,
+        ADJUSTMENT_AMOUNT, APPROVAL_STATUS, ADJUSTMENT_REASON, IMPACT_ASSESSMENT, RISK_EVALUATION,
+        APPROVE_TIME, APPROVER_ID, APPROVER_NAME, APPROVE_COMMENT, DELETE_FLAG, CREATED_BY,
+        CREATED_BY_NAME, CREATED_TIME, UPDATED_BY, UPDATED_BY_NAME, UPDATED_TIME, ORG_ID
+    </sql>
+
+    <select id="selectAdjustmentPage" resultMap="BaseResultMap" parameterType="map">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_FUND_PLAN_ADJUSTMENT
+        WHERE DELETE_FLAG = 0
+        <if test="planId != null">
+            AND PLAN_ID = #{planId}
+        </if>
+        <if test="adjustmentType != null and adjustmentType != ''">
+            AND ADJUSTMENT_TYPE = #{adjustmentType}
+        </if>
+        <if test="approvalStatus != null and approvalStatus != ''">
+            AND APPROVAL_STATUS = #{approvalStatus}
+        </if>
+        ORDER BY CREATED_TIME DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
+    </select>
+
+    <select id="countAdjustmentList" resultType="int" parameterType="map">
+        SELECT COUNT(*)
+        FROM TBL_FUND_PLAN_ADJUSTMENT
+        WHERE DELETE_FLAG = 0
+        <if test="planId != null">
+            AND PLAN_ID = #{planId}
+        </if>
+        <if test="adjustmentType != null and adjustmentType != ''">
+            AND ADJUSTMENT_TYPE = #{adjustmentType}
+        </if>
+        <if test="approvalStatus != null and approvalStatus != ''">
+            AND APPROVAL_STATUS = #{approvalStatus}
+        </if>
+    </select>
+
+    <select id="selectAdjustmentSummary" resultType="map" parameterType="map">
+        SELECT
+            COUNT(*) AS totalCount,
+            SUM(ADJUSTMENT_AMOUNT) AS totalAdjustmentAmount,
+            SUM(CASE WHEN APPROVAL_STATUS = 'APPROVED' THEN ADJUSTMENT_AMOUNT ELSE 0 END) AS approvedAmount
+        FROM TBL_FUND_PLAN_ADJUSTMENT
+        WHERE DELETE_FLAG = 0
+        <if test="planId != null">
+            AND PLAN_ID = #{planId}
+        </if>
+    </select>
+
+</mapper>

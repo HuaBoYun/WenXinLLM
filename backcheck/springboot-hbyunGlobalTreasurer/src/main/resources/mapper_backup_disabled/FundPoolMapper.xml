@@ -1,0 +1,460 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.FundPoolMapper">
+
+    <!-- 基础结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.FundPool">
+        <id column="POOLID" property="poolId" />
+        <result column="POOLCODE" property="poolCode" />
+        <result column="POOLNAME" property="poolName" />
+        <result column="POOLTYPE" property="poolType" />
+        <result column="MASTERPOOLID" property="masterPoolId" />
+        <result column="MASTERACCOUNTID" property="masterAccountId" />
+        <result column="MASTERACCOUNTNUMBER" property="masterAccountNumber" />
+        <result column="CURRENCYCODE" property="currencyCode" />
+        <result column="TOTALBALANCE" property="totalBalance" />
+        <result column="AVAILABLEBALANCE" property="availableBalance" />
+        <result column="RESERVEBALANCE" property="reserveBalance" />
+        <result column="MINBALANCE" property="minBalance" />
+        <result column="MAXBALANCE" property="maxBalance" />
+        <result column="POOLSTATUS" property="poolStatus" />
+        <result column="DESCRIPTION" property="description" />
+        <result column="REMARK" property="remark" />
+        <result column="ORGID" property="orgId" />
+        <result column="CREATETIME" property="createTime" />
+        <result column="CREATEUSER" property="createUser" />
+        <result column="UPDATETIME" property="updateTime" />
+        <result column="UPDATEUSER" property="updateUser" />
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="Base_Column_List">
+        POOLID, POOLCODE, POOLNAME, POOLTYPE, MASTERPOOLID, MASTERACCOUNTID, 
+        MASTERACCOUNTNUMBER, CURRENCYCODE, TOTALBALANCE, AVAILABLEBALANCE, 
+        RESERVEBALANCE, MINBALANCE, MAXBALANCE, POOLSTATUS, DESCRIPTION, 
+        REMARK, ORGID, CREATETIME, CREATEUSER, UPDATETIME, UPDATEUSER
+    </sql>
+
+    <!-- 根据资金池编码查询 -->
+    <select id="selectByPoolCode" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_FUND_POOLS
+        WHERE POOLCODE = #{poolCode} AND ORGID = #{orgId}
+    </select>
+
+    <!-- 根据主账户ID查询资金池 -->
+    <select id="selectByMasterAccountId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_FUND_POOLS
+        WHERE MASTERACCOUNTID = #{masterAccountId}
+        ORDER BY CREATETIME DESC
+    </select>
+
+    <!-- 根据主资金池ID查询子资金池 -->
+    <select id="selectSubPools" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_FUND_POOLS
+        WHERE MASTERPOOLID = #{masterPoolId}
+        ORDER BY POOLCODE
+    </select>
+
+    <!-- 查询主资金池列表 -->
+    <select id="selectMasterPools" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_FUND_POOLS
+        WHERE MASTERPOOLID IS NULL AND ORGID = #{orgId}
+        ORDER BY POOLCODE
+    </select>
+
+    <!-- 根据币种查询资金池 -->
+    <select id="selectByCurrency" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_FUND_POOLS
+        WHERE CURRENCYCODE = #{currencyCode} AND ORGID = #{orgId}
+        ORDER BY POOLCODE
+    </select>
+
+    <!-- 根据资金池类型查询 -->
+    <select id="selectByPoolType" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_FUND_POOLS
+        WHERE POOLTYPE = #{poolType} AND ORGID = #{orgId}
+        ORDER BY POOLCODE
+    </select>
+
+    <!-- 根据状态查询资金池 -->
+    <select id="selectByStatus" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_FUND_POOLS
+        WHERE POOLSTATUS = #{poolStatus} AND ORGID = #{orgId}
+        ORDER BY POOLCODE
+    </select>
+
+    <!-- 分页查询资金池 -->
+    <select id="selectPoolPage" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_FUND_POOLS
+        WHERE ORGID = #{orgId}
+        <if test="poolCode != null and poolCode != ''">
+            AND POOLCODE LIKE CONCAT('%', #{poolCode}, '%')
+        </if>
+        <if test="poolName != null and poolName != ''">
+            AND POOLNAME LIKE CONCAT('%', #{poolName}, '%')
+        </if>
+        <if test="poolType != null and poolType != ''">
+            AND POOLTYPE = #{poolType}
+        </if>
+        <if test="poolStatus != null and poolStatus != ''">
+            AND POOLSTATUS = #{poolStatus}
+        </if>
+        <if test="currencyCode != null and currencyCode != ''">
+            AND CURRENCYCODE = #{currencyCode}
+        </if>
+        ORDER BY CREATETIME DESC
+    </select>
+
+    <!-- 分页查询活跃资金池 -->
+    <select id="selectActivePoolPage" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_FUND_POOLS
+        WHERE POOLSTATUS = 'ACTIVE' AND ORGID = #{orgId}
+        ORDER BY POOLCODE
+    </select>
+
+    <!-- 分页查询主资金池 -->
+    <select id="selectMasterPoolPage" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_FUND_POOLS
+        WHERE MASTERPOOLID IS NULL AND ORGID = #{orgId}
+        ORDER BY POOLCODE
+    </select>
+
+    <!-- 统计资金池数量 -->
+    <select id="selectPoolStatistics" resultType="map">
+        SELECT 
+            COUNT(*) AS totalCount,
+            COUNT(CASE WHEN POOLSTATUS = 'ACTIVE' THEN 1 END) AS activeCount,
+            COUNT(CASE WHEN POOLSTATUS = 'INACTIVE' THEN 1 END) AS inactiveCount,
+            COUNT(CASE WHEN POOLSTATUS = 'SUSPENDED' THEN 1 END) AS suspendedCount,
+            COUNT(CASE WHEN POOLSTATUS = 'CLOSED' THEN 1 END) AS closedCount,
+            COUNT(CASE WHEN MASTERPOOLID IS NULL THEN 1 END) AS masterPoolCount,
+            COUNT(CASE WHEN MASTERPOOLID IS NOT NULL THEN 1 END) AS subPoolCount
+        FROM TBL_FUND_POOLS
+        WHERE ORGID = #{orgId}
+    </select>
+
+    <!-- 按类型统计资金池数量 -->
+    <select id="selectPoolCountByType" resultType="map">
+        SELECT 
+            POOLTYPE AS poolType,
+            COUNT(*) AS count,
+            SUM(TOTALBALANCE) AS totalBalance
+        FROM TBL_FUND_POOLS
+        WHERE ORGID = #{orgId}
+        GROUP BY POOLTYPE
+        ORDER BY count DESC
+    </select>
+
+    <!-- 按状态统计资金池数量 -->
+    <select id="selectPoolCountByStatus" resultType="map">
+        SELECT 
+            POOLSTATUS AS poolStatus,
+            COUNT(*) AS count,
+            SUM(TOTALBALANCE) AS totalBalance
+        FROM TBL_FUND_POOLS
+        WHERE ORGID = #{orgId}
+        GROUP BY POOLSTATUS
+        ORDER BY count DESC
+    </select>
+
+    <!-- 按币种统计资金池数量和余额 -->
+    <select id="selectPoolStatisticsByCurrency" resultType="map">
+        SELECT 
+            CURRENCYCODE AS currencyCode,
+            COUNT(*) AS count,
+            SUM(TOTALBALANCE) AS totalBalance,
+            SUM(AVAILABLEBALANCE) AS availableBalance,
+            SUM(RESERVEBALANCE) AS reserveBalance
+        FROM TBL_FUND_POOLS
+        WHERE ORGID = #{orgId}
+        GROUP BY CURRENCYCODE
+        ORDER BY totalBalance DESC
+    </select>
+
+    <!-- 统计总余额 -->
+    <select id="selectTotalBalance" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(TOTALBALANCE), 0)
+        FROM TBL_FUND_POOLS
+        WHERE ORGID = #{orgId}
+    </select>
+
+    <!-- 统计可用余额 -->
+    <select id="selectTotalAvailableBalance" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(AVAILABLEBALANCE), 0)
+        FROM TBL_FUND_POOLS
+        WHERE ORGID = #{orgId}
+    </select>
+
+    <!-- 统计保留余额 -->
+    <select id="selectTotalReserveBalance" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(RESERVEBALANCE), 0)
+        FROM TBL_FUND_POOLS
+        WHERE ORGID = #{orgId}
+    </select>
+
+    <!-- 更新资金池余额 -->
+    <update id="updatePoolBalance">
+        UPDATE TBL_FUND_POOLS
+        SET TOTALBALANCE = #{totalBalance},
+            AVAILABLEBALANCE = #{availableBalance},
+            RESERVEBALANCE = #{reserveBalance},
+            UPDATETIME = CURRENT_TIMESTAMP
+        WHERE POOLID = #{poolId}
+    </update>
+
+    <!-- 增加资金池余额 -->
+    <update id="increasePoolBalance">
+        UPDATE TBL_FUND_POOLS
+        SET TOTALBALANCE = TOTALBALANCE + #{amount},
+            AVAILABLEBALANCE = AVAILABLEBALANCE + #{amount},
+            UPDATETIME = CURRENT_TIMESTAMP
+        WHERE POOLID = #{poolId}
+    </update>
+
+    <!-- 减少资金池余额 -->
+    <update id="decreasePoolBalance">
+        UPDATE TBL_FUND_POOLS
+        SET TOTALBALANCE = TOTALBALANCE - #{amount},
+            AVAILABLEBALANCE = AVAILABLEBALANCE - #{amount},
+            UPDATETIME = CURRENT_TIMESTAMP
+        WHERE POOLID = #{poolId}
+        AND AVAILABLEBALANCE >= #{amount}
+    </update>
+
+    <!-- 批量更新资金池余额 -->
+    <update id="batchUpdatePoolBalance">
+        <foreach collection="poolBalances" item="item" separator=";">
+            UPDATE TBL_FUND_POOLS
+            SET TOTALBALANCE = #{item.totalBalance},
+                AVAILABLEBALANCE = #{item.availableBalance},
+                RESERVEBALANCE = #{item.reserveBalance},
+                UPDATETIME = CURRENT_TIMESTAMP
+            WHERE POOLID = #{item.poolId}
+        </foreach>
+    </update>
+
+    <!-- 查询余额低于最小限额的资金池 -->
+    <select id="selectPoolsBelowMinBalance" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_FUND_POOLS
+        WHERE ORGID = #{orgId}
+        AND MINBALANCE IS NOT NULL
+        AND TOTALBALANCE &lt; MINBALANCE
+        ORDER BY (MINBALANCE - TOTALBALANCE) DESC
+    </select>
+
+    <!-- 查询余额超过最大限额的资金池 -->
+    <select id="selectPoolsAboveMaxBalance" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_FUND_POOLS
+        WHERE ORGID = #{orgId}
+        AND MAXBALANCE IS NOT NULL
+        AND TOTALBALANCE > MAXBALANCE
+        ORDER BY (TOTALBALANCE - MAXBALANCE) DESC
+    </select>
+
+    <!-- 查询需要预警的资金池 -->
+    <select id="selectPoolsNeedingAlert" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_FUND_POOLS
+        WHERE ORGID = #{orgId}
+        AND (
+            (MINBALANCE IS NOT NULL AND TOTALBALANCE &lt; MINBALANCE)
+            OR (MAXBALANCE IS NOT NULL AND TOTALBALANCE > MAXBALANCE)
+            OR POOLSTATUS IN ('SUSPENDED', 'INACTIVE')
+        )
+        ORDER BY POOLCODE
+    </select>
+
+    <!-- 查询非活跃状态的资金池 -->
+    <select id="selectInactivePools" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_FUND_POOLS
+        WHERE ORGID = #{orgId}
+        AND POOLSTATUS != 'ACTIVE'
+        ORDER BY POOLCODE
+    </select>
+
+    <!-- 查询使用率超过阈值的资金池 -->
+    <select id="selectPoolsAboveUtilizationThreshold" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_FUND_POOLS
+        WHERE ORGID = #{orgId}
+        AND MAXBALANCE IS NOT NULL
+        AND MAXBALANCE > 0
+        AND (TOTALBALANCE / MAXBALANCE * 100) > #{threshold}
+        ORDER BY (TOTALBALANCE / MAXBALANCE) DESC
+    </select>
+
+    <!-- 查询可参与归集的资金池 -->
+    <select id="selectPoolsForConcentration" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_FUND_POOLS
+        WHERE ORGID = #{orgId}
+        AND POOLSTATUS = 'ACTIVE'
+        AND AVAILABLEBALANCE > RESERVEBALANCE
+        ORDER BY POOLCODE
+    </select>
+
+    <!-- 查询可接收下拨的资金池 -->
+    <select id="selectPoolsForDistribution" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_FUND_POOLS
+        WHERE ORGID = #{orgId}
+        AND POOLSTATUS = 'ACTIVE'
+        AND (MAXBALANCE IS NULL OR TOTALBALANCE &lt; MAXBALANCE)
+        ORDER BY POOLCODE
+    </select>
+
+    <!-- 查询资金池层级结构 -->
+    <select id="selectPoolHierarchy" resultType="map">
+        WITH RECURSIVE pool_hierarchy AS (
+            SELECT POOLID, POOLCODE, POOLNAME, MASTERPOOLID, 0 AS level
+            FROM TBL_FUND_POOLS
+            WHERE MASTERPOOLID IS NULL AND ORGID = #{orgId}
+            
+            UNION ALL
+            
+            SELECT p.POOLID, p.POOLCODE, p.POOLNAME, p.MASTERPOOLID, ph.level + 1
+            FROM TBL_FUND_POOLS p
+            INNER JOIN pool_hierarchy ph ON p.MASTERPOOLID = ph.POOLID
+            WHERE p.ORGID = #{orgId}
+        )
+        SELECT * FROM pool_hierarchy
+        ORDER BY level, POOLCODE
+    </select>
+
+    <!-- 同步资金池账户余额 -->
+    <update id="syncPoolAccountBalance">
+        UPDATE TBL_FUND_POOLS fp
+        SET TOTALBALANCE = (
+            SELECT COALESCE(SUM(CURRENTBALANCE), 0)
+            FROM TBL_FUND_POOL_MEMBERS fpm
+            WHERE fpm.POOLID = fp.POOLID
+            AND fpm.MEMBERSTATUS = 'ACTIVE'
+        ),
+        UPDATETIME = CURRENT_TIMESTAMP
+        WHERE POOLID = #{poolId}
+    </update>
+
+    <!-- 重新计算资金池余额 -->
+    <update id="recalculatePoolBalance">
+        UPDATE TBL_FUND_POOLS fp
+        SET TOTALBALANCE = (
+            SELECT COALESCE(SUM(CURRENTBALANCE), 0)
+            FROM TBL_FUND_POOL_MEMBERS fpm
+            WHERE fpm.POOLID = fp.POOLID
+            AND fpm.MEMBERSTATUS = 'ACTIVE'
+        ),
+        AVAILABLEBALANCE = (
+            SELECT COALESCE(SUM(CURRENTBALANCE), 0) - COALESCE(fp.RESERVEBALANCE, 0)
+            FROM TBL_FUND_POOL_MEMBERS fpm
+            WHERE fpm.POOLID = fp.POOLID
+            AND fpm.MEMBERSTATUS = 'ACTIVE'
+        ),
+        UPDATETIME = CURRENT_TIMESTAMP
+        WHERE POOLID = #{poolId}
+    </update>
+
+    <!-- 批量重新计算资金池余额 -->
+    <update id="batchRecalculatePoolBalance">
+        <foreach collection="poolIds" item="poolId" separator=";">
+            UPDATE TBL_FUND_POOLS fp
+            SET TOTALBALANCE = (
+                SELECT COALESCE(SUM(CURRENTBALANCE), 0)
+                FROM TBL_FUND_POOL_MEMBERS fpm
+                WHERE fpm.POOLID = fp.POOLID
+                AND fpm.MEMBERSTATUS = 'ACTIVE'
+            ),
+            AVAILABLEBALANCE = (
+                SELECT COALESCE(SUM(CURRENTBALANCE), 0) - COALESCE(fp.RESERVEBALANCE, 0)
+                FROM TBL_FUND_POOL_MEMBERS fpm
+                WHERE fpm.POOLID = fp.POOLID
+                AND fpm.MEMBERSTATUS = 'ACTIVE'
+            ),
+            UPDATETIME = CURRENT_TIMESTAMP
+            WHERE POOLID = #{poolId}
+        </foreach>
+    </update>
+
+    <!-- 验证资金池数据一致性 -->
+    <select id="validatePoolDataConsistency" resultType="map">
+        SELECT 
+            fp.POOLID,
+            fp.POOLCODE,
+            fp.POOLNAME,
+            fp.TOTALBALANCE AS poolTotalBalance,
+            COALESCE(SUM(fpm.CURRENTBALANCE), 0) AS memberTotalBalance,
+            ABS(fp.TOTALBALANCE - COALESCE(SUM(fpm.CURRENTBALANCE), 0)) AS balanceDifference
+        FROM TBL_FUND_POOLS fp
+        LEFT JOIN TBL_FUND_POOL_MEMBERS fpm ON fp.POOLID = fpm.POOLID AND fpm.MEMBERSTATUS = 'ACTIVE'
+        WHERE fp.ORGID = #{orgId}
+        GROUP BY fp.POOLID, fp.POOLCODE, fp.POOLNAME, fp.TOTALBALANCE
+        HAVING ABS(fp.TOTALBALANCE - COALESCE(SUM(fpm.CURRENTBALANCE), 0)) > 0.01
+        ORDER BY balanceDifference DESC
+    </select>
+
+    <!-- 清理已关闭的资金池数据 -->
+    <delete id="cleanupClosedPools">
+        DELETE FROM TBL_FUND_POOLS
+        WHERE POOLSTATUS = 'CLOSED'
+        AND ORGID = #{orgId}
+        AND UPDATETIME &lt; #{beforeDate}
+        AND TOTALBALANCE = 0
+    </delete>
+
+    <!-- 记录资金池操作日志 -->
+    <insert id="insertPoolOperationLog">
+        INSERT INTO TBL_FUND_POOL_OPERATION_LOGS (
+            POOLID, OPERATION, OPERATIONDATA, OPERATORID, OPERATIONTIME
+        ) VALUES (
+            #{poolId}, #{operation}, #{operationData}, #{operatorId}, CURRENT_TIMESTAMP
+        )
+    </insert>
+
+    <!-- 查询资金池操作日志 -->
+    <select id="selectPoolOperationLogs" resultType="map">
+        SELECT 
+            LOGID,
+            POOLID,
+            OPERATION,
+            OPERATIONDATA,
+            OPERATORID,
+            OPERATIONTIME
+        FROM TBL_FUND_POOL_OPERATION_LOGS
+        WHERE POOLID = #{poolId}
+        <if test="startDate != null">
+            AND DATE(OPERATIONTIME) >= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND DATE(OPERATIONTIME) &lt;= #{endDate}
+        </if>
+        ORDER BY OPERATIONTIME DESC
+    </select>
+
+    <!-- 查询资金池变更历史 -->
+    <select id="selectPoolChangeHistory" resultType="map">
+        SELECT 
+            CHANGEID,
+            POOLID,
+            FIELDNAME,
+            OLDVALUE,
+            NEWVALUE,
+            CHANGEUSER,
+            CHANGETIME
+        FROM TBL_FUND_POOL_CHANGE_HISTORY
+        WHERE POOLID = #{poolId}
+        ORDER BY CHANGETIME DESC
+    </select>
+
+</mapper>

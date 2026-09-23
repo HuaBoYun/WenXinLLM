@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.management.accountant.oracle.mapper.budget.BudgetQuotaMapper">
+    <resultMap id="BaseResultMap" type="com.management.accountant.oracle.entity.budget.BudgetQuota">
+        <id column="QUOTA_ID" property="quotaId"/>
+        <result column="QUOTA_CODE" property="quotaCode"/>
+        <result column="QUOTA_NAME" property="quotaName"/>
+        <result column="BUDGET_ID" property="budgetId"/>
+        <result column="QUOTA_TYPE" property="quotaType"/>
+        <result column="QUOTA_AMOUNT" property="quotaAmount"/>
+        <result column="USED_AMOUNT" property="usedAmount"/>
+        <result column="AVAILABLE_AMOUNT" property="availableAmount"/>
+        <result column="QUOTA_PERIOD" property="quotaPeriod"/>
+        <result column="EFFECTIVE_DATE" property="effectiveDate"/>
+        <result column="EXPIRY_DATE" property="expiryDate"/>
+        <result column="QUOTA_STATUS" property="quotaStatus"/>
+        <result column="IS_ENABLED" property="isEnabled"/>
+        <result column="QUOTA_DESCRIPTION" property="quotaDescription"/>
+        <result column="ALLOCATED_AMOUNT" property="allocatedAmount"/>
+        <result column="REMARK" property="remark"/>
+        <result column="CREATE_BY" property="createBy"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_BY" property="updateBy"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="DEL_FLAG" property="delFlag"/>
+        <result column="ORGANIZATION_ID" property="organizationId"/>
+        <result column="COMPANY_ID" property="companyId"/>
+        <result column="ALLOCATION_METHOD" property="allocationMethod"/>
+        <result column="WARNING_THRESHOLD" property="warningThreshold"/>
+        <result column="CONTROL_LEVEL" property="controlLevel"/>
+    </resultMap>
+    <select id="selectByQuotaCode" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BUDGET_QUOTA WHERE QUOTA_CODE = #{quotaCode} AND DEL_FLAG = 0
+    </select>
+    <select id="selectByBudgetId" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BUDGET_QUOTA WHERE BUDGET_ID = #{budgetId} AND DEL_FLAG = 0 ORDER BY CREATE_TIME DESC
+    </select>
+    <update id="batchDeleteQuotas">
+        UPDATE TBL_BUDGET_QUOTA SET DEL_FLAG = 1, UPDATE_TIME = SYSDATE
+        WHERE QUOTA_ID IN <foreach collection="quotaIds" item="id" open="(" separator="," close=")">#{id}</foreach>
+    </update>
+</mapper>
+

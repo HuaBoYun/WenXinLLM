@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: jnpf-workflow
+  profiles:
+    # 指定环境配置 dev(开发环境-默认)、test(测试环境)、preview(预生产)、prod(生产环境)
+    active: dev
+  main:
+    allow-bean-definition-overriding: true
+    allow-circular-references: true
+
+logging:
+  config: classpath:logback-spring.xml
+springdoc:
+  default-flat-param-object: true
+  api-docs:
+    enabled: true
+
+#SpringDoc增强
+#knife4j:
+#  basic: #接口文档访问鉴权
+#    enable: true
+#    username: jnpf
+#    password: 123456
+#  enable: true

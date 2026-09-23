@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.oracle.mapper.BankLoanMapper">
+
+    <resultMap id="BaseResultMap" type="com.global.treasurer.oracle.entity.TblBankLoan">
+        <id column="LOAN_ID" property="loanId"/>
+        <result column="LOAN_NO" property="loanNo"/>
+        <result column="BANK_NAME" property="bankName"/>
+        <result column="BANK_ACCOUNT" property="bankAccount"/>
+        <result column="CONTRACT_NO" property="contractNo"/>
+        <result column="LOAN_TYPE" property="loanType"/>
+        <result column="LOAN_AMOUNT" property="loanAmount"/>
+        <result column="LOAN_RATE" property="loanRate"/>
+        <result column="LOAN_START_DATE" property="loanStartDate"/>
+        <result column="LOAN_END_DATE" property="loanEndDate"/>
+        <result column="LOAN_TERM" property="loanTerm"/>
+        <result column="REPAYMENT_METHOD" property="repaymentMethod"/>
+        <result column="PAYMENT_ACCOUNT" property="paymentAccount"/>
+        <result column="GUARANTEE_TYPE" property="guaranteeType"/>
+        <result column="GUARANTEE_AMOUNT" property="guaranteeAmount"/>
+        <result column="CURRENCY" property="currency"/>
+        <result column="LOAN_STATUS" property="loanStatus"/>
+        <result column="REMAINING_PRINCIPAL" property="remainingPrincipal"/>
+        <result column="TOTAL_REPAID" property="totalRepaid"/>
+        <result column="TOTAL_INTEREST" property="totalInterest"/>
+        <result column="OPERATOR" property="operator"/>
+        <result column="REMARK" property="remark"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="CREATE_BY" property="createBy"/>
+        <result column="UPDATE_BY" property="updateBy"/>
+        <result column="DELETE_FLAG" property="deleteFlag"/>
+    </resultMap>
+
+    <resultMap id="DTOResultMap" type="com.global.treasurer.dto.BankLoanDTO">
+        <id column="LOAN_ID" property="loanId"/>
+        <result column="LOAN_NO" property="loanNo"/>
+        <result column="BANK_NAME" property="bankName"/>
+        <result column="BANK_ACCOUNT" property="bankAccount"/>
+        <result column="CONTRACT_NO" property="contractNo"/>
+        <result column="LOAN_TYPE" property="loanType"/>
+        <result column="LOAN_AMOUNT" property="loanAmount"/>
+        <result column="LOAN_RATE" property="loanRate"/>
+        <result column="LOAN_START_DATE" property="loanStartDate"/>
+        <result column="LOAN_END_DATE" property="loanEndDate"/>
+        <result column="LOAN_TERM" property="loanTerm"/>
+        <result column="REPAYMENT_METHOD" property="repaymentMethod"/>
+        <result column="PAYMENT_ACCOUNT" property="paymentAccount"/>
+        <result column="GUARANTEE_TYPE" property="guaranteeType"/>
+        <result column="GUARANTEE_AMOUNT" property="guaranteeAmount"/>
+        <result column="CURRENCY" property="currency"/>
+        <result column="LOAN_STATUS" property="loanStatus"/>
+        <result column="REMAINING_PRINCIPAL" property="remainingPrincipal"/>
+        <result column="TOTAL_REPAID" property="totalRepaid"/>
+        <result column="TOTAL_INTEREST" property="totalInterest"/>
+        <result column="OPERATOR" property="operator"/>
+        <result column="REMARK" property="remark"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        LOAN_ID, LOAN_NO, BANK_NAME, BANK_ACCOUNT, CONTRACT_NO, LOAN_TYPE, LOAN_AMOUNT,
+        LOAN_RATE, LOAN_START_DATE, LOAN_END_DATE, LOAN_TERM, REPAYMENT_METHOD,
+        PAYMENT_ACCOUNT, GUARANTEE_TYPE, GUARANTEE_AMOUNT, CURRENCY, LOAN_STATUS,
+        REMAINING_PRINCIPAL, TOTAL_REPAID, TOTAL_INTEREST, OPERATOR, REMARK,
+        CREATE_TIME, UPDATE_TIME, CREATE_BY, UPDATE_BY, DELETE_FLAG
+    </sql>
+
+    <sql id="Query_Where_Clause">
+        <where>
+            DELETE_FLAG = 0
+            <if test="loanNo != null and loanNo != ''">
+                AND LOAN_NO LIKE CONCAT('%', #{loanNo}, '%')
+            </if>
+            <if test="bankName != null and bankName != ''">
+                AND BANK_NAME LIKE CONCAT('%', #{bankName}, '%')
+            </if>
+            <if test="loanType != null">
+                AND LOAN_TYPE = #{loanType}
+            </if>
+            <if test="loanStatus != null">
+                AND LOAN_STATUS = #{loanStatus}
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND LOAN_START_DATE >= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND LOAN_END_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectLoanList" resultMap="DTOResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_BANK_LOAN
+        <include refid="Query_Where_Clause"/>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <select id="selectLoanById" resultMap="DTOResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_BANK_LOAN
+        WHERE LOAN_ID = #{loanId} AND DELETE_FLAG = 0
+    </select>
+
+    <insert id="insertLoan" parameterType="com.global.treasurer.oracle.entity.TblBankLoan">
+        <selectKey keyProperty="loanId" resultType="java.lang.Long" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        INSERT INTO TBL_BANK_LOAN (
+            LOAN_NO, BANK_NAME, BANK_ACCOUNT, CONTRACT_NO, LOAN_TYPE, LOAN_AMOUNT,
+            LOAN_RATE, LOAN_START_DATE, LOAN_END_DATE, LOAN_TERM, REPAYMENT_METHOD,
+            PAYMENT_ACCOUNT, GUARANTEE_TYPE, GUARANTEE_AMOUNT, CURRENCY, LOAN_STATUS,
+            REMAINING_PRINCIPAL, TOTAL_REPAID, TOTAL_INTEREST, OPERATOR, REMARK,
+            CREATE_TIME, UPDATE_TIME, CREATE_BY, UPDATE_BY, DELETE_FLAG
+        ) VALUES (
+            #{loanNo}, #{bankName}, #{bankAccount}, #{contractNo}, #{loanType}, #{loanAmount},
+            #{loanRate}, #{loanStartDate}, #{loanEndDate}, #{loanTerm}, #{repaymentMethod},
+            #{paymentAccount}, #{guaranteeType}, #{guaranteeAmount}, #{currency}, #{loanStatus},
+            #{remainingPrincipal}, #{totalRepaid}, #{totalInterest}, #{operator}, #{remark},
+            #{createTime}, #{updateTime}, #{createBy}, #{updateBy}, 0
+        )
+    </insert>
+
+    <update id="updateLoan" parameterType="com.global.treasurer.oracle.entity.TblBankLoan">
+        UPDATE TBL_BANK_LOAN
+        <set>
+            <if test="loanNo != null">LOAN_NO = #{loanNo},</if>
+            <if test="bankName != null">BANK_NAME = #{bankName},</if>
+            <if test="bankAccount != null">BANK_ACCOUNT = #{bankAccount},</if>
+            <if test="contractNo != null">CONTRACT_NO = #{contractNo},</if>
+            <if test="loanType != null">LOAN_TYPE = #{loanType},</if>
+            <if test="loanAmount != null">LOAN_AMOUNT = #{loanAmount},</if>
+            <if test="loanRate != null">LOAN_RATE = #{loanRate},</if>
+            <if test="loanStartDate != null">LOAN_START_DATE = #{loanStartDate},</if>
+            <if test="loanEndDate != null">LOAN_END_DATE = #{loanEndDate},</if>
+            <if test="loanTerm != null">LOAN_TERM = #{loanTerm},</if>
+            <if test="repaymentMethod != null">REPAYMENT_METHOD = #{repaymentMethod},</if>
+            <if test="paymentAccount != null">PAYMENT_ACCOUNT = #{paymentAccount},</if>
+            <if test="guaranteeType != null">GUARANTEE_TYPE = #{guaranteeType},</if>
+            <if test="guaranteeAmount != null">GUARANTEE_AMOUNT = #{guaranteeAmount},</if>
+            <if test="currency != null">CURRENCY = #{currency},</if>
+            <if test="loanStatus != null">LOAN_STATUS = #{loanStatus},</if>
+            <if test="remainingPrincipal != null">REMAINING_PRINCIPAL = #{remainingPrincipal},</if>
+            <if test="totalRepaid != null">TOTAL_REPAID = #{totalRepaid},</if>
+            <if test="totalInterest != null">TOTAL_INTEREST = #{totalInterest},</if>
+            <if test="operator != null">OPERATOR = #{operator},</if>
+            <if test="remark != null">REMARK = #{remark},</if>
+            <if test="updateTime != null">UPDATE_TIME = #{updateTime},</if>
+            <if test="updateBy != null">UPDATE_BY = #{updateBy},</if>
+        </set>
+        WHERE LOAN_ID = #{loanId}
+    </update>
+
+    <update id="deleteLoan">
+        UPDATE TBL_BANK_LOAN
+        SET DELETE_FLAG = 1, UPDATE_TIME = CURRENT_TIMESTAMP
+        WHERE LOAN_ID = #{loanId}
+    </update>
+
+    <select id="selectLoanStatistics" resultMap="DTOResultMap">
+        SELECT
+            COUNT(*) as LOAN_AMOUNT,
+            SUM(CASE WHEN LOAN_STATUS = 0 THEN 1 ELSE 0 END) as TOTAL_REPAID,
+            SUM(CASE WHEN LOAN_STATUS = 1 THEN 1 ELSE 0 END) as REMAINING_PRINCIPAL,
+            SUM(CASE WHEN LOAN_STATUS = 2 THEN 1 ELSE 0 END) as TOTAL_INTEREST,
+            SUM(LOAN_AMOUNT) as LOAN_TERM
+        FROM TBL_BANK_LOAN
+        WHERE DELETE_FLAG = 0
+        <include refid="Query_Where_Clause"/>
+    </select>
+
+</mapper>

@@ -943,7 +943,7 @@ export const candidates = (data) => {
 // 单点登陆  jnfd 表单设计
 export const SSOToJNFD = (data) => {
   return request({
-    url: '/setting/yinMai/singleSign',
+    url: '/setting/ym/singleSign',
     method: 'post',
     data,
   })

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.enterpriseReport.mapper.FormDirectoryMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.financial.sharing.enterpriseReport.entity.TblFormDirectory">
+        <id column="DIRECTORY_ID" property="directoryId" />
+        <result column="DIRECTORY_CODE" property="directoryCode" />
+        <result column="DIRECTORY_NAME" property="directoryName" />
+        <result column="PARENT_DIRECTORY_ID" property="parentDirectoryId" />
+        <result column="DIRECTORY_LEVEL" property="directoryLevel" />
+        <result column="SORT_NO" property="sortNo" />
+        <result column="STATUS" property="status" />
+        <result column="TENANT_ID" property="tenantId" />
+        <result column="CREATE_USER" property="createUser" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_USER" property="updateUser" />
+        <result column="UPDATE_TIME" property="updateTime" />
+    </resultMap>
+
+    <!-- 查询表单目录树形结构 -->
+    <select id="selectDirectoryTree" resultMap="BaseResultMap">
+        SELECT 
+            DIRECTORY_ID,
+            DIRECTORY_CODE,
+            DIRECTORY_NAME,
+            PARENT_DIRECTORY_ID,
+            DIRECTORY_LEVEL,
+            SORT_NO,
+            STATUS,
+            TENANT_ID,
+            CREATE_USER,
+            CREATE_TIME,
+            UPDATE_USER,
+            UPDATE_TIME
+        FROM TBL_FORM_DIRECTORY
+        WHERE TENANT_ID = #{tenantId}
+        <if test="parentDirectoryId != null and parentDirectoryId != ''">
+            AND PARENT_DIRECTORY_ID = #{parentDirectoryId}
+        </if>
+        <if test="parentDirectoryId == null or parentDirectoryId == ''">
+            AND (PARENT_DIRECTORY_ID IS NULL OR PARENT_DIRECTORY_ID = '')
+        </if>
+        ORDER BY SORT_NO ASC, CREATE_TIME ASC
+    </select>
+
+    <!-- 查询子目录数量 -->
+    <select id="countChildren" resultType="int">
+        SELECT COUNT(*)
+        FROM TBL_FORM_DIRECTORY
+        WHERE PARENT_DIRECTORY_ID = #{directoryId}
+        AND TENANT_ID = #{tenantId}
+    </select>
+
+    <!-- 更新目录层级 -->
+    <update id="updateDirectoryLevel">
+        UPDATE TBL_FORM_DIRECTORY
+        SET DIRECTORY_LEVEL = #{directoryLevel}
+        WHERE DIRECTORY_ID = #{directoryId}
+    </update>
+
+</mapper>
+

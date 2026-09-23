@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.TcSealArchiveMapper">
+
+    <!-- 结果映射 - 匹配TcSealArchive实体类 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TcSealArchive">
+        <id column="ID" property="id" />
+        <result column="SEAL_CODE" property="sealCode" />
+        <result column="SEAL_NAME" property="sealName" />
+        <result column="SEAL_TYPE_ID" property="sealTypeId" />
+        <result column="OWNER_NAME" property="ownerName" />
+        <result column="OWNER_POSITION" property="ownerPosition" />
+        <result column="EFFECTIVE_DATE" property="effectiveDate" />
+        <result column="EXPIRE_DATE" property="expireDate" />
+        <result column="STATUS" property="status" />
+        <result column="CREATE_USER" property="createUser" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_USER" property="updateUser" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="VERSION_NO" property="versionNo" />
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        ID, SEAL_CODE, SEAL_NAME, SEAL_TYPE_ID,
+        OWNER_NAME, OWNER_POSITION,
+        EFFECTIVE_DATE, EXPIRE_DATE, STATUS,
+        CREATE_USER, CREATE_TIME, UPDATE_USER, UPDATE_TIME, VERSION_NO
+    </sql>
+
+    <!-- selectListWithCondition - 带条件查询列表,支持PageHelper分页 -->
+    <select id="selectListWithCondition" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TC_SEAL_ARCHIVE
+        ${condition}
+    </select>
+
+    <!-- selectCountByCondition - 自定义统计方法,避免selectOne异常 -->
+    <select id="selectCountByCondition" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM TC_SEAL_ARCHIVE
+        ${condition}
+    </select>
+
+    <!-- selectPage - 分页查询，支持QueryWrapper动态条件 -->
+    <!-- 修复：恢复ORDER BY，因为Controller不再添加 -->
+    <select id="selectPage" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TC_SEAL_ARCHIVE
+        <if test="ew != null and ew.sqlSegment != null and ew.sqlSegment != ''">
+            WHERE ${ew.sqlSegment}
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 注意：移除自定义的selectCount方法，使用MyBatis-Plus默认实现 -->
+    <!-- MyBatis-Plus的BaseMapper.selectCount()返回Long类型，与达梦数据库兼容 -->
+
+    <!-- insert -->
+    <insert id="insert" parameterType="com.global.treasurer.entity.TcSealArchive">
+        INSERT INTO TC_SEAL_ARCHIVE (
+            ID, SEAL_CODE, SEAL_NAME, SEAL_TYPE_ID,
+            OWNER_NAME, OWNER_POSITION,
+            EFFECTIVE_DATE, EXPIRE_DATE, STATUS,
+            CREATE_USER, CREATE_TIME, UPDATE_USER, UPDATE_TIME, VERSION_NO
+        ) VALUES (
+            #{id,jdbcType=VARCHAR}, #{sealCode,jdbcType=VARCHAR}, #{sealName,jdbcType=VARCHAR}, #{sealTypeId,jdbcType=VARCHAR},
+            #{ownerName,jdbcType=VARCHAR}, #{ownerPosition,jdbcType=VARCHAR},
+            #{effectiveDate,jdbcType=TIMESTAMP}, #{expireDate,jdbcType=TIMESTAMP}, #{status,jdbcType=VARCHAR},
+            #{createUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{updateUser,jdbcType=VARCHAR},
+            #{updateTime,jdbcType=TIMESTAMP}, #{versionNo,jdbcType=INTEGER}
+        )
+    </insert>
+
+    <!-- updateById - 兼容MyBatis-Plus的@Param("et")参数 -->
+    <update id="updateById">
+        UPDATE TC_SEAL_ARCHIVE
+        <set>
+            <if test="et.sealCode != null">SEAL_CODE = #{et.sealCode},</if>
+            <if test="et.sealName != null">SEAL_NAME = #{et.sealName},</if>
+            <if test="et.sealTypeId != null">SEAL_TYPE_ID = #{et.sealTypeId},</if>
+            <if test="et.ownerName != null">OWNER_NAME = #{et.ownerName},</if>
+            <if test="et.ownerPosition != null">OWNER_POSITION = #{et.ownerPosition},</if>
+            <if test="et.effectiveDate != null">EFFECTIVE_DATE = #{et.effectiveDate},</if>
+            <if test="et.expireDate != null">EXPIRE_DATE = #{et.expireDate},</if>
+            <if test="et.status != null">STATUS = #{et.status},</if>
+            <if test="et.updateUser != null">UPDATE_USER = #{et.updateUser},</if>
+            <if test="et.updateTime != null">UPDATE_TIME = #{et.updateTime},</if>
+            <if test="et.versionNo != null">VERSION_NO = #{et.versionNo}</if>
+        </set>
+        WHERE ID = #{et.id}
+    </update>
+
+    <!-- deleteById -->
+    <delete id="deleteById">
+        DELETE FROM TC_SEAL_ARCHIVE WHERE ID = #{id}
+    </delete>
+
+</mapper>

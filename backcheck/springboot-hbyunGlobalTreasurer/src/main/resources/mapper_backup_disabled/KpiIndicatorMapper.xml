@@ -1,0 +1,484 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.KpiIndicatorMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.KpiIndicator">
+        <id column="KPIID" property="kpiId" />
+        <result column="KPICODE" property="kpiCode" />
+        <result column="KPINAME" property="kpiName" />
+        <result column="KPICATEGORY" property="kpiCategory" />
+        <result column="KPITYPE" property="kpiType" />
+        <result column="CALCULATIONFORMULA" property="calculationFormula" />
+        <result column="DATASOURCE" property="dataSource" />
+        <result column="UNIT" property="unit" />
+        <result column="TARGETVALUE" property="targetValue" />
+        <result column="WARNINGTHRESHOLD" property="warningThreshold" />
+        <result column="CRITICALTHRESHOLD" property="criticalThreshold" />
+        <result column="CURRENTVALUE" property="currentValue" />
+        <result column="PREVIOUSVALUE" property="previousValue" />
+        <result column="CHANGEPERCENTAGE" property="changePercentage" />
+        <result column="TREND" property="trend" />
+        <result column="CALCULATIONDATE" property="calculationDate" />
+        <result column="CALCULATIONFREQUENCY" property="calculationFrequency" />
+        <result column="KPISTATUS" property="kpiStatus" />
+        <result column="REMARK" property="remark" />
+        <result column="ORGID" property="orgId" />
+        <result column="CREATETIME" property="createTime" />
+        <result column="CREATEUSER" property="createUser" />
+        <result column="UPDATETIME" property="updateTime" />
+        <result column="UPDATEUSER" property="updateUser" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        KPIID, KPICODE, KPINAME, KPICATEGORY, KPITYPE, CALCULATIONFORMULA, DATASOURCE, UNIT,
+        TARGETVALUE, WARNINGTHRESHOLD, CRITICALTHRESHOLD, CURRENTVALUE, PREVIOUSVALUE, 
+        CHANGEPERCENTAGE, TREND, CALCULATIONDATE, CALCULATIONFREQUENCY, KPISTATUS, REMARK,
+        ORGID, CREATETIME, CREATEUSER, UPDATETIME, UPDATEUSER
+    </sql>
+
+    <!-- 分页查询KPI指标 -->
+    <select id="selectKpiPage" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_KPI_INDICATORS
+        <where>
+            <if test="params.orgId != null">
+                AND ORGID = #{params.orgId}
+            </if>
+            <if test="params.kpiCode != null and params.kpiCode != ''">
+                AND KPICODE LIKE CONCAT('%', #{params.kpiCode}, '%')
+            </if>
+            <if test="params.kpiName != null and params.kpiName != ''">
+                AND KPINAME LIKE CONCAT('%', #{params.kpiName}, '%')
+            </if>
+            <if test="params.kpiCategory != null and params.kpiCategory != ''">
+                AND KPICATEGORY = #{params.kpiCategory}
+            </if>
+            <if test="params.kpiType != null and params.kpiType != ''">
+                AND KPITYPE = #{params.kpiType}
+            </if>
+            <if test="params.kpiStatus != null and params.kpiStatus != ''">
+                AND KPISTATUS = #{params.kpiStatus}
+            </if>
+            <if test="params.calculationFrequency != null and params.calculationFrequency != ''">
+                AND CALCULATIONFREQUENCY = #{params.calculationFrequency}
+            </if>
+            <if test="params.trend != null and params.trend != ''">
+                AND TREND = #{params.trend}
+            </if>
+            <if test="params.dataSource != null and params.dataSource != ''">
+                AND DATASOURCE LIKE CONCAT('%', #{params.dataSource}, '%')
+            </if>
+            <if test="params.startDate != null">
+                AND CALCULATIONDATE >= #{params.startDate}
+            </if>
+            <if test="params.endDate != null">
+                AND CALCULATIONDATE &lt;= #{params.endDate}
+            </if>
+        </where>
+        ORDER BY CREATETIME DESC
+    </select>
+
+    <!-- 根据KPI编码查询 -->
+    <select id="selectByKpiCode" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_KPI_INDICATORS
+        WHERE KPICODE = #{kpiCode} AND ORGID = #{orgId}
+    </select>
+
+    <!-- 检查KPI编码唯一性 -->
+    <select id="checkKpiCodeUniqueness" resultType="int">
+        SELECT COUNT(1)
+        FROM TBL_KPI_INDICATORS
+        WHERE KPICODE = #{kpiCode} AND ORGID = #{orgId}
+        <if test="excludeId != null">
+            AND KPIID != #{excludeId}
+        </if>
+    </select>
+
+    <!-- 根据分类查询KPI指标 -->
+    <select id="selectByCategory" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_KPI_INDICATORS
+        WHERE KPICATEGORY = #{kpiCategory} AND ORGID = #{orgId}
+        ORDER BY KPINAME
+    </select>
+
+    <!-- 根据类型查询KPI指标 -->
+    <select id="selectByType" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_KPI_INDICATORS
+        WHERE KPITYPE = #{kpiType} AND ORGID = #{orgId}
+        ORDER BY KPINAME
+    </select>
+
+    <!-- 根据状态查询KPI指标 -->
+    <select id="selectByStatus" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_KPI_INDICATORS
+        WHERE KPISTATUS = #{kpiStatus} AND ORGID = #{orgId}
+        ORDER BY KPINAME
+    </select>
+
+    <!-- 查询预警KPI指标 -->
+    <select id="selectWarningKpis" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_KPI_INDICATORS
+        WHERE KPISTATUS = 'WARNING' AND ORGID = #{orgId}
+        ORDER BY CALCULATIONDATE DESC
+    </select>
+
+    <!-- 查询临界KPI指标 -->
+    <select id="selectCriticalKpis" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_KPI_INDICATORS
+        WHERE KPISTATUS = 'CRITICAL' AND ORGID = #{orgId}
+        ORDER BY CALCULATIONDATE DESC
+    </select>
+
+    <!-- 查询正常KPI指标 -->
+    <select id="selectNormalKpis" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_KPI_INDICATORS
+        WHERE KPISTATUS = 'NORMAL' AND ORGID = #{orgId}
+        ORDER BY CALCULATIONDATE DESC
+    </select>
+
+    <!-- 查询活跃KPI指标 -->
+    <select id="selectActiveKpis" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_KPI_INDICATORS
+        WHERE KPISTATUS != 'INACTIVE' AND ORGID = #{orgId}
+        ORDER BY KPINAME
+    </select>
+
+    <!-- 查询需要计算的KPI指标 -->
+    <select id="selectKpisNeedCalculation" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_KPI_INDICATORS
+        WHERE CALCULATIONFREQUENCY = #{calculationFrequency} 
+        AND KPISTATUS != 'INACTIVE' 
+        AND ORGID = #{orgId}
+        ORDER BY KPINAME
+    </select>
+
+    <!-- 更新KPI当前值 -->
+    <update id="updateCurrentValue">
+        UPDATE TBL_KPI_INDICATORS
+        SET CURRENTVALUE = #{currentValue},
+            UPDATETIME = CURRENT_TIMESTAMP,
+            UPDATEUSER = #{updateUser}
+        WHERE KPIID = #{kpiId}
+    </update>
+
+    <!-- 更新KPI状态 -->
+    <update id="updateKpiStatus">
+        UPDATE TBL_KPI_INDICATORS
+        SET KPISTATUS = #{kpiStatus},
+            UPDATETIME = CURRENT_TIMESTAMP,
+            UPDATEUSER = #{updateUser}
+        WHERE KPIID = #{kpiId}
+    </update>
+
+    <!-- 更新KPI趋势 -->
+    <update id="updateTrend">
+        UPDATE TBL_KPI_INDICATORS
+        SET TREND = #{trend},
+            CHANGEPERCENTAGE = #{changePercentage},
+            UPDATETIME = CURRENT_TIMESTAMP,
+            UPDATEUSER = #{updateUser}
+        WHERE KPIID = #{kpiId}
+    </update>
+
+    <!-- 批量更新KPI计算日期 -->
+    <update id="batchUpdateCalculationDate">
+        UPDATE TBL_KPI_INDICATORS
+        SET CALCULATIONDATE = #{calculationDate},
+            UPDATETIME = CURRENT_TIMESTAMP,
+            UPDATEUSER = #{updateUser}
+        WHERE KPIID IN
+        <foreach collection="kpiIds" item="kpiId" open="(" separator="," close=")">
+            #{kpiId}
+        </foreach>
+    </update>
+
+    <!-- 获取KPI统计信息 -->
+    <select id="selectKpiStatistics" resultType="map">
+        SELECT 
+            COUNT(*) AS totalCount,
+            COUNT(CASE WHEN KPISTATUS = 'NORMAL' THEN 1 END) AS normalCount,
+            COUNT(CASE WHEN KPISTATUS = 'WARNING' THEN 1 END) AS warningCount,
+            COUNT(CASE WHEN KPISTATUS = 'CRITICAL' THEN 1 END) AS criticalCount,
+            COUNT(CASE WHEN KPISTATUS = 'INACTIVE' THEN 1 END) AS inactiveCount,
+            COUNT(CASE WHEN TREND = 'UP' THEN 1 END) AS upTrendCount,
+            COUNT(CASE WHEN TREND = 'DOWN' THEN 1 END) AS downTrendCount,
+            COUNT(CASE WHEN TREND = 'STABLE' THEN 1 END) AS stableTrendCount,
+            AVG(CASE WHEN CURRENTVALUE IS NOT NULL AND TARGETVALUE IS NOT NULL AND TARGETVALUE > 0 
+                THEN (CURRENTVALUE / TARGETVALUE * 100) END) AS avgCompletionRate
+        FROM TBL_KPI_INDICATORS
+        WHERE ORGID = #{orgId}
+        <if test="startDate != null">
+            AND CALCULATIONDATE >= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND CALCULATIONDATE &lt;= #{endDate}
+        </if>
+    </select>
+
+    <!-- 获取KPI类型分布 -->
+    <select id="selectKpiTypeDistribution" resultType="map">
+        SELECT 
+            KPITYPE AS kpiType,
+            COUNT(*) AS count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM TBL_KPI_INDICATORS WHERE ORGID = #{orgId}), 2) AS percentage
+        FROM TBL_KPI_INDICATORS
+        WHERE ORGID = #{orgId}
+        GROUP BY KPITYPE
+        ORDER BY count DESC
+    </select>
+
+    <!-- 获取KPI状态分布 -->
+    <select id="selectKpiStatusDistribution" resultType="map">
+        SELECT 
+            KPISTATUS AS kpiStatus,
+            COUNT(*) AS count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM TBL_KPI_INDICATORS WHERE ORGID = #{orgId}), 2) AS percentage
+        FROM TBL_KPI_INDICATORS
+        WHERE ORGID = #{orgId}
+        GROUP BY KPISTATUS
+        ORDER BY count DESC
+    </select>
+
+    <!-- 获取KPI分类分布 -->
+    <select id="selectKpiCategoryDistribution" resultType="map">
+        SELECT 
+            KPICATEGORY AS kpiCategory,
+            COUNT(*) AS count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM TBL_KPI_INDICATORS WHERE ORGID = #{orgId}), 2) AS percentage
+        FROM TBL_KPI_INDICATORS
+        WHERE ORGID = #{orgId}
+        GROUP BY KPICATEGORY
+        ORDER BY count DESC
+    </select>
+
+    <!-- 获取KPI趋势分布 -->
+    <select id="selectKpiTrendDistribution" resultType="map">
+        SELECT 
+            TREND AS trend,
+            COUNT(*) AS count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM TBL_KPI_INDICATORS WHERE ORGID = #{orgId} AND TREND IS NOT NULL), 2) AS percentage
+        FROM TBL_KPI_INDICATORS
+        WHERE ORGID = #{orgId} AND TREND IS NOT NULL
+        GROUP BY TREND
+        ORDER BY count DESC
+    </select>
+
+    <!-- 获取KPI目标完成情况 -->
+    <select id="selectKpiTargetCompletion" resultType="map">
+        SELECT 
+            KPICODE AS kpiCode,
+            KPINAME AS kpiName,
+            CURRENTVALUE AS currentValue,
+            TARGETVALUE AS targetValue,
+            CASE 
+                WHEN TARGETVALUE IS NULL OR TARGETVALUE = 0 THEN 0
+                ELSE ROUND((CURRENTVALUE / TARGETVALUE * 100), 2)
+            END AS completionRate,
+            CASE 
+                WHEN CURRENTVALUE >= TARGETVALUE THEN 'ACHIEVED'
+                WHEN CURRENTVALUE >= TARGETVALUE * 0.8 THEN 'NEAR_TARGET'
+                ELSE 'BELOW_TARGET'
+            END AS achievementStatus
+        FROM TBL_KPI_INDICATORS
+        WHERE ORGID = #{orgId} 
+        AND CURRENTVALUE IS NOT NULL 
+        AND TARGETVALUE IS NOT NULL
+        ORDER BY completionRate DESC
+    </select>
+
+    <!-- 获取KPI计算频率分布 -->
+    <select id="selectKpiFrequencyDistribution" resultType="map">
+        SELECT
+            CALCULATIONFREQUENCY AS calculationFrequency,
+            COUNT(*) AS count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM TBL_KPI_INDICATORS WHERE ORGID = #{orgId}), 2) AS percentage
+        FROM TBL_KPI_INDICATORS
+        WHERE ORGID = #{orgId}
+        GROUP BY CALCULATIONFREQUENCY
+        ORDER BY count DESC
+    </select>
+
+    <!-- 查询KPI历史数据 -->
+    <select id="selectKpiHistory" resultType="map">
+        SELECT
+            CALCULATIONDATE AS calculationDate,
+            CURRENTVALUE AS currentValue,
+            PREVIOUSVALUE AS previousValue,
+            CHANGEPERCENTAGE AS changePercentage,
+            TREND AS trend,
+            KPISTATUS AS kpiStatus
+        FROM TBL_KPI_INDICATORS
+        WHERE KPIID = #{kpiId}
+        <if test="startDate != null">
+            AND CALCULATIONDATE >= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND CALCULATIONDATE &lt;= #{endDate}
+        </if>
+        ORDER BY CALCULATIONDATE DESC
+    </select>
+
+    <!-- 查询KPI排行榜 -->
+    <select id="selectKpiRanking" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_KPI_INDICATORS
+        WHERE KPITYPE = #{kpiType} AND ORGID = #{orgId}
+        AND CURRENTVALUE IS NOT NULL
+        ORDER BY CURRENTVALUE DESC
+        <if test="limit != null">
+            LIMIT #{limit}
+        </if>
+    </select>
+
+    <!-- 查询KPI对比数据 -->
+    <select id="selectKpiComparison" resultType="map">
+        SELECT
+            KPIID AS kpiId,
+            KPICODE AS kpiCode,
+            KPINAME AS kpiName,
+            CURRENTVALUE AS currentValue,
+            TARGETVALUE AS targetValue,
+            CHANGEPERCENTAGE AS changePercentage,
+            TREND AS trend,
+            CALCULATIONDATE AS calculationDate
+        FROM TBL_KPI_INDICATORS
+        WHERE KPIID IN
+        <foreach collection="kpiIds" item="kpiId" open="(" separator="," close=")">
+            #{kpiId}
+        </foreach>
+        <if test="startDate != null">
+            AND CALCULATIONDATE >= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND CALCULATIONDATE &lt;= #{endDate}
+        </if>
+        ORDER BY KPICODE, CALCULATIONDATE DESC
+    </select>
+
+    <!-- 查询KPI预警统计 -->
+    <select id="selectKpiWarningStatistics" resultType="map">
+        SELECT
+            COUNT(CASE WHEN KPISTATUS = 'WARNING' THEN 1 END) AS warningCount,
+            COUNT(CASE WHEN KPISTATUS = 'CRITICAL' THEN 1 END) AS criticalCount,
+            COUNT(CASE WHEN CURRENTVALUE &lt; WARNINGTHRESHOLD THEN 1 END) AS belowWarningCount,
+            COUNT(CASE WHEN CURRENTVALUE &lt; CRITICALTHRESHOLD THEN 1 END) AS belowCriticalCount,
+            COUNT(CASE WHEN CURRENTVALUE &lt; TARGETVALUE THEN 1 END) AS belowTargetCount
+        FROM TBL_KPI_INDICATORS
+        WHERE ORGID = #{orgId}
+        AND KPISTATUS != 'INACTIVE'
+    </select>
+
+    <!-- 查询KPI计算统计 -->
+    <select id="selectKpiCalculationStatistics" resultType="map">
+        SELECT
+            COUNT(*) AS totalKpis,
+            COUNT(CASE WHEN CALCULATIONDATE = CURRENT_DATE THEN 1 END) AS todayCalculated,
+            COUNT(CASE WHEN CALCULATIONDATE >= CURRENT_DATE - INTERVAL '7' DAY THEN 1 END) AS weekCalculated,
+            COUNT(CASE WHEN CALCULATIONDATE >= CURRENT_DATE - INTERVAL '30' DAY THEN 1 END) AS monthCalculated,
+            COUNT(CASE WHEN CALCULATIONDATE IS NULL THEN 1 END) AS neverCalculated,
+            AVG(CASE WHEN CURRENTVALUE IS NOT NULL THEN CURRENTVALUE END) AS avgCurrentValue
+        FROM TBL_KPI_INDICATORS
+        WHERE ORGID = #{orgId}
+        <if test="startDate != null">
+            AND CREATETIME >= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND CREATETIME &lt;= #{endDate}
+        </if>
+    </select>
+
+    <!-- 查询KPI数据源统计 -->
+    <select id="selectKpiDataSourceStatistics" resultType="map">
+        SELECT
+            DATASOURCE AS dataSource,
+            COUNT(*) AS count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM TBL_KPI_INDICATORS WHERE ORGID = #{orgId}), 2) AS percentage
+        FROM TBL_KPI_INDICATORS
+        WHERE ORGID = #{orgId} AND DATASOURCE IS NOT NULL
+        GROUP BY DATASOURCE
+        ORDER BY count DESC
+    </select>
+
+    <!-- 查询KPI使用统计 -->
+    <select id="selectKpiUsageStatistics" resultType="map">
+        SELECT
+            KPITYPE AS kpiType,
+            COUNT(*) AS totalCount,
+            COUNT(CASE WHEN KPISTATUS = 'NORMAL' THEN 1 END) AS activeCount,
+            AVG(CASE WHEN CURRENTVALUE IS NOT NULL AND TARGETVALUE IS NOT NULL AND TARGETVALUE > 0
+                THEN (CURRENTVALUE / TARGETVALUE * 100) END) AS avgCompletionRate,
+            COUNT(CASE WHEN CALCULATIONDATE >= #{startDate} THEN 1 END) AS recentlyUsed
+        FROM TBL_KPI_INDICATORS
+        WHERE ORGID = #{orgId}
+        <if test="startDate != null">
+            AND CREATETIME >= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND CREATETIME &lt;= #{endDate}
+        </if>
+        GROUP BY KPITYPE
+        ORDER BY totalCount DESC
+    </select>
+
+    <!-- 查询过期KPI指标 -->
+    <select id="selectExpiredKpis" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_KPI_INDICATORS
+        WHERE ORGID = #{orgId}
+        AND CALCULATIONDATE &lt; CURRENT_DATE - INTERVAL '#{days}' DAY
+        ORDER BY CALCULATIONDATE ASC
+    </select>
+
+    <!-- 查询未计算KPI指标 -->
+    <select id="selectUnCalculatedKpis" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_KPI_INDICATORS
+        WHERE ORGID = #{orgId}
+        AND (CALCULATIONDATE IS NULL OR CURRENTVALUE IS NULL)
+        AND KPISTATUS != 'INACTIVE'
+        ORDER BY CREATETIME ASC
+    </select>
+
+    <!-- 查询KPI异常数据 -->
+    <select id="selectAbnormalKpis" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_KPI_INDICATORS
+        WHERE ORGID = #{orgId}
+        AND (
+            (CURRENTVALUE IS NOT NULL AND CURRENTVALUE &lt; 0) OR
+            (TARGETVALUE IS NOT NULL AND TARGETVALUE &lt;= 0) OR
+            (WARNINGTHRESHOLD IS NOT NULL AND CRITICALTHRESHOLD IS NOT NULL AND WARNINGTHRESHOLD &lt; CRITICALTHRESHOLD) OR
+            (CHANGEPERCENTAGE IS NOT NULL AND ABS(CHANGEPERCENTAGE) > 1000)
+        )
+        ORDER BY UPDATETIME DESC
+    </select>
+
+    <!-- 删除过期KPI数据 -->
+    <delete id="deleteExpiredKpiData">
+        DELETE FROM TBL_KPI_INDICATORS
+        WHERE ORGID = #{orgId}
+        AND CREATETIME &lt; CURRENT_DATE - INTERVAL '#{retentionDays}' DAY
+        AND KPISTATUS = 'INACTIVE'
+    </delete>
+
+    <!-- 清理KPI缓存数据 -->
+    <update id="cleanKpiCacheData">
+        UPDATE TBL_KPI_INDICATORS
+        SET PREVIOUSVALUE = NULL,
+            CHANGEPERCENTAGE = NULL
+        WHERE ORGID = #{orgId}
+        AND CALCULATIONDATE &lt; CURRENT_DATE - INTERVAL '90' DAY
+    </update>
+
+</mapper>

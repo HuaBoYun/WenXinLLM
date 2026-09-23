@@ -1,0 +1,47 @@
+#日志配置
+
+spring:
+ redis:
+  host: 127.0.0.1
+  port: 6379
+  password:REDACTED
+
+logging:
+ level:
+  com.alibaba.druid: DEBUG
+  org:
+   springframework: WARN
+   spring:
+    springboot:
+     dao: info
+
+#eureka服务注册中心配置
+eureka:
+ instance:
+  ip-address: 127.0.0.1
+  instance-id: hbyunFile-8077
+  prefer-ip-address: true
+ client:
+  register-with-eureka: true
+  fetch-registry: true
+  serviceUrl:
+   defaultZone: http://hbyunadmin:REDACTED@127.0.0.1:8761/eureka
+
+mybatis-plus:
+ configuration:
+  log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+ plugins:
+  pagination:
+   enabled: true
+
+
+# 文件保存目录
+file:
+ ca:
+  secret: 00000000000000000000000000000000
+ upload:
+  path: D:\datafile
+ previewUrl: http://127.0.0.1:8012/onlinePreview?url=
+ downloadUrl: http://127.0.0.1:80/api/file/file/download/decrypt?fileId=
+fileUploadPath: http://127.0.0.1:80/api/file/file/upload
+

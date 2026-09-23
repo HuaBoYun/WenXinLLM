@@ -1726,7 +1726,7 @@
         this.$forceUpdate()
         this.$baseMessage('删除成功', 'success')
       },
-      //引迈流程提交
+      //流程提交
       async ymsubmit() {
         this.$refs['form'].validate(async (valid) => {
           if (valid) {

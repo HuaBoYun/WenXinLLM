@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.TcSealCombinationMapper">
+
+    <!-- 结果映射 - 对应表 TBL_SEAL_COMBINATION_CONFIG -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TcSealCombination">
+        <id column="COMBINATION_ID" property="id" />
+        <result column="COMBINATION_CODE" property="combinationCode" />
+        <result column="COMBINATION_NAME" property="combinationName" />
+        <result column="COMBINATION_TYPE" property="combinationType" />
+        <result column="BUSINESS_TYPE" property="businessType" />
+        <result column="AUTHORITY_LEVEL" property="authorityLevel" />
+        <result column="MAX_AMOUNT_LIMIT" property="maxAmountLimit" />
+        <result column="REQUIRED_SEALS" property="sealList" />
+        <result column="DESCRIPTION" property="description" />
+        <result column="IS_ENABLED" property="status" />
+        <result column="USAGE_COUNT" property="usageCount" />
+        <result column="CREATE_USER" property="createBy" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_USER" property="updateBy" />
+        <result column="UPDATE_TIME" property="updateTime" />
+    </resultMap>
+
+    <!-- 基础列定义 -->
+    <sql id="Base_Column_List">
+        COMBINATION_ID, COMBINATION_CODE, COMBINATION_NAME, COMBINATION_TYPE, BUSINESS_TYPE,
+        AUTHORITY_LEVEL, MAX_AMOUNT_LIMIT, REQUIRED_SEALS, DESCRIPTION, IS_ENABLED,
+        USAGE_COUNT, CREATE_USER, CREATE_TIME, UPDATE_USER, UPDATE_TIME
+    </sql>
+
+    <!-- 查询列表 - 支持QueryWrapper动态条件 -->
+    <select id="selectList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_SEAL_COMBINATION_CONFIG
+        <if test="ew != null and ew.sqlSegment != null and ew.sqlSegment != ''">
+            WHERE ${ew.sqlSegment}
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 分页查询 - 手动实现selectPage方法 -->
+    <select id="selectPage" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_SEAL_COMBINATION_CONFIG
+        <if test="ew != null and ew.sqlSegment != null and ew.sqlSegment != ''">
+            WHERE ${ew.sqlSegment}
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+</mapper>

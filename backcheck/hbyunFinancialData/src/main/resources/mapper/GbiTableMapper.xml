@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.financialdata.mapper.GbiTableMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.huabo.financialdata.entity.entity.GbiTable">
+        <id column="ID" property="id"/>
+        <result column="APP_ID" property="appId"/>
+        <result column="BETCH_ID" property="batchId"/>
+        <result column="BETCH_NO" property="batchNo"/>
+        <result column="CUSTOM_TABLE" property="customTable"/>
+        <result column="DESCRIPTION" property="description"/>
+        <result column="TABLE_NAME" property="tableName"/>
+        <result column="USER_ID" property="userId"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="CREATE_COMPANY" property="createCompany"/>
+        <result column="CREATE_DEPT" property="createDept"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        ID
+        , APP_ID, BETCH_ID, BETCH_NO, CUSTOM_TABLE, DESCRIPTION, TABLE_NAME, USER_ID, CREATE_TIME, CREATE_COMPANY, CREATE_DEPT
+    </sql>
+
+    <!--    <select id="selectTableData" parameterType="string" resultType="map">-->
+    <!--        select * from ${tableName} ${pageSql}-->
+    <!--    </select>-->
+
+
+    <update id="createTable">
+        ${createTableSql}
+    </update>
+
+    <update id="updateTable">
+        ${updateTableSql}
+    </update>
+
+    <insert id="batchInsert" useGeneratedKeys="false">
+        ${insertSql}
+    </insert>
+</mapper>

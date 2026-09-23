@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.mapper.TblProjectMemberMapper">
+
+    <select id="selectByProjectId" resultType="com.financial.sharing.entity.TblProjectMember">
+        SELECT * FROM TBL_PROJECT_MEMBER WHERE PROJECT_ID = #{projectId} AND IS_ENABLED = 1 ORDER BY CREATE_TIME DESC
+    </select>
+
+    <select id="selectByUserId" resultType="com.financial.sharing.entity.TblProjectMember">
+        SELECT * FROM TBL_PROJECT_MEMBER WHERE USER_ID = #{userId} AND IS_ENABLED = 1 ORDER BY CREATE_TIME DESC
+    </select>
+
+    <select id="selectByProjectAndUser" resultType="com.financial.sharing.entity.TblProjectMember">
+        SELECT * FROM TBL_PROJECT_MEMBER WHERE PROJECT_ID = #{projectId} AND USER_ID = #{userId} LIMIT 1
+    </select>
+
+    <delete id="deleteByProjectId">
+        DELETE FROM TBL_PROJECT_MEMBER WHERE PROJECT_ID = #{projectId}
+    </delete>
+
+</mapper>
+

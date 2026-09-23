@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.oracle.mapper.SupplierMapper">
+
+    <resultMap id="BaseResultMap" type="com.financial.sharing.vo.result.SupplierVO">
+        <id column="SUPPLIER_ID" property="supplierId"/>
+        <result column="SUPPLIER_CODE" property="supplierCode"/>
+        <result column="SUPPLIER_NAME" property="supplierName"/>
+        <result column="SUPPLIER_CATEGORY" property="supplierCategory"/>
+        <result column="SUPPLIER_STATUS" property="supplierStatus"/>
+        <result column="CREDIT_CODE" property="creditCode"/>
+        <result column="LEGAL_REPRESENTATIVE" property="legalRepresentative"/>
+        <result column="REGISTERED_ADDRESS" property="registeredAddress"/>
+        <result column="CONTACT_PERSON" property="contactPerson"/>
+        <result column="CONTACT_PHONE" property="contactPhone"/>
+        <result column="CONTACT_EMAIL" property="contactEmail"/>
+        <result column="FAX_NUMBER" property="faxNumber"/>
+        <result column="CONTACT_ADDRESS" property="contactAddress"/>
+        <result column="BANK_NAME" property="bankName"/>
+        <result column="BANK_ACCOUNT" property="bankAccount"/>
+        <result column="CREDIT_LEVEL" property="creditLevel"/>
+        <result column="CREDIT_LIMIT" property="creditLimit"/>
+        <result column="PAYMENT_METHOD" property="paymentMethod"/>
+        <result column="PAYMENT_TERMS" property="paymentTerms"/>
+        <result column="REMARKS" property="remarks"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="CREATE_BY" property="createBy"/>
+        <!-- 非持久化字段 -->
+        <result column="SUPPLIER_CATEGORY_NAME" property="supplierCategoryName"/>
+        <result column="SUPPLIER_STATUS_NAME" property="supplierStatusName"/>
+        <result column="PAYMENT_METHOD_NAME" property="paymentMethodName"/>
+        <result column="PAYABLE_AMOUNT" property="payableAmount"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        SUPPLIER_ID, SUPPLIER_CODE, SUPPLIER_NAME, SUPPLIER_CATEGORY, SUPPLIER_STATUS,
+        CREDIT_CODE, LEGAL_REPRESENTATIVE, REGISTERED_ADDRESS, CONTACT_PERSON, CONTACT_PHONE,
+        CONTACT_EMAIL, FAX_NUMBER, CONTACT_ADDRESS, BANK_NAME, BANK_ACCOUNT, CREDIT_LEVEL,
+        CREDIT_LIMIT, PAYMENT_METHOD, PAYMENT_TERMS, REMARKS, CREATE_TIME, CREATE_BY
+    </sql>
+
+    <select id="selectPageList" resultMap="BaseResultMap">
+        SELECT
+            s.SUPPLIER_ID, s.SUPPLIER_CODE, s.SUPPLIER_NAME, s.SUPPLIER_CATEGORY, s.SUPPLIER_STATUS,
+            s.CREDIT_CODE, s.LEGAL_REPRESENTATIVE, s.REGISTERED_ADDRESS, s.CONTACT_PERSON, s.CONTACT_PHONE,
+            s.CONTACT_EMAIL, s.FAX_NUMBER, s.CONTACT_ADDRESS, s.BANK_NAME, s.BANK_ACCOUNT, s.CREDIT_LEVEL,
+            s.CREDIT_LIMIT, s.PAYMENT_METHOD, s.PAYMENT_TERMS, s.REMARKS, s.CREATE_TIME, s.CREATE_BY,
+            CASE s.SUPPLIER_CATEGORY
+                WHEN 1 THEN '原材料供应商'
+                WHEN 2 THEN '设备供应商'
+                WHEN 3 THEN '服务供应商'
+                WHEN 4 THEN '其他供应商'
+                ELSE '未知分类'
+            END AS SUPPLIER_CATEGORY_NAME,
+            NVL(SUM(d.REMAINING_AMOUNT), 0) AS PAYABLE_AMOUNT
+        FROM TBL_SUPPLIER s
+        LEFT JOIN TBL_PAYABLE_DOCUMENT d ON s.SUPPLIER_ID = d.SUPPLIER_ID AND d.IS_DELETED = 0
+        WHERE s.IS_DELETED = 0
+        <if test="param.supplierCode != null and param.supplierCode != ''">
+            AND s.SUPPLIER_CODE LIKE '%' || #{param.supplierCode} || '%'
+        </if>
+        <if test="param.supplierName != null and param.supplierName != ''">
+            AND s.SUPPLIER_NAME LIKE '%' || #{param.supplierName} || '%'
+        </if>
+        <if test="param.supplierCategory != null">
+            AND s.SUPPLIER_CATEGORY = #{param.supplierCategory}
+        </if>
+        <if test="param.supplierStatus != null">
+            AND s.SUPPLIER_STATUS = #{param.supplierStatus}
+        </if>
+        <if test="param.creditLevel != null and param.creditLevel != ''">
+            AND s.CREDIT_LEVEL = #{param.creditLevel}
+        </if>
+        <if test="param.creditCode != null and param.creditCode != ''">
+            AND s.CREDIT_CODE LIKE '%' || #{param.creditCode} || '%'
+        </if>
+        <if test="param.contactPerson != null and param.contactPerson != ''">
+            AND s.CONTACT_PERSON LIKE '%' || #{param.contactPerson} || '%'
+        </if>
+        <if test="param.keyword != null and param.keyword != ''">
+            AND (s.SUPPLIER_CODE LIKE '%' || #{param.keyword} || '%'
+                 OR s.SUPPLIER_NAME LIKE '%' || #{param.keyword} || '%'
+                 OR s.CONTACT_PERSON LIKE '%' || #{param.keyword} || '%')
+        </if>
+        GROUP BY s.SUPPLIER_ID, s.SUPPLIER_CODE, s.SUPPLIER_NAME, s.SUPPLIER_CATEGORY, s.SUPPLIER_STATUS,
+                 s.CREDIT_CODE, s.LEGAL_REPRESENTATIVE, s.REGISTERED_ADDRESS, s.CONTACT_PERSON, s.CONTACT_PHONE,
+                 s.CONTACT_EMAIL, s.FAX_NUMBER, s.CONTACT_ADDRESS, s.BANK_NAME, s.BANK_ACCOUNT, s.CREDIT_LEVEL,
+                 s.CREDIT_LIMIT, s.PAYMENT_METHOD, s.PAYMENT_TERMS, s.REMARKS, s.CREATE_TIME, s.CREATE_BY
+        ORDER BY s.CREATE_TIME DESC
+    </select>
+
+    <select id="selectDetailById" resultMap="BaseResultMap">
+        SELECT
+            s.SUPPLIER_ID, s.SUPPLIER_CODE, s.SUPPLIER_NAME, s.SUPPLIER_CATEGORY, s.SUPPLIER_STATUS,
+            s.CREDIT_CODE, s.LEGAL_REPRESENTATIVE, s.REGISTERED_ADDRESS, s.CONTACT_PERSON, s.CONTACT_PHONE,
+            s.CONTACT_EMAIL, s.FAX_NUMBER, s.CONTACT_ADDRESS, s.BANK_NAME, s.BANK_ACCOUNT, s.CREDIT_LEVEL,
+            s.CREDIT_LIMIT, s.PAYMENT_METHOD, s.PAYMENT_TERMS, s.REMARKS, s.CREATE_TIME, s.CREATE_BY,
+            CASE s.SUPPLIER_CATEGORY
+                WHEN 1 THEN '原材料供应商'
+                WHEN 2 THEN '设备供应商'
+                WHEN 3 THEN '服务供应商'
+                WHEN 4 THEN '其他供应商'
+                ELSE '未知分类'
+            END AS SUPPLIER_CATEGORY_NAME,
+            CASE s.SUPPLIER_STATUS
+                WHEN 1 THEN '正常'
+                WHEN 2 THEN '暂停'
+                WHEN 3 THEN '黑名单'
+                ELSE '未知状态'
+            END AS SUPPLIER_STATUS_NAME,
+            CASE s.PAYMENT_METHOD
+                WHEN 1 THEN '现金'
+                WHEN 2 THEN '银行转账'
+                WHEN 3 THEN '支票'
+                WHEN 4 THEN '承兑汇票'
+                ELSE '未知方式'
+            END AS PAYMENT_METHOD_NAME
+        FROM TBL_SUPPLIER s
+        WHERE s.SUPPLIER_ID = #{supplierId} AND s.IS_DELETED = 0
+    </select>
+
+    <select id="selectByCode" resultType="com.financial.sharing.oracle.entity.TblSupplier">
+        SELECT * FROM TBL_SUPPLIER
+        WHERE SUPPLIER_CODE = #{supplierCode} AND IS_DELETED = 0
+    </select>
+
+    <select id="selectById" resultType="com.financial.sharing.oracle.entity.TblSupplier">
+        SELECT * FROM TBL_SUPPLIER
+        WHERE SUPPLIER_ID = #{supplierId} AND IS_DELETED = 0
+    </select>
+
+    <select id="selectAllEnabled" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_SUPPLIER
+        WHERE IS_DELETED = 0 AND SUPPLIER_STATUS = 1
+        ORDER BY SUPPLIER_CODE ASC
+    </select>
+
+    <select id="selectDropdownList" resultMap="BaseResultMap">
+        SELECT SUPPLIER_ID, SUPPLIER_CODE, SUPPLIER_NAME
+        FROM TBL_SUPPLIER
+        WHERE IS_DELETED = 0 AND SUPPLIER_STATUS = 1
+        <if test="keyword != null and keyword != ''">
+            AND (SUPPLIER_CODE LIKE '%' || #{keyword} || '%'
+                 OR SUPPLIER_NAME LIKE '%' || #{keyword} || '%')
+        </if>
+        ORDER BY SUPPLIER_CODE ASC
+        FETCH FIRST 50 ROWS ONLY
+    </select>
+
+    <!-- 插入供应商 -->
+    <insert id="insertSupplier" parameterType="com.financial.sharing.oracle.entity.TblSupplier">
+        INSERT INTO TBL_SUPPLIER (
+            SUPPLIER_ID, SUPPLIER_CODE, SUPPLIER_NAME, SUPPLIER_CATEGORY, SUPPLIER_STATUS,
+            CREDIT_CODE, LEGAL_REPRESENTATIVE, REGISTERED_ADDRESS,
+            CONTACT_PERSON, CONTACT_PHONE, CONTACT_EMAIL, FAX_NUMBER, CONTACT_ADDRESS,
+            BANK_NAME, BANK_ACCOUNT, CREDIT_LEVEL, CREDIT_LIMIT,
+            PAYMENT_METHOD, PAYMENT_TERMS, REMARKS,
+            CREATE_TIME, CREATE_BY, TENANT_ID, IS_DELETED
+        ) VALUES (
+            #{supplierId}, #{supplierCode}, #{supplierName}, #{supplierCategory}, #{supplierStatus},
+            #{creditCode}, #{legalRepresentative}, #{registeredAddress},
+            #{contactPerson}, #{contactPhone}, #{contactEmail}, #{faxNumber}, #{contactAddress},
+            #{bankName}, #{bankAccount}, #{creditLevel}, #{creditLimit},
+            #{paymentMethod}, #{paymentTerms}, #{remarks},
+            #{createTime}, #{createBy}, #{tenantId}, #{isDeleted}
+        )
+    </insert>
+
+    <!-- 动态更新供应商 -->
+    <update id="updateSupplier" parameterType="com.financial.sharing.oracle.entity.TblSupplier">
+        UPDATE TBL_SUPPLIER
+        <set>
+            <if test="supplierCode != null">SUPPLIER_CODE = #{supplierCode},</if>
+            <if test="supplierName != null">SUPPLIER_NAME = #{supplierName},</if>
+            <if test="supplierCategory != null">SUPPLIER_CATEGORY = #{supplierCategory},</if>
+            <if test="supplierStatus != null">SUPPLIER_STATUS = #{supplierStatus},</if>
+            <if test="creditCode != null">CREDIT_CODE = #{creditCode},</if>
+            <if test="legalRepresentative != null">LEGAL_REPRESENTATIVE = #{legalRepresentative},</if>
+            <if test="registeredAddress != null">REGISTERED_ADDRESS = #{registeredAddress},</if>
+            <if test="contactPerson != null">CONTACT_PERSON = #{contactPerson},</if>
+            <if test="contactPhone != null">CONTACT_PHONE = #{contactPhone},</if>
+            <if test="contactEmail != null">CONTACT_EMAIL = #{contactEmail},</if>
+            <if test="faxNumber != null">FAX_NUMBER = #{faxNumber},</if>
+            <if test="contactAddress != null">CONTACT_ADDRESS = #{contactAddress},</if>
+            <if test="bankName != null">BANK_NAME = #{bankName},</if>
+            <if test="bankAccount != null">BANK_ACCOUNT = #{bankAccount},</if>
+            <if test="creditLevel != null">CREDIT_LEVEL = #{creditLevel},</if>
+            <if test="creditLimit != null">CREDIT_LIMIT = #{creditLimit},</if>
+            <if test="paymentMethod != null">PAYMENT_METHOD = #{paymentMethod},</if>
+            <if test="paymentTerms != null">PAYMENT_TERMS = #{paymentTerms},</if>
+            <if test="remarks != null">REMARKS = #{remarks},</if>
+            <if test="updateTime != null">UPDATE_TIME = #{updateTime},</if>
+            <if test="updateBy != null">UPDATE_BY = #{updateBy}</if>
+        </set>
+        WHERE SUPPLIER_ID = #{supplierId} AND IS_DELETED = 0
+    </update>
+</mapper>
+

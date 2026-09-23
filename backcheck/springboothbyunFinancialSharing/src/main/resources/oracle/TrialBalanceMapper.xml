@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.oracle.mapper.TrialBalanceMapper">
+
+    <!-- 基础查询列 -->
+    <sql id="Base_Column_List">
+        s.SUBJECT_ID, s.SUBJECT_CODE, s.SUBJECT_NAME, s.SUBJECT_TYPE,
+        s.BALANCE_DIRECTION, s.IS_ENABLED, s.CREATE_TIME, s.UPDATE_TIME
+    </sql>
+
+    <!-- 获取科目余额列表 -->
+    <!--
+        表结构说明：
+        - T_ACCOUNT_SUBJECT: 会计科目表，通过 SUBJECT_CODE 关联余额表
+        - T_VOUCHER_ENTRY: 凭证分录表，通过 VOUCHER_ID 关联凭证主表获取期间和状态
+        - T_ACCOUNTING_VOUCHER: 凭证主表，包含 ACCOUNTING_PERIOD 和 VOUCHER_STATUS
+        - TBL_SUBJECT_BALANCE: 科目余额表，通过 SUBJECT_CODE 关联，字段：BEGINNING_BALANCE(期初余额)
+
+        注意：TBL_SUBJECT_BALANCE 没有 SUBJECT_ID 字段，需要通过 SUBJECT_CODE 关联
+        凭证状态：0草稿 1已生成 2已过账 3已取消
+    -->
+    <select id="getSubjectBalances" resultType="com.financial.sharing.vo.result.TrialBalanceResult$SubjectBalance">
+        SELECT
+            s.SUBJECT_ID as subjectId,
+            s.SUBJECT_CODE as subjectCode,
+            s.SUBJECT_NAME as subjectName,
+            s.SUBJECT_TYPE as subjectType,
+            s.BALANCE_DIRECTION as balanceDirection,
+            NVL(sb.BEGINNING_BALANCE, 0) as openingBalance,
+            NVL(SUM(CASE WHEN v.VOUCHER_STATUS = 2 OR #{param.includeUnposted} = 1
+                THEN ve.DEBIT_AMOUNT ELSE 0 END), 0) as debitAmount,
+            NVL(SUM(CASE WHEN v.VOUCHER_STATUS = 2 OR #{param.includeUnposted} = 1
+                THEN ve.CREDIT_AMOUNT ELSE 0 END), 0) as creditAmount,
+            (NVL(sb.BEGINNING_BALANCE, 0) +
+             NVL(SUM(CASE WHEN v.VOUCHER_STATUS = 2 OR #{param.includeUnposted} = 1
+                THEN ve.DEBIT_AMOUNT ELSE 0 END), 0) -
+             NVL(SUM(CASE WHEN v.VOUCHER_STATUS = 2 OR #{param.includeUnposted} = 1
+                THEN ve.CREDIT_AMOUNT ELSE 0 END), 0)) as closingBalance,
+            <![CDATA[
+            CASE
+                WHEN s.BALANCE_DIRECTION = 1 AND (NVL(sb.BEGINNING_BALANCE, 0) +
+                 NVL(SUM(CASE WHEN v.VOUCHER_STATUS = 2 OR #{param.includeUnposted} = 1
+                    THEN ve.DEBIT_AMOUNT ELSE 0 END), 0) -
+                 NVL(SUM(CASE WHEN v.VOUCHER_STATUS = 2 OR #{param.includeUnposted} = 1
+                    THEN ve.CREDIT_AMOUNT ELSE 0 END), 0)) >= 0 THEN 1
+                WHEN s.BALANCE_DIRECTION = 2 AND (NVL(sb.BEGINNING_BALANCE, 0) +
+                 NVL(SUM(CASE WHEN v.VOUCHER_STATUS = 2 OR #{param.includeUnposted} = 1
+                    THEN ve.DEBIT_AMOUNT ELSE 0 END), 0) -
+                 NVL(SUM(CASE WHEN v.VOUCHER_STATUS = 2 OR #{param.includeUnposted} = 1
+                    THEN ve.CREDIT_AMOUNT ELSE 0 END), 0)) <= 0 THEN 1
+                ELSE 0
+            END as isNormal
+            ]]>
+        FROM T_ACCOUNT_SUBJECT s
+        LEFT JOIN T_VOUCHER_ENTRY ve ON s.SUBJECT_ID = ve.SUBJECT_ID
+            AND ve.IS_DELETED = 0
+        LEFT JOIN T_ACCOUNTING_VOUCHER v ON ve.VOUCHER_ID = v.VOUCHER_ID
+            AND v.ACCOUNTING_PERIOD = #{param.accountingPeriod}
+            AND v.IS_DELETED = 0
+            AND (#{param.includeUnposted} = 1 OR v.VOUCHER_STATUS = 2)
+        LEFT JOIN TBL_SUBJECT_BALANCE sb ON s.SUBJECT_CODE = sb.SUBJECT_CODE
+            AND sb.ACCOUNTING_PERIOD = #{param.accountingPeriod}
+            AND sb.BOOK_ID = CAST(#{param.bookId} AS VARCHAR(64))
+            AND sb.TENANT_ID = CAST(#{param.tenantId} AS VARCHAR(64))
+        WHERE s.BOOK_ID = #{param.bookId}
+        AND s.TENANT_ID = #{param.tenantId}
+        AND s.IS_ENABLED = 1
+        AND s.IS_DELETED = 0
+        <if test="param.subjectType != null and param.subjectType != 0">
+            AND s.SUBJECT_TYPE = #{param.subjectType}
+        </if>
+        <if test="param.subjectIds != null and param.subjectIds.size() > 0">
+            AND s.SUBJECT_ID IN
+            <foreach collection="param.subjectIds" item="subjectId" open="(" separator="," close=")">
+                #{subjectId}
+            </foreach>
+        </if>
+        <if test="param.excludeSubjectIds != null and param.excludeSubjectIds.size() > 0">
+            AND s.SUBJECT_ID NOT IN
+            <foreach collection="param.excludeSubjectIds" item="subjectId" open="(" separator="," close=")">
+                #{subjectId}
+            </foreach>
+        </if>
+        GROUP BY s.SUBJECT_ID, s.SUBJECT_CODE, s.SUBJECT_NAME, s.SUBJECT_TYPE,
+                 s.BALANCE_DIRECTION, sb.BEGINNING_BALANCE
+        <if test="param.includeZeroBalance == false">
+            HAVING ABS(NVL(sb.BEGINNING_BALANCE, 0) +
+                   NVL(SUM(CASE WHEN v.VOUCHER_STATUS = 2 OR #{param.includeUnposted} = 1
+                      THEN ve.DEBIT_AMOUNT ELSE 0 END), 0) -
+                   NVL(SUM(CASE WHEN v.VOUCHER_STATUS = 2 OR #{param.includeUnposted} = 1
+                      THEN ve.CREDIT_AMOUNT ELSE 0 END), 0)) > 0.01
+        </if>
+        ORDER BY s.SUBJECT_CODE
+    </select>
+
+    <!-- 获取指定科目的余额信息 -->
+    <select id="getSubjectBalance" resultType="com.financial.sharing.vo.result.TrialBalanceResult$SubjectBalance">
+        SELECT
+            s.SUBJECT_ID as subjectId,
+            s.SUBJECT_CODE as subjectCode,
+            s.SUBJECT_NAME as subjectName,
+            s.SUBJECT_TYPE as subjectType,
+            s.BALANCE_DIRECTION as balanceDirection,
+            NVL(sb.BEGINNING_BALANCE, 0) as openingBalance,
+            NVL(SUM(ve.DEBIT_AMOUNT), 0) as debitAmount,
+            NVL(SUM(ve.CREDIT_AMOUNT), 0) as creditAmount,
+            (NVL(sb.BEGINNING_BALANCE, 0) +
+             NVL(SUM(ve.DEBIT_AMOUNT), 0) -
+             NVL(SUM(ve.CREDIT_AMOUNT), 0)) as closingBalance
+        FROM T_ACCOUNT_SUBJECT s
+        LEFT JOIN T_VOUCHER_ENTRY ve ON s.SUBJECT_ID = ve.SUBJECT_ID
+            AND ve.IS_DELETED = 0
+        LEFT JOIN T_ACCOUNTING_VOUCHER v ON ve.VOUCHER_ID = v.VOUCHER_ID
+            AND v.ACCOUNTING_PERIOD = #{accountingPeriod}
+            AND v.IS_DELETED = 0
+        LEFT JOIN TBL_SUBJECT_BALANCE sb ON s.SUBJECT_CODE = sb.SUBJECT_CODE
+            AND sb.ACCOUNTING_PERIOD = #{accountingPeriod}
+            AND sb.BOOK_ID = CAST(#{bookId} AS VARCHAR(64))
+        WHERE s.SUBJECT_ID = #{subjectId}
+        AND s.BOOK_ID = #{bookId}
+        AND s.IS_ENABLED = 1
+        AND s.IS_DELETED = 0
+        GROUP BY s.SUBJECT_ID, s.SUBJECT_CODE, s.SUBJECT_NAME, s.SUBJECT_TYPE,
+                 s.BALANCE_DIRECTION, sb.BEGINNING_BALANCE
+    </select>
+
+    <!-- 计算借方合计 -->
+    <!-- T_VOUCHER_ENTRY 没有 ACCOUNTING_PERIOD 和 VOUCHER_STATUS，需要关联 T_ACCOUNTING_VOUCHER -->
+    <select id="calculateTotalDebit" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(ve.DEBIT_AMOUNT), 0)
+        FROM T_VOUCHER_ENTRY ve
+        INNER JOIN T_ACCOUNTING_VOUCHER v ON ve.VOUCHER_ID = v.VOUCHER_ID
+            AND v.ACCOUNTING_PERIOD = #{param.accountingPeriod}
+            AND v.IS_DELETED = 0
+            AND (#{param.includeUnposted} = 1 OR v.VOUCHER_STATUS = 2)
+        WHERE ve.IS_DELETED = 0
+        <if test="param.subjectIds != null and param.subjectIds.size() > 0">
+            AND ve.SUBJECT_ID IN
+            <foreach collection="param.subjectIds" item="subjectId" open="(" separator="," close=")">
+                #{subjectId}
+            </foreach>
+        </if>
+    </select>
+
+    <!-- 计算贷方合计 -->
+    <select id="calculateTotalCredit" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(ve.CREDIT_AMOUNT), 0)
+        FROM T_VOUCHER_ENTRY ve
+        INNER JOIN T_ACCOUNTING_VOUCHER v ON ve.VOUCHER_ID = v.VOUCHER_ID
+            AND v.ACCOUNTING_PERIOD = #{param.accountingPeriod}
+            AND v.IS_DELETED = 0
+            AND (#{param.includeUnposted} = 1 OR v.VOUCHER_STATUS = 2)
+        WHERE ve.IS_DELETED = 0
+        <if test="param.subjectIds != null and param.subjectIds.size() > 0">
+            AND ve.SUBJECT_ID IN
+            <foreach collection="param.subjectIds" item="subjectId" open="(" separator="," close=")">
+                #{subjectId}
+            </foreach>
+        </if>
+    </select>
+
+    <!-- 获取期间内所有凭证的借贷发生额 -->
+    <!-- T_VOUCHER_ENTRY 没有 ACCOUNTING_PERIOD，需要关联 T_ACCOUNTING_VOUCHER -->
+    <select id="getVoucherAmountsByPeriod" resultType="java.util.Map">
+        SELECT
+            ve.SUBJECT_ID as subjectId,
+            SUM(ve.DEBIT_AMOUNT) as totalDebit,
+            SUM(ve.CREDIT_AMOUNT) as totalCredit
+        FROM T_VOUCHER_ENTRY ve
+        INNER JOIN T_ACCOUNTING_VOUCHER v ON ve.VOUCHER_ID = v.VOUCHER_ID
+            AND v.ACCOUNTING_PERIOD = #{accountingPeriod}
+            AND v.BOOK_ID = #{bookId}
+            AND v.IS_DELETED = 0
+        WHERE ve.IS_DELETED = 0
+        GROUP BY ve.SUBJECT_ID
+        ORDER BY ve.SUBJECT_ID
+    </select>
+
+    <!-- 获取科目期初余额 -->
+    <select id="getOpeningBalances" resultType="com.financial.sharing.vo.result.TrialBalanceResult$SubjectBalance">
+        SELECT
+            s.SUBJECT_ID as subjectId,
+            s.SUBJECT_CODE as subjectCode,
+            s.SUBJECT_NAME as subjectName,
+            s.SUBJECT_TYPE as subjectType,
+            s.BALANCE_DIRECTION as balanceDirection,
+            NVL(sb.OPENING_BALANCE, 0) as openingBalance,
+            0 as debitAmount,
+            0 as creditAmount,
+            NVL(sb.OPENING_BALANCE, 0) as closingBalance
+        FROM T_ACCOUNT_SUBJECT s
+        LEFT JOIN TBL_SUBJECT_BALANCE sb ON s.SUBJECT_ID = sb.SUBJECT_ID
+            AND sb.ACCOUNTING_PERIOD = #{accountingPeriod}
+            AND sb.BOOK_ID = #{bookId}
+            AND sb.TENANT_ID = #{param.tenantId}
+            AND sb.IS_DELETED = 0
+        WHERE s.BOOK_ID = #{bookId}
+        AND s.TENANT_ID = #{param.tenantId}
+        AND s.IS_ENABLED = 1
+        AND s.IS_DELETED = 0
+        <if test="subjectIds != null and subjectIds.size() > 0">
+            AND s.SUBJECT_ID IN
+            <foreach collection="subjectIds" item="subjectId" open="(" separator="," close=")">
+                #{subjectId}
+            </foreach>
+        </if>
+        ORDER BY s.SUBJECT_CODE
+    </select>
+
+    <!-- 获取科目本期发生额 -->
+    <select id="getPeriodAmounts" resultType="com.financial.sharing.vo.result.TrialBalanceResult$SubjectBalance">
+        SELECT
+            s.SUBJECT_ID as subjectId,
+            s.SUBJECT_CODE as subjectCode,
+            s.SUBJECT_NAME as subjectName,
+            s.SUBJECT_TYPE as subjectType,
+            s.BALANCE_DIRECTION as balanceDirection,
+            0 as openingBalance,
+            NVL(SUM(ve.DEBIT_AMOUNT), 0) as debitAmount,
+            NVL(SUM(ve.CREDIT_AMOUNT), 0) as creditAmount,
+            (NVL(SUM(ve.DEBIT_AMOUNT), 0) - NVL(SUM(ve.CREDIT_AMOUNT), 0)) as closingBalance
+        FROM T_ACCOUNT_SUBJECT s
+        LEFT JOIN T_VOUCHER_ENTRY ve ON s.SUBJECT_ID = ve.SUBJECT_ID
+            AND ve.ACCOUNTING_PERIOD = #{accountingPeriod}
+            AND ve.BOOK_ID = #{bookId}
+            AND ve.TENANT_ID = #{param.tenantId}
+            AND (#{includeUnposted} = 1 OR ve.VOUCHER_STATUS = 'POSTED')
+            AND ve.IS_DELETED = 0
+        WHERE s.BOOK_ID = #{bookId}
+        AND s.TENANT_ID = #{param.tenantId}
+        AND s.IS_ENABLED = 1
+        AND s.IS_DELETED = 0
+        <if test="subjectIds != null and subjectIds.size() > 0">
+            AND s.SUBJECT_ID IN
+            <foreach collection="subjectIds" item="subjectId" open="(" separator="," close=")">
+                #{subjectId}
+            </foreach>
+        </if>
+        GROUP BY s.SUBJECT_ID, s.SUBJECT_CODE, s.SUBJECT_NAME, s.SUBJECT_TYPE, s.BALANCE_DIRECTION
+        HAVING NVL(SUM(ve.DEBIT_AMOUNT), 0) > 0 OR NVL(SUM(ve.CREDIT_AMOUNT), 0) > 0
+        ORDER BY s.SUBJECT_CODE
+    </select>
+
+    <!-- 检查科目是否存在余额方向错误 -->
+    <select id="checkBalanceDirectionErrors" resultType="com.financial.sharing.vo.result.TrialBalanceResult$BalanceError">
+        SELECT
+            s.SUBJECT_ID as subjectId,
+            s.SUBJECT_CODE as subjectCode,
+            s.SUBJECT_NAME as subjectName,
+            'DIRECTION_ERROR' as errorType,
+            'WARN' as errorLevel,
+            '科目余额方向可能异常' as description,
+            '请检查科目余额计算是否正确' as suggestion,
+            0 as errorAmount
+        FROM T_ACCOUNT_SUBJECT s
+        WHERE s.BOOK_ID = #{bookId}
+        AND s.TENANT_ID = #{tenantId}
+        AND s.IS_ENABLED = 1
+        AND s.IS_DELETED = 0
+        AND s.SUBJECT_TYPE IN (1, 5) -- 资产和费用类
+        AND EXISTS (
+            SELECT 1 FROM T_VOUCHER_ENTRY ve
+            WHERE ve.SUBJECT_ID = s.SUBJECT_ID
+            AND ve.ACCOUNTING_PERIOD = #{accountingPeriod}
+            AND ve.BOOK_ID = #{bookId}
+            AND ve.TENANT_ID = #{tenantId}
+            AND ve.IS_DELETED = 0
+        )
+    </select>
+
+    <!-- 获取科目累计发生额 -->
+    <select id="getAccumulatedAmounts" resultType="com.financial.sharing.vo.result.TrialBalanceResult$SubjectBalance">
+        SELECT
+            s.SUBJECT_ID as subjectId,
+            s.SUBJECT_CODE as subjectCode,
+            s.SUBJECT_NAME as subjectName,
+            s.SUBJECT_TYPE as subjectType,
+            s.BALANCE_DIRECTION as balanceDirection,
+            0 as openingBalance,
+            NVL(SUM(ve.DEBIT_AMOUNT), 0) as debitAmount,
+            NVL(SUM(ve.CREDIT_AMOUNT), 0) as creditAmount,
+            (NVL(SUM(ve.DEBIT_AMOUNT), 0) - NVL(SUM(ve.CREDIT_AMOUNT), 0)) as closingBalance
+        FROM T_ACCOUNT_SUBJECT s
+        LEFT JOIN T_VOUCHER_ENTRY ve ON s.SUBJECT_ID = ve.SUBJECT_ID
+            <![CDATA[AND ve.ACCOUNTING_PERIOD <= #{endPeriod}]]>
+            AND ve.BOOK_ID = #{bookId}
+            AND ve.TENANT_ID = #{param.tenantId}
+            AND ve.IS_DELETED = 0
+        WHERE s.BOOK_ID = #{bookId}
+        AND s.TENANT_ID = #{param.tenantId}
+        AND s.IS_ENABLED = 1
+        AND s.IS_DELETED = 0
+        <if test="subjectIds != null and subjectIds.size() > 0">
+            AND s.SUBJECT_ID IN
+            <foreach collection="subjectIds" item="subjectId" open="(" separator="," close=")">
+                #{subjectId}
+            </foreach>
+        </if>
+        GROUP BY s.SUBJECT_ID, s.SUBJECT_CODE, s.SUBJECT_NAME, s.SUBJECT_TYPE, s.BALANCE_DIRECTION
+        ORDER BY s.SUBJECT_CODE
+    </select>
+
+    <!-- 检查期间是否连续 -->
+    <select id="checkPeriodContinuity" resultType="java.lang.Integer">
+        SELECT COUNT(DISTINCT ve.ACCOUNTING_PERIOD) as periodCount
+        FROM T_VOUCHER_ENTRY ve
+        WHERE ve.BOOK_ID = #{bookId}
+        AND ve.ACCOUNTING_PERIOD BETWEEN #{startPeriod} AND #{endPeriod}
+        AND ve.IS_DELETED = 0
+    </select>
+
+    <!-- 获取试算平衡历史记录 -->
+    <select id="getTrialBalanceHistory" resultType="com.financial.sharing.vo.result.TrialBalanceResult">
+        SELECT
+            TASK_ID as taskId,
+            ACCOUNTING_PERIOD as accountingPeriod,
+            BOOK_ID as bookId,
+            CREATE_TIME as trialTime,
+            IS_BALANCED as isBalanced,
+            TOTAL_DEBIT as totalDebit,
+            TOTAL_CREDIT as totalCredit,
+            DIFFERENCE as difference
+        FROM TBL_TRIAL_BALANCE_HISTORY
+        WHERE BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+        <if test="period != null and period != ''">
+            AND ACCOUNTING_PERIOD = #{period}
+        </if>
+        ORDER BY CREATE_TIME DESC
+        <if test="limit != null and limit > 0">
+            <![CDATA[
+            AND ROWNUM <= #{limit}
+            ]]>
+        </if>
+    </select>
+
+    <!-- 保存试算平衡结果 -->
+    <insert id="saveTrialBalanceResult">
+        INSERT INTO TBL_TRIAL_BALANCE_HISTORY (
+            TASK_ID, ACCOUNTING_PERIOD, BOOK_ID, TENANT_ID,
+            TOTAL_DEBIT, TOTAL_CREDIT, DIFFERENCE, IS_BALANCED,
+            CREATE_TIME, CREATOR
+        ) VALUES (
+            #{result.taskId}, #{result.accountingPeriod}, #{result.bookId}, #{result.tenantId},
+            #{result.totalDebit}, #{result.totalCredit}, #{result.difference}, #{result.isBalanced},
+            SYSDATE, 1
+        )
+    </insert>
+
+    <!-- 删除试算平衡记录 -->
+    <delete id="deleteTrialBalance">
+        DELETE FROM TBL_TRIAL_BALANCE_HISTORY
+        WHERE TASK_ID = #{taskId}
+    </delete>
+
+    <!-- 获取可用的会计期间 -->
+    <select id="getAvailablePeriods" resultType="java.lang.String">
+        SELECT DISTINCT ACCOUNTING_PERIOD
+        FROM T_VOUCHER_ENTRY
+        WHERE BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+        AND IS_DELETED = 0
+        AND ACCOUNTING_PERIOD IS NOT NULL
+        ORDER BY ACCOUNTING_PERIOD DESC
+    </select>
+
+    <!-- 验证会计期间是否存在 -->
+    <select id="validateAccountingPeriod" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM T_VOUCHER_ENTRY
+        WHERE BOOK_ID = #{bookId}
+        AND ACCOUNTING_PERIOD = #{accountingPeriod}
+        AND IS_DELETED = 0
+    </select>
+
+</mapper>

@@ -544,7 +544,7 @@
   import Loading from '@/components/Loading.vue'
   import BlueprintDialog from '@/views/index/components/AI/BlueprintDialog.vue'
     import BusinessReviewDialog from '@/views/index/components/AI/BusinessReviewDialog.vue'
-  import { getOpenClawClient } from '@/api/ai/openclaw'
+  import { getWenxinClawClient } from '@/api/ai/wenxinclaw'
   import { createAIBridgeClient } from '@/api/ai/aiBridge'
   import { getAuthList } from '@/api/setting/auths'
   import { getModuleList } from '@/api/setting/system'
@@ -572,7 +572,7 @@
         stopLoading: true,
 
         // WebSocket 连接状态
-        openclawClient: null,
+        wenxinclawClient: null,
         isConnected: false,
         isConnecting: false,
 
@@ -663,7 +663,7 @@
         sanitize: false   // 不用 marked 内置清理，用 DOMPurify
       })
 
-      this.initOpenClaw()
+      this.initWenxinClaw()
       this.fetchModuleList()
       // 从后端加载历史记录列表
       this.loadHistoryFromBackend()
@@ -677,8 +677,8 @@
         this.saveDebounceTimer = null
       }
       // 组件销毁时断开连接
-      if (this.openclawClient) {
-        this.openclawClient.disconnect()
+      if (this.wenxinclawClient) {
+        this.wenxinclawClient.disconnect()
       }
       if (this.bridgeClient) {
         this.bridgeClient.disconnect()
@@ -686,13 +686,13 @@
     },
     methods: {
       /**
-       * 初始化 OpenClaw 客户端
+       * 初始化 WenxinClaw 客户端
        */
-      initOpenClaw() {
-        console.log('[AIProgramming] 初始化 OpenClaw 客户端')
+      initWenxinClaw() {
+        console.log('[AIProgramming] 初始化 WenxinClaw 客户端')
 
         // 创建客户端实例
-        this.openclawClient = getOpenClawClient({
+        this.wenxinclawClient = getWenxinClawClient({
           gatewayUrl: 'ws://127.0.0.1:8381',
           token: 'qwertyuiopasdfghjkl123',
           sessionKey: 'agent:main:main',
@@ -721,7 +721,7 @@
         this.eventHandlersRegistered = true
 
         // 连接成功
-        this.openclawClient.on('connected', () => {
+        this.wenxinclawClient.on('connected', () => {
           console.log('[AIProgramming] 连接成功')
           this.isConnected = true
           this.isConnecting = false
@@ -733,7 +733,7 @@
           this.currentMessageIndex = -1
 
           // 获取历史消息
-          this.openclawClient.getHistory(50).catch(err => {
+          this.wenxinclawClient.getHistory(50).catch(err => {
             console.error('[AIProgramming] 获取历史失败:', err)
           })
 
@@ -745,7 +745,7 @@
         })
 
         // 连接断开
-        this.openclawClient.on('disconnected', () => {
+        this.wenxinclawClient.on('disconnected', () => {
           console.log('[AIProgramming] 连接断开')
           this.isConnected = false
           this.isConnecting = false
@@ -765,7 +765,7 @@
         // 两者同时处理会导致文本重复累加
 
         // 消息完成
-        this.openclawClient.on('messageComplete', (payload) => {
+        this.wenxinclawClient.on('messageComplete', (payload) => {
           console.log('[AIProgramming] 消息完成:', payload)
 
           // 使用当前消息索引
@@ -835,7 +835,7 @@
         })
 
         // 聊天开始 — 仅在用户主动发送消息后才响应，防止 messageComplete 后延迟的 lifecycle start 误触发
-        this.openclawClient.on('chatStarted', (payload) => {
+        this.wenxinclawClient.on('chatStarted', (payload) => {
           if (!this.awaitingResponse) {
             console.log('[AIProgramming] 忽略非预期的 chatStarted 事件')
             return
@@ -849,7 +849,7 @@
         })
 
         // 聊天中止
-        this.openclawClient.on('chatAborted', (payload) => {
+        this.wenxinclawClient.on('chatAborted', (payload) => {
           console.log('[AIProgramming] 聊天中止:', payload)
           this.isLoading = false
           this.stopLoading = true
@@ -857,7 +857,7 @@
         })
 
         // 聊天错误（含限流）
-        this.openclawClient.on('chatError', (payload) => {
+        this.wenxinclawClient.on('chatError', (payload) => {
           console.error('[AIProgramming] 聊天错误:', payload)
           this.isLoading = false
           this.stopLoading = true
@@ -883,18 +883,18 @@
         })
 
         // 输入状态
-        this.openclawClient.on('typing', (isTyping) => {
+        this.wenxinclawClient.on('typing', (isTyping) => {
           console.log('[AIProgramming] 输入状态', isTyping)
         })
 
         // 错误
-        this.openclawClient.on('error', (error) => {
+        this.wenxinclawClient.on('error', (error) => {
           console.error('[AIProgramming] 错误:', error)
           this.$message.error('连接错误: ' + (error.message || '未知错误'))
         })
 
         // 历史消息 — 页面刷新后从网关恢复对话
-        this.openclawClient.on('history', (dialogue) => {
+        this.wenxinclawClient.on('history', (dialogue) => {
           console.log('[AIProgramming] 历史消息:', Array.isArray(dialogue) ? dialogue.length : typeof dialogue, '条')
           if (!Array.isArray(dialogue) || dialogue.length === 0) return
 
@@ -912,12 +912,12 @@
         })
 
         // 工具使用事件 — 实时显示当前正在执行的操作
-        this.openclawClient.on('agentToolEvent', (payload) => {
+        this.wenxinclawClient.on('agentToolEvent', (payload) => {
           this.handleToolEvent(payload)
         })
 
         // Agent 流式文本事件 — 实时渲染 AI 回复（主要的流式通道）
-        this.openclawClient.on('agentAssistantEvent', (payload) => {
+        this.wenxinclawClient.on('agentAssistantEvent', (payload) => {
           if (!payload || !payload.data) return
 
           const text = payload.data.text || ''
@@ -936,7 +936,7 @@
         this.isConnecting = true
         try {
           console.log('[AIProgramming] 开始连接到 Gateway...')
-          await this.openclawClient.connect()
+          await this.wenxinclawClient.connect()
           console.log('[AIProgramming] Gateway 连接成功')
         } catch (error) {
           console.error('[AIProgramming] 连接失败:', error)
@@ -951,19 +951,19 @@
       reconnect() {
         console.log('[AIProgramming] 手动重连')
         // 断开现有连接
-        if (this.openclawClient) {
-          this.openclawClient.disconnect()
+        if (this.wenxinclawClient) {
+          this.wenxinclawClient.disconnect()
         }
 
         // 重置事件监听器注册标志
         this.eventHandlersRegistered = false
         // 清除事件监听器
-        if (this.openclawClient) {
-          this.openclawClient.eventHandlers = {}
+        if (this.wenxinclawClient) {
+          this.wenxinclawClient.eventHandlers = {}
         }
 
         // 重新创建客户端并连接
-        this.openclawClient = new (require('@/api/ai/openclaw').OpenClawClient)({
+        this.wenxinclawClient = new (require('@/api/ai/wenxinclaw').WenxinClawClient)({
           gatewayUrl: 'ws://127.0.0.1:8381',
           token: 'qwertyuiopasdfghjkl123',
           sessionKey: 'agent:main:main',
@@ -1022,7 +1022,7 @@
           return
         }
 
-        // OpenClaw 模式
+        // WenxinClaw 模式
         try {
           // 保存当前选中页面快照，用于回复完成后渲染跳转卡片
           const pages = Array.isArray(this.selectedPages) ? this.selectedPages : []
@@ -1056,7 +1056,7 @@
           this.$nextTick(() => this.scrollToBottom())
 
           // 发送消息到 Gateway
-          this.openclawClient.sendMessage(userMessage)
+          this.wenxinclawClient.sendMessage(userMessage)
         } catch (error) {
           console.error('[AIProgramming] 发送流程出错:', error)
           this.$message.error('发送失败: ' + (error.message || error))
@@ -1233,7 +1233,7 @@
 
         // 从更多可能的字段中提取工具名
         let toolName = data.name || data.toolName || data.tool || data.type || ''
-        // OpenClaw 的工具参数在 data.args 中
+        // WenxinClaw 的工具参数在 data.args 中
         const toolArgs = data.args || data.input || data.parameters || {}
 
         // start 阶段：显示新步骤；result 阶段：标记完成
@@ -1406,9 +1406,9 @@
        * 停止流式输出
        */
       stopStreaming() {
-        if (this.openclawClient && this.isLoading) {
+        if (this.wenxinclawClient && this.isLoading) {
           try {
-            this.openclawClient.abortChat()
+            this.wenxinclawClient.abortChat()
           } catch (error) {
             console.error('[AIProgramming] 中止失败:', error)
           }
@@ -2081,9 +2081,9 @@ ${this.templateBottomContent}`
       toggleBridgeMode() {
         this.useBridgeMode = !this.useBridgeMode
         if (this.useBridgeMode) {
-          // 断开 OpenClaw
-          if (this.openclawClient) {
-            this.openclawClient.disconnect()
+          // 断开 WenxinClaw
+          if (this.wenxinclawClient) {
+            this.wenxinclawClient.disconnect()
           }
           this.isConnected = false
           this.isConnecting = false
@@ -2097,9 +2097,9 @@ ${this.templateBottomContent}`
           }
           this.isConnected = false
           this.isConnecting = false
-          // 重连 OpenClaw
+          // 重连 WenxinClaw
           this.eventHandlersRegistered = false
-          this.initOpenClaw()
+          this.initWenxinClaw()
         }
       },
 

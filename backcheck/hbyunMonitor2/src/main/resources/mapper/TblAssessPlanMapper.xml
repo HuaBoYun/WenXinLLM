@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.monitor.mapper.TblAssessPlanMapper">
+	<select id="findList"
+		resultType="com.huabo.monitor.entity.TblAssessPlan">
+		SELECT * FROM TBL_ASSESS_PLAN p WHERE 1=1
+		<if test="queryParam.assessid!=null and queryParam.assessid!= ''">
+			AND ASSESSID LIKE
+			concat(concat('%',#{queryParam.assessid}),'%')
+		</if>
+		<if
+			test="queryParam.assessname!=null and queryParam.assessname!= ''">
+			AND ASSESSNAME LIKE
+			concat(concat('%',#{queryParam.assessname}),'%')
+		</if>
+		<if
+			test="queryParam.createstaffid!=null and queryParam.createstaffid!='' and queryParam.authorityType == 0 ">
+			AND ( CREATESTAFFID=#{queryParam.createstaffid} OR LEADERID
+			=#{queryParam.createstaffid} )
+		</if>
+		<if test="queryParam.status!=null ">
+			AND STATUS=#{queryParam.status}
+		</if>
+		<if test="queryParam.startdate != null">
+			and startdate &gt;=#{queryParam.startdate}
+		</if>
+		<if test="queryParam.startdates != null">
+			and startdate &lt;=#{queryParam.startdates}
+		</if>
+		<if test="queryParam.enddate != null">
+			and endDate &gt;=#{queryParam.enddate}
+		</if>
+		<if test="queryParam.enddates != null">
+			and endDate &lt;=#{queryParam.enddates}
+		</if>
+
+		<if test="sql!= null">
+			${sql}
+		</if>
+		ORDER BY ASSID DESC
+	</select>
+
+</mapper>

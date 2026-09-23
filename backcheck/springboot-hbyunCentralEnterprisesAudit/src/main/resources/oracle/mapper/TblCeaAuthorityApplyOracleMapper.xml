@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.central.enterprises.audit.oracle.mapper.TblCeaAuthorityApplyOracleMapper">
+  <resultMap id="BaseResultMap" type="com.huabo.central.enterprises.audit.oracle.entity.TblCeaAuthorityApplyOracle">
+    <!--@mbg.generated generated on Fri Oct 27 23:18:23 CST 2023.-->
+    <!--@Table REDACTED.TBL_CEA_AUTHORITY_APPLY-->
+    <id column="ID" jdbcType="INTEGER" property="id" />
+    <result column="APPLYID" jdbcType="INTEGER" property="applyId" />
+    <result column="APPLYWORKUNIT" jdbcType="INTEGER" property="applyWorkUnit" />
+    <result column="APPLYROLE" jdbcType="VARCHAR" property="applyRole" />
+    <result column="APPLYTIME" jdbcType="TIMESTAMP" property="applyTime" />
+    <result column="STATE" jdbcType="INTEGER" property="state" />
+    <result column="CREATOR" jdbcType="INTEGER" property="creator" />
+    <result column="WORKUNIT" jdbcType="INTEGER" property="workUnit" />
+    <result column="BELONGGROUP" jdbcType="INTEGER" property="belongGroup" />
+    <result column="CREATEDTIME" jdbcType="TIMESTAMP" property="createdTime" />
+    <result column="UPDATEDTIME" jdbcType="TIMESTAMP" property="updatedTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated generated on Fri Oct 27 23:18:23 CST 2023.-->
+    ID, APPLYID, APPLYWORKUNIT, APPLYROLE, APPLYTIME, "STATE", CREATOR, WORKUNIT, BELONGGROUP, 
+    CREATEDTIME, UPDATEDTIME
+  </sql>
+</mapper>

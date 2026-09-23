@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.TreasuryPartnerTypeMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TreasuryPartnerType">
+        <id column="PARTNERTYPEID" property="partnerTypeId" />
+        <result column="TYPECODE" property="typeCode" />
+        <result column="TYPENAME" property="typeName" />
+        <result column="DESCRIPTION" property="description" />
+        <result column="ISENABLED" property="isEnabled" />
+        <result column="ORGID" property="orgId" />
+        <result column="CREATETIME" property="createTime" />
+        <result column="CREATEUSER" property="createUser" />
+        <result column="UPDATETIME" property="updateTime" />
+        <result column="UPDATEUSER" property="updateUser" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        PARTNERTYPEID, TYPECODE, TYPENAME, DESCRIPTION, ISENABLED, ORGID, 
+        CREATETIME, CREATEUSER, UPDATETIME, UPDATEUSER
+    </sql>
+
+    <!-- 分页查询业务伙伴类型列表 -->
+    <select id="selectPartnerTypePage" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_TREASURY_PARTNER_TYPES
+        <where>
+            <if test="orgId != null">
+                AND ORGID = #{orgId}
+            </if>
+            <if test="typeCode != null and typeCode != ''">
+                AND TYPECODE LIKE CONCAT('%', #{typeCode}, '%')
+            </if>
+            <if test="typeName != null and typeName != ''">
+                AND TYPENAME LIKE CONCAT('%', #{typeName}, '%')
+            </if>
+            <if test="isEnabled != null">
+                AND ISENABLED = #{isEnabled}
+            </if>
+        </where>
+        ORDER BY CREATETIME DESC
+    </select>
+
+    <!-- 根据类型编码和组织ID查询业务伙伴类型 -->
+    <select id="selectByCodeAndOrg" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_TREASURY_PARTNER_TYPES
+        WHERE TYPECODE = #{typeCode} AND ORGID = #{orgId}
+    </select>
+
+    <!-- 查询所有启用的业务伙伴类型 -->
+    <select id="selectEnabledTypes" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_TREASURY_PARTNER_TYPES
+        WHERE ORGID = #{orgId} AND ISENABLED = 1
+        ORDER BY TYPECODE
+    </select>
+
+    <!-- 检查类型编码是否存在 -->
+    <select id="checkTypeCodeExists" resultType="int">
+        SELECT COUNT(1)
+        FROM TBL_TREASURY_PARTNER_TYPES
+        WHERE TYPECODE = #{typeCode} AND ORGID = #{orgId}
+        <if test="excludeId != null">
+            AND PARTNERTYPEID != #{excludeId}
+        </if>
+    </select>
+
+</mapper>

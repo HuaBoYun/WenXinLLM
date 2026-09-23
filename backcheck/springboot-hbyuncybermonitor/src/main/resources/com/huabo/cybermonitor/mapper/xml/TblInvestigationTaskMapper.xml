@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.cybermonitor.mapper.TblInvestigationTaskMapper">
+
+    <select id="selectPageList" resultType="com.huabo.cybermonitor.entity.TblInvestigationTask">
+        SELECT * FROM TBL_INVESTIGATION_TASK
+        <where>
+            <if test="query.companyId != null and query.companyId != ''">AND COMPANY_ID = #{query.companyId}</if>
+            <if test="query.taskStatus != null and query.taskStatus != ''">AND TASK_STATUS = #{query.taskStatus}</if>
+            <if test="query.taskType != null and query.taskType != ''">AND TASK_TYPE = #{query.taskType}</if>
+            <if test="query.taskName != null and query.taskName != ''">AND TASK_NAME LIKE CONCAT('%', #{query.taskName}, '%')</if>
+        </where>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 核查任务进度统计 -->
+    <select id="selectTaskProgressStats" resultType="java.util.Map">
+        SELECT TASK_STATUS, COUNT(*) AS cnt,
+               SUM(CASE WHEN TASK_STATUS = 'COMPLETED' THEN 1 ELSE 0 END) AS completedCount,
+               SUM(CASE WHEN TASK_STATUS = 'OVERDUE' THEN 1 ELSE 0 END) AS overdueCount
+        FROM TBL_INVESTIGATION_TASK
+        <where><if test="companyId != null and companyId != ''">AND COMPANY_ID = #{companyId}</if></where>
+        GROUP BY TASK_STATUS
+    </select>
+
+</mapper>
+

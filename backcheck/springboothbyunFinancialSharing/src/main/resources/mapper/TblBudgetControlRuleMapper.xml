@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.mapper.TblBudgetControlRuleMapper">
+
+    <select id="selectByRuleCode" resultType="com.financial.sharing.entity.TblBudgetControlRule">
+        SELECT * FROM TBL_BUDGET_CONTROL_RULE WHERE RULE_CODE = #{ruleCode}
+    </select>
+
+    <select id="selectByControlType" resultType="com.financial.sharing.entity.TblBudgetControlRule">
+        SELECT * FROM TBL_BUDGET_CONTROL_RULE WHERE CONTROL_TYPE = #{controlType} ORDER BY CREATE_TIME DESC
+    </select>
+
+    <select id="selectByIsEnabled" resultType="com.financial.sharing.entity.TblBudgetControlRule">
+        SELECT * FROM TBL_BUDGET_CONTROL_RULE WHERE IS_ENABLED = #{isEnabled} ORDER BY CREATE_TIME DESC
+    </select>
+
+    <select id="selectEffectiveRules" resultType="com.financial.sharing.entity.TblBudgetControlRule">
+        SELECT * FROM TBL_BUDGET_CONTROL_RULE
+        WHERE IS_ENABLED = 1
+        AND EFFECTIVE_DATE <![CDATA[<=]]> #{currentDate}
+        AND (EXPIRY_DATE IS NULL OR EXPIRY_DATE <![CDATA[>]]> #{currentDate})
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+</mapper>

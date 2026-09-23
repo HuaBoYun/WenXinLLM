@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.fxgl.mapper.BugMapper">
+    <select id="selectPage1" resultType="Bug">
+        SELECT * FROM TBL_BUG bu LEFT JOIN TBL_BUG_CRITERION cir on BU.BUGID=CIR.BUGID
+        WHERE 1=1 and BUGDEPARTMENT=#{orgid}
+        AND ${ew.sqlSegment}
+    </select>
+    <select id="selectPage2" resultType="Bug">
+        SELECT * FROM TBL_BUG bu  JOIN TBL_BUG_CRITERION cir on BU.BUGID=CIR.BUGID
+        WHERE 1=1 and ( BUGDEPARTMENT in (select ORGID from TBL_ORGANIZATION where 1=1  and ORGTYPE=0
+        start with  fatherorgid=#{orgid} connect by prior fatherorgid=ORGID )  or BUGDEPARTMENT=#{orgid})
+        AND ${ew.sqlSegment}
+    </select>
+    <select id="qxglExport" resultType="hashmap">
+        SELECT BU.BUGNUMBER, c.BUGCRILEVEL, TO_CHAR(BU.DISCOVERTIME,'yyyy-MM-dd') as DISCOVERTIME, BU.DISCOVERPERSON, BU.BUGSOURCE, BU.BUGPROPERTY,
+               ( SELECT ORGNAME FROM TBL_ORGANIZATION org WHERE	1 = 1 AND ORGTYPE != 0 AND orgtype &lt; 100
+        START WITH ORGID = BU.BUGDEPARTMENT CONNECT BY PRIOR FATHERORGID = ORGID AND ROWNUM = 1) ORGS,
+            o.ORGNAME, BU.NEEDREFORM, BU.BUSINESSDESCRIPTION, bu.bugdescripte
+        FROM TBL_BUG bu
+            LEFT JOIN TBL_BUG_CRITERION cir on BU.BUGID=CIR.BUGID
+            left join TBL_BUGCRITERION c on cir.BUGCRIID = c.BUGCRIID
+            LEFT JOIN TBL_ORGANIZATION O ON BU.BUGDEPARTMENT = O.ORGID
+        WHERE (BUGDEPARTMENT in (select ORGID from TBL_ORGANIZATION where 1=1  and ORGTYPE=0 start with fatherorgid=#{orgid}
+            connect by prior fatherorgid=ORGID) or BUGDEPARTMENT=#{orgid}) and BU.BUGBYSYSTEM like #{type} ORDER BY BU.BUGID desc
+    </select>
+
+
+</mapper>

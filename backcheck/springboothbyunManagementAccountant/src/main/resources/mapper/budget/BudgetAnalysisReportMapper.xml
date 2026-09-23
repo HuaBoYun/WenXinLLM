@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.management.accountant.oracle.mapper.budget.BudgetAnalysisReportMapper">
+    <resultMap id="BaseResultMap" type="com.management.accountant.oracle.entity.budget.BudgetAnalysisReport">
+        <id     column="ID"                       property="id"/>
+        <result column="REPORT_CODE"              property="reportCode"/>
+        <result column="REPORT_NAME"              property="reportName"/>
+        <result column="REPORT_TYPE"              property="reportType"/>
+        <result column="BUDGET_YEAR"              property="budgetYear"/>
+        <result column="REPORT_PERIOD"            property="reportPeriod"/>
+        <result column="ORGANIZATION_ID"          property="organizationId"/>
+        <result column="ORGANIZATION_NAME"        property="organizationName"/>
+        <result column="REPORT_SUMMARY"           property="reportSummary"/>
+        <result column="REPORT_CONTENT"           property="reportContent"/>
+        <result column="KEY_FINDINGS"             property="keyFindings"/>
+        <result column="DATA_ANALYSIS"            property="dataAnalysis"/>
+        <result column="CHART_DATA"               property="chartData"/>
+        <result column="CONCLUSION_AND_SUGGESTION" property="conclusionAndSuggestion"/>
+        <result column="ATTACHMENT_PATH"          property="attachmentPath"/>
+        <result column="TEMPLATE_ID"              property="templateId"/>
+        <result column="TEMPLATE_NAME"            property="templateName"/>
+        <result column="REPORT_FORMAT"            property="reportFormat"/>
+        <result column="OUTPUT_FORMATS"           property="outputFormats"/>
+        <result column="REPORT_STATUS"            property="reportStatus"/>
+        <result column="GENERATE_PROGRESS"        property="generateProgress"/>
+        <result column="FILE_SIZE"                property="fileSize"/>
+        <result column="DOWNLOAD_COUNT"           property="downloadCount"/>
+        <result column="CREATOR"                  property="creator"/>
+        <result column="GENERATE_TIME"            property="generateTime"/>
+        <result column="PERIOD_START"             property="periodStart"/>
+        <result column="PERIOD_END"               property="periodEnd"/>
+        <result column="DESCRIPTION"              property="description"/>
+        <result column="GENERATED_BY"             property="generatedBy"/>
+        <result column="GENERATED_TIME"           property="generatedTime"/>
+        <result column="REVIEWED_BY"              property="reviewedBy"/>
+        <result column="REVIEWED_TIME"            property="reviewedTime"/>
+        <result column="PUBLISHED_BY"             property="publishedBy"/>
+        <result column="PUBLISHED_TIME"           property="publishedTime"/>
+        <result column="PREVIEW_URL"              property="previewUrl"/>
+        <result column="GENERATION_LOGS"          property="generationLogs"/>
+        <result column="REMARK"                   property="remark"/>
+        <result column="CREATE_BY"                property="createBy"/>
+        <result column="CREATE_TIME"              property="createTime"/>
+        <result column="UPDATE_BY"                property="updateBy"/>
+        <result column="UPDATE_TIME"              property="updateTime"/>
+        <result column="DEL_FLAG"                 property="delFlag"/>
+    </resultMap>
+
+    <update id="batchDelete">
+        UPDATE "REDACTED"."TBL_BUDGET_ANALYSIS_REPORT"
+        SET DEL_FLAG = 1, UPDATE_TIME = SYSDATE
+        WHERE ID IN <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+    </update>
+</mapper>
+

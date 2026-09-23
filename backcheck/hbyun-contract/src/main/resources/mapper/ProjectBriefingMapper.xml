@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.contract.mapper.ProjectBriefingMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.huabo.contract.entity.ProjectBriefing">
+        <id column="id" property="id" />
+        <result column="project_id" property="projectId" />
+        <result column="task_id" property="taskId" />
+        <result column="briefing_no" property="briefingNo" />
+        <result column="briefing_name" property="briefingTitle" />
+        <result column="briefing_type" property="briefingType" />
+        <result column="briefing_status" property="briefingStatus" />
+        <result column="briefing_content" property="briefingContent" />
+        <result column="quality_requirements" property="qualityRequirements" />
+        <result column="safety_requirements" property="safetyRequirements" />
+        <result column="technical_standards" property="technicalStandards" />
+        <result column="payment_process" property="paymentProcess" />
+        <result column="schedule_requirements" property="scheduleRequirements" />
+        <result column="deliverable_standards" property="deliverableStandards" />
+        <result column="briefer_id" property="brieferId" />
+        <result column="briefing_date" property="briefingTime" />
+        <result column="participants" property="participants" />
+        <result column="briefing_location" property="briefingLocation" />
+        <result column="attachment_path" property="attachmentPath" />
+        <result column="confirmation_status" property="confirmationStatus" />
+        <result column="confirmer_id" property="confirmerId" />
+        <result column="confirmation_date" property="confirmationDate" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, project_id, task_id, briefing_no, briefing_name, briefing_type, briefing_status,
+        briefing_content, quality_requirements, safety_requirements, technical_standards,
+        payment_process, schedule_requirements, deliverable_standards, briefer_id,
+        briefing_date, participants, briefing_location, attachment_path, confirmation_status,
+        confirmer_id, confirmation_date, create_time, update_time
+    </sql>
+
+    <!-- 分页查询项目交底列表 -->
+    <select id="selectProjectBriefingList" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM project_briefing
+        <where>
+            1 = 1
+            <if test="param.projectId != null and param.projectId > 0">
+                AND project_id = #{param.projectId}
+            </if>
+            <if test="param.briefingTitle != null and param.briefingTitle != ''">
+                AND briefing_name LIKE '%' || #{param.briefingTitle} || '%'
+            </if>
+            <if test="param.briefingType != null">
+                AND briefing_type = #{param.briefingType}
+            </if>
+            <if test="param.brieferName != null and param.brieferName != ''">
+                AND briefer_id IN (SELECT id FROM tbl_staff WHERE staff_name LIKE '%' || #{param.brieferName} || '%')
+            </if>
+            <if test="param.briefingStatus != null">
+                AND briefing_status = #{param.briefingStatus}
+            </if>
+            <if test="param.briefingTimeStart != null">
+                AND briefing_date >= #{param.briefingTimeStart}
+            </if>
+            <if test="param.briefingTimeEnd != null">
+                AND briefing_date &lt;= #{param.briefingTimeEnd}
+            </if>
+        </where>
+        ORDER BY briefing_date DESC, create_time DESC
+    </select>
+
+    <!-- 分页查询项目交底列表 -->
+    <select id="selectProjectBriefingPage" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM project_briefing
+        <where>
+            1 = 1
+            <if test="param.projectId != null and param.projectId > 0">
+                AND project_id = #{param.projectId}
+            </if>
+            <if test="param.briefingTitle != null and param.briefingTitle != ''">
+                AND briefing_name LIKE '%' || #{param.briefingTitle} || '%'
+            </if>
+            <if test="param.briefingType != null">
+                AND briefing_type = #{param.briefingType}
+            </if>
+            <if test="param.brieferName != null and param.brieferName != ''">
+                AND briefer_id IN (SELECT id FROM tbl_staff WHERE staff_name LIKE '%' || #{param.brieferName} || '%')
+            </if>
+            <if test="param.briefingStatus != null">
+                AND briefing_status = #{param.briefingStatus}
+            </if>
+            <if test="param.startDate != null and param.startDate != ''">
+                AND briefing_date >= #{param.startDate}
+            </if>
+            <if test="param.endDate != null and param.endDate != ''">
+                AND briefing_date &lt;= #{param.endDate}
+            </if>
+        </where>
+        ORDER BY briefing_date DESC, create_time DESC
+    </select>
+
+    <!-- 统计项目交底数据 -->
+    <select id="selectProjectBriefingStatistics" resultType="java.util.Map">
+        SELECT
+            COUNT(*) as totalBriefings,
+            SUM(CASE WHEN briefing_type = 1 THEN 1 ELSE 0 END) as qualityBriefings,
+            SUM(CASE WHEN briefing_type = 2 THEN 1 ELSE 0 END) as safetyBriefings,
+            SUM(CASE WHEN briefing_type = 3 THEN 1 ELSE 0 END) as technicalBriefings,
+            SUM(CASE WHEN briefing_type = 4 THEN 1 ELSE 0 END) as paymentBriefings,
+            SUM(CASE WHEN briefing_type = 5 THEN 1 ELSE 0 END) as progressBriefings,
+            SUM(CASE WHEN briefing_type = 6 THEN 1 ELSE 0 END) as deliveryBriefings,
+            SUM(CASE WHEN briefing_status = 1 THEN 1 ELSE 0 END) as plannedBriefings,
+            SUM(CASE WHEN briefing_status = 2 THEN 1 ELSE 0 END) as completedBriefings,
+            SUM(CASE WHEN briefing_status = 3 THEN 1 ELSE 0 END) as cancelledBriefings,
+            SUM(CASE WHEN confirmation_status = 1 THEN 1 ELSE 0 END) as confirmedBriefings,
+            SUM(CASE WHEN confirmation_status = 2 THEN 1 ELSE 0 END) as unconfirmedBriefings
+        FROM project_briefing
+        <where>
+            1 = 1
+            <if test="projectId != null and projectId > 0">
+                AND project_id = #{projectId}
+            </if>
+        </where>
+    </select>
+
+    <!-- 查询待确认的交底 -->
+    <select id="selectPendingConfirmationBriefings" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM project_briefing
+        <where>
+            1 = 1
+            AND briefing_status = 2
+            AND confirmation_status = 2
+            <if test="projectId != null and projectId > 0">
+                AND project_id = #{projectId}
+            </if>
+        </where>
+        ORDER BY briefing_date DESC
+    </select>
+
+    <!-- 查询即将到期的交底 -->
+    <select id="selectUpcomingBriefings" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM project_briefing
+        <where>
+            1 = 1
+            AND briefing_status = 1
+            AND briefing_date IS NOT NULL
+            AND briefing_date &lt;= DATE_ADD(NOW(), INTERVAL #{days} DAY)
+            <if test="projectId != null and projectId > 0">
+                AND project_id = #{projectId}
+            </if>
+        </where>
+        ORDER BY briefing_date ASC
+    </select>
+
+    <!-- 按交底类型统计 -->
+    <select id="selectBriefingTypeStatistics" resultType="java.util.Map">
+        SELECT
+            briefing_type,
+            COUNT(*) as count,
+            SUM(CASE WHEN briefing_status = 2 THEN 1 ELSE 0 END) as completedCount,
+            SUM(CASE WHEN confirmation_status = 1 THEN 1 ELSE 0 END) as confirmedCount
+        FROM project_briefing
+        <where>
+            1 = 1
+            <if test="projectId != null and projectId > 0">
+                AND project_id = #{projectId}
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND briefing_date >= #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND briefing_date &lt;= #{endDate}
+            </if>
+        </where>
+        GROUP BY briefing_type
+        ORDER BY count DESC
+    </select>
+
+    <!-- 按月统计交底趋势 -->
+    <select id="selectMonthlyBriefingTrend" resultType="java.util.Map">
+        SELECT
+            DATE_FORMAT(briefing_date, '%Y-%m') as month,
+            COUNT(*) as totalCount,
+            SUM(CASE WHEN briefing_status = 2 THEN 1 ELSE 0 END) as completedCount,
+            SUM(CASE WHEN confirmation_status = 1 THEN 1 ELSE 0 END) as confirmedCount
+        FROM project_briefing
+        <where>
+            1 = 1
+            <if test="projectId != null and projectId > 0">
+                AND project_id = #{projectId}
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND briefing_date >= #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND briefing_date &lt;= #{endDate}
+            </if>
+        </where>
+        GROUP BY DATE_FORMAT(briefing_date, '%Y-%m')
+        ORDER BY month DESC
+        LIMIT 12
+    </select>
+
+    <!-- 批量更新交底状态 -->
+    <update id="batchUpdateBriefingStatus">
+        UPDATE project_briefing
+        SET briefing_status = #{briefingStatus},
+            update_time = NOW()
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+
+    </update>
+
+    <!-- 批量更新确认状态 -->
+    <update id="batchUpdateConfirmationStatus">
+        UPDATE project_briefing
+        SET confirmation_status = #{confirmationStatus},
+            update_time = NOW()
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+
+    </update>
+
+    <!-- 根据项目ID删除交底记录（软删除） -->
+    <update id="deleteByProjectId">
+        UPDATE project_briefing
+        SET deleted = 1,
+            update_time = NOW()
+        WHERE project_id = #{projectId}
+
+    </update>
+
+    <!-- 查询交底效果评估统计 -->
+    <select id="selectEffectivenessEvaluationStatistics" resultType="java.util.Map">
+        SELECT
+            effectiveness_evaluation,
+            COUNT(*) as count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM project_briefing WHERE effectiveness_evaluation IS NOT NULL), 2) as percentage
+        FROM project_briefing
+        <where>
+            1 = 1
+            AND effectiveness_evaluation IS NOT NULL
+            <if test="projectId != null and projectId > 0">
+                AND project_id = #{projectId}
+            </if>
+        </where>
+        GROUP BY effectiveness_evaluation
+        ORDER BY effectiveness_evaluation DESC
+    </select>
+
+    <!-- 根据交底编号查询项目交底 -->
+    <select id="selectByBriefingNo" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM project_briefing
+        WHERE briefing_no = #{briefingNo}
+    </select>
+
+    <!-- 检查交底编号是否存在 -->
+    <select id="existsBriefingNo" resultType="boolean">
+        SELECT CASE WHEN COUNT(1) > 0 THEN 1 ELSE 0 END
+        FROM project_briefing
+        WHERE briefing_no = #{briefingNo}
+        <if test="excludeId != null">
+            AND id != #{excludeId}
+        </if>
+    </select>
+
+</mapper>

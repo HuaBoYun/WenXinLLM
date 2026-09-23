@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.mysql.mapper.FixedAssetInventoryResultMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.financial.sharing.mysql.entity.FixedAssetInventoryResultEntity">
+        <id column="RESULT_ID" property="resultId" />
+        <result column="TASK_ID" property="taskId" />
+        <result column="ASSET_ID" property="assetId" />
+        <result column="BOOK_QUANTITY" property="bookQuantity" />
+        <result column="ACTUAL_QUANTITY" property="actualQuantity" />
+        <result column="DIFFERENCE_QUANTITY" property="differenceQuantity" />
+        <result column="INVENTORY_RESULT" property="inventoryResult" />
+        <result column="LOCATION" property="location" />
+        <result column="INVENTORY_DATE" property="inventoryDate" />
+        <result column="INVENTORY_PERSON" property="inventoryPerson" />
+        <result column="HANDLE_STATUS" property="handleStatus" />
+        <result column="HANDLE_REMARK" property="handleRemark" />
+        <result column="TENANT_ID" property="tenantId" />
+        <result column="CREATE_BY" property="createBy" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_BY" property="updateBy" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="IS_DELETED" property="isDeleted" />
+        <!-- 扩展字段 -->
+        <result column="assetCode" property="assetCode" />
+        <result column="assetName" property="assetName" />
+    </resultMap>
+
+    <!-- 查询任务的盘点结果列表 -->
+    <select id="selectByTaskId" resultMap="BaseResultMap">
+        SELECT r.RESULT_ID, r.TASK_ID, r.ASSET_ID, r.BOOK_QUANTITY, r.ACTUAL_QUANTITY,
+               r.DIFFERENCE_QUANTITY, r.INVENTORY_RESULT, r.LOCATION, r.INVENTORY_DATE,
+               r.INVENTORY_PERSON, r.HANDLE_STATUS, r.HANDLE_REMARK, r.TENANT_ID,
+               r.CREATE_BY, r.CREATE_TIME, r.UPDATE_BY, r.UPDATE_TIME, r.IS_DELETED,
+               a.ASSET_CODE AS assetCode,
+               a.ASSET_NAME AS assetName
+        FROM TBL_FIXED_ASSET_INVENTORY_RESULT r
+        LEFT JOIN TBL_FIXED_ASSET_CARD a ON r.ASSET_ID = a.ASSET_ID AND a.IS_DELETED = 0
+        WHERE r.TASK_ID = #{taskId}
+          AND r.IS_DELETED = 0
+        ORDER BY r.INVENTORY_DATE DESC, r.CREATE_TIME DESC
+    </select>
+
+    <!-- 查询差异结果 -->
+    <select id="selectDifferenceResults" resultMap="BaseResultMap">
+        SELECT r.RESULT_ID, r.TASK_ID, r.ASSET_ID, r.BOOK_QUANTITY, r.ACTUAL_QUANTITY,
+               r.DIFFERENCE_QUANTITY, r.INVENTORY_RESULT, r.LOCATION, r.INVENTORY_DATE,
+               r.INVENTORY_PERSON, r.HANDLE_STATUS, r.HANDLE_REMARK, r.TENANT_ID,
+               r.CREATE_BY, r.CREATE_TIME, r.UPDATE_BY, r.UPDATE_TIME, r.IS_DELETED,
+               a.ASSET_CODE AS assetCode,
+               a.ASSET_NAME AS assetName
+        FROM TBL_FIXED_ASSET_INVENTORY_RESULT r
+        LEFT JOIN TBL_FIXED_ASSET_CARD a ON r.ASSET_ID = a.ASSET_ID AND a.IS_DELETED = 0
+        WHERE r.TASK_ID = #{taskId}
+          AND r.DIFFERENCE_QUANTITY != 0
+          AND r.IS_DELETED = 0
+        ORDER BY ABS(r.DIFFERENCE_QUANTITY) DESC
+    </select>
+
+    <!-- 更新处理状态 -->
+    <update id="updateHandleStatus">
+        UPDATE TBL_FIXED_ASSET_INVENTORY_RESULT
+        SET HANDLE_STATUS = #{handleStatus},
+            HANDLE_REMARK = #{handleRemark},
+            UPDATE_BY = #{updateBy},
+            UPDATE_TIME = SYSDATE
+        WHERE RESULT_ID = #{resultId}
+    </update>
+
+    <!-- 批量插入盘点结果 -->
+    <insert id="batchInsert">
+        INSERT INTO TBL_FIXED_ASSET_INVENTORY_RESULT (
+            RESULT_ID, TASK_ID, ASSET_ID, BOOK_QUANTITY, ACTUAL_QUANTITY,
+            DIFFERENCE_QUANTITY, INVENTORY_RESULT, LOCATION, INVENTORY_DATE,
+            INVENTORY_PERSON, HANDLE_STATUS, TENANT_ID, CREATE_BY, CREATE_TIME, IS_DELETED
+        )
+        <foreach collection="list" item="item" separator="UNION ALL">
+            SELECT #{item.resultId}, #{item.taskId}, #{item.assetId}, #{item.bookQuantity}, #{item.actualQuantity},
+                   #{item.differenceQuantity}, #{item.inventoryResult}, #{item.location}, #{item.inventoryDate},
+                   #{item.inventoryPerson}, #{item.handleStatus}, #{item.tenantId}, #{item.createBy}, SYSDATE, 0
+            FROM DUAL
+        </foreach>
+    </insert>
+
+</mapper>
+

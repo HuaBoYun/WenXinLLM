@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.TreasuryInterestRateMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TreasuryInterestRate">
+        <id column="RATE_ID" property="rateId" jdbcType="BIGINT"/>
+        <result column="RATE_TYPE" property="rateType" jdbcType="VARCHAR"/>
+        <result column="CURRENCY_CODE" property="currencyCode" jdbcType="VARCHAR"/>
+        <result column="TERM_TYPE" property="termType" jdbcType="VARCHAR"/>
+        <result column="RATE_VALUE" property="rateValue" jdbcType="DECIMAL"/>
+        <result column="RATE_DATE" property="rateDate" jdbcType="DATE"/>
+        <result column="DATA_SOURCE" property="dataSource" jdbcType="VARCHAR"/>
+        <result column="EFFECTIVE_TIME" property="effectiveTime" jdbcType="TIMESTAMP"/>
+        <result column="EXPIRY_TIME" property="expiryTime" jdbcType="TIMESTAMP"/>
+        <result column="IS_ENABLED" property="isEnabled" jdbcType="INTEGER"/>
+        <result column="ORG_ID" property="orgId" jdbcType="BIGINT"/>
+        <result column="CREATE_USER" property="createUser" jdbcType="BIGINT"/>
+        <result column="UPDATE_USER" property="updateUser" jdbcType="BIGINT"/>
+        <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="Base_Column_List">
+        RATE_ID, RATE_TYPE, CURRENCY_CODE, TERM_TYPE, RATE_VALUE, RATE_DATE,
+        DATA_SOURCE, EFFECTIVE_TIME, EXPIRY_TIME, IS_ENABLED, ORG_ID,
+        CREATE_USER, UPDATE_USER, CREATE_TIME, UPDATE_TIME
+    </sql>
+
+    <!-- 分页查询利率 -->
+    <select id="selectInterestRatePage" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_TREASURY_INTEREST_RATES
+        <where>
+            <if test="rateType != null and rateType != ''">
+                AND RATE_TYPE = #{rateType}
+            </if>
+            <if test="currencyCode != null and currencyCode != ''">
+                AND CURRENCY_CODE = #{currencyCode}
+            </if>
+            <if test="termType != null and termType != ''">
+                AND TERM_TYPE = #{termType}
+            </if>
+            <if test="rateDate != null">
+                AND RATE_DATE = #{rateDate}
+            </if>
+            <if test="dataSource != null and dataSource != ''">
+                AND DATA_SOURCE = #{dataSource}
+            </if>
+            <if test="isEnabled != null">
+                AND IS_ENABLED = #{isEnabled}
+            </if>
+            <if test="orgId != null">
+                AND ORG_ID = #{orgId}
+            </if>
+        </where>
+        ORDER BY RATE_DATE DESC, CREATE_TIME DESC
+    </select>
+
+    <!-- 根据利率类型、币种、期限和日期查询利率 -->
+    <select id="selectByTypeAndDate" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_TREASURY_INTEREST_RATES
+        WHERE RATE_TYPE = #{rateType}
+          AND CURRENCY_CODE = #{currencyCode}
+          AND TERM_TYPE = #{termType}
+          AND RATE_DATE = #{rateDate}
+          AND ORG_ID = #{orgId}
+        ORDER BY CREATE_TIME DESC
+        LIMIT 1
+    </select>
+
+    <!-- 查询最新利率 -->
+    <select id="selectLatestRate" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_TREASURY_INTEREST_RATES
+        WHERE RATE_TYPE = #{rateType}
+          AND CURRENCY_CODE = #{currencyCode}
+          AND TERM_TYPE = #{termType}
+          AND ORG_ID = #{orgId}
+        ORDER BY RATE_DATE DESC, CREATE_TIME DESC
+        LIMIT 1
+    </select>
+
+    <!-- 查询指定日期范围内的利率列表 -->
+    <select id="selectByDateRange" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_TREASURY_INTEREST_RATES
+        WHERE RATE_TYPE = #{rateType}
+          AND CURRENCY_CODE = #{currencyCode}
+          AND TERM_TYPE = #{termType}
+          AND RATE_DATE BETWEEN #{startDate} AND #{endDate}
+          AND ORG_ID = #{orgId}
+        ORDER BY RATE_DATE DESC
+    </select>
+
+    <!-- 查询所有启用的利率 -->
+    <select id="selectEnabledRates" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_TREASURY_INTEREST_RATES
+        WHERE IS_ENABLED = 1 AND ORG_ID = #{orgId}
+        ORDER BY RATE_TYPE, CURRENCY_CODE, TERM_TYPE, RATE_DATE DESC
+    </select>
+
+    <!-- 根据利率类型查询利率列表 -->
+    <select id="selectByRateType" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_TREASURY_INTEREST_RATES
+        WHERE RATE_TYPE = #{rateType} AND ORG_ID = #{orgId}
+        ORDER BY RATE_DATE DESC
+    </select>
+
+    <!-- 根据币种查询利率列表 -->
+    <select id="selectByCurrency" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_TREASURY_INTEREST_RATES
+        WHERE CURRENCY_CODE = #{currencyCode} AND ORG_ID = #{orgId}
+        ORDER BY RATE_DATE DESC
+    </select>
+
+    <!-- 检查利率是否存在 -->
+    <select id="checkRateExists" resultType="int">
+        SELECT COUNT(1)
+        FROM TBL_TREASURY_INTEREST_RATES
+        WHERE RATE_TYPE = #{rateType}
+          AND CURRENCY_CODE = #{currencyCode}
+          AND TERM_TYPE = #{termType}
+          AND RATE_DATE = #{rateDate}
+          AND ORG_ID = #{orgId}
+        <if test="excludeId != null">
+            AND RATE_ID != #{excludeId}
+        </if>
+    </select>
+
+    <!-- 查询支持的期限类型列表 -->
+    <select id="selectSupportedTermTypes" resultType="string">
+        SELECT DISTINCT TERM_TYPE
+        FROM TBL_TREASURY_INTEREST_RATES
+        WHERE RATE_TYPE = #{rateType} AND ORG_ID = #{orgId}
+        ORDER BY TERM_TYPE
+    </select>
+
+    <!-- 根据数据来源查询利率列表 -->
+    <select id="selectByDataSource" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_TREASURY_INTEREST_RATES
+        WHERE DATA_SOURCE = #{dataSource} AND ORG_ID = #{orgId}
+        ORDER BY RATE_DATE DESC
+    </select>
+
+</mapper>

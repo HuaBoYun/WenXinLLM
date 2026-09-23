@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.financialProductDefinition.mapper.TblProductTransactionEventMapper">
+
+    <resultMap id="BaseResultMap" type="com.global.treasurer.financialProductDefinition.entity.TblProductTransactionEvent">
+        <id column="EVENT_ID" property="eventId"/>
+        <result column="EVENT_CODE" property="eventCode"/>
+        <result column="EVENT_NAME" property="eventName"/>
+        <result column="EVENT_TYPE" property="eventType"/>
+        <result column="PRODUCT_TYPE" property="productType"/>
+        <result column="TRIGGER_CONDITION" property="triggerCondition"/>
+        <result column="ACCOUNTING_SUBJECT" property="accountingSubject"/>
+        <result column="EVENT_ACTION" property="eventAction"/>
+        <result column="NOTIFICATION_REQUIRED" property="notificationRequired"/>
+        <result column="APPROVAL_REQUIRED" property="approvalRequired"/>
+        <result column="IMPACT_DIRECTION" property="impactDirection"/>
+        <result column="EVENT_STATUS" property="eventStatus"/>
+        <result column="PRIORITY" property="priority"/>
+        <result column="SORT_ORDER" property="sortOrder"/>
+        <result column="IS_ENABLED" property="isEnabled"/>
+        <result column="DESCRIPTION" property="description"/>
+        <result column="ORG_ID" property="orgId"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="CREATE_BY" property="createBy"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="UPDATE_BY" property="updateBy"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        EVENT_ID, EVENT_CODE, EVENT_NAME, EVENT_TYPE, PRODUCT_TYPE, TRIGGER_CONDITION, ACCOUNTING_SUBJECT, EVENT_ACTION, NOTIFICATION_REQUIRED, APPROVAL_REQUIRED, IMPACT_DIRECTION, EVENT_STATUS, PRIORITY, SORT_ORDER, IS_ENABLED, DESCRIPTION, ORG_ID, CREATE_TIME, CREATE_BY, UPDATE_TIME, UPDATE_BY
+    </sql>
+
+    <select id="selectByCondition" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM REDACTED.TBL_PRODUCT_TRANSACTION_EVENT
+        <where>
+            <if test="eventCode != null and eventCode != ''">
+                AND EVENT_CODE LIKE CONCAT('%', #{eventCode}, '%')
+            </if>
+            <if test="eventName != null and eventName != ''">
+                AND EVENT_NAME LIKE CONCAT('%', #{eventName}, '%')
+            </if>
+            <!-- 事件类型筛选条件 -->
+            <if test="eventType != null and eventType != ''">
+                AND EVENT_TYPE = #{eventType}
+            </if>
+            <!-- 产品类型筛选条件 -->
+            <if test="productType != null and productType != ''">
+                AND PRODUCT_TYPE = #{productType}
+            </if>
+            <!-- 事件状态筛选条件 -->
+            <if test="eventStatus != null and eventStatus != ''">
+                AND EVENT_STATUS = #{eventStatus}
+            </if>
+            <if test="isEnabled != null">
+                AND IS_ENABLED = #{isEnabled}
+            </if>
+            <if test="orgId != null">
+                AND ORG_ID = #{orgId}
+            </if>
+        </where>
+        ORDER BY SORT_ORDER ASC, CREATE_TIME DESC
+    </select>
+
+    <select id="selectEnabledList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM REDACTED.TBL_PRODUCT_TRANSACTION_EVENT
+        WHERE IS_ENABLED = 1
+        <if test="orgId != null">
+            AND ORG_ID = #{orgId}
+        </if>
+        ORDER BY SORT_ORDER ASC
+    </select>
+
+    <!-- productType字段在数据库表中不存在,此方法仅根据orgId查询启用的事件 -->
+    <select id="selectByProductType" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM REDACTED.TBL_PRODUCT_TRANSACTION_EVENT
+        WHERE IS_ENABLED = 1
+        <if test="orgId != null">
+            AND ORG_ID = #{orgId}
+        </if>
+        ORDER BY SORT_ORDER ASC
+    </select>
+
+    <select id="checkCodeUnique" resultType="int">
+        SELECT COUNT(1)
+        FROM REDACTED.TBL_PRODUCT_TRANSACTION_EVENT
+        WHERE EVENT_CODE = #{eventCode}
+        <if test="excludeId != null">
+            AND EVENT_ID != #{excludeId}
+        </if>
+    </select>
+
+</mapper>
+

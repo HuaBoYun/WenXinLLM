@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.enterpriseReport.mapper.FormFormulaMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.financial.sharing.enterpriseReport.entity.TblFormFormula">
+        <id column="FORMULA_ID" property="formulaId" />
+        <result column="TEMPLATE_ID" property="templateId" />
+        <result column="FORMULA_CODE" property="formulaCode" />
+        <result column="FORMULA_NAME" property="formulaName" />
+        <result column="FORMULA_TYPE" property="formulaType" />
+        <result column="FORMULA_EXPRESSION" property="formulaExpression" />
+        <result column="VALIDATION_TYPE" property="validationType" />
+        <result column="TOLERANCE_RANGE" property="toleranceRange" />
+        <result column="EFFECTIVE_CONDITION" property="effectiveCondition" />
+        <result column="SORT_NO" property="sortNo" />
+        <result column="STATUS" property="status" />
+        <result column="TENANT_ID" property="tenantId" />
+        <result column="CREATE_USER" property="createUser" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_USER" property="updateUser" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="TEMPLATE_NAME" property="templateName" />
+    </resultMap>
+
+    <!-- 查询表单公式列表(关联模板名称) -->
+    <select id="selectFormFormulaList" resultMap="BaseResultMap">
+        SELECT 
+            f.FORMULA_ID,
+            f.TEMPLATE_ID,
+            f.FORMULA_CODE,
+            f.FORMULA_NAME,
+            f.FORMULA_TYPE,
+            f.FORMULA_EXPRESSION,
+            f.VALIDATION_TYPE,
+            f.TOLERANCE_RANGE,
+            f.EFFECTIVE_CONDITION,
+            f.SORT_NO,
+            f.STATUS,
+            f.TENANT_ID,
+            f.CREATE_USER,
+            f.CREATE_TIME,
+            f.UPDATE_USER,
+            f.UPDATE_TIME,
+            t.TEMPLATE_NAME
+        FROM TBL_FORM_FORMULA f
+        LEFT JOIN TBL_FORM_TEMPLATE t ON f.TEMPLATE_ID = t.TEMPLATE_ID
+        WHERE f.TENANT_ID = #{tenantId}
+        <if test="templateId != null and templateId != ''">
+            AND f.TEMPLATE_ID = #{templateId}
+        </if>
+        <if test="formulaName != null and formulaName != ''">
+            AND f.FORMULA_NAME LIKE CONCAT('%', #{formulaName}, '%')
+        </if>
+        <if test="formulaType != null and formulaType != ''">
+            AND f.FORMULA_TYPE = #{formulaType}
+        </if>
+        <if test="status != null and status != ''">
+            AND f.STATUS = #{status}
+        </if>
+        ORDER BY f.SORT_NO ASC, f.CREATE_TIME ASC
+    </select>
+
+    <!-- 检查公式编码是否存在 -->
+    <select id="checkFormulaCodeExists" resultType="int">
+        SELECT COUNT(*)
+        FROM TBL_FORM_FORMULA
+        WHERE FORMULA_CODE = #{formulaCode}
+        AND TENANT_ID = #{tenantId}
+        <if test="excludeFormulaId != null and excludeFormulaId != ''">
+            AND FORMULA_ID != #{excludeFormulaId}
+        </if>
+    </select>
+
+</mapper>
+

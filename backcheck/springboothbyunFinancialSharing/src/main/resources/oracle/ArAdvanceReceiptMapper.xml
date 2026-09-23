@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.oracle.mapper.ArAdvanceReceiptMapper">
+
+    <!-- 通用结果映射 -->
+    <resultMap id="BaseResultMap" type="com.financial.sharing.oracle.entity.ArAdvanceReceiptEntity">
+        <id column="ADVANCE_ID" property="advanceId"/>
+        <result column="ADVANCE_NO" property="advanceNo"/>
+        <result column="CUSTOMER_ID" property="customerId"/>
+        <result column="ADVANCE_AMOUNT" property="advanceAmount"/>
+        <result column="OFFSET_AMOUNT" property="offsetAmount"/>
+        <result column="REMAINING_AMOUNT" property="remainingAmount"/>
+        <result column="ADVANCE_STATUS" property="advanceStatus"/>
+        <result column="ADVANCE_DATE" property="advanceDate"/>
+        <result column="PAYMENT_METHOD" property="paymentMethod"/>
+        <result column="BANK_NAME" property="bankName"/>
+        <result column="BANK_ACCOUNT" property="bankAccount"/>
+        <result column="REMARKS" property="remarks"/>
+        <result column="TENANT_ID" property="tenantId"/>
+        <result column="ORG_ID" property="orgId"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="CREATE_BY" property="createBy"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="UPDATE_BY" property="updateBy"/>
+        <result column="IS_DELETED" property="isDeleted"/>
+        <!-- 扩展字段 -->
+        <result column="CUSTOMER_NAME" property="customerName"/>
+    </resultMap>
+
+    <!-- 通用查询列 -->
+    <sql id="Base_Column_List">
+        a.ADVANCE_ID, a.ADVANCE_NO, a.CUSTOMER_ID, a.ADVANCE_AMOUNT, a.OFFSET_AMOUNT,
+        a.REMAINING_AMOUNT, a.ADVANCE_STATUS, a.ADVANCE_DATE, a.PAYMENT_METHOD,
+        a.BANK_NAME, a.BANK_ACCOUNT, a.REMARKS, a.TENANT_ID, a.ORG_ID,
+        a.CREATE_TIME, a.CREATE_BY, a.UPDATE_TIME, a.UPDATE_BY, a.IS_DELETED
+    </sql>
+
+    <!-- 查询预收款列表 -->
+    <select id="selectAdvanceReceiptList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>,
+               c.CUSTOMER_NAME
+        FROM TBL_AR_ADVANCE_RECEIPT a
+        LEFT JOIN TBL_AR_CUSTOMER c ON a.CUSTOMER_ID = c.CUSTOMER_ID AND c.IS_DELETED = 0
+        WHERE a.IS_DELETED = 0
+        <if test="param.advanceNo != null and param.advanceNo != ''">
+            AND a.ADVANCE_NO LIKE '%' || #{param.advanceNo} || '%'
+        </if>
+        <if test="param.customerId != null and param.customerId != ''">
+            AND a.CUSTOMER_ID = #{param.customerId}
+        </if>
+        <if test="param.advanceStatus != null">
+            AND a.ADVANCE_STATUS = #{param.advanceStatus}
+        </if>
+        <if test="param.startDate != null and param.startDate != ''">
+            AND a.ADVANCE_DATE &gt;= TO_DATE(#{param.startDate}, 'YYYY-MM-DD')
+        </if>
+        <if test="param.endDate != null and param.endDate != ''">
+            AND a.ADVANCE_DATE &lt;= TO_DATE(#{param.endDate}, 'YYYY-MM-DD')
+        </if>
+        <if test="param.tenantId != null">
+            AND a.TENANT_ID = #{param.tenantId}
+        </if>
+        <if test="param.orgId != null and param.orgId != ''">
+            AND a.ORG_ID = #{param.orgId}
+        </if>
+        ORDER BY a.CREATE_TIME DESC
+    </select>
+
+    <!-- 分页查询预收款 -->
+    <select id="selectAdvanceReceiptPage" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>,
+               c.CUSTOMER_NAME
+        FROM TBL_AR_ADVANCE_RECEIPT a
+        LEFT JOIN TBL_AR_CUSTOMER c ON a.CUSTOMER_ID = c.CUSTOMER_ID AND c.IS_DELETED = 0
+        WHERE a.IS_DELETED = 0
+        <if test="param.advanceNo != null and param.advanceNo != ''">
+            AND a.ADVANCE_NO LIKE '%' || #{param.advanceNo} || '%'
+        </if>
+        <if test="param.customerId != null and param.customerId != ''">
+            AND a.CUSTOMER_ID = #{param.customerId}
+        </if>
+        <if test="param.advanceStatus != null">
+            AND a.ADVANCE_STATUS = #{param.advanceStatus}
+        </if>
+        <if test="param.tenantId != null">
+            AND a.TENANT_ID = #{param.tenantId}
+        </if>
+        ORDER BY a.CREATE_TIME DESC
+    </select>
+
+    <!-- 根据预收款单号查询 -->
+    <select id="selectByAdvanceNo" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_AR_ADVANCE_RECEIPT a
+        WHERE a.ADVANCE_NO = #{advanceNo}
+            AND a.TENANT_ID = #{tenantId}
+            AND a.IS_DELETED = 0
+    </select>
+
+    <!-- 查询客户预收款 -->
+    <select id="selectByCustomerId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_AR_ADVANCE_RECEIPT a
+        WHERE a.CUSTOMER_ID = #{customerId}
+            AND a.TENANT_ID = #{tenantId}
+            AND a.IS_DELETED = 0
+        ORDER BY a.CREATE_TIME DESC
+    </select>
+
+    <!-- 查询可冲销的预收款 -->
+    <select id="selectAvailableForOffset" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_AR_ADVANCE_RECEIPT a
+        WHERE a.CUSTOMER_ID = #{customerId}
+            AND a.TENANT_ID = #{tenantId}
+            AND a.ADVANCE_STATUS IN (0, 1)
+            AND a.REMAINING_AMOUNT > 0
+            AND a.IS_DELETED = 0
+        ORDER BY a.ADVANCE_DATE ASC
+    </select>
+
+    <!-- 更新已冲销金额 -->
+    <update id="updateOffsetAmount">
+        UPDATE TBL_AR_ADVANCE_RECEIPT
+        SET OFFSET_AMOUNT = OFFSET_AMOUNT + #{amount},
+            REMAINING_AMOUNT = REMAINING_AMOUNT - #{amount},
+            UPDATE_TIME = SYSDATE
+        WHERE ADVANCE_ID = #{advanceId}
+            AND IS_DELETED = 0
+    </update>
+
+    <!-- 查询预收款统计 -->
+    <select id="selectAdvanceReceiptStatistics" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) AS totalCount,
+            NVL(SUM(ADVANCE_AMOUNT), 0) AS totalAdvanceAmount,
+            NVL(SUM(OFFSET_AMOUNT), 0) AS totalOffsetAmount,
+            NVL(SUM(REMAINING_AMOUNT), 0) AS totalRemainingAmount
+        FROM TBL_AR_ADVANCE_RECEIPT
+        WHERE IS_DELETED = 0
+        <if test="param.tenantId != null">
+            AND TENANT_ID = #{param.tenantId}
+        </if>
+        <if test="param.customerId != null and param.customerId != ''">
+            AND CUSTOMER_ID = #{param.customerId}
+        </if>
+    </select>
+
+</mapper>
+

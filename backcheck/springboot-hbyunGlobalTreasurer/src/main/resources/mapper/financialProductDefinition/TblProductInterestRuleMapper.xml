@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.financialProductDefinition.mapper.TblProductInterestRuleMapper">
+
+    <resultMap id="BaseResultMap" type="com.global.treasurer.financialProductDefinition.entity.TblProductInterestRule">
+        <id column="RULE_ID" property="ruleId"/>
+        <result column="RULE_CODE" property="ruleCode"/>
+        <result column="RULE_NAME" property="ruleName"/>
+        <result column="INTEREST_CALCULATION_METHOD" property="interestCalculationMethod"/>
+        <result column="INTEREST_RATE_TYPE" property="interestRateType"/>
+        <result column="INTEREST_RATE" property="interestRate"/>
+        <result column="INTEREST_FREQUENCY" property="interestFrequency"/>
+        <result column="COMPOUNDING_METHOD" property="compoundingMethod"/>
+        <result column="DAY_COUNT_CONVENTION" property="dayCountConvention"/>
+        <result column="IS_ENABLED" property="isEnabled"/>
+        <result column="DESCRIPTION" property="description"/>
+        <result column="ORG_ID" property="orgId"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="CREATE_BY" property="createBy"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="UPDATE_BY" property="updateBy"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        RULE_ID, RULE_CODE, RULE_NAME, INTEREST_CALCULATION_METHOD, INTEREST_RATE_TYPE, INTEREST_RATE, INTEREST_FREQUENCY, COMPOUNDING_METHOD, DAY_COUNT_CONVENTION, IS_ENABLED, DESCRIPTION, ORG_ID, CREATE_TIME, CREATE_BY, UPDATE_TIME, UPDATE_BY
+    </sql>
+
+    <select id="selectByCondition" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_PRODUCT_INTEREST_RULE
+        <where>
+            <if test="ruleCode != null and ruleCode != ''">
+                AND RULE_CODE LIKE CONCAT('%', #{ruleCode}, '%')
+            </if>
+            <if test="ruleName != null and ruleName != ''">
+                AND RULE_NAME LIKE CONCAT('%', #{ruleName}, '%')
+            </if>
+            <if test="isEnabled != null">
+                AND IS_ENABLED = #{isEnabled}
+            </if>
+            <if test="orgId != null">
+                AND ORG_ID = #{orgId}
+            </if>
+        </where>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <select id="selectEnabledList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_PRODUCT_INTEREST_RULE
+        WHERE IS_ENABLED = 1
+        <if test="orgId != null">
+            AND ORG_ID = #{orgId}
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <select id="selectByProductType" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_PRODUCT_INTEREST_RULE
+        WHERE IS_ENABLED = 1
+        <if test="orgId != null">
+            AND ORG_ID = #{orgId}
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <select id="selectByCode" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_PRODUCT_INTEREST_RULE
+        WHERE RULE_CODE = #{ruleCode}
+        <if test="excludeId != null">
+            AND RULE_ID != #{excludeId}
+        </if>
+        LIMIT 1
+    </select>
+
+</mapper>
+

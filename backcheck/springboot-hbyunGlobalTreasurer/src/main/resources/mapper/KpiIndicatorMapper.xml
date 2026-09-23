@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.KpiIndicatorMapper">
+
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.KpiIndicator">
+        <id column="KPI_ID" property="kpiId"/>
+        <result column="KPI_CODE" property="kpiCode"/>
+        <result column="KPI_NAME" property="kpiName"/>
+        <result column="KPI_CATEGORY" property="kpiCategory"/>
+        <result column="KPI_TYPE" property="kpiType"/>
+        <result column="CALCULATION_FORMULA" property="calculationFormula"/>
+        <result column="DATA_SOURCE" property="dataSource"/>
+        <result column="UNIT" property="unit"/>
+        <result column="TARGET_VALUE" property="targetValue"/>
+        <result column="WARNING_THRESHOLD" property="warningThreshold"/>
+        <result column="CRITICAL_THRESHOLD" property="criticalThreshold"/>
+        <result column="CURRENT_VALUE" property="currentValue"/>
+        <result column="CALCULATION_FREQUENCY" property="calculationFrequency"/>
+        <result column="TREND" property="trend"/>
+        <result column="KPI_STATUS" property="kpiStatus"/>
+        <result column="CALCULATION_DATE" property="calculationDate" jdbcType="DATE"/>
+        <result column="REMARK" property="remark"/>
+        <result column="ORG_ID" property="orgId"/>
+        <result column="CREATE_BY" property="createBy"/>
+        <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="UPDATE_BY" property="updateBy"/>
+        <result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="DEL_FLAG" property="delFlag"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        KPI_ID, KPI_CODE, KPI_NAME, KPI_CATEGORY, KPI_TYPE, CALCULATION_FORMULA,
+        DATA_SOURCE, UNIT, TARGET_VALUE, WARNING_THRESHOLD, CRITICAL_THRESHOLD, CURRENT_VALUE,
+        CALCULATION_FREQUENCY, TREND, KPI_STATUS, CALCULATION_DATE, REMARK,
+        ORG_ID, CREATE_BY, CREATE_TIME, UPDATE_BY, UPDATE_TIME, DEL_FLAG
+    </sql>
+
+    <select id="selectIndicatorByCode" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_KPI_INDICATOR
+        WHERE INDICATOR_CODE = #{indicatorCode} AND DEL_FLAG = '0'
+    </select>
+
+    <select id="selectIndicatorsByCategory" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_KPI_INDICATOR
+        WHERE INDICATOR_CATEGORY = #{indicatorCategory} AND DEL_FLAG = '0'
+        <if test="orgId != null and orgId != ''">
+            AND ORG_ID = #{orgId}
+        </if>
+        ORDER BY INDICATOR_NAME ASC
+    </select>
+
+    <select id="selectIndicatorsByStatus" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_KPI_INDICATOR
+        WHERE INDICATOR_STATUS = #{indicatorStatus} AND DEL_FLAG = '0'
+        <if test="orgId != null and orgId != ''">
+            AND ORG_ID = #{orgId}
+        </if>
+        ORDER BY TARGET_VALUE DESC
+    </select>
+
+    <select id="selectAlarmIndicators" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_KPI_INDICATOR
+        WHERE DEL_FLAG = '0'
+        AND (
+            CURRENT_VALUE >= REMIND_THRESHOLD OR
+            (TARGET_VALUE - CURRENT_VALUE) / TARGET_VALUE * 100 >= REMIND_THRESHOLD
+        )
+        <if test="orgId != null and orgId != ''">
+            AND ORG_ID = #{orgId}
+        </if>
+        ORDER BY CURRENT_VALUE DESC
+    </select>
+
+    <select id="selectIndicatorStatistics" resultType="map">
+        SELECT
+            INDICATOR_TYPE,
+            INDICATOR_CATEGORY,
+            COUNT(*) as indicatorCount,
+            AVG(CURRENT_VALUE) as avgCurrentValue,
+            AVG(TARGET_VALUE) as avgTargetValue,
+            SUM(CASE WHEN CURRENT_VALUE >= TARGET_VALUE THEN 1 ELSE 0 END) as targetAchievedCount
+        FROM TBL_KPI_INDICATOR
+        WHERE DEL_FLAG = '0'
+        <if test="orgId != null and orgId != ''">
+            AND ORG_ID = #{orgId}
+        </if>
+        GROUP BY INDICATOR_TYPE, INDICATOR_CATEGORY
+        ORDER BY INDICATOR_TYPE, INDICATOR_CATEGORY
+    </select>
+
+    <select id="selectKpiTrendData" resultType="map">
+        SELECT
+            INDICATOR_CODE,
+            INDICATOR_NAME,
+            CURRENT_VALUE,
+            TARGET_VALUE,
+            CREATE_TIME
+        FROM TBL_KPI_INDICATOR
+        WHERE DEL_FLAG = '0'
+        AND INDICATOR_CODE IN
+        <foreach item="item" index="index" collection="indicatorCodes" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        <if test="orgId != null and orgId != ''">
+            AND ORG_ID = #{orgId}
+        </if>
+        ORDER BY INDICATOR_CODE, CREATE_TIME DESC
+    </select>
+
+    <!-- MyBatis-Plus BaseMapper需要的selectList方法 -->
+    <select id="selectList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_KPI_INDICATOR
+        WHERE DEL_FLAG = '0'
+    </select>
+
+    <!-- MyBatis-Plus BaseMapper需要的selectById方法 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_KPI_INDICATOR
+        WHERE KPI_ID = #{kpiId} AND DEL_FLAG = '0'
+    </select>
+
+    <!-- 根据条件查询KPI指标列表 -->
+    <select id="selectByCondition" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TBL_KPI_INDICATOR
+        WHERE DEL_FLAG = '0'
+        <if test="kpiCode != null and kpiCode != ''">
+            AND KPI_CODE LIKE '%' || #{kpiCode} || '%'
+        </if>
+        <if test="kpiName != null and kpiName != ''">
+            AND KPI_NAME LIKE '%' || #{kpiName} || '%'
+        </if>
+        <if test="kpiCategory != null and kpiCategory != ''">
+            AND KPI_CATEGORY = #{kpiCategory}
+        </if>
+        <if test="kpiType != null and kpiType != ''">
+            AND KPI_TYPE = #{kpiType}
+        </if>
+        <if test="kpiStatus != null and kpiStatus != ''">
+            AND KPI_STATUS = #{kpiStatus}
+        </if>
+        <if test="orgId != null">
+            AND ORG_ID = #{orgId}
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+</mapper>

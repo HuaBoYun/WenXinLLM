@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.legal.mysql.mapper.TblFwglOperateMatterAuditMySqlMapper">
+  <resultMap id="BaseResultMap" type="com.huabo.legal.mysql.entity.TblFwglOperateMatterAuditMySql">
+    <!--@mbg.generated generated on Mon Sep 12 23:34:59 CST 2022.-->
+    <!--@Table hbgrctest.tbl_fwgl_operate_matter_audit-->
+    <id column="OPERATEMATTERAUDITID" jdbcType="INTEGER" property="operateMatterAuditId" />
+    <result column="OPERATEMATTERNAME" jdbcType="VARCHAR" property="operateMatterName" />
+    <result column="DRAFTTIME" jdbcType="TIMESTAMP" property="draftTime" />
+    <result column="OPERATECREATOR" jdbcType="VARCHAR" property="operateCreator" />
+    <result column="OPERATECREATEDTIME" jdbcType="TIMESTAMP" property="operateCreatedTime" />
+    <result column="FILEIDS" jdbcType="VARCHAR" property="fileIds" />
+    <result column="STATE" jdbcType="INTEGER" property="state" />
+    <result column="CREATOR" jdbcType="VARCHAR" property="creator" />
+    <result column="WORKUNIT" jdbcType="VARCHAR" property="workUnit" />
+    <result column="BELONGGROUP" jdbcType="VARCHAR" property="belongGroup" />
+    <result column="CREATEDTIME" jdbcType="TIMESTAMP" property="createdTime" />
+    <result column="UPDATEDTIME" jdbcType="TIMESTAMP" property="updatedTime" />
+  </resultMap>
+</mapper>

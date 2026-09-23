@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.legal.mysql.mapper.TblFwglPerennialLawServiceGradeMySqlMapper">
+  <resultMap id="BaseResultMap" type="com.huabo.legal.mysql.entity.TblFwglPerennialLawServiceGradeMySql">
+    <!--@mbg.generated generated on Mon Sep 12 17:14:13 CST 2022.-->
+    <!--@Table hbgrctest.tbl_fwgl_perennial_law_service_grade-->
+    <id column="GRADEID" jdbcType="INTEGER" property="gradeId" />
+    <result column="BUSINESSPREMISESNAME" jdbcType="VARCHAR" property="businessPremisesName" />
+    <result column="SERVICEQUALITYGRADE" jdbcType="VARCHAR" property="serviceQualityGrade" />
+    <result column="COMMUNICATIONANDCOLLABORATIONGRADE" jdbcType="VARCHAR" property="communicationAndCollaborationGrade" />
+    <result column="APPRECIATIONSERVICEGRADE" jdbcType="VARCHAR" property="appreciationServiceGrade" />
+    <result column="EXAMINEGRADE" jdbcType="VARCHAR" property="examineGrade" />
+    <result column="PROPOSAL" jdbcType="VARCHAR" property="proposal" />
+    <result column="STATE" jdbcType="INTEGER" property="state" />
+    <result column="CREATOR" jdbcType="VARCHAR" property="creator" />
+    <result column="WORKUNIT" jdbcType="VARCHAR" property="workUnit" />
+    <result column="BELONGGROUP" jdbcType="VARCHAR" property="belongGroup" />
+    <result column="CREATEDTIME" jdbcType="TIMESTAMP" property="createdTime" />
+    <result column="UPDATEDTIME" jdbcType="TIMESTAMP" property="updatedTime" />
+  </resultMap>
+</mapper>

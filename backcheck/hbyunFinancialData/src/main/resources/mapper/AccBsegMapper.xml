@@ -1,0 +1,454 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.financialdata.mapper.AccBsegMapper">
+
+    <sql id="statusList">
+        <if test="status == '等于'">=</if>
+        <if test="status == '不等于'">!=</if>
+        <if test="status == '小于'">  <![CDATA[ < ]]> </if>
+        <if test="status == '小于等于'"> <![CDATA[ <= ]]> </if>
+        <if test="status == '大于'">></if>
+        <if test="status == '大于等于'">>=</if>
+    </sql>
+    
+    <!-- 公共：通用查询条件 -->
+    <sql id="conditions">
+        <if test="ACCID != null and ACCID != ''">and s.ACCID = #{ACCID}</if>
+        <if test="accName != null and accName != ''">and a.ACCNAME1 like '%${accName}%'
+        </if>
+        <if test="AYEAR != null">and s.AYEAR = #{AYEAR}</if>
+        <if test="minMonth != null">
+            <![CDATA[
+				and	s.AMONTH  >=#{minMonth}
+			]]>
+        </if>
+        <if test="maxMonth != null">
+            <![CDATA[
+				and	s.AMONTH  <=#{maxMonth}
+			]]>
+        </if>
+    </sql>
+
+    <!--按条件查询-->
+    <select id="selectByCondition" parameterType="com.huabo.financialdata.entity.entity.AccBsegQuery"
+            resultType="com.huabo.financialdata.entity.vo.accBseg.AccBsegQueryInfoVO">
+        select
+        <!--公共部分-->
+        <if test="dbSourceType != 'mysql'">
+            DATE_FORMAT(F.PZ_DATE,'%c') pzDateMonth,
+            IFNULL(B.MD,'0') md,
+            IFNULL(B.MC,'0') mc,
+            IFNULL(S.QCMD,'0') qcmd,
+            IFNULL(S.QCMC,'0') qcmc,
+        </if>
+        <if test="dbSourceType != 'oracle'">
+            TO_NUMBER(TO_CHAR(F.PZ_DATE,'MM')) pzDateMonth,
+            NVL(B.MD,'0') md,
+            NVL(B.MC,'0') mc,
+            NVL(S.QCMD,'0') qcmd,
+            NVL(S.QCMC,'0') qcmc,
+        </if>
+        C.ACCID accId,
+        C.ACCNAME1 accAllName,
+        F.PZ_DATE pzDate,
+        B.LINETEXT lineText,
+        C.DC dc,
+        F.PZH pzh,
+        S.QMDC qmdc,
+        S.BQMD bqmd,
+        S.BQMC bqmc,
+        S.LJMD ljmd,
+        S.LJMC ljmc,
+        S.QMMC qmmc,
+        S.QMMD qmmd,
+        S.QCDC qcdc,
+        B.ENTRYID entryId
+        FROM ${dbSource}.TBL_ACC_BSEG${year} B
+        LEFT JOIN ${dbSource}.TBL_ACC_BKPF F ON F.GLH = B.GLH AND F.AYEAR = B.AYEAR
+        LEFT JOIN ${dbSource}.TBL_ACCOUNT C ON B.ACCID= C.ACCID AND B.AYEAR = C.AYEAR
+        LEFT JOIN ${dbSource}.TBL_ACC_SUM S ON B.ACCID = S.ACCID AND B.AYEAR = S.AYEAR AND B.AMONTH = S.AMONTH
+        WHERE
+        B.ACCID = #{ACCID}
+
+        <if test="orderByClause != null and orderByClause != ''">
+            ORDER BY ${orderByClause}
+        </if>
+    </select>
+
+
+    <select id="selectAccBseg" parameterType="com.huabo.financialdata.entity.vo.detailedBook.DetailedBookRequestVo"
+            resultType="com.huabo.financialdata.entity.vo.detailedBook.DetailedBookResponseVo">
+        SELECT
+        C.ACCID as accid, B.LINETEXT as lineText,
+        NVL(B.MD, '0') as md, NVL(B.MC, '0') as mc,C.ACCNAME1 as accName, C.DC as dc, F.PZH as pzh,
+        TO_CHAR(F.PZ_DATE, 'yyyy-MM-dd') as pzDate, NVL (S.QCMD, '0') as qcmd, NVL (S.QCMC, '0') as qcmc,
+        S.QMDC as qmdc, S.BQMD as bqmd, S.BQMC as bqmc,
+        S.LJMD as ljmd, S.LJMC as ljmc, S.QMMC as qmmc, S.QMMD as qmmd, S.QCDC as qcdc,B.ENTRYID as entryId,B.AMONTH AS AMONTH,B.GLH AS GLH
+        FROM ${dbSource}.TBL_ACC_BSEG${bookYear} B
+        LEFT JOIN ${dbSource}.TBL_ACC_BKPF F ON F.GLH = B.GLH AND F.AYEAR = B.AYEAR
+        LEFT JOIN ${dbSource}.TBL_ACCOUNT C ON B.ACCID = C.ACCID AND B.AYEAR = C.AYEAR
+        LEFT JOIN ${dbSource}.TBL_ACC_SUM S ON B.ACCID = S.ACCID AND B.AYEAR = S.AYEAR AND B.AMONTH = S.AMONTH
+        WHERE 1=1
+        <if test="accid != null and accid != null">
+            AND B.ACCID = #{accid}
+        </if>
+        <if test="accNameOne != null and accNameOne != ''">
+            <if test="status == '包含'">
+                AND C.ACCNAME1 LIKE '%${accNameOne}%'
+            </if>
+            <if test="status == '不包含'">
+                AND C.ACCNAME1 not LIKE '%${accNameOne}%'
+            </if>
+            <if test="status != '不包含'  and status != '包含'">
+                AND C.ACCNAME1 <include refid="statusList"/> #{accNameOne}
+            </if>
+        </if>
+        <if test="lineText != null and lineText != ''">
+            <if test="status == '包含'">
+                AND B.LINETEXT LIKE '%${lineText}%'
+            </if>
+            <if test="status == '不包含'">
+                AND B.LINETEXT not LIKE '%${lineText}%'
+            </if>
+            <if test="status != '不包含'  and status != '包含'">
+                AND B.LINETEXT <include refid="statusList"/> #{lineText}
+            </if>
+        </if>
+        <if test="pzDate != null and pzDate != ''">
+            AND TO_CHAR(F.PZ_DATE, 'yyyy-MM-dd')  <include refid="statusList"/> #{pzDate}
+        </if>
+        <if test="md != null">
+            AND B.MD <include refid="statusList"/> #{md}
+        </if>
+        <if test="mc != null">
+            AND B.MC <include refid="statusList"/> #{mc}
+        </if>
+        <if test="type == 'AMONTH'">
+            AND B.AMONTH >= #{minMonth}
+            AND B.AMONTH <![CDATA[ <= ]]>  #{maxMonth}
+        </if>
+        ORDER BY F.PZ_DATE ASC,F.PZH ASC,B.ENTRYID ASC
+    </select>
+
+    <select id="selectAccBsegCount" parameterType="com.huabo.financialdata.entity.vo.detailedBook.DetailedBookRequestVo"
+            resultType="java.lang.Integer">
+        SELECT
+        COUNT (0)
+        FROM
+        ${dbSource}.TBL_ACC_BSEG${bookYear} B
+        LEFT JOIN ${dbSource}.TBL_ACC_BKPF F ON F.GLH = B.GLH AND F.AYEAR = B.AYEAR
+        LEFT JOIN ${dbSource}.TBL_ACCOUNT C ON B.ACCID = C.ACCID AND B.AYEAR = C.AYEAR
+        LEFT JOIN ${dbSource}.TBL_ACC_SUM S ON B.ACCID = S.ACCID AND B.AYEAR = S.AYEAR AND B.AMONTH = S.AMONTH
+        WHERE 1=1
+       <if test="accid != null and accid != null">
+            AND B.ACCID = #{accid}
+        </if>
+        <if test="accNameOne != null and accNameOne != ''">
+            <if test="status == '包含'">
+                AND C.ACCNAME1 LIKE '%${accNameOne}%'
+            </if>
+            <if test="status == '不包含'">
+                AND C.ACCNAME1 not LIKE '%${accNameOne}%'
+            </if>
+            <if test="status != '不包含'  and status != '包含'">
+                AND C.ACCNAME1 <include refid="statusList"/> #{accNameOne}
+            </if>
+        </if>
+        <if test="lineText != null and lineText != ''">
+            <if test="status == '包含'">
+                AND B.LINETEXT LIKE '%${lineText}%'
+            </if>
+            <if test="status == '不包含'">
+                AND B.LINETEXT not LIKE '%${lineText}%'
+            </if>
+            <if test="status != '不包含'  and status != '包含'">
+                AND B.LINETEXT <include refid="statusList"/> #{lineText}
+            </if>
+        </if>
+        <if test="pzDate != null and pzDate != ''">
+            AND TO_CHAR(F.PZ_DATE, 'yyyy-MM-dd')  <include refid="statusList"/> #{pzDate}
+        </if>
+        <if test="md != null and md != ''">
+            AND NVL(B.MD,'0') <include refid="statusList"/> #{md}
+        </if>
+        <if test="mc != null and mc != ''">
+            AND NVL(B.MC,'0') <include refid="statusList"/> #{mc}
+        </if>
+        <if test="type == 'AMONTH'">
+            AND B.AMONTH >= #{minMonth}
+            AND B.AMONTH <![CDATA[ <= ]]>  #{maxMonth}
+        </if>
+
+
+    </select>
+
+    <select id="selectAccid" parameterType="com.huabo.financialdata.entity.vo.diaryBook.DiaryBookRequestVo"
+            resultType="com.huabo.financialdata.entity.entity.Account">
+        SELECT * FROM (
+        SELECT
+        C.*
+        FROM
+        ${dbSource}.TBL_ACC_BSEG${bookYear} B
+        LEFT JOIN ${dbSource}.TBL_ACCOUNT C ON B.ACCID = C.ACCID AND B.AYEAR = C.AYEAR
+        LEFT JOIN ${dbSource}.TBL_ACC_BKPF F ON F.GLH = B.GLH AND F.AYEAR = B.AYEAR
+        WHERE F.AYEAR = #{bookYear} AND C.ISDCACC = 1
+        <if test="minMonth != null and minMonth != '' ">
+            and F.AMONTH >= #{minMonth}
+        </if>
+        <if test="maxMonth != null and maxMonth != '' ">
+            AND F.AMONTH <![CDATA[ <= ]]>  #{maxMonth}
+        </if>
+        <if test="accid != null and accid != '' ">
+            AND C.ACCID = '${accid}'
+        </if>
+        ORDER BY C.ACCID,F.PZ_DATE) T1 WHERE ROWNUM = 1
+    </select>
+
+    <select id="selectDiaryBookList" parameterType="com.huabo.financialdata.entity.vo.diaryBook.DiaryBookRequestVo"
+            resultType="com.huabo.financialdata.entity.vo.diaryBook.DiaryBookResponseVo">
+        SELECT
+        C.ACCID as accid, B.LINETEXT as lineText,B.GLH AS GLH,
+        NVL (B.MD, '0') AS md, NVL (B.MC, '0') AS mc,
+        C.ACCNAME1 as accName, C.DC as dc, F.PZH as pzh,
+        TO_CHAR(F.PZ_DATE, 'yyyy-MM-dd') as pzDate,B.ENTRYID AS entryId,
+        NVL (S.QCMD, '0') AS qcmd, NVL (S.QCMC, '0') AS qcmc, NVL (S.QMDC, '0') AS qmdc,
+        NVL (S.BQMD, '0') AS bqmd, NVL (S.BQMC, '0') AS bqmc, NVL (S.LJMD, '0') AS ljmd,
+        NVL (S.LJMC, '0') AS ljmc, NVL (S.QMMC, '0') AS qmmc, NVL (S.QMMD, '0') AS qmmd,
+        NVL (S.QCDC, '0') AS qcdc, TO_NUMBER (TO_CHAR(F.PZ_DATE, 'dd')) AS dayNo,TO_NUMBER (TO_CHAR(F.PZ_DATE, 'MM')) AS amonth
+        FROM ${dbSource}.TBL_ACC_BSEG${bookYear} B
+        LEFT JOIN ${dbSource}.TBL_ACC_BKPF F ON F.GLH = B.GLH AND F.AYEAR = B.AYEAR
+        LEFT JOIN ${dbSource}.TBL_ACCOUNT C ON B.ACCID = C.ACCID AND B.AYEAR = C.AYEAR
+        LEFT JOIN ${dbSource}.TBL_ACC_SUM S ON S.AYEAR = B.AYEAR AND S.ACCID = B.ACCID AND S.AMONTH = B.AMONTH
+        WHERE F.AYEAR = '${bookYear}'
+        <if test="minMonth != null and maxMonth != null and maxMonth != '' and minMonth != ''">
+            AND TO_CHAR(F.PZ_DATE, 'MM') >= #{minMonth}
+            AND TO_CHAR(F.PZ_DATE, 'MM') <![CDATA[ <= ]]>  #{maxMonth}
+        </if>
+        <if test="type == 'PZH'">
+        	<if test="status == '包含'">
+                and F.PZH LIKE '%${pzh}%'
+            </if>
+            <if test="status == '不包含'">
+                and F.PZH not LIKE '%${pzh}%'
+            </if>
+            <if test="status != '包含' and status != '不包含'">
+               	and F.PZH
+            	<include refid="statusList"/>
+            	#{pzh}
+            </if>
+        </if>
+        <if test="accid != null and accid != ''">
+            AND B.ACCID = #{accid}
+        </if>
+        <if test="accNameOne != null and accNameOne != '' ">
+            <if test="status == '包含'">
+                AND C.ACCNAME1 LIKE '%${accNameOne}%'
+            </if>
+            <if test="status == '不包含'">
+                AND C.ACCNAME1 not LIKE '%${accNameOne}%'
+            </if>
+            <if test="status != '包含' and status != '不包含'">
+                AND C.ACCNAME1
+                <include refid="statusList"/>
+                #{accNameOne}
+            </if>
+        </if>
+        <if test="lineText != null and lineText != ''">
+            <if test=" status == '包含'">
+                AND B.LINETEXT LIKE '%${lineText}%'
+            </if>
+            <if test="status == '不包含'">
+                AND B.LINETEXT not LIKE '%${lineText}%'
+            </if>
+            <if test="status != '包含' and status != '不包含'">
+                AND B.LINETEXT
+                <include refid="statusList"/>
+                #{lineText}
+            </if>
+        </if>
+        <if test="md != null and md != ''">
+            AND NVL(B.MD,'0')
+            <include refid="statusList"/>
+            #{md}
+        </if>
+        <if test="mc != null and mc != ''">
+            AND NVL(B.MC,'0')
+            <include refid="statusList"/>
+            #{mc}
+        </if>
+        <if test="pzDate != null and pzDate != ''">
+            AND F.PZ_DATE
+            <include refid="statusList"/>
+            TO_DATE(#{pzDate},'yyyy-MM-dd')
+        </if>
+        ORDER BY F.PZ_DATE ASC,F.PZH ASC,B.ENTRYID ASC
+    </select>
+
+    <select id="selectDiaryBookCount" parameterType="com.huabo.financialdata.entity.vo.diaryBook.DiaryBookRequestVo"
+            resultType="java.lang.Integer">
+        SELECT COUNT (0) FROM ${dbSource}.TBL_ACC_BSEG${bookYear} B
+        LEFT JOIN ${dbSource}.TBL_ACC_BKPF F ON F.GLH = B.GLH AND F.AYEAR = B.AYEAR
+        LEFT JOIN ${dbSource}.TBL_ACCOUNT C ON B.ACCID = C.ACCID AND B.AYEAR = C.AYEAR
+        LEFT JOIN ${dbSource}.TBL_ACC_SUM S ON S.AYEAR = B.AYEAR AND S.ACCID = B.ACCID AND S.AMONTH = B.AMONTH
+        WHERE F.AYEAR LIKE '%${bookYear}%'
+        <if test="minMonth != null and maxMonth != null and maxMonth != '' and minMonth != ''">
+            AND TO_CHAR(F.PZ_DATE, 'MM') >= #{minMonth}
+            AND TO_CHAR(F.PZ_DATE, 'MM') <![CDATA[ < ]]>  #{maxMonth}
+        </if>
+        <if test="accid != null and accid != ''">
+            AND B.ACCID = #{accid}
+        </if>
+       <if test="type == 'PZH'">
+        	<if test="status == '包含'">
+                and F.PZH LIKE '%${pzh}%'
+            </if>
+            <if test="status == '不包含'">
+                and F.PZH not LIKE '%${pzh}%'
+            </if>
+            <if test="status != '包含' and status != '不包含'">
+               	and F.PZH
+            	<include refid="statusList"/>
+            	#{pzh}
+            </if>
+        </if>
+        <if test="accNameOne != null and accNameOne != '' ">
+            <if test="status == '包含'">
+                AND C.ACCNAME1 LIKE '%${accNameOne}%'
+            </if>
+            <if test="status == '不包含'">
+                AND C.ACCNAME1 not LIKE '%${accNameOne}%'
+            </if>
+            <if test="status != '包含' and status != '不包含'">
+                AND C.ACCNAME1
+                <include refid="statusList"/>
+                #{accNameOne}
+            </if>
+        </if>
+        <if test="lineText != null and lineText != ''">
+            <if test=" status == '包含'">
+                AND B.LINETEXT LIKE '%${lineText}%'
+            </if>
+            <if test="status == '不包含'">
+                AND B.LINETEXT not LIKE '%${lineText}%'
+            </if>
+            <if test="status != '包含' and status != '不包含'">
+                AND B.LINETEXT
+                <include refid="statusList"/>
+                #{lineText}
+            </if>
+        </if>
+        <if test="md != null and md != ''  and status != '包含' ">
+            AND NVL(B.MD,'0')
+            <include refid="statusList"/>
+            #{md}
+        </if>
+        <if test="mc != null and mc != ''  and status != '包含'">
+            AND NVL(B.MC,'0')
+            <include refid="statusList"/>
+            #{mc}
+        </if>
+        <if test="pzDate != null and pzDate != ''   and status != '包含'">
+            AND F.PZ_DATE
+            <include refid="statusList"/>
+            TO_DATE(#{pzDate},'yyyy-MM-dd')
+        </if>
+    </select>
+    
+    <select id="selectDefaultAccid" parameterType="com.huabo.financialdata.entity.vo.detailedBook.DetailedBookRequestVo"
+            resultType="java.lang.String">
+        SELECT MIN(C.ACCID) FROM ${dbSource}.TBL_ACC_BSEG${bookYear} B 
+        LEFT JOIN ${dbSource}.TBL_ACC_BKPF F ON F.GLH = B.GLH AND F.AYEAR = B.AYEAR 
+        LEFT JOIN ${dbSource}.TBL_ACCOUNT C ON B.ACCID= C.ACCID AND B.AYEAR = C.AYEAR 
+        LEFT JOIN ${dbSource}.TBL_ACC_SUM S ON B.ACCID = S.ACCID AND B.AYEAR = S.AYEAR AND B.AMONTH = S.AMONTH
+        WHERE B.AMONTH >= #{minMonth} AND B.AMONTH <![CDATA[ <= ]]> #{maxMonth}   
+    </select>
+    
+    <select id="selectCurrentMonthyMdc" parameterType="com.huabo.financialdata.entity.vo.detailedBook.DetailedBookRequestVo"
+            resultType="com.huabo.financialdata.entity.vo.detailedBook.DetailedBookResponseVo">
+        SELECT NVL(SUM(B.MD),0) AS MD,NVL(SUM(B.MC),0) AS MC 
+        FROM ${dbSource}.TBL_ACC_BSEG${bookYear} B
+        LEFT JOIN ${dbSource}.TBL_ACC_BKPF F ON F.GLH = B.GLH AND F.AYEAR = B.AYEAR 
+        WHERE B.AMONTH = #{month} AND B.ACCID = #{accid} 
+        AND (F.PZ_DATE <![CDATA[ < ]]> TO_DATE(#{pzDate}, 'YYYY-MM-DD') OR (F.PZ_DATE = TO_DATE(#{pzDate}, 'YYYY-MM-DD') AND B.PZH <![CDATA[ < ]]> #{pzh}) 
+		OR (F.PZ_DATE = TO_DATE(#{pzDate}, 'YYYY-MM-DD') AND B.PZH = #{pzh} AND B.ENTRYID <![CDATA[ < ]]> #{entryId})) 
+    </select>
+    
+    
+    <select id="selectPreDiaryBookRequestPreVo" parameterType="com.huabo.financialdata.entity.vo.diaryBook.DiaryBookRequestVo"
+            resultType="com.huabo.financialdata.entity.vo.diaryBook.DiaryBookResponseVo">
+        SELECT T2.* FROM (
+		SELECT ROWNUM RN,T1.*  FROM (
+        SELECT
+        C.ACCID as accid, B.LINETEXT as lineText,
+        NVL (B.MD, '0') AS md, NVL (B.MC, '0') AS mc,
+        C.ACCNAME1 as accName, C.DC as dc, F.PZH as pzh,
+        TO_CHAR(F.PZ_DATE, 'yyyy-MM-dd') as pzDate,
+        NVL (S.QCMD, '0') AS qcmd, NVL (S.QCMC, '0') AS qcmc, NVL (S.QMDC, '0') AS qmdc,
+        NVL (S.BQMD, '0') AS bqmd, NVL (S.BQMC, '0') AS bqmc, NVL (S.LJMD, '0') AS ljmd,
+        NVL (S.LJMC, '0') AS ljmc, NVL (S.QMMC, '0') AS qmmc, NVL (S.QMMD, '0') AS qmmd,
+        NVL (S.QCDC, '0') AS qcdc, TO_NUMBER (TO_CHAR(F.PZ_DATE, 'dd')) AS dayNo,TO_NUMBER (TO_CHAR(F.PZ_DATE, 'MM')) AS amonth
+        FROM ${dbSource}.TBL_ACC_BSEG${bookYear} B
+        LEFT JOIN ${dbSource}.TBL_ACC_BKPF F ON F.GLH = B.GLH AND F.AYEAR = B.AYEAR
+        LEFT JOIN ${dbSource}.TBL_ACCOUNT C ON B.ACCID = C.ACCID AND B.AYEAR = C.AYEAR
+        LEFT JOIN ${dbSource}.TBL_ACC_SUM S ON S.AYEAR = B.AYEAR AND S.ACCID = B.ACCID AND S.AMONTH = B.AMONTH
+        WHERE F.AYEAR = '${bookYear}'
+            AND B.ACCID = #{accid}
+        ORDER BY F.PZ_DATE ASC,F.PZH ASC,B.ENTRYID ASC
+         ) T1
+		) T2 WHERE RN = #{pageSize}
+    </select>
+    
+    <select id="selectSumMonthyMdc" parameterType="com.huabo.financialdata.entity.vo.diaryBook.DiaryBookRequestVo"
+            resultType="com.huabo.financialdata.entity.vo.diaryBook.DiaryBookResponseVo">
+        SELECT NVL(SUM(B.MD),0) AS MD,NVL(SUM(B.MC),0) AS MC 
+        FROM ${dbSource}.TBL_ACC_BSEG${bookYear} B
+        LEFT JOIN ${dbSource}.TBL_ACC_BKPF F ON F.GLH = B.GLH AND F.AYEAR = B.AYEAR 
+        WHERE B.AMONTH = #{month} AND B.ACCID = #{accid} 
+        AND (F.PZ_DATE <![CDATA[ < ]]> #{pzDate} OR (F.PZ_DATE = #{pzDate} AND B.PZH <![CDATA[ < ]]> #{pzh}) 
+		OR (F.PZ_DATE = #{pzDate} AND B.PZH = #{pzh} AND B.ENTRYID <![CDATA[ <= ]]> #{entryId})) 
+    </select>
+     <select id="selectSumMdcByDayNo" parameterType="com.huabo.financialdata.entity.vo.diaryBook.DiaryBookRequestVo"
+            resultType="com.huabo.financialdata.entity.vo.diaryBook.DiaryBookResponseVo">
+        SELECT NVL(SUM(B.MD),0) AS MD,NVL(SUM(B.MC),0) AS MC 
+        FROM ${dbSource}.TBL_ACC_BSEG${bookYear} B
+        LEFT JOIN ${dbSource}.TBL_ACC_BKPF F ON F.GLH = B.GLH AND F.AYEAR = B.AYEAR 
+        WHERE B.AMONTH = #{month} AND B.ACCID = #{accid} 
+        AND F.PZ_DATE = #{pzDate}
+    </select>
+    
+    <select id="selectListByExportRjz" parameterType="com.huabo.financialdata.entity.vo.diaryBook.DiaryBookRequestVo"
+            resultType="com.huabo.financialdata.entity.vo.diaryBook.DiaryBookResponseVo">
+        SELECT
+        C.ACCID as accid, B.LINETEXT as lineText,B.GLH AS GLH,
+        NVL (B.MD, '0') AS md, NVL (B.MC, '0') AS mc,
+        C.ACCNAME1 as accName, C.DC as dc, F.PZH as pzh,
+        TO_CHAR(F.PZ_DATE, 'yyyy-MM-dd') as pzDate,B.ENTRYID AS entryId,
+        NVL (S.QCMD, '0') AS qcmd, NVL (S.QCMC, '0') AS qcmc, NVL (S.QMDC, '0') AS qmdc,
+        NVL (S.BQMD, '0') AS bqmd, NVL (S.BQMC, '0') AS bqmc, NVL (S.LJMD, '0') AS ljmd,
+        NVL (S.LJMC, '0') AS ljmc, NVL (S.QMMC, '0') AS qmmc, NVL (S.QMMD, '0') AS qmmd,
+        NVL (S.QCDC, '0') AS qcdc, TO_NUMBER (TO_CHAR(F.PZ_DATE, 'dd')) AS dayNo,TO_NUMBER (TO_CHAR(F.PZ_DATE, 'MM')) AS amonth
+        FROM ${dbSource}.TBL_ACC_BSEG${year} B
+        LEFT JOIN ${dbSource}.TBL_ACC_BKPF F ON F.GLH = B.GLH AND F.AYEAR = B.AYEAR
+        LEFT JOIN ${dbSource}.TBL_ACCOUNT C ON B.ACCID = C.ACCID AND B.AYEAR = C.AYEAR
+        LEFT JOIN ${dbSource}.TBL_ACC_SUM S ON S.AYEAR = B.AYEAR AND S.ACCID = B.ACCID AND S.AMONTH = B.AMONTH
+        WHERE F.AYEAR = '${year}' AND B.ACCID = #{accid} AND ${sqlStr}
+        ORDER BY F.PZ_DATE ASC,F.PZH ASC,B.ENTRYID ASC
+    </select>
+    
+    <select id="selectListByExportMxz" parameterType="com.huabo.financialdata.entity.vo.detailedBook.DetailedBookRequestVo"
+            resultType="com.huabo.financialdata.entity.vo.detailedBook.DetailedBookResponseVo">
+        SELECT
+        C.ACCID as accid, B.LINETEXT as lineText,
+        NVL(B.MD, '0') as md, NVL(B.MC, '0') as mc,C.ACCNAME1 as accName, C.DC as dc, F.PZH as pzh,
+        TO_CHAR(F.PZ_DATE, 'yyyy-MM-dd') as pzDate, NVL (S.QCMD, '0') as qcmd, NVL (S.QCMC, '0') as qcmc,
+        S.QMDC as qmdc, S.BQMD as bqmd, S.BQMC as bqmc,
+        S.LJMD as ljmd, S.LJMC as ljmc, S.QMMC as qmmc, S.QMMD as qmmd, S.QCDC as qcdc,B.ENTRYID as entryId,B.AMONTH AS AMONTH,B.GLH AS GLH
+        FROM ${dbSource}.TBL_ACC_BSEG${year} B
+        LEFT JOIN ${dbSource}.TBL_ACC_BKPF F ON F.GLH = B.GLH AND F.AYEAR = B.AYEAR
+        LEFT JOIN ${dbSource}.TBL_ACCOUNT C ON B.ACCID = C.ACCID AND B.AYEAR = C.AYEAR
+        LEFT JOIN ${dbSource}.TBL_ACC_SUM S ON B.ACCID = S.ACCID AND B.AYEAR = S.AYEAR AND B.AMONTH = S.AMONTH
+        WHERE B.ACCID = #{accid} AND ${sqlStr}
+        ORDER BY F.PZ_DATE ASC,F.PZH ASC,B.ENTRYID ASC
+    </select>
+    
+</mapper>

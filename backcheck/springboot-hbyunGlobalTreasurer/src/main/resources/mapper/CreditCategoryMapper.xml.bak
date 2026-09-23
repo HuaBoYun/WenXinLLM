@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.global.treasurer.mapper.CreditCategoryMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.CreditCategory">
+        <id column="ID" property="id" jdbcType="VARCHAR"/>
+        <result column="CATEGORY_CODE" property="categoryCode" jdbcType="VARCHAR"/>
+        <result column="CATEGORY_NAME" property="categoryName" jdbcType="VARCHAR"/>
+        <result column="CATEGORY_TYPE" property="categoryType" jdbcType="VARCHAR"/>
+        <result column="PARENT_ID" property="parentId" jdbcType="VARCHAR"/>
+        <result column="CREDIT_LEVEL" property="creditLevel" jdbcType="INTEGER"/>
+        <result column="RISK_WEIGHT" property="riskWeight" jdbcType="DECIMAL"/>
+        <result column="PROVISION_RATIO" property="provisionRatio" jdbcType="DECIMAL"/>
+        <result column="MAX_TERM_MONTHS" property="maxTermMonths" jdbcType="INTEGER"/>
+        <result column="MIN_AMOUNT" property="minAmount" jdbcType="DECIMAL"/>
+        <result column="MAX_AMOUNT" property="maxAmount" jdbcType="DECIMAL"/>
+        <result column="CURRENCY_CODES" property="currencyCodes" jdbcType="VARCHAR"/>
+        <result column="COLLATERAL_REQUIRED" property="collateralRequired" jdbcType="VARCHAR"/>
+        <result column="GUARANTEE_REQUIRED" property="guaranteeRequired" jdbcType="VARCHAR"/>
+        <result column="APPROVAL_AUTHORITY" property="approvalAuthority" jdbcType="VARCHAR"/>
+        <result column="REGULATORY_RATIO" property="regulatoryRatio" jdbcType="DECIMAL"/>
+        <result column="CONCENTRATION_LIMIT" property="concentrationLimit" jdbcType="DECIMAL"/>
+        <result column="SORT_ORDER" property="sortOrder" jdbcType="INTEGER"/>
+        <result column="STATUS" property="status" jdbcType="VARCHAR"/>
+        <result column="REMARK" property="remark" jdbcType="VARCHAR"/>
+        <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="CREATE_USER" property="createUser" jdbcType="VARCHAR"/>
+        <result column="UPDATE_USER" property="updateUser" jdbcType="VARCHAR"/>
+        <result column="VERSION_NO" property="versionNo" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        ID, CATEGORY_CODE, CATEGORY_NAME, CATEGORY_TYPE, PARENT_ID, CREDIT_LEVEL,
+        RISK_WEIGHT, PROVISION_RATIO, MAX_TERM_MONTHS, MIN_AMOUNT, MAX_AMOUNT,
+        CURRENCY_CODES, COLLATERAL_REQUIRED, GUARANTEE_REQUIRED, APPROVAL_AUTHORITY,
+        REGULATORY_RATIO, CONCENTRATION_LIMIT, SORT_ORDER, STATUS, REMARK,
+        CREATE_TIME, UPDATE_TIME, CREATE_USER, UPDATE_USER, VERSION_NO
+    </sql>
+
+    <!-- 分页查询授信类别 -->
+    <select id="selectCategoryPage" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM FM_CREDIT_CATEGORY
+        <where>
+            <if test="categoryCode != null and categoryCode != ''">
+                AND CATEGORY_CODE LIKE '%' || #{categoryCode} || '%'
+            </if>
+            <if test="categoryName != null and categoryName != ''">
+                AND CATEGORY_NAME LIKE '%' || #{categoryName} || '%'
+            </if>
+            <if test="categoryType != null and categoryType != ''">
+                AND CATEGORY_TYPE = #{categoryType}
+            </if>
+            <if test="status != null and status != ''">
+                AND STATUS = #{status}
+            </if>
+            AND STATUS != '2'
+            ORDER BY SORT_ORDER ASC, CREATE_TIME DESC
+        </where>
+        OFFSET ((#{pageNum} - 1) * #{pageSize}) ROWS FETCH NEXT #{pageSize} ROWS ONLY
+    </select>
+
+    <!-- 查询授信类别总数 -->
+    <select id="selectCategoryCount" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM FM_CREDIT_CATEGORY
+        <where>
+            <if test="categoryCode != null and categoryCode != ''">
+                AND CATEGORY_CODE LIKE '%' || #{categoryCode} || '%'
+            </if>
+            <if test="categoryName != null and categoryName != ''">
+                AND CATEGORY_NAME LIKE '%' || #{categoryName} || '%'
+            </if>
+            <if test="categoryType != null and categoryType != ''">
+                AND CATEGORY_TYPE = #{categoryType}
+            </if>
+            <if test="status != null and status != ''">
+                AND STATUS = #{status}
+            </if>
+            AND STATUS != '2'
+        </where>
+    </select>
+
+    <!-- 获取类别类型列表 -->
+    <select id="selectCategoryTypes" resultType="java.util.Map">
+        SELECT DISTINCT
+            CATEGORY_TYPE as value,
+            CASE CATEGORY_TYPE
+                WHEN 'WORKING_CAPITAL' THEN '流动资金'
+                WHEN 'FIXED_ASSET' THEN '固定资产'
+                WHEN 'PROJECT' THEN '项目融资'
+                WHEN 'TRADE_FINANCE' THEN '贸易融资'
+                WHEN 'CONSUMER_CREDIT' THEN '消费信贷'
+                ELSE CATEGORY_TYPE
+            END as label
+        FROM FM_CREDIT_CATEGORY
+        WHERE CATEGORY_TYPE IS NOT NULL
+        AND STATUS = '1'
+        ORDER BY CATEGORY_TYPE
+    </select>
+
+</mapper>

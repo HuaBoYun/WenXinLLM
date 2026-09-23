@@ -1,0 +1,90 @@
+spring:
+ application:
+  name: hbyunSystemSetting #应用名称
+ datasource:
+  type: com.alibaba.druid.pool.DruidDataSource
+  url: jdbc:oracle:thin:@192.0.2.200:1521:orcl
+  username: DQYTSJ
+  password: DQYTSJ
+  driverClassName: oracle.jdbc.driver.OracleDriver
+ druid:
+  initialSize: 5
+  minIdle: 5
+  maxActive: 20
+  maxWait: 60000
+  timeBetweenEvictionRunsMillis: 60000
+  minEvictableIdleTimeMillis: 300000
+  validationQuery: SELECT 1 FROM DUAL
+  testWhileIdle: true
+  testOnBorrow: false
+  testOnReturn: false
+  poolPreparedStatement: true
+  maxPoolPreparedStatementPerConnectionSize: 20
+  filters: stat,wall,log4j
+  connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+ redis: 
+  host: 192.0.2.200
+  port: 6379
+  password: Dqyt@135246
+
+#日志配置
+logging:
+ level:
+  org:
+   springframework: WARN
+   spring:
+    springboot:
+     dao: info
+  com:
+   dc:
+    pcasweb:
+     mapper: debug
+ file: logs/spring-boot-logging.log
+ 
+#eureka服务注册中心配置
+eureka:
+ instance:
+  ip-address: 127.0.0.1
+  instance-id: hbyunSystemSetting-8763
+  prefer-ip-address: true
+  hostname: hbyun-systemSetting-service
+ client:
+  register-with-eureka: false
+  fetch-registry: false
+  serviceUrl:
+   defaultZone: http://hbyunadmin:hbEureka12345@127.0.0.1:8761/eureka
+security:
+  basic:
+    enabled: false
+
+
+ # 文件保存目录
+file:
+ ca:
+  secret: b8e9a1c7d4f265a830e7b1f4d8a9c6e2
+ upload:
+  path: E:\datafile
+ previewUrl: http://192.0.2.200:8012/onlinePreview?url=
+ downloadUrl: http://192.0.2.200:8080/api/file/file/download/decrypt?fileId=
+
+
+acurl : http://127.0.0.1:8003
+formurl : http://127.0.0.1:8001
+activitiModelerUrl : http://127.0.0.1:8137
+getOrgChildrenUrl : http://127.0.0.1:8379
+insertOrgOneUrl : http://127.0.0.1:8379
+redisurl : http://127.0.0.1:8379
+
+mybatis:
+ configuration:
+  map-underscore-to-camel-case: true
+application:
+ #文件上传
+ file-upload:
+  base-dir: E:\datafile
+  #base-url: http://192.0.2.200/hbfk
+  base-url: E:\datafile
+ #图片上传前缀域名
+ file-url: E:\datafile
+ #上帝视角用户名称
+ admin-name: 系统管理员

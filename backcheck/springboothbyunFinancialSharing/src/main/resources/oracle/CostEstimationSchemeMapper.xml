@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.oracle.mapper.CostEstimationSchemeMapper">
+
+    <resultMap id="BaseResultMap" type="com.financial.sharing.oracle.entity.CostEstimationSchemeEntity">
+        <id column="SCHEME_ID" property="schemeId" />
+        <result column="SCHEME_CODE" property="schemeCode" />
+        <result column="SCHEME_NAME" property="schemeName" />
+        <result column="SCHEME_TYPE" property="schemeType" />
+        <result column="ESTIMATION_METHOD" property="estimationMethod" />
+        <result column="APPLICABLE_SCOPE" property="applicableScope" />
+        <result column="SCHEME_DESCRIPTION" property="schemeDescription" />
+        <result column="IS_ENABLED" property="isEnabled" />
+        <result column="VERSION" property="version" />
+        <result column="EFFECTIVE_DATE" property="effectiveDate" />
+        <result column="EXPIRY_DATE" property="expiryDate" />
+        <result column="BOOK_ID" property="bookId" />
+        <result column="TENANT_ID" property="tenantId" />
+        <result column="CREATE_BY" property="createBy" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_BY" property="updateBy" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="REMARK" property="remark" />
+    </resultMap>
+
+    <!-- 分页查询估算方案列表 -->
+    <select id="selectSchemeListWithPagination" resultType="map">
+        SELECT
+            SCHEME_ID AS "schemeId",
+            SCHEME_CODE AS "schemeCode",
+            SCHEME_NAME AS "schemeName",
+            SCHEME_TYPE AS "schemeType",
+            SCHEME_TYPE AS "estimationType",
+            ESTIMATION_METHOD AS "estimationMethod",
+            APPLICABLE_SCOPE AS "applicableScope",
+            SCHEME_DESCRIPTION AS "schemeDescription",
+            SCHEME_DESCRIPTION AS "description",
+            IS_ENABLED AS "isEnabled",
+            VERSION AS "version",
+            EFFECTIVE_DATE AS "effectiveDate",
+            EXPIRY_DATE AS "expiryDate",
+            CREATE_TIME AS "createTime"
+        FROM TBL_COST_ESTIMATION_SCHEME
+        WHERE 1 = 1
+          <if test="bookId != null and bookId != ''">
+              AND BOOK_ID = #{bookId}
+          </if>
+          <if test="tenantId != null and tenantId != ''">
+              AND TENANT_ID = #{tenantId}
+          </if>
+          <if test="schemeCode != null and schemeCode != ''">
+              AND SCHEME_CODE LIKE '%' || #{schemeCode} || '%'
+          </if>
+          <if test="schemeName != null and schemeName != ''">
+              AND SCHEME_NAME LIKE '%' || #{schemeName} || '%'
+          </if>
+          <if test="schemeType != null and schemeType != ''">
+              AND SCHEME_TYPE = #{schemeType}
+          </if>
+          <if test="isEnabled != null">
+              AND IS_ENABLED = #{isEnabled}
+          </if>
+        ORDER BY CREATE_TIME DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
+    </select>
+
+    <!-- 查询总记录数 -->
+    <select id="countSchemeList" resultType="int">
+        SELECT COUNT(1)
+        FROM TBL_COST_ESTIMATION_SCHEME
+        WHERE 1 = 1
+          <if test="bookId != null and bookId != ''">
+              AND BOOK_ID = #{bookId}
+          </if>
+          <if test="tenantId != null and tenantId != ''">
+              AND TENANT_ID = #{tenantId}
+          </if>
+          <if test="schemeCode != null and schemeCode != ''">
+              AND SCHEME_CODE LIKE '%' || #{schemeCode} || '%'
+          </if>
+          <if test="schemeName != null and schemeName != ''">
+              AND SCHEME_NAME LIKE '%' || #{schemeName} || '%'
+          </if>
+          <if test="schemeType != null and schemeType != ''">
+              AND SCHEME_TYPE = #{schemeType}
+          </if>
+          <if test="isEnabled != null">
+              AND IS_ENABLED = #{isEnabled}
+          </if>
+    </select>
+
+    <!-- 根据方案编码查询方案 -->
+    <select id="selectBySchemeCode" resultType="map">
+        SELECT
+            SCHEME_ID AS "schemeId",
+            SCHEME_CODE AS "schemeCode",
+            SCHEME_NAME AS "schemeName",
+            SCHEME_TYPE AS "schemeType",
+            ESTIMATION_METHOD AS "estimationMethod",
+            APPLICABLE_SCOPE AS "applicableScope",
+            SCHEME_DESCRIPTION AS "schemeDescription",
+            IS_ENABLED AS "isEnabled",
+            VERSION AS "version",
+            EFFECTIVE_DATE AS "effectiveDate",
+            EXPIRY_DATE AS "expiryDate",
+            REMARK AS "remark"
+        FROM TBL_COST_ESTIMATION_SCHEME
+        WHERE SCHEME_CODE = #{schemeCode}
+          AND BOOK_ID = #{bookId}
+          AND TENANT_ID = #{tenantId}
+    </select>
+
+    <!-- 批量更新方案状态 -->
+    <update id="batchUpdateStatus">
+        UPDATE TBL_COST_ESTIMATION_SCHEME
+        SET IS_ENABLED = #{isEnabled},
+            UPDATE_TIME = SYSDATE
+        WHERE SCHEME_ID IN
+        <foreach collection="schemeIds" item="schemeId" open="(" separator="," close=")">
+            #{schemeId}
+        </foreach>
+    </update>
+
+    <!-- 检查方案编码是否存在 -->
+    <select id="checkSchemeCodeExists" resultType="int">
+        SELECT COUNT(1)
+        FROM TBL_COST_ESTIMATION_SCHEME
+        WHERE SCHEME_CODE = #{schemeCode}
+          AND BOOK_ID = #{bookId}
+          AND TENANT_ID = #{tenantId}
+          <if test="schemeId != null and schemeId != ''">
+              AND SCHEME_ID != #{schemeId}
+          </if>
+    </select>
+
+</mapper>
+

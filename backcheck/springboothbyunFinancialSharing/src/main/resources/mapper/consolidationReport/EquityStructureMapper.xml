@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.consolidationReport.mapper.EquityStructureMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.financial.sharing.consolidationReport.entity.TblEquityStructure">
+        <id column="STRUCTURE_ID" property="structureId"/>
+        <result column="MODEL_ID" property="modelId"/>
+        <result column="ORG_ID" property="orgId"/>
+        <result column="ORG_NAME" property="orgName"/>
+        <result column="PARENT_ORG_ID" property="parentOrgId"/>
+        <result column="DIRECT_HOLDING_RATIO" property="directHoldingRatio"/>
+        <result column="INDIRECT_HOLDING_RATIO" property="indirectHoldingRatio"/>
+        <result column="TOTAL_HOLDING_RATIO" property="totalHoldingRatio"/>
+        <result column="LEVEL" property="level"/>
+        <result column="PATH" property="path"/>
+        <result column="CALCULATION_DATE" property="calculationDate"/>
+        <result column="TENANT_ID" property="tenantId"/>
+        <result column="CREATE_USER" property="createUser"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_USER" property="updateUser"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="MODEL_NAME" property="modelName"/>
+    </resultMap>
+
+    <!-- 根据模型ID查询股权结构列表 -->
+    <select id="selectByModelId" resultMap="BaseResultMap">
+        SELECT
+            s.STRUCTURE_ID,
+            s.MODEL_ID,
+            s.ORG_ID,
+            s.ORG_NAME,
+            s.PARENT_ORG_ID,
+            s.DIRECT_HOLDING_RATIO,
+            s.INDIRECT_HOLDING_RATIO,
+            s.TOTAL_HOLDING_RATIO,
+            s.LEVEL,
+            s.PATH,
+            s.CALCULATION_DATE,
+            s.TENANT_ID,
+            s.CREATE_USER,
+            s.CREATE_TIME,
+            s.UPDATE_USER,
+            s.UPDATE_TIME,
+            m.MODEL_NAME
+        FROM TBL_EQUITY_STRUCTURE s
+        LEFT JOIN TBL_CONSOLIDATION_MODEL m ON s.MODEL_ID = m.MODEL_ID
+        WHERE s.MODEL_ID = #{modelId}
+        ORDER BY s.LEVEL ASC, s.ORG_ID ASC
+    </select>
+
+    <!-- 根据模型ID删除股权结构 -->
+    <delete id="deleteByModelId">
+        DELETE FROM TBL_EQUITY_STRUCTURE
+        WHERE MODEL_ID = #{modelId}
+    </delete>
+
+    <!-- 批量插入股权结构 -->
+    <insert id="batchInsert">
+        INSERT INTO TBL_EQUITY_STRUCTURE (
+            STRUCTURE_ID,
+            MODEL_ID,
+            ORG_ID,
+            ORG_NAME,
+            PARENT_ORG_ID,
+            DIRECT_HOLDING_RATIO,
+            INDIRECT_HOLDING_RATIO,
+            TOTAL_HOLDING_RATIO,
+            LEVEL,
+            PATH,
+            CALCULATION_DATE,
+            TENANT_ID,
+            CREATE_USER,
+            CREATE_TIME,
+            UPDATE_USER,
+            UPDATE_TIME
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.structureId},
+                #{item.modelId},
+                #{item.orgId},
+                #{item.orgName},
+                #{item.parentOrgId},
+                #{item.directHoldingRatio},
+                #{item.indirectHoldingRatio},
+                #{item.totalHoldingRatio},
+                #{item.level},
+                #{item.path},
+                #{item.calculationDate},
+                #{item.tenantId},
+                #{item.createUser},
+                #{item.createTime},
+                #{item.updateUser},
+                #{item.updateTime}
+            )
+        </foreach>
+    </insert>
+
+</mapper>
+

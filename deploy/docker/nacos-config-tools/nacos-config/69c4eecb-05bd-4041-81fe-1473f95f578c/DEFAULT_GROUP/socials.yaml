@@ -1,0 +1,27 @@
+
+socials:
+  # 第三方登录功能开关(false-关闭，true-开启)
+  socials-enabled: false
+  config:
+    - # 微信
+      provider: wechat_open
+      client-id: your-client-id
+      client-secret: your-client-secret
+    - # 企业微信
+      provider: wechat_enterprise
+      client-id: your-client-id
+      client-secret: your-client-secret
+      agentId: your-agentId
+    - # 钉钉
+      provider: dingtalk
+      client-id: your-client-id
+      client-secret: your-client-secret
+      agentId: your-agentId
+    - # 飞书
+      provider: feishu
+      client-id: your-client-id
+      client-secret: your-client-secret
+    - # 小程序
+      provider: wechat_applets
+      client-id: your-client-id
+      client-secret: your-client-secret

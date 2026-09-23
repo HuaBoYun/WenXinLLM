@@ -1,0 +1,52 @@
+config:
+  TestVersion: false
+  # 是否开启一个账号可多人登录
+  synchroLogin: false
+  # 文件存储配置
+  file-storage: #文件存储配置，不使用的情况下可以不写
+    default-platform: local-plus-1 #默认使用的存储平台
+    thumbnail-suffix: ".min.jpg" #缩略图后缀，例如【.min.jpg】【.png】
+    local-plus: # 本地存储升级版
+      - platform: local-plus-1 # 存储平台标识
+        enable-storage: true  #启用存储
+        enable-access: true #启用访问（线上请使用 Nginx 配置，效率更高）
+        domain: "" # 访问域名，例如：“http://127.0.0.1:8030/”，注意后面要和 path-patterns 保持一致，“/”结尾，本地存储建议使用相对路径，方便后期更换域名
+        base-path: /www/wwwroot/jnpf-resources/ # 基础路径
+        path-patterns: /** # 访问路径
+        storage-path:  # 存储路径
+    aliyun-oss: # 阿里云 OSS ，不使用的情况下可以不写
+      - platform: aliyun-oss-1 # 存储平台标识
+        enable-storage: true  # 启用存储
+        access-key: LTAI5tF3jr6GG8AoPnidv3xD
+        secret-key: c0Y5d4JTL3fhHhHV12WRFk2BrYjP8a
+        end-point: oss-cn-beijing.aliyuncs.com
+        bucket-name: jnpfsoftoss
+        domain: https://oss-cn-beijing.aliyuncs.com # 访问域名，注意“/”结尾，例如：https://abc.oss-cn-shanghai.aliyuncs.com/
+        base-path:  # 基础路径
+    qiniu-kodo: # 七牛云 kodo ，不使用的情况下可以不写
+      - platform: qiniu-kodo-1 # 存储平台标识
+        enable-storage: true  # 启用存储
+        access-key: arpc9Ds6-EwhDWu565hgvEWb4hfaQiiN4LPElkdi
+        secret-key: T6auiKDFModKQUoF4GT8am6wNuer5cLO0jad6lss
+        bucket-name: jnpfoss
+        domain: http://rdr5xb0kp.bkt.clouddn.com # 访问域名，注意“/”结尾，例如：http://abc.hn-bkt.clouddn.com/
+        base-path:  # 基础路径
+    tencent-cos: # 腾讯云 COS
+      - platform: tencent-cos-1 # 存储平台标识
+        enable-storage: true  # 启用存储
+        secret-id: ??
+        secret-key: ??
+        region: ?? #存仓库所在地域
+        bucket-name: ??
+        domain: ?? # 访问域名，注意“/”结尾，例如：https://abc.cos.ap-nanjing.myqcloud.com/
+        base-path: hy/ # 基础路径
+    minio: # MinIO，由于 MinIO SDK 支持 AWS S3，其它兼容 AWS S3 协议的存储平台也都可配置在这里
+      - platform: minio-1 # 存储平台标识
+        enable-storage: true  # 启用存储
+        access-key: minioadmin
+        secret-key: wNN8V4unEzVsIc5w
+        end-point: http://192.168.0.207:9000/ #服务端地址
+        bucket-name: jnpfsoftoss
+        domain: # 访问域名，注意“/”结尾，例如：http://minio.abc.com/abc/
+        base-path:  # 基础路径
+  

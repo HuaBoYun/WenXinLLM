@@ -1,0 +1,75 @@
+sqltype: oracle
+
+# spring
+spring:
+  main:
+    allow-circular-references: true
+  springdoc:
+    swagger-ui:
+      enabled: true
+    api-docs:
+      enabled: true
+  redis: 
+    host: 192.0.2.12
+    port: 6379
+    password:
+  # 数据源
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      #Oracle数据库配置
+      oracle:
+        url: jdbc:oracle:thin:@192.0.2.200:1521:orcl
+        username: HBGRCTEST
+        password: REDACTED
+        driverClassName: oracle.jdbc.driver.OracleDriver
+      #Mysql数据库配置
+      mysql:
+        url: jdbc:mysql://192.0.2.13:3306/etlhb?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&serverTimezone=GMT%2B8
+        username: root
+        password: REDACTED
+        driverClassName: com.mysql.cj.jdbc.Driver
+      initialSize: 5
+      minIdle: 10
+      maxActive: 20
+      maxWait: 60000
+      timeBetweenEvictionRunsMillis: 60000
+      minEvictableIdleTimeMillis: 300000
+      maxEvictableIdleTimeMillis: 900000
+      validationQuery: SELECT 1 FROM DUAL
+      testWhileIdle: true
+      testOnBorrow: false
+      testOnReturn: false
+  # elasticsearch 配置
+  elasticsearch:
+    bboss:
+      # x-pack认证账号和口令
+      elasticUser:
+      elasticPassword:
+      elasticsearch:
+        #es服务器地址配置
+        rest:
+          hostNames: 192.0.2.200:9200
+        showTemplate: true
+
+#eureka服务注册中心配置
+eureka:
+  instance:
+    ip-address: 127.0.0.1
+    instance-id: hbyunEsModule-8018
+    prefer-ip-address: true
+    hostname: hbyun-es-service
+  client:
+    serviceUrl:
+      defaultZone: http://hbyunadmin:REDACTED@127.0.0.1:8761/eureka
+      
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+  show-actuator: true
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json

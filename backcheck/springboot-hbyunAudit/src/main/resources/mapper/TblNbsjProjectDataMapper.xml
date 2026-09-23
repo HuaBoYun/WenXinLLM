@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.audit.oracle.mapper.TblNbsjProjectDataMapper">
+
+
+
+  <select id="selectListByPageInfoXml" resultType="com.huabo.audit.oracle.entity.TblNbsjProjectDataEntity">
+      SELECT TNA.* FROM TBL_PROJECT_DATAPRE TNA 
+      <where>
+         1=1
+          ${secrectSql}
+          <if test="dataProVo.projectId !=null and dataProVo.projectId != ''">
+              AND  TNA.projectId = #{dataProVo.projectId}
+          </if>
+          <if test="dataProVo.staffid !=null">
+              and (id in (select dataid from TBL_DATAPROJECT_ISSUE where staffid=#{dataProVo.staffid})
+              OR TNA.CREATESTAFF = #{dataProVo.staffid})
+          </if>
+          <if test="dataProVo.orgid !=null and dataProVo.orgid != ''">
+              AND TNA.ORGID  = #{dataProVo.orgid}
+          </if>
+          <if test="dataProVo.datacode !=null and dataProVo.datacode !=''">
+              AND TNA.PROJECT_DATAPRE_ID like concat(concat('%',#{dataProVo.datacode}),'%')
+          </if>
+          <if test="dataProVo.dataname !=null and dataProVo.dataname != ''">
+              AND TNA.DATA_NAME like concat(concat('%',#{dataProVo.dataname}),'%')
+          </if>
+          
+      </where>
+             ORDER BY TNA.ID DESC
+  </select>
+
+
+</mapper>
+
+

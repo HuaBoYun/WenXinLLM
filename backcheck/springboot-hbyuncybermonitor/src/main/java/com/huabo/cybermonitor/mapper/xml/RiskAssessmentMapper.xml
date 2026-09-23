@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.cybermonitor.mapper.RiskAssessmentMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.huabo.cybermonitor.entity.RiskAssessment">
+        <id column="RISK_ASSESSMENT_ID" property="riskAssessmentId" />
+        <result column="ENTERPRISE_ID" property="enterpriseId" />
+        <result column="ENTERPRISE_NAME" property="enterpriseName" />
+        <result column="ASSESSMENT_TYPE" property="assessmentType" />
+        <result column="ASSESSMENT_YEAR" property="assessmentYear" />
+        <result column="ASSESSMENT_QUARTER" property="assessmentQuarter" />
+        <result column="ASSESSMENT_DATE" property="assessmentDate" />
+        <result column="ASSESSMENT_METHOD" property="assessmentMethod" />
+        <result column="FINANCIAL_RISK_SCORE" property="financialRiskScore" />
+        <result column="OPERATIONAL_RISK_SCORE" property="operationalRiskScore" />
+        <result column="COMPLIANCE_RISK_SCORE" property="complianceRiskScore" />
+        <result column="GOVERNANCE_RISK_SCORE" property="governanceRiskScore" />
+        <result column="EXTERNAL_RISK_SCORE" property="externalRiskScore" />
+        <result column="OVERALL_RISK_SCORE" property="overallRiskScore" />
+        <result column="RISK_LEVEL" property="riskLevel" />
+        <result column="WARNING_STATUS" property="warningStatus" />
+        <result column="WARNING_THRESHOLD" property="warningThreshold" />
+        <result column="DANGER_THRESHOLD" property="dangerThreshold" />
+        <result column="RISK_FACTORS" property="riskFactors" />
+        <result column="ASSESSMENT_DESCRIPTION" property="assessmentDescription" />
+        <result column="RESPONSE_STRATEGY" property="responseStrategy" />
+        <result column="ASSESSMENT_STATUS" property="assessmentStatus" />
+        <result column="REVIEW_STATUS" property="reviewStatus" />
+        <result column="REVIEW_COMMENTS" property="reviewComments" />
+        <result column="REVIEW_BY" property="reviewBy" />
+        <result column="REVIEW_TIME" property="reviewTime" />
+        <result column="PERFORM_BY" property="performBy" />
+        <result column="PERFORM_TIME" property="performTime" />
+        <result column="CREATE_BY" property="createBy" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_BY" property="updateBy" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="DELETED" property="deleted" />
+        <result column="VERSION" property="version" />
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="Base_Column_List">
+        RISK_ASSESSMENT_ID, ENTERPRISE_ID, ENTERPRISE_NAME, ASSESSMENT_TYPE, ASSESSMENT_YEAR,
+        ASSESSMENT_QUARTER, ASSESSMENT_DATE, ASSESSMENT_METHOD, FINANCIAL_RISK_SCORE,
+        OPERATIONAL_RISK_SCORE, COMPLIANCE_RISK_SCORE, GOVERNANCE_RISK_SCORE, EXTERNAL_RISK_SCORE,
+        OVERALL_RISK_SCORE, RISK_LEVEL, WARNING_STATUS, WARNING_THRESHOLD, DANGER_THRESHOLD,
+        RISK_FACTORS, ASSESSMENT_DESCRIPTION, RESPONSE_STRATEGY, ASSESSMENT_STATUS,
+        REVIEW_STATUS, REVIEW_COMMENTS, REVIEW_BY, REVIEW_TIME, PERFORM_BY, PERFORM_TIME,
+        CREATE_BY, CREATE_TIME, UPDATE_BY, UPDATE_TIME, DELETED, VERSION
+    </sql>
+
+    <!-- 查询条件 -->
+    <sql id="Query_Where_Clause">
+        <where>
+            DELETED = 0
+            <if test="enterpriseId != null and enterpriseId != ''">
+                AND ENTERPRISE_ID = #{enterpriseId}
+            </if>
+            <if test="enterpriseName != null and enterpriseName != ''">
+                AND ENTERPRISE_NAME LIKE CONCAT('%', #{enterpriseName}, '%')
+            </if>
+            <if test="assessmentType != null and assessmentType != ''">
+                AND ASSESSMENT_TYPE = #{assessmentType}
+            </if>
+            <if test="assessmentYear != null">
+                AND ASSESSMENT_YEAR = #{assessmentYear}
+            </if>
+            <if test="assessmentQuarter != null">
+                AND ASSESSMENT_QUARTER = #{assessmentQuarter}
+            </if>
+            <if test="riskLevel != null and riskLevel != ''">
+                AND RISK_LEVEL = #{riskLevel}
+            </if>
+            <if test="warningStatus != null and warningStatus != ''">
+                AND WARNING_STATUS = #{warningStatus}
+            </if>
+            <if test="assessmentStatus != null and assessmentStatus != ''">
+                AND ASSESSMENT_STATUS = #{assessmentStatus}
+            </if>
+            <if test="reviewStatus != null and reviewStatus != ''">
+                AND REVIEW_STATUS = #{reviewStatus}
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND ASSESSMENT_DATE >= #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND ASSESSMENT_DATE &lt;= #{endDate}
+            </if>
+            <if test="minRiskScore != null">
+                AND OVERALL_RISK_SCORE >= #{minRiskScore}
+            </if>
+            <if test="maxRiskScore != null">
+                AND OVERALL_RISK_SCORE &lt;= #{maxRiskScore}
+            </if>
+        </where>
+    </sql>
+
+    <!-- 分页查询风险评估列表 -->
+    <select id="selectRiskAssessmentList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_RISK_ASSESSMENT
+        <include refid="Query_Where_Clause" />
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据ID查询(旧表-已废弃，使用MyBatis-Plus内置selectById) -->
+    <select id="selectByIdOldTable" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_RISK_ASSESSMENT
+        WHERE RISK_ASSESSMENT_ID = #{id} AND DELETED = 0
+    </select>
+
+    <!-- 新增风险评估(旧表-已废弃，使用MyBatis-Plus内置insert) -->
+    <insert id="insertToOldTable">
+        INSERT INTO TBL_RISK_ASSESSMENT (
+            RISK_ASSESSMENT_ID, ENTERPRISE_ID, ENTERPRISE_NAME, ASSESSMENT_TYPE, ASSESSMENT_YEAR,
+            ASSESSMENT_QUARTER, ASSESSMENT_DATE, ASSESSMENT_METHOD, FINANCIAL_RISK_SCORE,
+            OPERATIONAL_RISK_SCORE, COMPLIANCE_RISK_SCORE, GOVERNANCE_RISK_SCORE, EXTERNAL_RISK_SCORE,
+            OVERALL_RISK_SCORE, RISK_LEVEL, WARNING_STATUS, WARNING_THRESHOLD, DANGER_THRESHOLD,
+            RISK_FACTORS, ASSESSMENT_DESCRIPTION, RESPONSE_STRATEGY, ASSESSMENT_STATUS,
+            REVIEW_STATUS, CREATE_BY, CREATE_TIME, DELETED, VERSION
+        ) VALUES (
+            #{riskAssessmentId}, #{enterpriseId}, #{enterpriseName}, #{assessmentType}, #{assessmentYear},
+            #{assessmentQuarter}, #{assessmentDate}, #{assessmentMethod}, #{financialRiskScore},
+            #{operationalRiskScore}, #{complianceRiskScore}, #{governanceRiskScore}, #{externalRiskScore},
+            #{overallRiskScore}, #{riskLevel}, #{warningStatus}, #{warningThreshold}, #{dangerThreshold},
+            #{riskFactors}, #{assessmentDescription}, #{responseStrategy}, #{assessmentStatus},
+            #{reviewStatus}, #{createBy}, 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>, 
+            0, 1
+        )
+    </insert>
+
+    <!-- 更新风险评估(旧表-已废弃，使用MyBatis-Plus内置updateById) -->
+    <update id="updateByIdOldTable">
+        UPDATE TBL_RISK_ASSESSMENT
+        SET ENTERPRISE_ID = #{enterpriseId},
+            ENTERPRISE_NAME = #{enterpriseName},
+            ASSESSMENT_TYPE = #{assessmentType},
+            ASSESSMENT_YEAR = #{assessmentYear},
+            ASSESSMENT_QUARTER = #{assessmentQuarter},
+            ASSESSMENT_DATE = #{assessmentDate},
+            ASSESSMENT_METHOD = #{assessmentMethod},
+            FINANCIAL_RISK_SCORE = #{financialRiskScore},
+            OPERATIONAL_RISK_SCORE = #{operationalRiskScore},
+            COMPLIANCE_RISK_SCORE = #{complianceRiskScore},
+            GOVERNANCE_RISK_SCORE = #{governanceRiskScore},
+            EXTERNAL_RISK_SCORE = #{externalRiskScore},
+            OVERALL_RISK_SCORE = #{overallRiskScore},
+            RISK_LEVEL = #{riskLevel},
+            WARNING_STATUS = #{warningStatus},
+            WARNING_THRESHOLD = #{warningThreshold},
+            DANGER_THRESHOLD = #{dangerThreshold},
+            RISK_FACTORS = #{riskFactors},
+            ASSESSMENT_DESCRIPTION = #{assessmentDescription},
+            RESPONSE_STRATEGY = #{responseStrategy},
+            ASSESSMENT_STATUS = #{assessmentStatus},
+            UPDATE_BY = #{updateBy},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            VERSION = VERSION + 1
+        WHERE RISK_ASSESSMENT_ID = #{riskAssessmentId} AND DELETED = 0
+    </update>
+
+    <!-- 逻辑删除(旧表-已废弃，使用MyBatis-Plus内置deleteById) -->
+    <update id="deleteByIdOldTable">
+        UPDATE TBL_RISK_ASSESSMENT
+        SET DELETED = 1,
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>
+        WHERE RISK_ASSESSMENT_ID = #{id} AND DELETED = 0
+    </update>
+
+    <!-- 更新评估状态 -->
+    <update id="updateAssessmentStatus">
+        UPDATE TBL_RISK_ASSESSMENT
+        SET ASSESSMENT_STATUS = #{status},
+            PERFORM_BY = #{performBy},
+            PERFORM_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            UPDATE_BY = #{performBy},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            VERSION = VERSION + 1
+        WHERE RISK_ASSESSMENT_ID = #{riskAssessmentId} AND DELETED = 0
+    </update>
+
+    <!-- 更新审核状态 -->
+    <update id="updateReviewStatus">
+        UPDATE TBL_RISK_ASSESSMENT
+        SET REVIEW_STATUS = #{reviewStatus},
+            REVIEW_COMMENTS = #{reviewComments},
+            REVIEW_BY = #{reviewBy},
+            REVIEW_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            UPDATE_BY = #{reviewBy},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            VERSION = VERSION + 1
+        WHERE RISK_ASSESSMENT_ID = #{riskAssessmentId} AND DELETED = 0
+    </update>
+
+    <!-- 批量更新状态 -->
+    <update id="batchUpdateStatus">
+        UPDATE TBL_RISK_ASSESSMENT
+        SET ASSESSMENT_STATUS = #{status},
+            UPDATE_BY = #{updateBy},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            VERSION = VERSION + 1
+        WHERE RISK_ASSESSMENT_ID IN
+        <foreach collection="riskAssessmentIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND DELETED = 0
+    </update>
+
+    <!-- 批量逻辑删除 -->
+    <update id="batchDelete">
+        UPDATE TBL_RISK_ASSESSMENT
+        SET DELETED = 1,
+            UPDATE_BY = #{deleteBy},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>
+        WHERE RISK_ASSESSMENT_ID IN
+        <foreach collection="riskAssessmentIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND DELETED = 0
+    </update>
+
+    <!-- 获取综合统计数据 -->
+    <select id="getComprehensiveStatistics" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as totalAssessments,
+            COUNT(CASE WHEN WARNING_STATUS = 'WARNING' THEN 1 END) as warningCount,
+            COUNT(CASE WHEN RISK_LEVEL = 'HIGH' OR RISK_LEVEL = 'CRITICAL' THEN 1 END) as highRiskCount,
+            COUNT(CASE WHEN ASSESSMENT_STATUS = 'COMPLETED' THEN 1 END) as completedCount,
+            COUNT(CASE WHEN REVIEW_STATUS = 'PENDING' THEN 1 END) as pendingReviewCount,
+            ROUND(AVG(OVERALL_RISK_SCORE), 2) as avgRiskScore,
+            MAX(OVERALL_RISK_SCORE) as maxRiskScore,
+            MIN(OVERALL_RISK_SCORE) as minRiskScore
+        FROM TBL_RISK_ASSESSMENT
+        WHERE DELETED = 0
+        <if test="enterpriseId != null and enterpriseId != ''">
+            AND ENTERPRISE_ID = #{enterpriseId}
+        </if>
+        <if test="assessmentYear != null">
+            AND ASSESSMENT_YEAR = #{assessmentYear}
+        </if>
+    </select>
+
+    <!-- 获取趋势分析数据 -->
+    <select id="getTrendAnalysis" resultType="java.util.Map">
+        SELECT 
+            <choose>
+                <when test="granularity == 'MONTHLY'">
+                    <choose>
+                        <when test="_databaseId == 'mysql'">
+                            DATE_FORMAT(ASSESSMENT_DATE, '%Y-%m') as period
+                        </when>
+                        <otherwise>
+                            TO_CHAR(ASSESSMENT_DATE, 'YYYY-MM') as period
+                        </otherwise>
+                    </choose>
+                </when>
+                <when test="granularity == 'QUARTERLY'">
+                    <choose>
+                        <when test="_databaseId == 'mysql'">
+                            CONCAT(YEAR(ASSESSMENT_DATE), '-Q', QUARTER(ASSESSMENT_DATE)) as period
+                        </when>
+                        <otherwise>
+                            TO_CHAR(ASSESSMENT_DATE, 'YYYY') || '-Q' || TO_CHAR(ASSESSMENT_DATE, 'Q') as period
+                        </otherwise>
+                    </choose>
+                </when>
+                <otherwise>
+                    <choose>
+                        <when test="_databaseId == 'mysql'">
+                            YEAR(ASSESSMENT_DATE) as period
+                        </when>
+                        <otherwise>
+                            TO_CHAR(ASSESSMENT_DATE, 'YYYY') as period
+                        </otherwise>
+                    </choose>
+                </otherwise>
+            </choose>,
+            COUNT(*) as assessmentCount,
+            ROUND(AVG(OVERALL_RISK_SCORE), 2) as avgRiskScore,
+            COUNT(CASE WHEN WARNING_STATUS = 'WARNING' THEN 1 END) as warningCount,
+            COUNT(CASE WHEN RISK_LEVEL = 'HIGH' OR RISK_LEVEL = 'CRITICAL' THEN 1 END) as highRiskCount
+        FROM TBL_RISK_ASSESSMENT
+        WHERE DELETED = 0
+        <if test="startDate != null and startDate != ''">
+            AND ASSESSMENT_DATE >= #{startDate}
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND ASSESSMENT_DATE &lt;= #{endDate}
+        </if>
+        GROUP BY period
+        ORDER BY period
+    </select>
+
+    <!-- 获取风险分布统计 -->
+    <select id="getRiskDistributionStatistics" resultType="java.util.Map">
+        SELECT 
+            RISK_LEVEL as riskLevel,
+            COUNT(*) as count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM TBL_RISK_ASSESSMENT WHERE DELETED = 0), 2) as percentage
+        FROM TBL_RISK_ASSESSMENT
+        WHERE DELETED = 0
+        <if test="enterpriseId != null and enterpriseId != ''">
+            AND ENTERPRISE_ID = #{enterpriseId}
+        </if>
+        <if test="assessmentYear != null">
+            AND ASSESSMENT_YEAR = #{assessmentYear}
+        </if>
+        GROUP BY RISK_LEVEL
+        ORDER BY 
+            CASE RISK_LEVEL 
+                WHEN 'CRITICAL' THEN 1
+                WHEN 'HIGH' THEN 2
+                WHEN 'MEDIUM' THEN 3
+                WHEN 'LOW' THEN 4
+                ELSE 5
+            END
+    </select>
+
+</mapper>

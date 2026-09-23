@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.mysql.mapper.FixedAssetDepreciationMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.financial.sharing.mysql.entity.FixedAssetDepreciationEntity">
+        <id column="DEPRECIATION_ID" property="depreciationId" />
+        <result column="ASSET_ID" property="assetId" />
+        <result column="PERIOD" property="period" />
+        <result column="DEPRECIATION_METHOD" property="depreciationMethod" />
+        <result column="MONTHLY_DEPRECIATION" property="monthlyDepreciation" />
+        <result column="ACCUMULATED_DEPRECIATION" property="accumulatedDepreciation" />
+        <result column="NET_VALUE" property="netValue" />
+        <result column="VOUCHER_NO" property="voucherNo" />
+        <result column="STATUS" property="status" />
+        <result column="REMARK" property="remark" />
+        <result column="TENANT_ID" property="tenantId" />
+        <result column="CREATE_BY" property="createBy" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_BY" property="updateBy" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="IS_DELETED" property="isDeleted" />
+        <!-- 扩展字段 -->
+        <result column="assetCode" property="assetCode" />
+        <result column="assetName" property="assetName" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        DEPRECIATION_ID, ASSET_ID, PERIOD, DEPRECIATION_METHOD, MONTHLY_DEPRECIATION,
+        ACCUMULATED_DEPRECIATION, NET_VALUE, VOUCHER_NO, STATUS, REMARK, TENANT_ID,
+        CREATE_BY, CREATE_TIME, UPDATE_BY, UPDATE_TIME, IS_DELETED
+    </sql>
+
+    <!-- 分页查询折旧记录列表 -->
+    <select id="selectPageList" resultMap="BaseResultMap">
+        SELECT d.DEPRECIATION_ID, d.ASSET_ID, d.PERIOD, d.DEPRECIATION_METHOD, d.MONTHLY_DEPRECIATION,
+               d.ACCUMULATED_DEPRECIATION, d.NET_VALUE, d.VOUCHER_NO, d.STATUS, d.REMARK, d.TENANT_ID,
+               d.CREATE_BY, d.CREATE_TIME, d.UPDATE_BY, d.UPDATE_TIME, d.IS_DELETED,
+               a.ASSET_CODE AS assetCode,
+               a.ASSET_NAME AS assetName
+        FROM TBL_FIXED_ASSET_DEPRECIATION d
+        LEFT JOIN TBL_FIXED_ASSET_CARD a ON d.ASSET_ID = a.ASSET_ID AND a.IS_DELETED = 0
+        WHERE d.IS_DELETED = 0
+        <if test="tenantId != null">
+            AND d.TENANT_ID = #{tenantId}
+        </if>
+        <if test="assetCode != null and assetCode != ''">
+            AND a.ASSET_CODE LIKE CONCAT('%', #{assetCode}, '%')
+        </if>
+        <if test="startPeriod != null and startPeriod != ''">
+            AND d.PERIOD &gt;= #{startPeriod}
+        </if>
+        <if test="endPeriod != null and endPeriod != ''">
+            AND d.PERIOD &lt;= #{endPeriod}
+        </if>
+        ORDER BY d.PERIOD DESC, d.CREATE_TIME DESC
+    </select>
+
+    <!-- 查询资产的折旧记录 -->
+    <select id="selectByAssetId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_FIXED_ASSET_DEPRECIATION
+        WHERE ASSET_ID = #{assetId}
+          AND IS_DELETED = 0
+        ORDER BY PERIOD DESC
+    </select>
+
+    <!-- 查询指定期间的折旧记录 -->
+    <select id="selectByPeriod" resultMap="BaseResultMap">
+        SELECT d.DEPRECIATION_ID, d.ASSET_ID, d.PERIOD, d.DEPRECIATION_METHOD, d.MONTHLY_DEPRECIATION,
+               d.ACCUMULATED_DEPRECIATION, d.NET_VALUE, d.VOUCHER_NO, d.STATUS, d.REMARK, d.TENANT_ID,
+               d.CREATE_BY, d.CREATE_TIME, d.UPDATE_BY, d.UPDATE_TIME, d.IS_DELETED,
+               a.ASSET_CODE AS assetCode,
+               a.ASSET_NAME AS assetName
+        FROM TBL_FIXED_ASSET_DEPRECIATION d
+        LEFT JOIN TBL_FIXED_ASSET_CARD a ON d.ASSET_ID = a.ASSET_ID AND a.IS_DELETED = 0
+        WHERE d.PERIOD = #{period}
+          AND d.IS_DELETED = 0
+        <if test="tenantId != null">
+            AND d.TENANT_ID = #{tenantId}
+        </if>
+        ORDER BY a.ASSET_CODE ASC
+    </select>
+
+    <!-- 统计折旧汇总信息 -->
+    <select id="selectDepreciationSummary" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) AS totalCount,
+            NVL(SUM(MONTHLY_DEPRECIATION), 0) AS totalMonthlyDepreciation,
+            NVL(SUM(ACCUMULATED_DEPRECIATION), 0) AS totalAccumulatedDepreciation
+        FROM TBL_FIXED_ASSET_DEPRECIATION
+        WHERE PERIOD = #{period}
+          AND IS_DELETED = 0
+        <if test="tenantId != null">
+            AND TENANT_ID = #{tenantId}
+        </if>
+    </select>
+
+    <!-- 批量更新折旧状态 -->
+    <update id="batchUpdateStatus">
+        UPDATE TBL_FIXED_ASSET_DEPRECIATION
+        SET STATUS = #{status},
+            UPDATE_BY = #{updateBy},
+            UPDATE_TIME = SYSDATE
+        WHERE DEPRECIATION_ID IN
+        <foreach collection="depreciationIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 统计折旧数据 -->
+    <select id="selectStatistics" resultType="java.util.Map">
+        SELECT
+            NVL(SUM(d.MONTHLY_DEPRECIATION), 0) AS totalAmount,
+            NVL(SUM(d.ACCUMULATED_DEPRECIATION), 0) AS accumulatedAmount,
+            COUNT(DISTINCT d.ASSET_ID) AS assetCount,
+            CASE
+                WHEN SUM(a.ORIGINAL_VALUE) > 0
+                THEN ROUND(SUM(d.ACCUMULATED_DEPRECIATION) / SUM(a.ORIGINAL_VALUE) * 100, 2)
+                ELSE 0
+            END AS depreciationRate
+        FROM TBL_FIXED_ASSET_DEPRECIATION d
+        LEFT JOIN TBL_FIXED_ASSET_CARD a ON d.ASSET_ID = a.ASSET_ID AND a.IS_DELETED = 0
+        WHERE d.IS_DELETED = 0
+        <if test="tenantId != null">
+            AND d.TENANT_ID = #{tenantId}
+        </if>
+        <if test="startPeriod != null and startPeriod != ''">
+            AND d.PERIOD &gt;= #{startPeriod}
+        </if>
+        <if test="endPeriod != null and endPeriod != ''">
+            AND d.PERIOD &lt;= #{endPeriod}
+        </if>
+        <if test="categoryId != null and categoryId != ''">
+            AND a.CATEGORY_ID = #{categoryId}
+        </if>
+    </select>
+
+    <!-- 查询折旧趋势数据 -->
+    <select id="selectTrendData" resultType="java.util.Map">
+        SELECT
+            d.PERIOD AS period,
+            NVL(SUM(d.MONTHLY_DEPRECIATION), 0) AS amount,
+            COUNT(DISTINCT d.ASSET_ID) AS assetCount
+        FROM TBL_FIXED_ASSET_DEPRECIATION d
+        WHERE d.IS_DELETED = 0
+        <if test="tenantId != null">
+            AND d.TENANT_ID = #{tenantId}
+        </if>
+        <if test="startPeriod != null and startPeriod != ''">
+            AND d.PERIOD &gt;= #{startPeriod}
+        </if>
+        <if test="endPeriod != null and endPeriod != ''">
+            AND d.PERIOD &lt;= #{endPeriod}
+        </if>
+        GROUP BY d.PERIOD
+        ORDER BY d.PERIOD ASC
+    </select>
+
+    <!-- 检查期间是否已计提折旧 -->
+    <select id="checkPeriodExists" resultType="int">
+        SELECT COUNT(*)
+        FROM TBL_FIXED_ASSET_DEPRECIATION
+        WHERE ASSET_ID = #{assetId}
+          AND PERIOD = #{period}
+          AND IS_DELETED = 0
+        <if test="tenantId != null">
+            AND TENANT_ID = #{tenantId}
+        </if>
+    </select>
+
+    <!-- 批量插入折旧记录 -->
+    <insert id="batchInsert">
+        INSERT INTO TBL_FIXED_ASSET_DEPRECIATION (
+            DEPRECIATION_ID, ASSET_ID, PERIOD, DEPRECIATION_METHOD, MONTHLY_DEPRECIATION,
+            ACCUMULATED_DEPRECIATION, NET_VALUE, STATUS, TENANT_ID, CREATE_BY, CREATE_TIME
+        )
+        <foreach collection="list" item="item" separator="UNION ALL">
+            SELECT
+                #{item.depreciationId}, #{item.assetId}, #{item.period}, #{item.depreciationMethod},
+                #{item.monthlyDepreciation}, #{item.accumulatedDepreciation}, #{item.netValue},
+                #{item.status}, #{item.tenantId}, #{item.createBy}, SYSDATE
+            FROM DUAL
+        </foreach>
+    </insert>
+
+</mapper>
+

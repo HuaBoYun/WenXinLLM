@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.central.enterprises.audit.oracle.mapper.TblCeaExpatriateApplyOracleMapper">
+
+    <select id="getList" resultType="com.huabo.central.enterprises.audit.oracle.entity.TblCeaExpatriateApplyOracle">
+        select t1.*
+        from TBL_CEA_EXPATRIATE_APPLY t1
+        left join TBL_STAFF t2 on t2.STAFFID = t1.APPLYPEOPLE
+        left join TBL_ORGANIZATION t3 on t3.ORGID = t1.APPLYWORKUNIT
+        where 1=1 and (t1.creator = #{param.creator}
+        <if test="param.deptIds != null and param.deptIds != ''">
+           or t1.creator in (SELECT DISTINCT STAFFID FROM TBL_USER_ORGRELATION WHERE DEPTID IN (${param.getDeptIds}))
+        </if>)
+        <if test="param.applyPeopleName != null and param.applyPeopleName != ''">
+            and t2.REALNAME like concat('%',concat(#{param.applyPeopleName},'%'))
+        </if>
+        <if test="param.applyWorkUnitName != null and param.applyWorkUnitName != ''">
+            and t3.ORGNAME like concat('%',concat(#{param.applyWorkUnitName},'%'))
+        </if>
+        order by t1.id desc
+    </select>
+
+    <select id="findTblCeaExpatriateApplyAllList" resultType="com.huabo.central.enterprises.audit.oracle.entity.TblCeaExpatriateApplyOracle">
+        select t1.*
+        from TBL_CEA_EXPATRIATE_APPLY t1
+        left join TBL_STAFF t2 on t1.APPLYPEOPLE=t2.STAFFID
+        left join TBL_ORGANIZATION t4 on t4.ORGID = t2.ORGID
+        where t1.STATE = 6 and not exists(select * from TBL_CEA_CANCEL_HOLIDAY t2 where t2.RELATIONID = t1.ID and t2.STATE = 6)
+        <if test="param.realName != null and param.realName != ''">
+              AND t2.REALNAME like concat('%',concat(#{param.realName},'%'))
+        </if>
+        <if test="param.applyWorkUnitName != null and param.applyWorkUnitName != ''">
+            and t4.ORGNAME like concat('%',concat(#{param.applyWorkUnitName},'%'))
+        </if>
+        <if test="param.ids != null and param.ids.size() > 0">
+            and t1.ID in
+            <foreach collection="param.ids" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        order by t1.id desc
+    </select>
+
+</mapper>

@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.oracle.mapper.CostModelMapper">
+
+    <resultMap id="BaseResultMap" type="com.financial.sharing.oracle.entity.CostModelEntity">
+        <id column="MODEL_ID" property="modelId" />
+        <result column="MODEL_CODE" property="modelCode" />
+        <result column="MODEL_NAME" property="modelName" />
+        <result column="MODEL_TYPE" property="modelType" />
+        <result column="MODEL_FORMULA" property="modelFormula" />
+        <result column="PARAMETERS" property="parameters" />
+        <result column="MODEL_DESCRIPTION" property="modelDescription" />
+        <result column="APPLICABLE_SCENARIO" property="applicableScenario" />
+        <result column="ACCURACY_SCORE" property="accuracyScore" />
+        <result column="IS_ENABLED" property="isEnabled" />
+        <result column="BOOK_ID" property="bookId" />
+        <result column="TENANT_ID" property="tenantId" />
+        <result column="CREATE_BY" property="createBy" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_BY" property="updateBy" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="REMARK" property="remark" />
+    </resultMap>
+
+    <!-- 分页查询成本模型列表 -->
+    <select id="selectModelListWithPagination" resultType="map">
+        SELECT
+            MODEL_ID AS "modelId",
+            MODEL_CODE AS "modelCode",
+            MODEL_NAME AS "modelName",
+            MODEL_TYPE AS "modelType",
+            MODEL_FORMULA AS "modelFormula",
+            MODEL_FORMULA AS "formula",
+            MODEL_DESCRIPTION AS "modelDescription",
+            MODEL_DESCRIPTION AS "description",
+            APPLICABLE_SCENARIO AS "applicableScenario",
+            INDUSTRY AS "industry",
+            ALGORITHM AS "algorithm",
+            ACCURACY_SCORE AS "accuracyScore",
+            ACCURACY_SCORE AS "accuracy",
+            IS_ENABLED AS "isEnabled",
+            CREATE_TIME AS "createTime"
+        FROM TBL_COST_MODEL
+        WHERE 1 = 1
+          <if test="bookId != null and bookId != ''">
+              AND BOOK_ID = #{bookId}
+          </if>
+          <if test="tenantId != null and tenantId != ''">
+              AND TENANT_ID = #{tenantId}
+          </if>
+          <if test="modelCode != null and modelCode != ''">
+              AND MODEL_CODE LIKE '%' || #{modelCode} || '%'
+          </if>
+          <if test="modelName != null and modelName != ''">
+              AND MODEL_NAME LIKE '%' || #{modelName} || '%'
+          </if>
+          <if test="modelType != null and modelType != ''">
+              AND MODEL_TYPE = #{modelType}
+          </if>
+          <if test="industry != null and industry != ''">
+              AND INDUSTRY = #{industry}
+          </if>
+          <if test="isEnabled != null">
+              AND IS_ENABLED = #{isEnabled}
+          </if>
+        ORDER BY ACCURACY_SCORE DESC, CREATE_TIME DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
+    </select>
+
+    <!-- 查询总记录数 -->
+    <select id="countModelList" resultType="int">
+        SELECT COUNT(1)
+        FROM TBL_COST_MODEL
+        WHERE 1 = 1
+          <if test="bookId != null and bookId != ''">
+              AND BOOK_ID = #{bookId}
+          </if>
+          <if test="tenantId != null and tenantId != ''">
+              AND TENANT_ID = #{tenantId}
+          </if>
+          <if test="modelCode != null and modelCode != ''">
+              AND MODEL_CODE LIKE '%' || #{modelCode} || '%'
+          </if>
+          <if test="modelName != null and modelName != ''">
+              AND MODEL_NAME LIKE '%' || #{modelName} || '%'
+          </if>
+          <if test="modelType != null and modelType != ''">
+              AND MODEL_TYPE = #{modelType}
+          </if>
+          <if test="industry != null and industry != ''">
+              AND INDUSTRY = #{industry}
+          </if>
+          <if test="isEnabled != null">
+              AND IS_ENABLED = #{isEnabled}
+          </if>
+    </select>
+
+    <!-- 根据模型编码查询模型 -->
+    <select id="selectByModelCode" resultType="map">
+        SELECT
+            MODEL_ID AS "modelId",
+            MODEL_CODE AS "modelCode",
+            MODEL_NAME AS "modelName",
+            MODEL_TYPE AS "modelType",
+            MODEL_FORMULA AS "modelFormula",
+            PARAMETERS AS "parameters",
+            MODEL_DESCRIPTION AS "modelDescription",
+            APPLICABLE_SCENARIO AS "applicableScenario",
+            INDUSTRY AS "industry",
+            ALGORITHM AS "algorithm",
+            ACCURACY_SCORE AS "accuracyScore",
+            IS_ENABLED AS "isEnabled",
+            REMARK AS "remark"
+        FROM TBL_COST_MODEL
+        WHERE MODEL_CODE = #{modelCode}
+          AND BOOK_ID = #{bookId}
+          AND TENANT_ID = #{tenantId}
+    </select>
+
+    <!-- 批量更新模型状态 -->
+    <update id="batchUpdateStatus">
+        UPDATE TBL_COST_MODEL
+        SET IS_ENABLED = #{isEnabled},
+            UPDATE_TIME = SYSDATE
+        WHERE MODEL_ID IN
+        <foreach collection="modelIds" item="modelId" open="(" separator="," close=")">
+            #{modelId}
+        </foreach>
+    </update>
+
+    <!-- 检查模型编码是否存在 -->
+    <select id="checkModelCodeExists" resultType="int">
+        SELECT COUNT(1)
+        FROM TBL_COST_MODEL
+        WHERE MODEL_CODE = #{modelCode}
+          AND BOOK_ID = #{bookId}
+          AND TENANT_ID = #{tenantId}
+          <if test="modelId != null and modelId != ''">
+              AND MODEL_ID != #{modelId}
+          </if>
+    </select>
+
+    <!-- 获取模型选项列表 -->
+    <select id="selectModelOptions" resultType="map">
+        SELECT
+            MODEL_ID AS "value",
+            MODEL_NAME AS "label",
+            MODEL_CODE AS "code",
+            MODEL_TYPE AS "type"
+        FROM TBL_COST_MODEL
+        WHERE BOOK_ID = #{bookId}
+          AND TENANT_ID = #{tenantId}
+          AND IS_ENABLED = 1
+        ORDER BY MODEL_NAME
+    </select>
+
+</mapper>
+

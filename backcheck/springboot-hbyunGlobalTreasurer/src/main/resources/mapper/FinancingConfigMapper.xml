@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.FinancingConfigMapper">
+
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TblFinancingBasicParams">
+        <id column="PARAM_ID" property="paramId"/>
+        <result column="PARAM_CODE" property="paramCode"/>
+        <result column="PARAM_TYPE" property="paramType"/>
+        <result column="PARAM_NAME" property="paramName"/>
+        <result column="PARAM_VALUE" property="paramValue"/>
+        <result column="PARAM_DESC" property="description"/>
+        <result column="STATUS" property="status"/>
+        <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="CREATE_USER" property="createUser"/>
+        <result column="UPDATE_USER" property="updateUser"/>
+        <result column="ORG_ID" property="orgId"/>
+        <result column="REMARK" property="remark"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        PARAM_ID, PARAM_CODE, PARAM_TYPE, PARAM_NAME, PARAM_VALUE, PARAM_DESC, STATUS,
+        CREATE_TIME, UPDATE_TIME, CREATE_USER, UPDATE_USER, ORG_ID, REMARK
+    </sql>
+
+    <!-- MyBatis-Plus BaseMapper需要的selectList方法 -->
+    <select id="selectList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_FINANCING_BASIC_PARAMS
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- MyBatis-Plus BaseMapper需要的selectById方法 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_FINANCING_BASIC_PARAMS
+        WHERE PARAM_ID = #{paramId}
+    </select>
+
+    <!-- MyBatis-Plus BaseMapper需要的selectCount方法 -->
+    <select id="selectCount" resultType="long">
+        SELECT COUNT(*)
+        FROM TBL_FINANCING_BASIC_PARAMS
+        <where>
+            <if test="paramName != null and paramName != ''">
+                AND PARAM_NAME = #{paramName}
+            </if>
+            <if test="paramId != null">
+                AND PARAM_ID != #{paramId}
+            </if>
+        </where>
+    </select>
+
+</mapper>

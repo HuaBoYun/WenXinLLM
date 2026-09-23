@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.oracle.mapper.FinanceOrganizationMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="OrganizationResultMap" type="com.financial.sharing.vo.result.FinanceOrganizationVO">
+        <id column="ID" property="id"/>
+        <result column="ORG_CODE" property="orgCode"/>
+        <result column="ORG_NAME" property="orgName"/>
+        <result column="ORG_TYPE" property="orgType"/>
+        <result column="PARENT_ID" property="parentId"/>
+        <result column="ORG_LEVEL" property="orgLevel"/>
+        <result column="SORT_ORDER" property="sortOrder"/>
+        <result column="MANAGER_ID" property="managerId"/>
+        <result column="MANAGER_NAME" property="managerName"/>
+        <result column="PHONE" property="phone"/>
+        <result column="EMAIL" property="email"/>
+        <result column="ADDRESS" property="address"/>
+        <result column="IS_ENABLED" property="isEnabled"/>
+        <result column="DESCRIPTION" property="description"/>
+        <result column="TENANT_ID" property="tenantId"/>
+        <result column="BOOK_ID" property="bookId"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="CREATE_BY" property="createBy"/>
+        <result column="UPDATE_BY" property="updateBy"/>
+        <result column="VERSION" property="version"/>
+        <result column="IS_DELETED" property="isDeleted"/>
+        <!-- 统计信息 -->
+        <result column="CHILD_COUNT" property="childCount"/>
+        <result column="DEPT_COUNT" property="deptCount"/>
+        <result column="USER_COUNT" property="userCount"/>
+    </resultMap>
+
+    <!-- 基础列名 -->
+    <sql id="Base_Column_List">
+        ID, ORG_CODE, ORG_NAME, ORG_TYPE, PARENT_ID, ORG_LEVEL, SORT_ORDER,
+        MANAGER_ID, MANAGER_NAME, PHONE, EMAIL, ADDRESS, IS_ENABLED, DESCRIPTION,
+        TENANT_ID, BOOK_ID, CREATE_TIME, UPDATE_TIME, CREATE_BY, UPDATE_BY,
+        IS_DELETED, VERSION
+    </sql>
+
+    <!-- 查询组织树形结构 -->
+    <select id="selectOrganizationTree" resultMap="OrganizationResultMap">
+        SELECT
+            t.ID,
+            t.ORG_CODE,
+            t.ORG_NAME,
+            t.ORG_TYPE,
+            t.PARENT_ID,
+            t.ORG_LEVEL,
+            t.SORT_ORDER,
+            t.MANAGER_ID,
+            t.MANAGER_NAME,
+            t.PHONE,
+            t.EMAIL,
+            t.ADDRESS,
+            t.IS_ENABLED,
+            t.DESCRIPTION,
+            t.TENANT_ID,
+            t.BOOK_ID,
+            t.CREATE_TIME,
+            t.UPDATE_TIME,
+            t.CREATE_BY,
+            t.UPDATE_BY,
+            t.VERSION,
+            t.IS_DELETED,
+            <!-- 统计子组织数量 -->
+            (SELECT COUNT(1) FROM TBL_FINANCE_ORGANIZATION
+             WHERE PARENT_ID = t.ID AND IS_DELETED = 0) AS CHILD_COUNT,
+            <!-- 统计部门数量(类型为2的记录) -->
+            (SELECT COUNT(1) FROM TBL_FINANCE_ORGANIZATION
+             WHERE PARENT_ID = t.ID AND ORG_TYPE = 2 AND IS_DELETED = 0) AS DEPT_COUNT,
+            <!-- 用户数量暂时为0，需要关联用户表 -->
+            0 AS USER_COUNT
+        FROM TBL_FINANCE_ORGANIZATION t
+        WHERE t.TENANT_ID = #{tenantId}
+        AND t.BOOK_ID = #{bookId}
+        AND t.IS_DELETED = 0
+        ORDER BY t.ORG_LEVEL ASC, t.SORT_ORDER ASC, t.CREATE_TIME ASC
+    </select>
+
+    <!-- 根据ID查询组织 -->
+    <select id="selectOrganizationById" resultMap="OrganizationResultMap">
+        SELECT
+            <include refid="Base_Column_List"/>,
+            <!-- 统计子组织数量 -->
+            (SELECT COUNT(1) FROM TBL_FINANCE_ORGANIZATION
+             WHERE PARENT_ID = t.ID AND IS_DELETED = 0) AS CHILD_COUNT,
+            <!-- 统计部门数量 -->
+            (SELECT COUNT(1) FROM TBL_FINANCE_ORGANIZATION
+             WHERE PARENT_ID = t.ID AND ORG_TYPE = 2 AND IS_DELETED = 0) AS DEPT_COUNT,
+            <!-- 用户数量暂时为0 -->
+            0 AS USER_COUNT
+        FROM TBL_FINANCE_ORGANIZATION t
+        WHERE t.ID = #{id}
+        AND t.IS_DELETED = 0
+    </select>
+
+    <!-- 查询子组织数量 -->
+    <select id="selectChildCount" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM TBL_FINANCE_ORGANIZATION
+        WHERE PARENT_ID = #{parentId}
+        AND IS_DELETED = 0
+    </select>
+
+    <!-- 插入组织 -->
+    <insert id="insertOrganization" parameterType="com.financial.sharing.mysql.entity.FinanceOrganizationEntity"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO TBL_FINANCE_ORGANIZATION (
+            ORG_CODE, ORG_NAME, ORG_TYPE, PARENT_ID, ORG_LEVEL, SORT_ORDER,
+            MANAGER_ID, MANAGER_NAME, PHONE, EMAIL, ADDRESS, IS_ENABLED,
+            DESCRIPTION, TENANT_ID, BOOK_ID, CREATE_BY, VERSION
+        ) VALUES (
+            #{orgCode}, #{orgName}, #{orgType}, #{parentId}, #{orgLevel}, #{sortOrder},
+            #{managerId}, #{managerName}, #{phone}, #{email}, #{address}, #{isEnabled},
+            #{description}, #{tenantId}, #{bookId}, #{createBy}, #{version}
+        )
+    </insert>
+
+    <!-- 更新组织 -->
+    <update id="updateOrganization" parameterType="com.financial.sharing.mysql.entity.FinanceOrganizationEntity">
+        UPDATE TBL_FINANCE_ORGANIZATION
+        SET
+            ORG_CODE = #{orgCode},
+            ORG_NAME = #{orgName},
+            ORG_TYPE = #{orgType},
+            PARENT_ID = #{parentId},
+            ORG_LEVEL = #{orgLevel},
+            SORT_ORDER = #{sortOrder},
+            MANAGER_ID = #{managerId},
+            MANAGER_NAME = #{managerName},
+            PHONE = #{phone},
+            EMAIL = #{email},
+            ADDRESS = #{address},
+            IS_ENABLED = #{isEnabled},
+            DESCRIPTION = #{description},
+            UPDATE_BY = #{updateBy},
+            UPDATE_TIME = CURRENT_TIMESTAMP,
+            VERSION = VERSION + 1
+        WHERE ID = #{id}
+        AND VERSION = #{version}
+    </update>
+
+    <!-- 更新组织状态 -->
+    <update id="updateOrganizationStatus">
+        UPDATE TBL_FINANCE_ORGANIZATION
+        SET
+            IS_ENABLED = #{isEnabled},
+            UPDATE_BY = #{updateBy},
+            UPDATE_TIME = CURRENT_TIMESTAMP,
+            VERSION = VERSION + 1
+        WHERE ID = #{id}
+    </update>
+
+    <!-- 删除组织（逻辑删除） -->
+    <update id="deleteOrganization">
+        UPDATE TBL_FINANCE_ORGANIZATION
+        SET
+            IS_DELETED = 1,
+            UPDATE_BY = #{updateBy},
+            UPDATE_TIME = CURRENT_TIMESTAMP
+        WHERE ID = #{id}
+        AND IS_DELETED = 0
+    </update>
+
+    <!-- 检查组织编码是否存在 -->
+    <select id="checkOrgCodeExists" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM TBL_FINANCE_ORGANIZATION
+        WHERE ORG_CODE = #{orgCode}
+        AND BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+        AND IS_DELETED = 0
+        <if test="id != null">
+        AND ID != #{id}
+        </if>
+    </select>
+
+    <!-- 查询最大排序号 -->
+    <select id="selectMaxSortOrder" resultType="java.lang.Integer">
+        SELECT COALESCE(MAX(SORT_ORDER), 0)
+        FROM TBL_FINANCE_ORGANIZATION
+        WHERE PARENT_ID = #{parentId}
+        AND BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+        AND IS_DELETED = 0
+    </select>
+
+</mapper>

@@ -1,0 +1,57 @@
+spring:
+ datasource:
+  type: com.alibaba.druid.pool.DruidDataSource
+   #数据库配置
+  url: jdbc:dm://192.0.2.200:5236/HBGRCZH?zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=utf-8
+  username: HBGRCZH
+  password: HBGRCZH1101
+  driverClassName: dm.jdbc.driver.DmDriver
+ druid: 
+  initialSize: 5
+  minIdle: 5
+  maxActive: 20
+  maxWait: 60000
+  timeBetweenEvictionRunsMillis: 60000
+  minEvictableIdleTimeMillis: 300000
+  validationQuery: SELECT 1 FROM DUAL
+  testWhileIdle: true
+  testOnBorrow: false
+  testOnReturn: false
+  poolPreparedStatement: true
+  maxPoolPreparedStatementPerConnectionSize: 20
+  filters: stat,wall,log4j
+  connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+ redis: 
+  host: 127.0.0.1
+  port: 6379
+  password: zhRedis@135246
+
+#eureka服务注册中心配置
+eureka:
+ instance:
+  ip-address: 127.0.0.1
+  instance-id: hbyunFinance-8099
+  prefer-ip-address: true
+  hostname: hbyun-contract-service
+ client:
+  serviceUrl:
+   defaultZone: http://hbyunadmin:hbEureka12345@127.0.0.1:8761/eureka
+security:
+ basic:
+  enabled: false
+
+# Swagger配置
+swagger: 
+ enabled: true
+  # 是否开启swagger
+  # 请求前缀
+ pathMapping: 
+
+logging:
+ level:
+  com:
+   huabo:
+    contract:
+     mapper: debug
+
+fileUploadPath: https://www.wenxin.example.com/api/file/file/upload

@@ -1,0 +1,463 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.RiskTypeDefinitionMapper">
+
+    <!-- 基础结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.RiskTypeDefinition">
+        <id column="risk_type_id" property="riskTypeId" jdbcType="BIGINT"/>
+        <result column="risk_type_code" property="riskTypeCode" jdbcType="VARCHAR"/>
+        <result column="risk_type_name" property="riskTypeName" jdbcType="VARCHAR"/>
+        <result column="risk_category" property="riskCategory" jdbcType="VARCHAR"/>
+        <result column="risk_description" property="riskDescription" jdbcType="VARCHAR"/>
+        <result column="impact_level" property="impactLevel" jdbcType="VARCHAR"/>
+        <result column="probability_level" property="probabilityLevel" jdbcType="VARCHAR"/>
+        <result column="risk_level" property="riskLevel" jdbcType="VARCHAR"/>
+        <result column="control_measures" property="controlMeasures" jdbcType="VARCHAR"/>
+        <result column="monitoring_indicators" property="monitoringIndicators" jdbcType="VARCHAR"/>
+        <result column="response_strategy" property="responseStrategy" jdbcType="VARCHAR"/>
+        <result column="responsible_department" property="responsibleDepartment" jdbcType="VARCHAR"/>
+        <result column="responsible_person" property="responsiblePerson" jdbcType="VARCHAR"/>
+        <result column="review_frequency" property="reviewFrequency" jdbcType="VARCHAR"/>
+        <result column="last_review_date" property="lastReviewDate" jdbcType="DATE"/>
+        <result column="next_review_date" property="nextReviewDate" jdbcType="DATE"/>
+        <result column="is_enabled" property="isEnabled" jdbcType="INTEGER"/>
+        <result column="org_id" property="orgId" jdbcType="BIGINT"/>
+        <result column="create_user" property="createUser" jdbcType="BIGINT"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_user" property="updateUser" jdbcType="BIGINT"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="remark" property="remark" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="Base_Column_List">
+        risk_type_id, risk_type_code, risk_type_name, risk_category, risk_description,
+        impact_level, probability_level, risk_level, control_measures, monitoring_indicators,
+        response_strategy, responsible_department, responsible_person, review_frequency,
+        last_review_date, next_review_date, is_enabled, org_id, create_user, create_time,
+        update_user, update_time, remark
+    </sql>
+
+    <!-- 分页查询风险类型定义 -->
+    <select id="selectRiskTypePage" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM gt_risk_type_definition
+        WHERE org_id = #{orgId}
+        <if test="riskTypeCode != null and riskTypeCode != ''">
+            AND risk_type_code LIKE CONCAT('%', #{riskTypeCode}, '%')
+        </if>
+        <if test="riskTypeName != null and riskTypeName != ''">
+            AND risk_type_name LIKE CONCAT('%', #{riskTypeName}, '%')
+        </if>
+        <if test="riskCategory != null and riskCategory != ''">
+            AND risk_category = #{riskCategory}
+        </if>
+        <if test="impactLevel != null and impactLevel != ''">
+            AND impact_level = #{impactLevel}
+        </if>
+        <if test="probabilityLevel != null and probabilityLevel != ''">
+            AND probability_level = #{probabilityLevel}
+        </if>
+        <if test="isEnabled != null">
+            AND is_enabled = #{isEnabled}
+        </if>
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据编码查询 -->
+    <select id="selectByRiskTypeCode" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM gt_risk_type_definition
+        WHERE risk_type_code = #{riskTypeCode} AND org_id = #{orgId}
+    </select>
+
+    <!-- 查询启用的风险类型 -->
+    <select id="selectEnabledRiskTypes" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM gt_risk_type_definition
+        WHERE org_id = #{orgId} AND is_enabled = 1
+        ORDER BY risk_level DESC, create_time DESC
+    </select>
+
+    <!-- 查询高风险类型 -->
+    <select id="selectHighRiskTypes" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM gt_risk_type_definition
+        WHERE org_id = #{orgId} AND is_enabled = 1 
+        AND risk_level IN ('HIGH', 'CRITICAL')
+        ORDER BY risk_level DESC, create_time DESC
+    </select>
+
+    <!-- 查询需要立即关注的风险类型 -->
+    <select id="selectCriticalRiskTypes" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM gt_risk_type_definition
+        WHERE org_id = #{orgId} AND is_enabled = 1 
+        AND risk_level = 'CRITICAL'
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 查询需要审查的风险类型 -->
+    <select id="selectRiskTypesForReview" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM gt_risk_type_definition
+        WHERE org_id = #{orgId} AND is_enabled = 1 
+        AND (next_review_date IS NULL OR next_review_date &lt;= CURDATE())
+        ORDER BY next_review_date ASC
+    </select>
+
+    <!-- 按风险类别统计数量 -->
+    <select id="countByRiskCategory" resultType="java.util.Map">
+        SELECT 
+            risk_category as category,
+            COUNT(*) as count,
+            COUNT(CASE WHEN is_enabled = 1 THEN 1 END) as enabledCount
+        FROM gt_risk_type_definition
+        WHERE org_id = #{orgId}
+        GROUP BY risk_category
+        ORDER BY count DESC
+    </select>
+
+    <!-- 按影响程度统计数量 -->
+    <select id="countByImpactLevel" resultType="java.util.Map">
+        SELECT 
+            impact_level as level,
+            COUNT(*) as count,
+            COUNT(CASE WHEN is_enabled = 1 THEN 1 END) as enabledCount
+        FROM gt_risk_type_definition
+        WHERE org_id = #{orgId}
+        GROUP BY impact_level
+        ORDER BY 
+            CASE impact_level 
+                WHEN 'CRITICAL' THEN 1 
+                WHEN 'HIGH' THEN 2 
+                WHEN 'MEDIUM' THEN 3 
+                WHEN 'LOW' THEN 4 
+                ELSE 5 
+            END
+    </select>
+
+    <!-- 按发生概率统计数量 -->
+    <select id="countByProbabilityLevel" resultType="java.util.Map">
+        SELECT 
+            probability_level as level,
+            COUNT(*) as count,
+            COUNT(CASE WHEN is_enabled = 1 THEN 1 END) as enabledCount
+        FROM gt_risk_type_definition
+        WHERE org_id = #{orgId}
+        GROUP BY probability_level
+        ORDER BY 
+            CASE probability_level 
+                WHEN 'CRITICAL' THEN 1 
+                WHEN 'HIGH' THEN 2 
+                WHEN 'MEDIUM' THEN 3 
+                WHEN 'LOW' THEN 4 
+                ELSE 5 
+            END
+    </select>
+
+    <!-- 按风险等级统计数量 -->
+    <select id="countByRiskLevel" resultType="java.util.Map">
+        SELECT 
+            risk_level as level,
+            COUNT(*) as count,
+            COUNT(CASE WHEN is_enabled = 1 THEN 1 END) as enabledCount
+        FROM gt_risk_type_definition
+        WHERE org_id = #{orgId}
+        GROUP BY risk_level
+        ORDER BY 
+            CASE risk_level 
+                WHEN 'CRITICAL' THEN 1 
+                WHEN 'HIGH' THEN 2 
+                WHEN 'MEDIUM' THEN 3 
+                WHEN 'LOW' THEN 4 
+                ELSE 5 
+            END
+    </select>
+
+    <!-- 查询风险类型统计数据 -->
+    <select id="selectRiskTypeStatistics" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as totalCount,
+            COUNT(CASE WHEN is_enabled = 1 THEN 1 END) as enabledCount,
+            COUNT(CASE WHEN is_enabled = 0 THEN 1 END) as disabledCount,
+            COUNT(CASE WHEN risk_level = 'CRITICAL' THEN 1 END) as criticalCount,
+            COUNT(CASE WHEN risk_level = 'HIGH' THEN 1 END) as highCount,
+            COUNT(CASE WHEN risk_level = 'MEDIUM' THEN 1 END) as mediumCount,
+            COUNT(CASE WHEN risk_level = 'LOW' THEN 1 END) as lowCount,
+            COUNT(CASE WHEN next_review_date IS NULL OR next_review_date &lt;= CURDATE() THEN 1 END) as needReviewCount
+        FROM gt_risk_type_definition
+        WHERE org_id = #{orgId}
+    </select>
+
+    <!-- 查询风险类型分布数据 -->
+    <select id="selectRiskTypeDistribution" resultType="java.util.Map">
+        SELECT 
+            risk_category as category,
+            risk_level as level,
+            COUNT(*) as count
+        FROM gt_risk_type_definition
+        WHERE org_id = #{orgId} AND is_enabled = 1
+        GROUP BY risk_category, risk_level
+        ORDER BY risk_category, 
+            CASE risk_level 
+                WHEN 'CRITICAL' THEN 1 
+                WHEN 'HIGH' THEN 2 
+                WHEN 'MEDIUM' THEN 3 
+                WHEN 'LOW' THEN 4 
+                ELSE 5 
+            END
+    </select>
+
+    <!-- 查询风险类型趋势数据 -->
+    <select id="selectRiskTypeTrend" resultType="java.util.Map">
+        SELECT 
+            <choose>
+                <when test="period == 'DAY'">
+                    DATE(create_time) as period
+                </when>
+                <when test="period == 'WEEK'">
+                    DATE_FORMAT(create_time, '%Y-%u') as period
+                </when>
+                <when test="period == 'MONTH'">
+                    DATE_FORMAT(create_time, '%Y-%m') as period
+                </when>
+                <when test="period == 'QUARTER'">
+                    CONCAT(YEAR(create_time), '-Q', QUARTER(create_time)) as period
+                </when>
+                <when test="period == 'YEAR'">
+                    YEAR(create_time) as period
+                </when>
+                <otherwise>
+                    DATE_FORMAT(create_time, '%Y-%m') as period
+                </otherwise>
+            </choose>,
+            COUNT(*) as count,
+            COUNT(CASE WHEN risk_level = 'CRITICAL' THEN 1 END) as criticalCount,
+            COUNT(CASE WHEN risk_level = 'HIGH' THEN 1 END) as highCount,
+            COUNT(CASE WHEN risk_level = 'MEDIUM' THEN 1 END) as mediumCount,
+            COUNT(CASE WHEN risk_level = 'LOW' THEN 1 END) as lowCount
+        FROM gt_risk_type_definition
+        WHERE org_id = #{orgId}
+        AND create_time BETWEEN #{startDate} AND #{endDate}
+        GROUP BY period
+        ORDER BY period
+    </select>
+
+    <!-- 验证风险类型编码唯一性 -->
+    <select id="checkRiskTypeCodeExists" resultType="int">
+        SELECT COUNT(*)
+        FROM gt_risk_type_definition
+        WHERE risk_type_code = #{riskTypeCode} AND org_id = #{orgId}
+        <if test="excludeId != null">
+            AND risk_type_id != #{excludeId}
+        </if>
+    </select>
+
+    <!-- 查询导出数据 -->
+    <select id="selectExportData" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM gt_risk_type_definition
+        WHERE org_id = #{orgId}
+        <if test="riskCategory != null and riskCategory != ''">
+            AND risk_category = #{riskCategory}
+        </if>
+        <if test="impactLevel != null and impactLevel != ''">
+            AND impact_level = #{impactLevel}
+        </if>
+        <if test="isEnabled != null">
+            AND is_enabled = #{isEnabled}
+        </if>
+        ORDER BY risk_level DESC, create_time DESC
+    </select>
+
+    <!-- 查询风险类型详细信息 -->
+    <select id="selectRiskTypeDetail" resultType="java.util.Map">
+        SELECT 
+            rt.*,
+            (SELECT COUNT(*) FROM gt_risk_assessment WHERE risk_type_id = rt.risk_type_id) as assessmentCount,
+            (SELECT COUNT(*) FROM gt_risk_monitoring WHERE risk_type_id = rt.risk_type_id) as monitoringCount
+        FROM gt_risk_type_definition rt
+        WHERE rt.risk_type_id = #{riskTypeId}
+    </select>
+
+    <!-- 查询风险类型汇总信息 -->
+    <select id="selectRiskTypeSummary" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as totalRiskTypes,
+            COUNT(CASE WHEN is_enabled = 1 THEN 1 END) as enabledRiskTypes,
+            COUNT(CASE WHEN risk_level = 'CRITICAL' THEN 1 END) as criticalRiskTypes,
+            COUNT(CASE WHEN risk_level = 'HIGH' THEN 1 END) as highRiskTypes,
+            AVG(CASE 
+                WHEN risk_level = 'CRITICAL' THEN 4 
+                WHEN risk_level = 'HIGH' THEN 3 
+                WHEN risk_level = 'MEDIUM' THEN 2 
+                WHEN risk_level = 'LOW' THEN 1 
+                ELSE 0 
+            END) as avgRiskScore,
+            COUNT(CASE WHEN next_review_date IS NULL OR next_review_date &lt;= CURDATE() THEN 1 END) as overdueReviews
+        FROM gt_risk_type_definition
+        WHERE org_id = #{orgId}
+    </select>
+
+    <!-- 查询风险类型历史记录 -->
+    <select id="selectRiskTypeHistory" resultType="java.util.Map">
+        SELECT 
+            operation_type,
+            operation_content,
+            operation_user,
+            operation_time
+        FROM gt_risk_type_history
+        WHERE risk_type_id = #{riskTypeId}
+        ORDER BY operation_time DESC
+    </select>
+
+    <!-- 查询风险类型关联数据 -->
+    <select id="selectRiskTypeRelatedData" resultType="java.util.Map">
+        SELECT 
+            'ASSESSMENT' as dataType,
+            COUNT(*) as count
+        FROM gt_risk_assessment
+        WHERE risk_type_id = #{riskTypeId}
+        UNION ALL
+        SELECT 
+            'MONITORING' as dataType,
+            COUNT(*) as count
+        FROM gt_risk_monitoring
+        WHERE risk_type_id = #{riskTypeId}
+    </select>
+
+    <!-- 查询风险类型预警信息 -->
+    <select id="selectRiskTypeAlerts" resultType="java.util.Map">
+        SELECT 
+            rt.risk_type_id,
+            rt.risk_type_code,
+            rt.risk_type_name,
+            rt.risk_level,
+            CASE 
+                WHEN rt.next_review_date IS NULL THEN 'NO_REVIEW_DATE'
+                WHEN rt.next_review_date &lt; CURDATE() THEN 'OVERDUE_REVIEW'
+                WHEN rt.next_review_date &lt;= DATE_ADD(CURDATE(), INTERVAL 7 DAY) THEN 'UPCOMING_REVIEW'
+                ELSE 'NORMAL'
+            END as alertType,
+            rt.next_review_date
+        FROM gt_risk_type_definition rt
+        WHERE rt.org_id = #{orgId} AND rt.is_enabled = 1
+        <if test="alertType != null and alertType != ''">
+            AND (
+                <if test="alertType == 'NO_REVIEW_DATE'">
+                    rt.next_review_date IS NULL
+                </if>
+                <if test="alertType == 'OVERDUE_REVIEW'">
+                    rt.next_review_date &lt; CURDATE()
+                </if>
+                <if test="alertType == 'UPCOMING_REVIEW'">
+                    rt.next_review_date &lt;= DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+                </if>
+                <if test="alertType == 'HIGH_RISK'">
+                    rt.risk_level IN ('HIGH', 'CRITICAL')
+                </if>
+            )
+        </if>
+        ORDER BY rt.risk_level DESC, rt.next_review_date ASC
+    </select>
+
+    <!-- 批量更新风险类型状态 -->
+    <update id="batchUpdateRiskTypeStatus">
+        UPDATE gt_risk_type_definition
+        SET is_enabled = #{newStatus}, update_user = #{updateUser}, update_time = NOW()
+        WHERE risk_type_id IN
+        <foreach collection="riskTypeIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 批量更新审查日期 -->
+    <update id="batchUpdateReviewDate">
+        UPDATE gt_risk_type_definition
+        SET last_review_date = #{reviewDate}, 
+            next_review_date = #{nextReviewDate},
+            update_user = #{updateUser}, 
+            update_time = NOW()
+        WHERE risk_type_id IN
+        <foreach collection="riskTypeIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 查询风险类型效率分析数据 -->
+    <select id="selectRiskTypeEfficiencyAnalysis" resultType="java.util.Map">
+        SELECT 
+            rt.risk_type_id,
+            rt.risk_type_code,
+            rt.risk_type_name,
+            rt.risk_category,
+            rt.risk_level,
+            COUNT(ra.assessment_id) as assessmentCount,
+            COUNT(rm.monitoring_id) as monitoringCount,
+            AVG(DATEDIFF(ra.completion_date, ra.assessment_date)) as avgAssessmentDays,
+            COUNT(CASE WHEN ra.assessment_status = 'COMPLETED' THEN 1 END) as completedAssessments,
+            COUNT(CASE WHEN rm.monitoring_status = 'ACTIVE' THEN 1 END) as activeMonitorings
+        FROM gt_risk_type_definition rt
+        LEFT JOIN gt_risk_assessment ra ON rt.risk_type_id = ra.risk_type_id
+        LEFT JOIN gt_risk_monitoring rm ON rt.risk_type_id = rm.risk_type_id
+        WHERE rt.org_id = #{orgId}
+        AND rt.create_time BETWEEN #{startDate} AND #{endDate}
+        GROUP BY rt.risk_type_id, rt.risk_type_code, rt.risk_type_name, rt.risk_category, rt.risk_level
+        ORDER BY rt.risk_level DESC, assessmentCount DESC
+    </select>
+
+    <!-- 查询风险类型质量分析数据 -->
+    <select id="selectRiskTypeQualityAnalysis" resultType="java.util.Map">
+        SELECT 
+            rt.risk_type_id,
+            rt.risk_type_code,
+            rt.risk_type_name,
+            rt.risk_level,
+            CASE 
+                WHEN rt.risk_description IS NOT NULL AND LENGTH(rt.risk_description) > 50 THEN 1 
+                ELSE 0 
+            END as hasDetailedDescription,
+            CASE 
+                WHEN rt.control_measures IS NOT NULL AND LENGTH(rt.control_measures) > 50 THEN 1 
+                ELSE 0 
+            END as hasControlMeasures,
+            CASE 
+                WHEN rt.monitoring_indicators IS NOT NULL AND LENGTH(rt.monitoring_indicators) > 20 THEN 1 
+                ELSE 0 
+            END as hasMonitoringIndicators,
+            CASE 
+                WHEN rt.responsible_person IS NOT NULL THEN 1 
+                ELSE 0 
+            END as hasResponsiblePerson,
+            CASE 
+                WHEN rt.next_review_date IS NOT NULL AND rt.next_review_date > CURDATE() THEN 1 
+                ELSE 0 
+            END as hasValidReviewDate
+        FROM gt_risk_type_definition rt
+        WHERE rt.org_id = #{orgId} AND rt.is_enabled = 1
+        ORDER BY rt.risk_level DESC, rt.create_time DESC
+    </select>
+
+    <!-- 查询风险类型成本分析数据 -->
+    <select id="selectRiskTypeCostAnalysis" resultType="java.util.Map">
+        SELECT 
+            rt.risk_category,
+            rt.risk_level,
+            COUNT(*) as riskTypeCount,
+            COUNT(ra.assessment_id) as totalAssessments,
+            COUNT(rm.monitoring_id) as totalMonitorings,
+            AVG(ra.assessment_cost) as avgAssessmentCost,
+            AVG(rm.monitoring_cost) as avgMonitoringCost,
+            SUM(ra.assessment_cost) as totalAssessmentCost,
+            SUM(rm.monitoring_cost) as totalMonitoringCost
+        FROM gt_risk_type_definition rt
+        LEFT JOIN gt_risk_assessment ra ON rt.risk_type_id = ra.risk_type_id 
+            AND ra.assessment_date BETWEEN #{startDate} AND #{endDate}
+        LEFT JOIN gt_risk_monitoring rm ON rt.risk_type_id = rm.risk_type_id 
+            AND rm.monitoring_date BETWEEN #{startDate} AND #{endDate}
+        WHERE rt.org_id = #{orgId}
+        GROUP BY rt.risk_category, rt.risk_level
+        ORDER BY totalAssessmentCost DESC, totalMonitoringCost DESC
+    </select>
+</mapper>

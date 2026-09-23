@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.enterpriseReport.mapper.ReportWorkflowMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.financial.sharing.enterpriseReport.entity.TblReportWorkflow">
+        <id column="WORKFLOW_ID" property="workflowId" />
+        <result column="TASK_ID" property="taskId" />
+        <result column="WORKFLOW_CODE" property="workflowCode" />
+        <result column="WORKFLOW_NAME" property="workflowName" />
+        <result column="WORKFLOW_TYPE" property="workflowType" />
+        <result column="BRANCH_CONDITION" property="branchCondition" />
+        <result column="PARTICIPANTS" property="participants" />
+        <result column="CC_USERS" property="ccUsers" />
+        <result column="MESSAGE_TYPE" property="messageType" />
+        <result column="MESSAGE_CONTENT" property="messageContent" />
+        <result column="SORT_NO" property="sortNo" />
+        <result column="STATUS" property="status" />
+        <result column="TENANT_ID" property="tenantId" />
+        <result column="CREATE_USER" property="createUser" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_USER" property="updateUser" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="TASK_NAME" property="taskName" />
+    </resultMap>
+
+    <!-- 查询报表工作流列表(关联任务名称) -->
+    <select id="selectReportWorkflowList" resultMap="BaseResultMap">
+        SELECT 
+            w.WORKFLOW_ID,
+            w.TASK_ID,
+            w.WORKFLOW_CODE,
+            w.WORKFLOW_NAME,
+            w.WORKFLOW_TYPE,
+            w.BRANCH_CONDITION,
+            w.PARTICIPANTS,
+            w.CC_USERS,
+            w.MESSAGE_TYPE,
+            w.MESSAGE_CONTENT,
+            w.SORT_NO,
+            w.STATUS,
+            w.TENANT_ID,
+            w.CREATE_USER,
+            w.CREATE_TIME,
+            w.UPDATE_USER,
+            w.UPDATE_TIME,
+            t.TASK_NAME
+        FROM TBL_REPORT_WORKFLOW w
+        LEFT JOIN TBL_REPORT_TASK t ON w.TASK_ID = t.TASK_ID
+        WHERE w.TENANT_ID = #{tenantId}
+        <if test="taskId != null and taskId != ''">
+            AND w.TASK_ID = #{taskId}
+        </if>
+        <if test="workflowName != null and workflowName != ''">
+            AND w.WORKFLOW_NAME LIKE CONCAT('%', #{workflowName}, '%')
+        </if>
+        <if test="workflowType != null and workflowType != ''">
+            AND w.WORKFLOW_TYPE = #{workflowType}
+        </if>
+        <if test="status != null and status != ''">
+            AND w.STATUS = #{status}
+        </if>
+        ORDER BY w.SORT_NO ASC, w.CREATE_TIME DESC
+    </select>
+
+    <!-- 检查流程编码是否存在 -->
+    <select id="checkWorkflowCodeExists" resultType="int">
+        SELECT COUNT(*)
+        FROM TBL_REPORT_WORKFLOW
+        WHERE WORKFLOW_CODE = #{workflowCode}
+        AND TENANT_ID = #{tenantId}
+        <if test="excludeWorkflowId != null and excludeWorkflowId != ''">
+            AND WORKFLOW_ID != #{excludeWorkflowId}
+        </if>
+    </select>
+
+</mapper>
+

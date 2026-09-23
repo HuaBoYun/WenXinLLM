@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.system.mapper.TblSystemCustomizeSceneMapper">
+  <resultMap id="BaseResultMap" type="com.huabo.system.entity.TblSystemCustomizeScene">
+    <!--@mbg.generated generated on Sat Nov 12 20:44:03 CST 2022.-->
+    <!--@Table HBGRCTEST.TBL_SYSTEM_CUSTOMIZE_SCENE-->
+    <id column="ID" jdbcType="DECIMAL" property="id" />
+    <result column="MODULETYPE" jdbcType="VARCHAR" property="moduleType" />
+    <result column="CATALOGUEID" jdbcType="INTEGER" property="catalogueId" />
+    <result column="PARENTCATALOGUEID" jdbcType="INTEGER" property="parentCatalogueId" />
+    <result column="STATE" jdbcType="INTEGER" property="state" />
+    <result column="CREATOR" jdbcType="INTEGER" property="creator" />
+    <result column="WORKUNIT" jdbcType="INTEGER" property="workUnit" />
+    <result column="BELONGGROUP" jdbcType="INTEGER" property="belongGroup" />
+    <result column="CREATEDTIME" jdbcType="TIMESTAMP" property="createdTime" />
+    <result column="UPDATEDTIME" jdbcType="TIMESTAMP" property="updatedTime" />
+  </resultMap>
+
+  <select id="getList" resultType="com.huabo.system.entity.TblSystemCustomizeScene">
+    select a.*,b.NAME as parentCatalogueName,c.NAME as catalogueName
+    from TBL_SYSTEM_CUSTOMIZE_SCENE a
+    left join Tbl_System_Right b on a.PARENTCATALOGUEID=b.ID
+    left join Tbl_System_Right c on a.CATALOGUEID=c.ID
+    where 1=1
+    <if test="param.catalogueId != null">
+        AND a.catalogueId = #{param.catalogueId}
+    </if>
+    <if test="param.parentCatalogueId != null">
+        AND a.parentCatalogueId = #{param.parentCatalogueId}
+    </if>
+    <if test="param.moduleType != null and param.moduleType != ''">
+        AND a.moduleType=#{param.moduleType}
+    </if>
+    <if test="param.sceneCode != null and param.sceneCode !=''">
+        AND a.sceneCode=#{param.sceneCode}
+    </if>
+    <if test="param.catalogueName != null and param.catalogueName !=''">
+        AND b.NAME like concat(concat('%',#{param.catalogueName}),'%')
+    </if>
+    <if test="param.parentCatalogueName != null and param.parentCatalogueName !=''">
+        AND c.NAME like concat(concat('%',#{param.parentCatalogueName}),'%')
+    </if>
+  </select>
+
+
+</mapper>

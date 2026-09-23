@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.mapper.TblBillAuditRuleMapper">
+
+    <select id="selectByConfigId" resultType="com.financial.sharing.entity.TblBillAuditRule">
+        SELECT * FROM TBL_BILL_AUDIT_RULE WHERE CONFIG_ID = #{configId} ORDER BY CREATE_TIME DESC
+    </select>
+
+    <select id="selectByConfigIdOrderByPriority" resultType="com.financial.sharing.entity.TblBillAuditRule">
+        SELECT * FROM TBL_BILL_AUDIT_RULE WHERE CONFIG_ID = #{configId} ORDER BY PRIORITY ASC, CREATE_TIME DESC
+    </select>
+
+    <select id="selectByRuleId" resultType="com.financial.sharing.entity.TblBillAuditRule">
+        SELECT * FROM TBL_BILL_AUDIT_RULE WHERE RULE_ID = #{ruleId} ORDER BY CREATE_TIME DESC
+    </select>
+
+    <select id="selectByConfigIdAndRuleId" resultType="com.financial.sharing.entity.TblBillAuditRule">
+        SELECT * FROM TBL_BILL_AUDIT_RULE
+        WHERE CONFIG_ID = #{configId} AND RULE_ID = #{ruleId}
+    </select>
+
+    <delete id="deleteByConfigId">
+        DELETE FROM TBL_BILL_AUDIT_RULE WHERE CONFIG_ID = #{configId}
+    </delete>
+
+    <delete id="deleteByRuleId">
+        DELETE FROM TBL_BILL_AUDIT_RULE WHERE RULE_ID = #{ruleId}
+    </delete>
+
+</mapper>

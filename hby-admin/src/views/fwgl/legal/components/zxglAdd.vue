@@ -412,7 +412,7 @@
         }
       },
       /**
-       * @description: 引迈流程提交
+       * @description: 流程提交
        * @return {*}
        */      
       async ymsubmit() {

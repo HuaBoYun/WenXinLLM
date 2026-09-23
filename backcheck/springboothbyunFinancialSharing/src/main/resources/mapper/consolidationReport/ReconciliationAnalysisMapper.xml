@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.consolidationReport.mapper.ReconciliationAnalysisMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.financial.sharing.consolidationReport.entity.TblReconciliationAnalysis">
+        <id column="ANALYSIS_ID" property="analysisId"/>
+        <result column="RECONCILIATION_ID" property="reconciliationId"/>
+        <result column="MODEL_ID" property="modelId"/>
+        <result column="PERIOD" property="period"/>
+        <result column="DIFF_REASON" property="diffReason"/>
+        <result column="DIFF_DESCRIPTION" property="diffDescription"/>
+        <result column="SOLUTION" property="solution"/>
+        <result column="ADJUST_AMOUNT" property="adjustAmount"/>
+        <result column="STATUS" property="status"/>
+        <result column="HANDLER" property="handler"/>
+        <result column="HANDLER_NAME" property="handlerName"/>
+        <result column="HANDLE_TIME" property="handleTime"/>
+        <result column="TENANT_ID" property="tenantId"/>
+        <result column="CREATE_USER" property="createUser"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_USER" property="updateUser"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="MODEL_NAME" property="modelName"/>
+        <result column="COMPANY_A_NAME" property="companyAName"/>
+        <result column="COMPANY_B_NAME" property="companyBName"/>
+        <result column="DIFF_AMOUNT" property="diffAmount"/>
+        <result column="TRANSACTION_TYPE" property="transactionType"/>
+    </resultMap>
+
+    <!-- 查询差异分析列表 -->
+    <select id="selectAnalysisList" resultMap="BaseResultMap">
+        SELECT
+            a.ANALYSIS_ID,
+            a.RECONCILIATION_ID,
+            a.MODEL_ID,
+            a.PERIOD,
+            a.DIFF_REASON,
+            a.DIFF_DESCRIPTION,
+            a.SOLUTION,
+            a.ADJUST_AMOUNT,
+            a.STATUS,
+            a.HANDLER,
+            a.HANDLER_NAME,
+            a.HANDLE_TIME,
+            a.TENANT_ID,
+            a.CREATE_USER,
+            a.CREATE_TIME,
+            a.UPDATE_USER,
+            a.UPDATE_TIME,
+            m.MODEL_NAME,
+            r.COMPANY_A_NAME,
+            r.COMPANY_B_NAME,
+            r.DIFF_AMOUNT,
+            r.TRANSACTION_TYPE
+        FROM TBL_RECONCILIATION_ANALYSIS a
+        LEFT JOIN TBL_CONSOLIDATION_MODEL m ON a.MODEL_ID = m.MODEL_ID
+        LEFT JOIN TBL_RECONCILIATION_DATA r ON a.RECONCILIATION_ID = r.RECONCILIATION_ID
+        <where>
+            <if test="param.modelId != null and param.modelId != ''">
+                AND a.MODEL_ID = #{param.modelId}
+            </if>
+            <if test="param.period != null and param.period != ''">
+                AND a.PERIOD = #{param.period}
+            </if>
+            <if test="param.diffReason != null and param.diffReason != ''">
+                AND a.DIFF_REASON = #{param.diffReason}
+            </if>
+            <if test="param.status != null and param.status != ''">
+                AND a.STATUS = #{param.status}
+            </if>
+            <if test="param.handler != null and param.handler != ''">
+                AND a.HANDLER = #{param.handler}
+            </if>
+            <if test="param.companyAName != null and param.companyAName != ''">
+                AND r.COMPANY_A_NAME LIKE CONCAT('%', #{param.companyAName}, '%')
+            </if>
+            <if test="param.companyBName != null and param.companyBName != ''">
+                AND r.COMPANY_B_NAME LIKE CONCAT('%', #{param.companyBName}, '%')
+            </if>
+        </where>
+        ORDER BY a.CREATE_TIME DESC
+    </select>
+
+    <!-- 根据对账数据ID查询差异分析 -->
+    <select id="selectByReconciliationId" resultMap="BaseResultMap">
+        SELECT
+            a.ANALYSIS_ID,
+            a.RECONCILIATION_ID,
+            a.MODEL_ID,
+            a.PERIOD,
+            a.DIFF_REASON,
+            a.DIFF_DESCRIPTION,
+            a.SOLUTION,
+            a.ADJUST_AMOUNT,
+            a.STATUS,
+            a.HANDLER,
+            a.HANDLER_NAME,
+            a.HANDLE_TIME,
+            a.TENANT_ID,
+            a.CREATE_USER,
+            a.CREATE_TIME,
+            a.UPDATE_USER,
+            a.UPDATE_TIME,
+            m.MODEL_NAME,
+            r.COMPANY_A_NAME,
+            r.COMPANY_B_NAME,
+            r.DIFF_AMOUNT,
+            r.TRANSACTION_TYPE
+        FROM TBL_RECONCILIATION_ANALYSIS a
+        LEFT JOIN TBL_CONSOLIDATION_MODEL m ON a.MODEL_ID = m.MODEL_ID
+        LEFT JOIN TBL_RECONCILIATION_DATA r ON a.RECONCILIATION_ID = r.RECONCILIATION_ID
+        WHERE a.RECONCILIATION_ID = #{reconciliationId}
+    </select>
+
+    <!-- 根据模型ID和期间统计差异分析 -->
+    <select id="countByStatus" resultType="map">
+        SELECT
+            STATUS,
+            COUNT(1) AS COUNT
+        FROM TBL_RECONCILIATION_ANALYSIS
+        WHERE MODEL_ID = #{modelId}
+        AND PERIOD = #{period}
+        GROUP BY STATUS
+    </select>
+
+    <!-- 根据模型ID和期间统计差异原因 -->
+    <select id="countByReason" resultType="map">
+        SELECT
+            DIFF_REASON,
+            COUNT(1) AS COUNT
+        FROM TBL_RECONCILIATION_ANALYSIS
+        WHERE MODEL_ID = #{modelId}
+        AND PERIOD = #{period}
+        GROUP BY DIFF_REASON
+    </select>
+
+</mapper>
+

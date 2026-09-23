@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.mysql.mapper.BillPaymentMapper">
+
+    <resultMap id="BaseResultMap" type="com.financial.sharing.mysql.entity.TblBillPayment">
+        <id column="PAYMENT_ID" property="paymentId"/>
+        <result column="PAYMENT_NO" property="paymentNo"/>
+        <result column="BILL_ID" property="billId"/>
+        <result column="PAYMENT_DATE" property="paymentDate"/>
+        <result column="PAYMENT_AMOUNT" property="paymentAmount"/>
+        <result column="PAYMENT_BANK" property="paymentBank"/>
+        <result column="PAYMENT_ACCOUNT" property="paymentAccount"/>
+        <result column="ACTUAL_AMOUNT" property="actualAmount"/>
+        <result column="FEE" property="fee"/>
+        <result column="PAYMENT_TYPE" property="paymentType"/>
+        <result column="DESCRIPTION" property="description"/>
+        <result column="STATUS" property="status"/>
+        <result column="REMARKS" property="remarks"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="CREATE_BY" property="createBy"/>
+    </resultMap>
+
+    <select id="selectByBillId" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BILL_PAYMENT
+        WHERE BILL_ID = #{billId} AND IS_DELETED = 0
+        ORDER BY CREATE_TIME DESC
+    </select>
+</mapper>
+

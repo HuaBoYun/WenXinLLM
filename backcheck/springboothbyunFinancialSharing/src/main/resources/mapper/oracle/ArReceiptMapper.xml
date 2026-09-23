@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.oracle.mapper.ArReceiptMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.financial.sharing.oracle.entity.ArReceiptEntity">
+        <id column="RECEIPT_ID" property="receiptId" />
+        <result column="RECEIPT_NO" property="receiptNo" />
+        <result column="CUSTOMER_ID" property="customerId" />
+        <result column="RECEIPT_AMOUNT" property="receiptAmount" />
+        <result column="WRITE_OFF_AMOUNT" property="writeOffAmount" />
+        <result column="REMAINING_AMOUNT" property="remainingAmount" />
+        <result column="RECEIPT_STATUS" property="receiptStatus" />
+        <result column="RECEIPT_DATE" property="receiptDate" />
+        <result column="PAYMENT_METHOD" property="paymentMethod" />
+        <result column="BANK_NAME" property="bankName" />
+        <result column="BANK_ACCOUNT" property="bankAccount" />
+        <result column="CONFIRM_AMOUNT" property="confirmAmount" />
+        <result column="CONFIRM_DATE" property="confirmDate" />
+        <result column="CONFIRM_BY" property="confirmBy" />
+        <result column="CANCEL_REASON" property="cancelReason" />
+        <result column="CANCEL_TIME" property="cancelTime" />
+        <result column="CANCEL_BY" property="cancelBy" />
+        <result column="REMARKS" property="remarks" />
+        <result column="TENANT_ID" property="tenantId" />
+        <result column="ORG_ID" property="orgId" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="CREATE_BY" property="createBy" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="UPDATE_BY" property="updateBy" />
+        <result column="IS_DELETED" property="isDeleted" />
+        <!-- 扩展字段 -->
+        <result column="customerName" property="customerName" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        RECEIPT_ID, RECEIPT_NO, CUSTOMER_ID, RECEIPT_AMOUNT, WRITE_OFF_AMOUNT,
+        REMAINING_AMOUNT, RECEIPT_STATUS, RECEIPT_DATE, PAYMENT_METHOD, BANK_NAME,
+        BANK_ACCOUNT, CONFIRM_AMOUNT, CONFIRM_DATE, CONFIRM_BY, CANCEL_REASON,
+        CANCEL_TIME, CANCEL_BY, REMARKS, TENANT_ID, ORG_ID,
+        CREATE_TIME, CREATE_BY, UPDATE_TIME, UPDATE_BY, IS_DELETED
+    </sql>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_AR_RECEIPT
+        WHERE RECEIPT_ID = #{receiptId} AND IS_DELETED = 0
+    </select>
+
+    <!-- 根据ID更新 -->
+    <update id="updateById" parameterType="com.financial.sharing.oracle.entity.ArReceiptEntity">
+        UPDATE TBL_AR_RECEIPT
+        <set>
+            <if test="receiptNo != null">RECEIPT_NO = #{receiptNo},</if>
+            <if test="customerId != null">CUSTOMER_ID = #{customerId},</if>
+            <if test="receiptAmount != null">RECEIPT_AMOUNT = #{receiptAmount},</if>
+            <if test="writeOffAmount != null">WRITE_OFF_AMOUNT = #{writeOffAmount},</if>
+            <if test="remainingAmount != null">REMAINING_AMOUNT = #{remainingAmount},</if>
+            <if test="receiptStatus != null">RECEIPT_STATUS = #{receiptStatus},</if>
+            <if test="receiptDate != null">RECEIPT_DATE = #{receiptDate},</if>
+            <if test="paymentMethod != null">PAYMENT_METHOD = #{paymentMethod},</if>
+            <if test="bankName != null">BANK_NAME = #{bankName},</if>
+            <if test="bankAccount != null">BANK_ACCOUNT = #{bankAccount},</if>
+            <if test="confirmAmount != null">CONFIRM_AMOUNT = #{confirmAmount},</if>
+            <if test="confirmDate != null">CONFIRM_DATE = #{confirmDate},</if>
+            <if test="confirmBy != null">CONFIRM_BY = #{confirmBy},</if>
+            <if test="cancelReason != null">CANCEL_REASON = #{cancelReason},</if>
+            <if test="cancelTime != null">CANCEL_TIME = #{cancelTime},</if>
+            <if test="cancelBy != null">CANCEL_BY = #{cancelBy},</if>
+            <if test="remarks != null">REMARKS = #{remarks},</if>
+            <if test="updateTime != null">UPDATE_TIME = #{updateTime},</if>
+            <if test="updateBy != null">UPDATE_BY = #{updateBy},</if>
+            <if test="isDeleted != null">IS_DELETED = #{isDeleted},</if>
+        </set>
+        WHERE RECEIPT_ID = #{receiptId}
+    </update>
+
+    <!-- 新增收款单 -->
+    <insert id="insert" parameterType="com.financial.sharing.oracle.entity.ArReceiptEntity">
+        INSERT INTO TBL_AR_RECEIPT (
+            RECEIPT_ID, RECEIPT_NO, CUSTOMER_ID, RECEIPT_AMOUNT, WRITE_OFF_AMOUNT,
+            REMAINING_AMOUNT, RECEIPT_STATUS, RECEIPT_DATE, PAYMENT_METHOD, BANK_NAME,
+            BANK_ACCOUNT, REMARKS, TENANT_ID, ORG_ID, CREATE_TIME, CREATE_BY, IS_DELETED
+        ) VALUES (
+            #{receiptId}, #{receiptNo}, #{customerId}, #{receiptAmount}, #{writeOffAmount},
+            #{remainingAmount}, #{receiptStatus}, #{receiptDate}, #{paymentMethod}, #{bankName},
+            #{bankAccount}, #{remarks}, #{tenantId}, #{orgId}, #{createTime}, #{createBy}, #{isDeleted}
+        )
+    </insert>
+
+    <!-- 分页查询收款单列表 -->
+    <select id="selectReceiptList" resultMap="BaseResultMap">
+        SELECT r.RECEIPT_ID, r.RECEIPT_NO, r.CUSTOMER_ID, r.RECEIPT_AMOUNT, r.WRITE_OFF_AMOUNT,
+               r.REMAINING_AMOUNT, r.RECEIPT_STATUS, r.RECEIPT_DATE, r.PAYMENT_METHOD, r.BANK_NAME,
+               r.BANK_ACCOUNT, r.CONFIRM_AMOUNT, r.CONFIRM_DATE, r.CONFIRM_BY, r.CANCEL_REASON,
+               r.CANCEL_TIME, r.CANCEL_BY, r.REMARKS, r.TENANT_ID, r.ORG_ID,
+               r.CREATE_TIME, r.CREATE_BY, r.UPDATE_TIME, r.UPDATE_BY, r.IS_DELETED,
+               c.CUSTOMER_NAME AS customerName
+        FROM TBL_AR_RECEIPT r
+        LEFT JOIN TBL_AR_CUSTOMER c ON r.CUSTOMER_ID = c.CUSTOMER_ID AND c.IS_DELETED = 0
+        WHERE r.IS_DELETED = 0
+        <if test="param.tenantId != null">
+            AND r.TENANT_ID = #{param.tenantId}
+        </if>
+        <if test="param.receiptNo != null and param.receiptNo != ''">
+            AND r.RECEIPT_NO LIKE '%' || #{param.receiptNo} || '%'
+        </if>
+        <if test="param.customerId != null and param.customerId != ''">
+            AND r.CUSTOMER_ID = #{param.customerId}
+        </if>
+        <if test="param.receiptStatus != null">
+            AND r.RECEIPT_STATUS = #{param.receiptStatus}
+        </if>
+        ORDER BY r.CREATE_TIME DESC
+    </select>
+
+    <!-- 根据收款单号查询 -->
+    <select id="selectByReceiptNo" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_AR_RECEIPT
+        WHERE RECEIPT_NO = #{receiptNo} AND TENANT_ID = #{tenantId} AND IS_DELETED = 0
+    </select>
+
+    <!-- 查询客户收款单 -->
+    <select id="selectByCustomerId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_AR_RECEIPT
+        WHERE CUSTOMER_ID = #{customerId} AND TENANT_ID = #{tenantId} AND IS_DELETED = 0
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 查询待核销的收款单 -->
+    <select id="selectPendingWriteOff" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_AR_RECEIPT
+        WHERE CUSTOMER_ID = #{customerId} AND TENANT_ID = #{tenantId}
+        AND RECEIPT_STATUS = 1 AND REMAINING_AMOUNT > 0 AND IS_DELETED = 0
+        ORDER BY RECEIPT_DATE ASC
+    </select>
+
+    <!-- 确认收款 -->
+    <update id="confirmReceipt">
+        UPDATE TBL_AR_RECEIPT
+        SET RECEIPT_STATUS = 1,
+            CONFIRM_AMOUNT = #{confirmAmount},
+            CONFIRM_DATE = SYSDATE,
+            CONFIRM_BY = #{confirmBy},
+            UPDATE_TIME = SYSDATE
+        WHERE RECEIPT_ID = #{receiptId} AND IS_DELETED = 0
+    </update>
+
+    <!-- 取消收款单 -->
+    <update id="cancelReceipt">
+        UPDATE TBL_AR_RECEIPT
+        SET RECEIPT_STATUS = 3,
+            CANCEL_REASON = #{cancelReason},
+            CANCEL_TIME = SYSDATE,
+            CANCEL_BY = #{cancelBy},
+            UPDATE_TIME = SYSDATE
+        WHERE RECEIPT_ID = #{receiptId} AND IS_DELETED = 0
+    </update>
+
+</mapper>
+

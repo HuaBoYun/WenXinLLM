@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.audit.oracle.mapper.TblNbkzRiskMapper">
+  <select id="selectListByPageInfoXml" resultType="com.huabo.audit.oracle.entity.TblNbkzRiskEntity">
+      SELECT TNA.*,STAFF.REALNAME,ORG.ORGNAME
+      FROM TBL_NBSJ_RISK TNA
+          LEFT JOIN TBL_STAFF STAFF ON STAFF.STAFFID = TNA.CREATEORID
+          LEFT JOIN TBL_ORGANIZATION ORG ON ORG.ORGID = TNA.ORGID
+      <where>
+         1=1
+          <if test="tblNbkzRiskVo.orgid !=null and tblNbkzRiskVo.orgid != ''">
+              AND ORG.ORGID = #{tblNbkzRiskVo.orgid}
+          </if>
+          <if test="tblNbkzRiskVo.riskname !=null and tblNbkzRiskVo.riskname != ''">
+              AND TNA.RISKNAME like concat(concat('%',#{tblNbkzRiskVo.riskname}),'%')
+          </if>
+          <if test="tblNbkzRiskVo.risknumber !=null and tblNbkzRiskVo.risknumber != ''">
+              AND TNA.RISKNUMBER like concat(concat('%',#{tblNbkzRiskVo.risknumber}),'%')
+          </if>
+          <if test="tblNbkzRiskVo.startDate !=null and tblNbkzRiskVo.startDate != ''">
+              AND to_char(TNA.DISCOVEREDDATE,'yyyy-mm-dd') &gt;= #{tblNbkzRiskVo.startDate}
+          </if>
+          <if test="tblNbkzRiskVo.endDate !=null and tblNbkzRiskVo.endDate != ''">
+              AND to_char(TNA.DISCOVEREDDATE,'yyyy-mm-dd') &lt;= #{tblNbkzRiskVo.endDate}
+          </if>
+      </where>
+            ORDER BY TNA.RISKID DESC
+  </select>
+
+
+</mapper>
+
+

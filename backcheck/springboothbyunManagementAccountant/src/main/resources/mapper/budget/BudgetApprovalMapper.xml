@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.management.accountant.oracle.mapper.budget.BudgetApprovalMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.management.accountant.oracle.entity.budget.BudgetApproval">
+        <id column="APPROVAL_ID" property="approvalId"/>
+        <result column="APPROVAL_CODE" property="approvalCode"/>
+        <result column="BUDGET_ID" property="budgetId"/>
+        <result column="TASK_ID" property="taskId"/>
+        <result column="APPROVAL_TYPE" property="approvalType"/>
+        <result column="APPROVAL_STATUS" property="approvalStatus"/>
+        <result column="CURRENT_NODE" property="currentNode"/>
+        <result column="CURRENT_APPROVER_ID" property="currentApproverId"/>
+        <result column="CURRENT_APPROVER_NAME" property="currentApproverName"/>
+        <result column="SUBMITTER_ID" property="submitterId"/>
+        <result column="SUBMITTER_NAME" property="submitterName"/>
+        <result column="SUBMIT_TIME" property="submitTime"/>
+        <result column="APPROVAL_COMMENT" property="approvalComment"/>
+        <result column="REJECT_REASON" property="rejectReason"/>
+        <result column="APPROVAL_TIME" property="approvalTime"/>
+        <result column="WORKFLOW_INSTANCE_ID" property="workflowInstanceId"/>
+        <result column="ATTACHMENTS" property="attachments"/>
+        <result column="REMARK" property="remark"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="CREATE_BY" property="createBy"/>
+        <result column="UPDATE_BY" property="updateBy"/>
+        <result column="DEL_FLAG" property="delFlag"/>
+        <result column="TENANT_ID" property="tenantId"/>
+    </resultMap>
+
+    <!-- 根据审批编码查询 -->
+    <select id="selectByApprovalCode" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BUDGET_APPROVAL
+        WHERE APPROVAL_CODE = #{approvalCode}
+        AND DEL_FLAG = 0
+    </select>
+
+    <!-- 查询待审批列表 -->
+    <select id="selectPendingApprovals" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BUDGET_APPROVAL
+        WHERE CURRENT_APPROVER_ID = #{approverId}
+        AND APPROVAL_STATUS = 'PENDING'
+        AND DEL_FLAG = 0
+        ORDER BY SUBMIT_TIME DESC
+    </select>
+
+    <!-- 查询我提交的审批 -->
+    <select id="selectMySubmittedApprovals" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BUDGET_APPROVAL
+        WHERE SUBMITTER_ID = #{submitterId}
+        AND DEL_FLAG = 0
+        ORDER BY SUBMIT_TIME DESC
+    </select>
+
+    <!-- 更新审批状态 -->
+    <update id="updateApprovalStatus">
+        UPDATE TBL_BUDGET_APPROVAL
+        SET APPROVAL_STATUS = #{approvalStatus},
+            APPROVAL_TIME = SYSDATE,
+            UPDATE_TIME = SYSDATE
+        WHERE APPROVAL_ID = #{approvalId}
+    </update>
+
+    <!-- 根据预算ID查询 -->
+    <select id="selectByBudgetId" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BUDGET_APPROVAL
+        WHERE BUDGET_ID = #{budgetId}
+        AND DEL_FLAG = 0
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据任务ID查询 -->
+    <select id="selectByTaskId" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BUDGET_APPROVAL
+        WHERE TASK_ID = #{taskId}
+        AND DEL_FLAG = 0
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+</mapper>
+

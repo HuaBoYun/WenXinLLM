@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.fxgl.mapper.RiskeventMapper">
+
+ <select id="getRiskeventPageInfoHead" resultType="com.huabo.fxgl.entity.Riskevent">
+ 	select r.*,a.riskcatname,o.orgname as unitname from TBL_RISKEVENT r left join TBL_RISKCATEGORY a on r.riskcatid=a.riskcatid 
+ 	left join tbl_organization o on o.orgid=r.unit
+ 	where r.status = 6 and r.reportstatus=1  
+ 	and  r.riseveid in (
+	select c.riseveid from (select riskeventcode,max(riseveid) 
+             riseveid from TBL_RISKEVENT   group by riskeventcode) c  
+      )
+	${sql}
+	<if test="queryParam.riskeventcode!=null and queryParam.riskeventcode!='' ">
+		and  RISKEVENTCODE    LIKE concat(concat('%',#{queryParam.riskeventcode}),'%')  
+	</if>
+	
+	<if test="queryParam.riskeventname!=null and queryParam.riskeventname!=''">
+		AND RISKEVENTNAME LIKE concat(concat('%',#{queryParam.riskeventname}),'%')
+	</if>
+ 
+	<if test="queryParam.startDate != null and queryParam.startDate!=''">
+		and OCCUREDDATE &gt;=#{queryParam.startDate}
+	</if>
+	
+	<if test="queryParam.endDate != null and queryParam.endDate!=''">
+		and OCCUREDDATE &lt;=#{queryParam.endDate}
+	</if>
+		<if test="queryParam.unit != null and queryParam.unit!=''">
+		and r.unit=#{queryParam.unit}
+	</if>
+		<if test="queryParam.recordorg != null and queryParam.recordorg!=''">
+		and r.recordorg=#{queryParam.recordorg}
+	</if>
+	<if test="queryParam.deptIds!=null and queryParam.deptIds.size()>0">
+	     and  r.recordorg in
+	     <foreach collection="queryParam.deptIds" item="item" open="(" close=")" separator=",">
+	      #{item}	   
+	     </foreach>
+	     </if>
+	     	<if test="queryParam.unitIds!=null and queryParam.unitIds.size()>0">
+	     and  r.unit in
+	     <foreach collection="queryParam.unitIds" item="item" open="(" close=")" separator=",">
+	      #{item}	   
+	     </foreach>
+	     </if>
+		<if test="queryParam.unitname != null and queryParam.unitname!=''">
+				AND o.orgname LIKE concat(concat('%',#{queryParam.unitname}),'%')
+
+	</if>
+	
+		<if test="queryParam.losseventcategory != null and queryParam.losseventcategory!=''">
+		and losseventcategory=#{queryParam.losseventcategory}
+	</if>
+	
+	  <if test="childNodeIds!=null and childNodeIds.size()>0">
+	     and r.RISKCATID in
+	     <foreach collection="childNodeIds" item="item" open="(" close=")" separator=",">
+	      #{item}	   
+	     </foreach>
+	   </if>
+	   
+	   
+	 order by riseveid desc 
+     </select>
+
+
+
+ <select id="getRiskeventPageInfo" resultType="com.huabo.fxgl.entity.Riskevent">
+	 select * from TBL_RISKEVENT where riseveid in (select c.riseveid from (select riskeventcode,max(riseveid) riseveid from TBL_RISKEVENT   group by riskeventcode) c  )  
+
+	<if test="queryParam.riskeventcode!=null and queryParam.riskeventcode!='' ">
+		and RISKEVENTCODE LIKE concat(concat('%',#{queryParam.riskeventcode}),'%')  
+	</if>
+	<if test="queryParam.riskeventname!=null and queryParam.riskeventname!=''">
+		AND RISKEVENTNAME LIKE concat(concat('%',#{queryParam.riskeventname}),'%')
+	</if>
+	<if test="queryParam.startDate != null and queryParam.startDate!=''">
+		and OCCUREDDATE &gt;=#{queryParam.startDate}
+	</if>
+	<if test="queryParam.endDate != null and queryParam.endDate!=''">
+		and OCCUREDDATE &lt;=#{queryParam.endDate}
+	</if>
+	  <if test="queryParam.unit!=null and queryParam.unit!=''">
+		    AND unit  = #{queryParam.unit}
+	 </if>
+	 
+	   <if test="queryParam.losseventcategory!=null and queryParam.losseventcategory!=''">
+		    AND losseventcategory  = #{queryParam.losseventcategory}
+	 </if>
+	   <if test="queryParam.ids!=null and queryParam.ids!=''">
+		    AND riseveid  in (${queryParam.ids})
+	 </if>
+	  <if test="childNodeIds!=null and childNodeIds.size()>0">
+	     and RISKCATID in
+	     <foreach collection="childNodeIds" item="item" open="(" close=")" separator=",">
+	      #{item}	   
+	     </foreach>
+	     </if>
+	     ${sql}
+	 order by riseveid desc 
+     </select>
+
+
+	<select id="getRiskeventHistoryHead" resultType="com.huabo.fxgl.entity.Riskevent">
+		select * from TBL_RISKEVENT where status=6 and reportstatus=1
+		<if test="queryParam.riseveid!=null">
+			and riseveid!=#{queryParam.riseveid}
+		</if>
+		
+			<if test="queryParam.riskeventcode!=null and queryParam.riskeventcode!='' ">
+			 		and RISKEVENTCODE = #{queryParam.riskeventcode}
+		</if>
+		
+		<if test="queryParam.initialfatherriseveid!=null">
+			and ( 
+			initialfatherriseveid =#{queryParam.initialfatherriseveid}
+			or fatherriseveid =#{queryParam.initialfatherriseveid} 
+			or riseveid =#{queryParam.initialfatherriseveid}
+			)
+		</if>
+		order by riseveid desc
+	</select>
+	
+	<select id="getRiskeventHistory" resultType="com.huabo.fxgl.entity.Riskevent">
+		select * from TBL_RISKEVENT where  1=1
+		<if test="queryParam.riseveid!=null">
+			and riseveid!=#{queryParam.riseveid}
+		</if>
+		
+		<if test="queryParam.riskeventcode!=null and queryParam.riskeventcode!='' ">
+			 		and RISKEVENTCODE = #{queryParam.riskeventcode}
+		</if>
+		
+		<if test="queryParam.initialfatherriseveid!=null">
+			and ( 
+			initialfatherriseveid =#{queryParam.initialfatherriseveid}
+			or fatherriseveid =#{queryParam.initialfatherriseveid} 
+			or riseveid =#{queryParam.initialfatherriseveid}
+			)
+		</if>
+		<if test="queryParam.riskfactor1!=null and queryParam.riskfactor1!=''">
+		    AND RISKFACTOR1  = #{queryParam.riskfactor1}
+	    </if>
+		order by riseveid desc
+	</select>
+
+
+<select id="getRemindList" resultType="com.huabo.fxgl.entity.Riskevent">
+		select * from TBL_RISKEVENT where   status=6 and losseventcategory=2 and   (reportstatus is null or reportstatus ='' or reportstatus!=1) 
+		 
+		<if test="staffid!=null and staffid!=''">
+		    AND RISKFACTOR1  = #{staffid}
+	    </if>
+		order by riseveid desc
+	</select>
+	<resultMap type="java.util.Map" id="RiskLosseventcategory">
+	 <result column="name" property="name" />
+	 <result column="value" property="value" />
+	</resultMap>
+	
+	<select id="getRiskLosseventcategory" resultMap="RiskLosseventcategory">
+	select case   when losseventcategory=1 then '一般事件' else '重大事件' end AS name,count(1) as value from TBL_RISKEVENT where 1=1
+	and riseveid in (select c.riseveid from (select riskeventcode,max(riseveid) 
+             riseveid from TBL_RISKEVENT   group by riskeventcode) c  )  and  status = 6 and reportstatus=1 
+	<if test="company!=null and company!=''">
+	  and unit= #{company}
+	</if>
+	  group by losseventcategory
+	</select>
+	
+	<select id="queryRisksNumberByType" resultType="java.lang.Integer">
+	SELECT COUNT(1) FROM TBL_RISKEVENT WHERE 1=1 and  riseveid in (select c.riseveid from (select riskeventcode,max(riseveid) 
+             riseveid from TBL_RISKEVENT   group by riskeventcode) c  )  and  status = 6 and reportstatus=1 
+	<if test="type!=null and type!=''">
+	  and losseventcategory=#{type}
+	</if>
+	<if test="orgid!=null and orgid!=''">
+	 and UNIT=#{orgid}
+	</if>
+	 <if test="year!=null and year!=''">
+	 and year(createdate)=#{year}
+	 </if>
+	</select>
+</mapper>

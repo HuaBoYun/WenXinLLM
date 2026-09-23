@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.InvestmentPlanMapper">
+
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TblInvestmentPlan">
+        <id column="PLAN_ID" property="planId"/>
+        <result column="PLAN_NO" property="planNo"/>
+        <result column="PLAN_NAME" property="planName"/>
+        <result column="INVESTMENT_TYPE" property="investmentType"/>
+        <result column="PLAN_AMOUNT" property="planAmount"/>
+        <result column="INVESTED_AMOUNT" property="investedAmount"/>
+        <result column="EXPECTED_RETURN_RATE" property="expectedReturnRate"/>
+        <result column="ACTUAL_RETURN_RATE" property="actualReturnRate"/>
+        <result column="RISK_LEVEL" property="riskLevel"/>
+        <result column="PLAN_STATUS" property="planStatus"/>
+        <result column="PLAN_START_DATE" property="planStartDate"/>
+        <result column="PLAN_END_DATE" property="planEndDate"/>
+        <result column="PLAN_DESCRIPTION" property="planDescription"/>
+        <result column="APPROVAL_COMMENTS" property="approvalComments"/>
+        <result column="COMPANY_ID" property="companyId"/>
+        <result column="COMPANY_NAME" property="companyName"/>
+        <result column="CREATED_BY" property="createdBy"/>
+        <result column="CREATED_BY_NAME" property="createdByName"/>
+        <result column="CREATED_TIME" property="createdTime"/>
+        <result column="UPDATED_BY" property="updatedBy"/>
+        <result column="UPDATED_BY_NAME" property="updatedByName"/>
+        <result column="UPDATED_TIME" property="updatedTime"/>
+        <result column="DELETE_FLAG" property="deleteFlag"/>
+        <result column="REMARK" property="remark"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        PLAN_ID, PLAN_NO, PLAN_NAME, INVESTMENT_TYPE, PLAN_AMOUNT,
+        INVESTED_AMOUNT, EXPECTED_RETURN_RATE, ACTUAL_RETURN_RATE,
+        RISK_LEVEL, PLAN_STATUS, PLAN_START_DATE, PLAN_END_DATE, PLAN_DESCRIPTION,
+        APPROVAL_COMMENTS, COMPANY_ID, COMPANY_NAME, CREATED_BY, CREATED_BY_NAME, CREATED_TIME,
+        UPDATED_BY, UPDATED_BY_NAME, UPDATED_TIME, DELETE_FLAG, REMARK
+    </sql>
+
+    <insert id="insert" parameterType="com.global.treasurer.entity.TblInvestmentPlan">
+        INSERT INTO TBL_INVESTMENT_PLAN (
+            PLAN_ID, PLAN_NO, PLAN_NAME, INVESTMENT_TYPE, PLAN_AMOUNT,
+            INVESTED_AMOUNT, EXPECTED_RETURN_RATE, ACTUAL_RETURN_RATE,
+            RISK_LEVEL, PLAN_STATUS, PLAN_START_DATE, PLAN_END_DATE, PLAN_DESCRIPTION,
+            APPROVAL_COMMENTS, COMPANY_ID, COMPANY_NAME, CREATED_BY, CREATED_BY_NAME, CREATED_TIME,
+            UPDATED_BY, UPDATED_BY_NAME, UPDATED_TIME, DELETE_FLAG, REMARK
+        ) VALUES (
+            #{planId}, #{planNo}, #{planName}, #{investmentType}, #{planAmount},
+            #{investedAmount}, #{expectedReturnRate}, #{actualReturnRate},
+            #{riskLevel}, #{planStatus}, #{planStartDate}, #{planEndDate}, #{planDescription},
+            #{approvalComments}, #{companyId}, #{companyName}, #{createdBy}, #{createdByName}, #{createdTime},
+            #{updatedBy}, #{updatedByName}, #{updatedTime}, #{deleteFlag}, #{remark}
+        )
+    </insert>
+
+    <!-- 注释掉自定义的updateById,使用MyBatis-Plus自带的updateById方法 -->
+    <!--
+    <update id="updateById" parameterType="com.global.treasurer.entity.TblInvestmentPlan">
+        UPDATE TBL_INVESTMENT_PLAN
+        <set>
+            <if test="planNo != null">PLAN_NO = #{planNo},</if>
+            <if test="planName != null">PLAN_NAME = #{planName},</if>
+            <if test="investmentType != null">INVESTMENT_TYPE = #{investmentType},</if>
+            <if test="planAmount != null">PLAN_AMOUNT = #{planAmount},</if>
+            <if test="investedAmount != null">INVESTED_AMOUNT = #{investedAmount},</if>
+            <if test="expectedReturnRate != null">EXPECTED_RETURN_RATE = #{expectedReturnRate},</if>
+            <if test="actualReturnRate != null">ACTUAL_RETURN_RATE = #{actualReturnRate},</if>
+            <if test="riskLevel != null">RISK_LEVEL = #{riskLevel},</if>
+            <if test="planStatus != null">PLAN_STATUS = #{planStatus},</if>
+            <if test="planStartDate != null">PLAN_START_DATE = #{planStartDate},</if>
+            <if test="planEndDate != null">PLAN_END_DATE = #{planEndDate},</if>
+            <if test="planDescription != null">PLAN_DESCRIPTION = #{planDescription},</if>
+            <if test="approvalComments != null">APPROVAL_COMMENTS = #{approvalComments},</if>
+            <if test="companyId != null">COMPANY_ID = #{companyId},</if>
+            <if test="companyName != null">COMPANY_NAME = #{companyName},</if>
+            <if test="updatedBy != null">UPDATED_BY = #{updatedBy},</if>
+            <if test="updatedByName != null">UPDATED_BY_NAME = #{updatedByName},</if>
+            <if test="updatedTime != null">UPDATED_TIME = #{updatedTime},</if>
+            <if test="deleteFlag != null">DELETE_FLAG = #{deleteFlag},</if>
+            <if test="remark != null">REMARK = #{remark},</if>
+        </set>
+        WHERE PLAN_ID = #{planId}
+    </update>
+    -->
+
+    <select id="selectPlanList" parameterType="map" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_INVESTMENT_PLAN
+        WHERE DELETE_FLAG = 0
+        <if test="planNo != null and planNo != ''">
+            AND PLAN_NO LIKE CONCAT('%', #{planNo}, '%')
+        </if>
+        <if test="planName != null and planName != ''">
+            AND PLAN_NAME LIKE CONCAT('%', #{planName}, '%')
+        </if>
+        <if test="investmentType != null and investmentType != ''">
+            AND INVESTMENT_TYPE = #{investmentType}
+        </if>
+        <if test="riskLevel != null and riskLevel != ''">
+            AND RISK_LEVEL = #{riskLevel}
+        </if>
+        <if test="planStatus != null and planStatus != ''">
+            AND PLAN_STATUS = #{planStatus}
+        </if>
+        <if test="companyId != null">
+            AND COMPANY_ID = #{companyId}
+        </if>
+        ORDER BY CREATED_TIME DESC
+    </select>
+
+    <select id="selectPlanById" parameterType="long" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_INVESTMENT_PLAN
+        WHERE PLAN_ID = #{planId} AND DELETE_FLAG = 0
+    </select>
+
+    <select id="selectByPlanNo" parameterType="string" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_INVESTMENT_PLAN
+        WHERE PLAN_NO = #{planNo} AND DELETE_FLAG = 0
+    </select>
+
+    <select id="selectByStatus" parameterType="string" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_INVESTMENT_PLAN
+        WHERE PLAN_STATUS = #{planStatus} AND DELETE_FLAG = 0
+        ORDER BY CREATED_TIME DESC
+    </select>
+
+    <select id="selectByInvestmentType" parameterType="string" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_INVESTMENT_PLAN
+        WHERE INVESTMENT_TYPE = #{investmentType} AND DELETE_FLAG = 0
+        ORDER BY CREATED_TIME DESC
+    </select>
+
+    <select id="selectActivePlans" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_INVESTMENT_PLAN
+        WHERE DELETE_FLAG = 0 AND PLAN_STATUS IN ('APPROVED', 'EXECUTING')
+        ORDER BY CREATED_TIME DESC
+    </select>
+
+    <update id="updatePlanStatus">
+        UPDATE TBL_INVESTMENT_PLAN
+        SET PLAN_STATUS = #{planStatus}, UPDATED_TIME = CURRENT_TIMESTAMP
+        WHERE PLAN_ID = #{planId}
+    </update>
+
+    <update id="updateInvestedAmount">
+        UPDATE TBL_INVESTMENT_PLAN
+        SET INVESTED_AMOUNT = #{investedAmount},
+            REMAINING_AMOUNT = PLAN_AMOUNT - #{investedAmount},
+            UPDATED_TIME = CURRENT_TIMESTAMP
+        WHERE PLAN_ID = #{planId}
+    </update>
+
+    <update id="updateActualReturnRate">
+        UPDATE TBL_INVESTMENT_PLAN
+        SET ACTUAL_RETURN_RATE = #{actualReturnRate}, UPDATED_TIME = CURRENT_TIMESTAMP
+        WHERE PLAN_ID = #{planId}
+    </update>
+
+    <update id="batchDeleteByIds">
+        UPDATE TBL_INVESTMENT_PLAN
+        SET DELETE_FLAG = 1, UPDATED_TIME = CURRENT_TIMESTAMP
+        WHERE PLAN_ID IN
+        <foreach collection="planIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <select id="countPlansByStatus" resultType="map">
+        SELECT PLAN_STATUS AS status, COUNT(1) AS count
+        FROM TBL_INVESTMENT_PLAN
+        WHERE DELETE_FLAG = 0
+        GROUP BY PLAN_STATUS
+    </select>
+
+    <select id="countPlansByInvestmentType" resultType="map">
+        SELECT INVESTMENT_TYPE AS investmentType, COUNT(1) AS count
+        FROM TBL_INVESTMENT_PLAN
+        WHERE DELETE_FLAG = 0
+        GROUP BY INVESTMENT_TYPE
+    </select>
+
+    <select id="selectPlanStatistics" resultType="map">
+        SELECT
+            COUNT(1) AS totalCount,
+            SUM(CASE WHEN PLAN_STATUS = 'DRAFT' THEN 1 ELSE 0 END) AS draftCount,
+            SUM(CASE WHEN PLAN_STATUS = 'SUBMITTED' THEN 1 ELSE 0 END) AS submittedCount,
+            SUM(CASE WHEN PLAN_STATUS = 'APPROVED' THEN 1 ELSE 0 END) AS approvedCount,
+            SUM(CASE WHEN PLAN_STATUS = 'EXECUTING' THEN 1 ELSE 0 END) AS executingCount,
+            SUM(CASE WHEN PLAN_STATUS = 'COMPLETED' THEN 1 ELSE 0 END) AS completedCount,
+            SUM(CASE WHEN PLAN_STATUS = 'CANCELLED' THEN 1 ELSE 0 END) AS cancelledCount,
+            SUM(PLAN_AMOUNT) AS totalPlanAmount,
+            SUM(INVESTED_AMOUNT) AS totalInvestedAmount,
+            SUM(REMAINING_AMOUNT) AS totalRemainingAmount
+        FROM TBL_INVESTMENT_PLAN
+        WHERE DELETE_FLAG = 0
+    </select>
+
+    <select id="selectNearExpiryPlans" parameterType="int" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_INVESTMENT_PLAN
+        WHERE DELETE_FLAG = 0
+          AND PLAN_STATUS IN ('APPROVED', 'EXECUTING')
+          AND PLAN_END_DATE BETWEEN CURRENT_DATE AND CURRENT_DATE + #{days}
+        ORDER BY PLAN_END_DATE ASC
+    </select>
+
+    <select id="selectOverduePlans" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_INVESTMENT_PLAN
+        WHERE DELETE_FLAG = 0
+          AND PLAN_STATUS IN ('APPROVED', 'EXECUTING')
+          AND PLAN_END_DATE &lt; CURRENT_DATE
+        ORDER BY PLAN_END_DATE ASC
+    </select>
+</mapper>
+

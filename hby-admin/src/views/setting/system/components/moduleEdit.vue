@@ -79,7 +79,7 @@
             { required: true, trigger: 'blur', message: '请填写其他项目路由' },
           ],
           projectType: [
-            { required: true, trigger: 'blur', message: '请选择是否跳转引迈' },
+            { required: true, trigger: 'blur', message: '请选择是否跳转流程平台' },
           ],
         },
         title: '',

@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.FundPlanAdjustmentMapper">
+
+    <!-- 基础结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.FundPlanAdjustment">
+        <id column="adjustment_id" property="adjustmentId" jdbcType="BIGINT"/>
+        <result column="plan_id" property="planId" jdbcType="BIGINT"/>
+        <result column="detail_id" property="detailId" jdbcType="BIGINT"/>
+        <result column="adjustment_no" property="adjustmentNo" jdbcType="VARCHAR"/>
+        <result column="adjustment_type" property="adjustmentType" jdbcType="VARCHAR"/>
+        <result column="adjustment_reason" property="adjustmentReason" jdbcType="VARCHAR"/>
+        <result column="original_amount" property="originalAmount" jdbcType="DECIMAL"/>
+        <result column="adjusted_amount" property="adjustedAmount" jdbcType="DECIMAL"/>
+        <result column="adjustment_amount" property="adjustmentAmount" jdbcType="DECIMAL"/>
+        <result column="original_date" property="originalDate" jdbcType="DATE"/>
+        <result column="adjusted_date" property="adjustedDate" jdbcType="DATE"/>
+        <result column="approval_status" property="approvalStatus" jdbcType="VARCHAR"/>
+        <result column="approve_user" property="approveUser" jdbcType="BIGINT"/>
+        <result column="approve_time" property="approveTime" jdbcType="TIMESTAMP"/>
+        <result column="approve_comment" property="approveComment" jdbcType="VARCHAR"/>
+        <result column="impact_assessment" property="impactAssessment" jdbcType="VARCHAR"/>
+        <result column="risk_evaluation" property="riskEvaluation" jdbcType="VARCHAR"/>
+        <result column="org_id" property="orgId" jdbcType="BIGINT"/>
+        <result column="create_user" property="createUser" jdbcType="BIGINT"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_user" property="updateUser" jdbcType="BIGINT"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="is_deleted" property="isDeleted" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        adjustment_id, plan_id, detail_id, adjustment_no, adjustment_type, adjustment_reason,
+        original_amount, adjusted_amount, adjustment_amount, original_date, adjusted_date,
+        approval_status, approve_user, approve_time, approve_comment, impact_assessment,
+        risk_evaluation, org_id, create_user, create_time, update_user, update_time, is_deleted
+    </sql>
+
+    <!-- 根据调整编号查询 -->
+    <select id="selectByAdjustmentNo" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM fund_plan_adjustment
+        WHERE adjustment_no = #{adjustmentNo} AND is_deleted = 0
+    </select>
+
+    <!-- 根据计划ID查询调整列表 -->
+    <select id="selectByPlanId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM fund_plan_adjustment
+        WHERE plan_id = #{planId} AND is_deleted = 0
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据明细ID查询调整列表 -->
+    <select id="selectByDetailId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM fund_plan_adjustment
+        WHERE detail_id = #{detailId} AND is_deleted = 0
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 查询待审批调整 -->
+    <select id="selectPendingApproval" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM fund_plan_adjustment
+        WHERE approval_status = 'PENDING' AND org_id = #{orgId} AND is_deleted = 0
+        ORDER BY create_time ASC
+    </select>
+
+    <!-- 查询已审批调整 -->
+    <select id="selectApprovedAdjustments" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM fund_plan_adjustment
+        WHERE approval_status = 'APPROVED' AND org_id = #{orgId} AND is_deleted = 0
+        <if test="startDate != null">
+            AND approve_time >= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND approve_time &lt;= #{endDate}
+        </if>
+        ORDER BY approve_time DESC
+    </select>
+
+    <!-- 查询已拒绝调整 -->
+    <select id="selectRejectedAdjustments" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM fund_plan_adjustment
+        WHERE approval_status = 'REJECTED' AND org_id = #{orgId} AND is_deleted = 0
+        ORDER BY approve_time DESC
+    </select>
+
+    <!-- 查询高影响调整 -->
+    <select id="selectHighImpactAdjustments" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM fund_plan_adjustment
+        WHERE ABS(adjustment_amount) >= #{impactThreshold} AND org_id = #{orgId} AND is_deleted = 0
+        ORDER BY ABS(adjustment_amount) DESC
+    </select>
+
+    <!-- 统计各调整类型数量 -->
+    <select id="countByAdjustmentType" parameterType="java.lang.Long" resultType="java.util.Map">
+        SELECT adjustment_type, COUNT(*) as count
+        FROM fund_plan_adjustment
+        WHERE org_id = #{orgId} AND is_deleted = 0
+        GROUP BY adjustment_type
+    </select>
+
+    <!-- 统计各审批状态数量 -->
+    <select id="countByApprovalStatus" parameterType="java.lang.Long" resultType="java.util.Map">
+        SELECT approval_status, COUNT(*) as count
+        FROM fund_plan_adjustment
+        WHERE org_id = #{orgId} AND is_deleted = 0
+        GROUP BY approval_status
+    </select>
+
+    <!-- 查询调整汇总信息 -->
+    <select id="selectSummaryInfo" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as totalCount,
+            COUNT(CASE WHEN approval_status = 'PENDING' THEN 1 END) as pendingCount,
+            COUNT(CASE WHEN approval_status = 'APPROVED' THEN 1 END) as approvedCount,
+            COUNT(CASE WHEN approval_status = 'REJECTED' THEN 1 END) as rejectedCount,
+            COALESCE(SUM(ABS(adjustment_amount)), 0) as totalAdjustmentAmount,
+            COALESCE(AVG(ABS(adjustment_amount)), 0) as avgAdjustmentAmount,
+            COUNT(CASE WHEN ABS(adjustment_amount) >= 100000 THEN 1 END) as highImpactCount
+        FROM fund_plan_adjustment
+        WHERE is_deleted = 0
+        <if test="orgId != null">
+            AND org_id = #{orgId}
+        </if>
+        <if test="planId != null">
+            AND plan_id = #{planId}
+        </if>
+        <if test="adjustmentType != null and adjustmentType != ''">
+            AND adjustment_type = #{adjustmentType}
+        </if>
+        <if test="approvalStatus != null and approvalStatus != ''">
+            AND approval_status = #{approvalStatus}
+        </if>
+    </select>
+
+    <!-- 查询影响分析 -->
+    <select id="selectImpactAnalysis" parameterType="java.lang.Long" resultType="java.util.Map">
+        SELECT 
+            adjustment_type,
+            COUNT(*) as adjustmentCount,
+            COALESCE(SUM(adjustment_amount), 0) as totalAdjustmentAmount,
+            COALESCE(AVG(adjustment_amount), 0) as avgAdjustmentAmount,
+            COALESCE(MIN(adjustment_amount), 0) as minAdjustmentAmount,
+            COALESCE(MAX(adjustment_amount), 0) as maxAdjustmentAmount,
+            COUNT(CASE WHEN approval_status = 'APPROVED' THEN 1 END) as approvedCount,
+            ROUND(COUNT(CASE WHEN approval_status = 'APPROVED' THEN 1 END) * 100.0 / COUNT(*), 2) as approvalRate
+        FROM fund_plan_adjustment
+        WHERE org_id = #{orgId} AND is_deleted = 0
+        GROUP BY adjustment_type
+        ORDER BY totalAdjustmentAmount DESC
+    </select>
+
+    <!-- 查询审批分析 -->
+    <select id="selectApprovalAnalysis" parameterType="java.Long" resultType="java.util.Map">
+        SELECT 
+            adjustment_type,
+            COUNT(*) as totalCount,
+            COUNT(CASE WHEN approval_status = 'APPROVED' THEN 1 END) as approvedCount,
+            COUNT(CASE WHEN approval_status = 'REJECTED' THEN 1 END) as rejectedCount,
+            COUNT(CASE WHEN approval_status = 'PENDING' THEN 1 END) as pendingCount,
+            ROUND(COUNT(CASE WHEN approval_status = 'APPROVED' THEN 1 END) * 100.0 / COUNT(*), 2) as approvalRate,
+            COALESCE(AVG(CASE WHEN approve_time IS NOT NULL AND create_time IS NOT NULL 
+                THEN TIMESTAMPDIFF(HOUR, create_time, approve_time) END), 0) as avgApprovalHours
+        FROM fund_plan_adjustment
+        WHERE org_id = #{orgId} AND is_deleted = 0
+        GROUP BY adjustment_type
+        ORDER BY approvalRate DESC
+    </select>
+
+    <!-- 查询趋势分析 -->
+    <select id="selectTrendAnalysis" resultType="java.util.Map">
+        SELECT 
+            DATE_FORMAT(create_time, '%Y-%m') as month,
+            COUNT(*) as adjustmentCount,
+            COUNT(CASE WHEN approval_status = 'APPROVED' THEN 1 END) as approvedCount,
+            COALESCE(SUM(ABS(adjustment_amount)), 0) as totalAdjustmentAmount,
+            COALESCE(AVG(ABS(adjustment_amount)), 0) as avgAdjustmentAmount
+        FROM fund_plan_adjustment
+        WHERE org_id = #{orgId} AND is_deleted = 0
+        <if test="adjustmentType != null and adjustmentType != ''">
+            AND adjustment_type = #{adjustmentType}
+        </if>
+        AND create_time >= DATE_SUB(CURDATE(), INTERVAL #{months} MONTH)
+        GROUP BY DATE_FORMAT(create_time, '%Y-%m')
+        ORDER BY month DESC
+    </select>
+
+    <!-- 查询风险分析 -->
+    <select id="selectRiskAnalysis" parameterType="java.lang.Long" resultType="java.util.Map">
+        SELECT 
+            CASE 
+                WHEN ABS(adjustment_amount) >= 500000 THEN 'HIGH'
+                WHEN ABS(adjustment_amount) >= 100000 THEN 'MEDIUM'
+                ELSE 'LOW'
+            END as riskLevel,
+            COUNT(*) as count,
+            COALESCE(SUM(ABS(adjustment_amount)), 0) as totalAmount,
+            COALESCE(AVG(ABS(adjustment_amount)), 0) as avgAmount,
+            COUNT(CASE WHEN approval_status = 'APPROVED' THEN 1 END) as approvedCount,
+            ROUND(COUNT(CASE WHEN approval_status = 'APPROVED' THEN 1 END) * 100.0 / COUNT(*), 2) as approvalRate
+        FROM fund_plan_adjustment
+        WHERE org_id = #{orgId} AND is_deleted = 0
+        GROUP BY 
+            CASE 
+                WHEN ABS(adjustment_amount) >= 500000 THEN 'HIGH'
+                WHEN ABS(adjustment_amount) >= 100000 THEN 'MEDIUM'
+                ELSE 'LOW'
+            END
+        ORDER BY 
+            CASE 
+                WHEN ABS(adjustment_amount) >= 500000 THEN 1
+                WHEN ABS(adjustment_amount) >= 100000 THEN 2
+                ELSE 3
+            END
+    </select>
+
+    <!-- 更新审批状态 -->
+    <update id="updateApprovalStatus">
+        UPDATE fund_plan_adjustment
+        SET approval_status = #{approvalStatus},
+            approve_user = #{approveUser},
+            approve_time = #{approveTime},
+            approve_comment = #{approveComment},
+            update_user = #{approveUser},
+            update_time = NOW()
+        WHERE adjustment_id = #{adjustmentId} AND is_deleted = 0
+    </update>
+
+    <!-- 批量审批调整 -->
+    <update id="batchApproveAdjustments">
+        UPDATE fund_plan_adjustment
+        SET approval_status = 'APPROVED',
+            approve_user = #{approveUser},
+            approve_time = NOW(),
+            approve_comment = #{approveComment},
+            update_user = #{approveUser},
+            update_time = NOW()
+        WHERE adjustment_id IN
+        <foreach collection="adjustmentIds" item="adjustmentId" open="(" separator="," close=")">
+            #{adjustmentId}
+        </foreach>
+        AND approval_status = 'PENDING' AND is_deleted = 0
+    </update>
+
+    <!-- 批量拒绝调整 -->
+    <update id="batchRejectAdjustments">
+        UPDATE fund_plan_adjustment
+        SET approval_status = 'REJECTED',
+            approve_user = #{rejectUser},
+            approve_time = NOW(),
+            approve_comment = #{rejectReason},
+            update_user = #{rejectUser},
+            update_time = NOW()
+        WHERE adjustment_id IN
+        <foreach collection="adjustmentIds" item="adjustmentId" open="(" separator="," close=")">
+            #{adjustmentId}
+        </foreach>
+        AND approval_status = 'PENDING' AND is_deleted = 0
+    </update>
+
+    <!-- 更新影响评估 -->
+    <update id="updateImpactAssessment">
+        UPDATE fund_plan_adjustment
+        SET impact_assessment = #{impactAssessment},
+            update_user = #{updateUser},
+            update_time = NOW()
+        WHERE adjustment_id = #{adjustmentId} AND is_deleted = 0
+    </update>
+
+    <!-- 更新风险评估 -->
+    <update id="updateRiskEvaluation">
+        UPDATE fund_plan_adjustment
+        SET risk_evaluation = #{riskEvaluation},
+            update_user = #{updateUser},
+            update_time = NOW()
+        WHERE adjustment_id = #{adjustmentId} AND is_deleted = 0
+    </update>
+
+    <!-- 自动计算调整金额 -->
+    <update id="calculateAdjustmentAmount" parameterType="java.lang.Long">
+        UPDATE fund_plan_adjustment
+        SET adjustment_amount = adjusted_amount - original_amount,
+            update_time = NOW()
+        WHERE adjustment_id = #{adjustmentId} AND is_deleted = 0
+    </update>
+
+    <!-- 批量计算调整金额 -->
+    <update id="batchCalculateAdjustmentAmount" parameterType="java.lang.Long">
+        UPDATE fund_plan_adjustment
+        SET adjustment_amount = adjusted_amount - original_amount,
+            update_time = NOW()
+        WHERE org_id = #{orgId} AND is_deleted = 0
+    </update>
+
+    <!-- 自动生成影响评估 -->
+    <update id="autoGenerateImpactAssessment" parameterType="java.lang.Long">
+        UPDATE fund_plan_adjustment
+        SET impact_assessment = CASE 
+            WHEN ABS(adjustment_amount) >= 1000000 THEN '重大影响：调整金额超过100万，需要高级管理层审批'
+            WHEN ABS(adjustment_amount) >= 500000 THEN '较大影响：调整金额超过50万，需要部门负责人审批'
+            WHEN ABS(adjustment_amount) >= 100000 THEN '中等影响：调整金额超过10万，需要财务经理审批'
+            ELSE '轻微影响：调整金额较小，按正常流程审批'
+        END,
+        update_time = NOW()
+        WHERE adjustment_id = #{adjustmentId} AND impact_assessment IS NULL AND is_deleted = 0
+    </update>
+
+    <!-- 自动生成风险评估 -->
+    <update id="autoGenerateRiskEvaluation" parameterType="java.lang.Long">
+        UPDATE fund_plan_adjustment
+        SET risk_evaluation = CASE 
+            WHEN ABS(adjustment_amount) >= 1000000 THEN 'HIGH'
+            WHEN ABS(adjustment_amount) >= 500000 THEN 'MEDIUM'
+            WHEN ABS(adjustment_amount) >= 100000 THEN 'MEDIUM'
+            ELSE 'LOW'
+        END,
+        update_time = NOW()
+        WHERE adjustment_id = #{adjustmentId} AND risk_evaluation IS NULL AND is_deleted = 0
+    </update>
+
+    <!-- 查询超时未审批的调整 -->
+    <select id="selectOverdueAdjustments" parameterType="java.util.Map" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM fund_plan_adjustment
+        WHERE approval_status = 'PENDING' 
+        AND org_id = #{orgId}
+        AND create_time &lt; DATE_SUB(NOW(), INTERVAL #{timeoutHours} HOUR)
+        AND is_deleted = 0
+        ORDER BY create_time ASC
+    </select>
+
+    <!-- 查询需要升级审批的调整 -->
+    <select id="selectEscalationAdjustments" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM fund_plan_adjustment
+        WHERE approval_status = 'PENDING' 
+        AND org_id = #{orgId}
+        AND ABS(adjustment_amount) >= #{escalationThreshold}
+        AND create_time &lt; DATE_SUB(NOW(), INTERVAL #{timeoutHours} HOUR)
+        AND is_deleted = 0
+        ORDER BY ABS(adjustment_amount) DESC
+    </select>
+
+</mapper>

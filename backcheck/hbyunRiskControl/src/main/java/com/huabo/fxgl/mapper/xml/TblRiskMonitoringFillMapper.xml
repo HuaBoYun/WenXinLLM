@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.fxgl.mapper.TblRiskMonitoringFillMapper">
+
+ <select id="getList" resultType="com.huabo.fxgl.entity.TblRiskMonitoringFill">
+		select m.*,s.realname as createname,o.ORGNAME as linkOrgName from TBL_RISK_MONITORINGFILL m 
+left join tbl_staff s on s.staffid=m.CREATESTAFFID
+left join tbl_organization o on o.orgid=m.LINKORGID 
+ left join TBL_FILL_ISSUED iss on iss.fillid=m.id
+where 1=1  
+		<if test="queryParam.riskyear!=null">
+			and riskyear  LIKE concat(concat('%',#{queryParam.riskyear} ),'%')
+		</if>
+		<if test="queryParam.quartername!=null and queryParam.quartername!='' ">
+			and quartername LIKE concat(concat('%',#{queryParam.quartername} ),'%')
+		</if>
+	     <if test="queryParam.createstaffid!=null and queryParam.createstaffid!='' ">
+		     and   m.CREATESTAFFID=#{queryParam.createstaffid}  
+		</if>
+	     	<if test="queryParam.linkOrgId!=null and queryParam.linkOrgId!='' ">
+			 and linkOrgId=#{queryParam.linkOrgId}
+		</if>
+		 <if test="queryParam.reportstatus!=null and queryParam.reportstatus==0 ">
+			 and reportstatus is null or reportstatus=0
+		</if>
+		<if test="queryParam.reportstatus!=null and queryParam.reportstatus==1 ">
+			 and  reportstatus=1
+		</if>
+		<if test="queryParam.reportstatus!=null and queryParam.reportstatus==2 ">
+			 and reportstatus=2
+		</if>
+	    <if test="sql!=null and sql!=''">
+	     ${sql}
+	     </if>
+		order by m.id  desc  
+	</select>  
+	 
+	 <select id="getListByYear" resultType="com.huabo.fxgl.entity.TblRiskMonitoringFill">
+	 select f.*,iss.DEPTNOTES from TBL_RISK_MONITORINGFILL f 
+    left join TBL_FILL_ISSUED iss on iss.FILLID=f.id
+     where riskyear=#{year} and quartername=#{jd} and linkorgid=#{orgid}
+     and TO_CHAR( f.createtime, 'YYYY-MM-DD')=(select max(TO_CHAR(createtime, 'YYYY-MM-DD'))
+     from TBL_RISK_MONITORINGFILL where riskyear=#{year} and quartername=#{jd} and linkorgid=#{orgid})
+     and status=6
+	 </select>
+	  
+	  <!-- 
+	   <select id="getDesList" resultType="com.huabo.fxgl.entity.TblRiskMonitoringFill">
+	 select #{cols} from TBL_RISK_MONITORINGFILL where riskyear=#{year} and quartername=#{jd} and linkorgid=#{orgid}
+     and TO_CHAR(createtime, 'YYYY-MM-DD')=(select max(TO_CHAR(createtime, 'YYYY-MM-DD'))
+      from TBL_RISK_MONITORINGFILL where riskyear=#{year} and quartername=#{jd} and linkorgid=#{orgid})
+	 </select>
+	   -->
+</mapper>

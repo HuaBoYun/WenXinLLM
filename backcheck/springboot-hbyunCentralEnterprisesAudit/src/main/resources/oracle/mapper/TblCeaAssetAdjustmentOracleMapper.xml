@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.central.enterprises.audit.oracle.mapper.TblCeaAssetAdjustmentOracleMapper">
+
+    <select id="getList" resultType="com.huabo.central.enterprises.audit.oracle.entity.TblCeaAssetAdjustmentOracle">
+        select
+        t1.*,
+        t2.ASSETNAME,t2.SPECIFICATIONTYPE,t2.MEASUREMENT,t2.DISCONTINUEDTIME
+        from TBL_CEA_ASSET_ADJUSTMENT t1
+        inner join TBL_CEA_ASSET_MGT t2 on t1.ASSETMGTID=t2.id
+        where 1=1 and (t1.creator = #{param.creator}
+        <if test="param.deptIds != null and param.deptIds != ''">
+           or t1.creator in (SELECT DISTINCT STAFFID FROM TBL_USER_ORGRELATION WHERE DEPTID IN (${param.getDeptIds}))
+        </if>)
+        <if test="param.assetMgtName != null and param.assetMgtName != ''">
+            and t2.ASSETNAME like concat('%',concat(#{param.assetMgtName},'%'))
+        </if>
+<!--        <if test="param.tblOrganizationAll != null and param.tblOrganizationAll.size() >0">-->
+<!--            t1.belongGroup in-->
+<!--            <foreach collection="param.tblOrganizationAll" open="(" close=")" item="item" separator=",">-->
+<!--                #{item}-->
+<!--            </foreach>-->
+<!--        </if>-->
+        order by t1.id desc
+    </select>
+
+</mapper>

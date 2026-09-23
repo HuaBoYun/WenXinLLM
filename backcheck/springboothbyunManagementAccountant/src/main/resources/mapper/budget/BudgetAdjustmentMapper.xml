@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.management.accountant.oracle.mapper.budget.BudgetAdjustmentMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.management.accountant.oracle.entity.budget.BudgetAdjustment">
+        <id column="ADJUSTMENT_ID" property="adjustmentId"/>
+        <result column="ADJUSTMENT_CODE" property="adjustmentCode"/>
+        <result column="ADJUSTMENT_TYPE" property="adjustmentType"/>
+        <result column="ORIGINAL_BUDGET_ID" property="originalBudgetId"/>
+        <result column="ADJUSTMENT_AMOUNT" property="adjustmentAmount"/>
+        <result column="BEFORE_AMOUNT" property="beforeAmount"/>
+        <result column="AFTER_AMOUNT" property="afterAmount"/>
+        <result column="ADJUSTMENT_REASON" property="adjustmentReason"/>
+        <result column="ADJUSTMENT_STATUS" property="adjustmentStatus"/>
+        <result column="APPLICANT_ID" property="applicantId"/>
+        <result column="APPLICANT_NAME" property="applicantName"/>
+        <result column="APPLICATION_TIME" property="applicationTime"/>
+        <result column="APPROVER_ID" property="approverId"/>
+        <result column="APPROVER_NAME" property="approverName"/>
+        <result column="APPROVAL_TIME" property="approvalTime"/>
+        <result column="EXECUTION_TIME" property="executionTime"/>
+        <result column="ATTACHMENTS" property="attachments"/>
+        <result column="REMARK" property="remark"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="CREATE_BY" property="createBy"/>
+        <result column="UPDATE_BY" property="updateBy"/>
+        <result column="DEL_FLAG" property="delFlag"/>
+        <result column="TENANT_ID" property="tenantId"/>
+    </resultMap>
+
+    <!-- 根据调整编码查询 -->
+    <select id="selectByAdjustmentCode" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BUDGET_ADJUSTMENT
+        WHERE ADJUSTMENT_CODE = #{adjustmentCode}
+        AND DEL_FLAG = 0
+    </select>
+
+    <!-- 根据原预算ID查询 -->
+    <select id="selectByOriginalBudgetId" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BUDGET_ADJUSTMENT
+        WHERE ORIGINAL_BUDGET_ID = #{originalBudgetId}
+        AND DEL_FLAG = 0
+        ORDER BY APPLICATION_TIME DESC
+    </select>
+
+    <!-- 查询待审批的调整 -->
+    <select id="selectPendingAdjustments" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BUDGET_ADJUSTMENT
+        WHERE APPROVER_ID = #{approverId}
+        AND ADJUSTMENT_STATUS = 'SUBMITTED'
+        AND DEL_FLAG = 0
+        ORDER BY APPLICATION_TIME DESC
+    </select>
+
+    <!-- 更新调整状态 -->
+    <update id="updateAdjustmentStatus">
+        UPDATE TBL_BUDGET_ADJUSTMENT
+        SET ADJUSTMENT_STATUS = #{adjustmentStatus},
+            UPDATE_TIME = SYSDATE
+        WHERE ADJUSTMENT_ID = #{adjustmentId}
+    </update>
+
+    <!-- 批量删除 -->
+    <update id="batchDeleteByIds">
+        UPDATE TBL_BUDGET_ADJUSTMENT
+        SET DEL_FLAG = 1
+        WHERE ADJUSTMENT_ID IN
+        <foreach collection="adjustmentIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+</mapper>
+

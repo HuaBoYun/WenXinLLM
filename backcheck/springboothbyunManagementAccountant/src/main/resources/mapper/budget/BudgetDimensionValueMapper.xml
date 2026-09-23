@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.management.accountant.oracle.mapper.budget.BudgetDimensionValueMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.management.accountant.oracle.entity.budget.BudgetDimensionValue">
+        <id column="VALUE_ID" property="valueId" />
+        <result column="DIMENSION_ID" property="dimensionId" />
+        <result column="VALUE_CODE" property="valueCode" />
+        <result column="VALUE_NAME" property="valueName" />
+        <result column="VALUE_DESCRIPTION" property="valueDescription" />
+        <result column="PARENT_ID" property="parentId" />
+        <result column="LEVEL_NUM" property="levelNum" />
+        <result column="PATH_INFO" property="pathInfo" />
+        <result column="IS_LEAF" property="isLeaf" />
+        <result column="SORT_ORDER" property="sortOrder" />
+        <result column="IS_ENABLED" property="isEnabled" />
+        <result column="ATTRIBUTES" property="attributes" />
+        <result column="CREATOR_ID" property="creatorId" />
+        <result column="CREATOR_NAME" property="creatorName" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATER_ID" property="updaterId" />
+        <result column="UPDATER_NAME" property="updaterName" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="IS_DELETED" property="isDeleted" />
+        <result column="COMPANY_ID" property="companyId" />
+        <result column="COMPANY_NAME" property="companyName" />
+        <result column="REMARK" property="remark" />
+    </resultMap>
+
+    <!-- 根据维度ID查询维度值列表 -->
+    <select id="selectByDimensionId" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BUDGET_DIMENSION_VALUE
+        WHERE DIMENSION_ID = #{dimensionId}
+        AND COMPANY_ID = #{companyId}
+        AND IS_DELETED = 0
+        ORDER BY SORT_ORDER ASC
+    </select>
+
+    <!-- 根据维度值编码查询 -->
+    <select id="selectByCode" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BUDGET_DIMENSION_VALUE
+        WHERE VALUE_CODE = #{valueCode}
+        AND DIMENSION_ID = #{dimensionId}
+        AND COMPANY_ID = #{companyId}
+        AND IS_DELETED = 0
+    </select>
+
+    <!-- 查询维度值树结构 -->
+    <select id="selectValueTree" resultType="map">
+        SELECT 
+            VALUE_ID as id,
+            VALUE_NAME as label,
+            VALUE_CODE as code,
+            PARENT_ID as parentId,
+            LEVEL_NUM as level,
+            IS_LEAF as isLeaf,
+            SORT_ORDER as sortOrder,
+            IS_ENABLED as isEnabled
+        FROM TBL_BUDGET_DIMENSION_VALUE
+        WHERE DIMENSION_ID = #{dimensionId}
+        AND COMPANY_ID = #{companyId}
+        AND IS_DELETED = 0
+        ORDER BY SORT_ORDER ASC
+    </select>
+
+    <!-- 查询子维度值列表 -->
+    <select id="selectChildrenByParentId" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BUDGET_DIMENSION_VALUE
+        WHERE PARENT_ID = #{parentId}
+        AND DIMENSION_ID = #{dimensionId}
+        AND COMPANY_ID = #{companyId}
+        AND IS_DELETED = 0
+        ORDER BY SORT_ORDER ASC
+    </select>
+
+    <!-- 批量插入维度值 -->
+    <insert id="batchInsert">
+        INSERT INTO TBL_BUDGET_DIMENSION_VALUE (
+            VALUE_ID, DIMENSION_ID, VALUE_CODE, VALUE_NAME, VALUE_DESCRIPTION,
+            PARENT_ID, LEVEL_NUM, PATH_INFO, IS_LEAF, SORT_ORDER, IS_ENABLED,
+            ATTRIBUTES, CREATOR_ID, CREATOR_NAME, CREATE_TIME, IS_DELETED,
+            COMPANY_ID, COMPANY_NAME, REMARK
+        ) VALUES
+        <foreach collection="valueList" item="item" separator=",">
+            (
+                #{item.valueId}, #{item.dimensionId}, #{item.valueCode}, #{item.valueName}, #{item.valueDescription},
+                #{item.parentId}, #{item.levelNum}, #{item.pathInfo}, #{item.isLeaf}, #{item.sortOrder}, #{item.isEnabled},
+                #{item.attributes}, #{item.creatorId}, #{item.creatorName}, #{item.createTime}, #{item.isDeleted},
+                #{item.companyId}, #{item.companyName}, #{item.remark}
+            )
+        </foreach>
+    </insert>
+
+    <!-- 批量删除维度值 -->
+    <update id="batchDelete">
+        UPDATE TBL_BUDGET_DIMENSION_VALUE
+        SET IS_DELETED = 1
+        WHERE VALUE_ID IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND COMPANY_ID = #{companyId}
+    </update>
+
+    <!-- 更新子节点的路径信息 -->
+    <update id="updateChildrenPath">
+        UPDATE TBL_BUDGET_DIMENSION_VALUE
+        SET PATH_INFO = REPLACE(PATH_INFO, #{oldPath}, #{newPath})
+        WHERE PATH_INFO LIKE CONCAT(#{oldPath}, '%')
+        AND COMPANY_ID = #{companyId}
+        AND IS_DELETED = 0
+    </update>
+
+    <!-- 查询叶子节点列表 -->
+    <select id="selectLeafNodes" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BUDGET_DIMENSION_VALUE
+        WHERE DIMENSION_ID = #{dimensionId}
+        AND COMPANY_ID = #{companyId}
+        AND IS_LEAF = 1
+        AND IS_DELETED = 0
+        ORDER BY SORT_ORDER ASC
+    </select>
+
+</mapper>
+

@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.CollateralInfoMapper">
+
+    <!-- 基础结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.CollateralInfo">
+        <id column="ID" property="id" />
+        <result column="COLLATERAL_NO" property="collateralNo" />
+        <result column="COLLATERAL_NAME" property="collateralName" />
+        <result column="COLLATERAL_TYPE" property="collateralType" />
+        <result column="COLLATERAL_CATEGORY" property="collateralCategory" />
+        <result column="OWNER_ID" property="ownerId" />
+        <result column="OWNER_TYPE" property="ownerType" />
+        <result column="LOCATION" property="location" />
+        <result column="DESCRIPTION" property="description" />
+        <result column="ORIGINAL_VALUE" property="originalValue" />
+        <result column="CURRENT_VALUE" property="currentValue" />
+        <result column="CURRENCY" property="currency" />
+        <result column="VALUATION_DATE" property="valuationDate" />
+        <result column="VALUATION_METHOD" property="valuationMethod" />
+        <result column="VALUATION_AGENCY" property="valuationAgency" />
+        <result column="VALUATION_REPORT_NO" property="valuationReportNo" />
+        <result column="PURCHASE_DATE" property="purchaseDate" />
+        <result column="PURCHASE_PRICE" property="purchasePrice" />
+        <result column="DEPRECIATION_METHOD" property="depreciationMethod" />
+        <result column="DEPRECIATION_RATE" property="depreciationRate" />
+        <result column="RESIDUAL_VALUE" property="residualValue" />
+        <result column="USEFUL_LIFE" property="usefulLife" />
+        <result column="COLLATERAL_STATUS" property="collateralStatus" />
+        <result column="MORTGAGE_STATUS" property="mortgageStatus" />
+        <result column="PLEDGE_STATUS" property="pledgeStatus" />
+        <result column="INSURANCE_STATUS" property="insuranceStatus" />
+        <result column="INSURANCE_COMPANY" property="insuranceCompany" />
+        <result column="INSURANCE_POLICY_NO" property="insurancePolicyNo" />
+        <result column="INSURANCE_AMOUNT" property="insuranceAmount" />
+        <result column="INSURANCE_START_DATE" property="insuranceStartDate" />
+        <result column="INSURANCE_END_DATE" property="insuranceEndDate" />
+        <result column="CERTIFICATE_TYPE" property="certificateType" />
+        <result column="CERTIFICATE_NO" property="certificateNo" />
+        <result column="CERTIFICATE_ISSUE_DATE" property="certificateIssueDate" />
+        <result column="CERTIFICATE_EXPIRE_DATE" property="certificateExpireDate" />
+        <result column="CERTIFICATE_AGENCY" property="certificateAgency" />
+        <result column="REGISTRATION_STATUS" property="registrationStatus" />
+        <result column="REGISTRATION_NO" property="registrationNo" />
+        <result column="REGISTRATION_DATE" property="registrationDate" />
+        <result column="REGISTRATION_AGENCY" property="registrationAgency" />
+        <result column="RISK_LEVEL" property="riskLevel" />
+        <result column="RISK_ASSESSMENT" property="riskAssessment" />
+        <result column="MAINTENANCE_COST" property="maintenanceCost" />
+        <result column="STORAGE_COST" property="storageCost" />
+        <result column="MANAGEMENT_COST" property="managementCost" />
+        <result column="REMARKS" property="remarks" />
+        <result column="CREATED_BY" property="createdBy" />
+        <result column="CREATED_TIME" property="createdTime" />
+        <result column="UPDATED_BY" property="updatedBy" />
+        <result column="UPDATED_TIME" property="updatedTime" />
+        <result column="ORGID" property="orgid" />
+        <!-- 扩展字段 -->
+        <result column="OWNER_NAME" property="ownerName" />
+        <result column="CREATE_USER_NAME" property="createUserName" />
+        <result column="USED_AMOUNT" property="usedAmount" />
+        <result column="AVAILABLE_AMOUNT" property="availableAmount" />
+        <result column="USAGE_RATIO" property="usageRatio" />
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        c.ID, c.COLLATERAL_NO, c.COLLATERAL_NAME, c.COLLATERAL_TYPE, c.COLLATERAL_CATEGORY,
+        c.OWNER_ID, c.OWNER_TYPE, c.LOCATION, c.DESCRIPTION, c.ORIGINAL_VALUE, c.CURRENT_VALUE,
+        c.CURRENCY, c.VALUATION_DATE, c.VALUATION_METHOD, c.VALUATION_AGENCY, c.VALUATION_REPORT_NO,
+        c.PURCHASE_DATE, c.PURCHASE_PRICE, c.DEPRECIATION_METHOD, c.DEPRECIATION_RATE,
+        c.RESIDUAL_VALUE, c.USEFUL_LIFE, c.COLLATERAL_STATUS, c.MORTGAGE_STATUS, c.PLEDGE_STATUS,
+        c.INSURANCE_STATUS, c.INSURANCE_COMPANY, c.INSURANCE_POLICY_NO, c.INSURANCE_AMOUNT,
+        c.INSURANCE_START_DATE, c.INSURANCE_END_DATE, c.CERTIFICATE_TYPE, c.CERTIFICATE_NO,
+        c.CERTIFICATE_ISSUE_DATE, c.CERTIFICATE_EXPIRE_DATE, c.CERTIFICATE_AGENCY,
+        c.REGISTRATION_STATUS, c.REGISTRATION_NO, c.REGISTRATION_DATE, c.REGISTRATION_AGENCY,
+        c.RISK_LEVEL, c.RISK_ASSESSMENT, c.MAINTENANCE_COST, c.STORAGE_COST, c.MANAGEMENT_COST,
+        c.REMARKS, c.CREATED_BY, c.CREATED_TIME, c.UPDATED_BY, c.UPDATED_TIME, c.ORGID
+    </sql>
+
+    <!-- 扩展列 -->
+    <sql id="Extended_Column_List">
+        <include refid="Base_Column_List"/>,
+        CASE 
+            WHEN c.OWNER_TYPE = 'COMPANY' THEN comp.COMPANY_NAME
+            WHEN c.OWNER_TYPE = 'INDIVIDUAL' THEN staff.STAFF_NAME
+            ELSE ''
+        END AS OWNER_NAME,
+        creator.STAFF_NAME AS CREATE_USER_NAME,
+        COALESCE(usage.USED_AMOUNT, 0) AS USED_AMOUNT,
+        COALESCE(c.CURRENT_VALUE - COALESCE(usage.USED_AMOUNT, 0), c.CURRENT_VALUE) AS AVAILABLE_AMOUNT,
+        CASE 
+            WHEN c.CURRENT_VALUE > 0 THEN ROUND(COALESCE(usage.USED_AMOUNT, 0) * 100 / c.CURRENT_VALUE, 2)
+            ELSE 0
+        END AS USAGE_RATIO
+    </sql>
+
+    <!-- 基础查询条件 -->
+    <sql id="Base_Where_Clause">
+        <where>
+            <if test="query.collateralNo != null and query.collateralNo != ''">
+                AND c.COLLATERAL_NO LIKE '%' || #{query.collateralNo} || '%'
+            </if>
+            <if test="query.collateralName != null and query.collateralName != ''">
+                AND c.COLLATERAL_NAME LIKE '%' || #{query.collateralName} || '%'
+            </if>
+            <if test="query.collateralType != null and query.collateralType != ''">
+                AND c.COLLATERAL_TYPE = #{query.collateralType}
+            </if>
+            <if test="query.collateralCategory != null and query.collateralCategory != ''">
+                AND c.COLLATERAL_CATEGORY = #{query.collateralCategory}
+            </if>
+            <if test="query.ownerId != null">
+                AND c.OWNER_ID = #{query.ownerId}
+            </if>
+            <if test="query.ownerType != null and query.ownerType != ''">
+                AND c.OWNER_TYPE = #{query.ownerType}
+            </if>
+            <if test="query.collateralStatus != null and query.collateralStatus != ''">
+                AND c.COLLATERAL_STATUS = #{query.collateralStatus}
+            </if>
+            <if test="query.riskLevel != null and query.riskLevel != ''">
+                AND c.RISK_LEVEL = #{query.riskLevel}
+            </if>
+            <if test="query.insuranceStatus != null and query.insuranceStatus != ''">
+                AND c.INSURANCE_STATUS = #{query.insuranceStatus}
+            </if>
+            <if test="query.registrationStatus != null and query.registrationStatus != ''">
+                AND c.REGISTRATION_STATUS = #{query.registrationStatus}
+            </if>
+            <if test="query.minValue != null">
+                AND c.CURRENT_VALUE >= #{query.minValue}
+            </if>
+            <if test="query.maxValue != null">
+                AND c.CURRENT_VALUE &lt;= #{query.maxValue}
+            </if>
+            <if test="query.startDate != null">
+                AND c.CREATED_TIME >= #{query.startDate}
+            </if>
+            <if test="query.endDate != null">
+                AND c.CREATED_TIME &lt;= #{query.endDate}
+            </if>
+            <if test="query.orgid != null">
+                AND c.ORGID = #{query.orgid}
+            </if>
+        </where>
+    </sql>
+
+    <!-- 分页查询担保物信息 -->
+    <select id="selectCollateralPage" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Extended_Column_List"/>
+        FROM TBL_COLLATERAL_INFO c
+        LEFT JOIN TBL_COMPANY comp ON c.OWNER_ID = comp.ID AND c.OWNER_TYPE = 'COMPANY'
+        LEFT JOIN TBL_STAFF staff ON c.OWNER_ID = staff.ID AND c.OWNER_TYPE = 'INDIVIDUAL'
+        LEFT JOIN TBL_STAFF creator ON c.CREATED_BY = creator.ID
+        LEFT JOIN (
+            SELECT COLLATERAL_ID, SUM(USAGE_AMOUNT) AS USED_AMOUNT
+            FROM TBL_COLLATERAL_USAGE
+            WHERE USAGE_STATUS = 'ACTIVE'
+            GROUP BY COLLATERAL_ID
+        ) usage ON c.ID = usage.COLLATERAL_ID
+        <include refid="Base_Where_Clause"/>
+        ORDER BY c.CREATED_TIME DESC
+    </select>
+
+    <!-- 根据ID查询担保物详情 -->
+    <select id="selectCollateralById" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Extended_Column_List"/>
+        FROM TBL_COLLATERAL_INFO c
+        LEFT JOIN TBL_COMPANY comp ON c.OWNER_ID = comp.ID AND c.OWNER_TYPE = 'COMPANY'
+        LEFT JOIN TBL_STAFF staff ON c.OWNER_ID = staff.ID AND c.OWNER_TYPE = 'INDIVIDUAL'
+        LEFT JOIN TBL_STAFF creator ON c.CREATED_BY = creator.ID
+        LEFT JOIN (
+            SELECT COLLATERAL_ID, SUM(USAGE_AMOUNT) AS USED_AMOUNT
+            FROM TBL_COLLATERAL_USAGE
+            WHERE USAGE_STATUS = 'ACTIVE'
+            GROUP BY COLLATERAL_ID
+        ) usage ON c.ID = usage.COLLATERAL_ID
+        WHERE c.ID = #{id}
+    </select>
+
+    <!-- 根据担保物编号查询 -->
+    <select id="selectByCollateralNo" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Extended_Column_List"/>
+        FROM TBL_COLLATERAL_INFO c
+        LEFT JOIN TBL_COMPANY comp ON c.OWNER_ID = comp.ID AND c.OWNER_TYPE = 'COMPANY'
+        LEFT JOIN TBL_STAFF staff ON c.OWNER_ID = staff.ID AND c.OWNER_TYPE = 'INDIVIDUAL'
+        LEFT JOIN TBL_STAFF creator ON c.CREATED_BY = creator.ID
+        LEFT JOIN (
+            SELECT COLLATERAL_ID, SUM(USAGE_AMOUNT) AS USED_AMOUNT
+            FROM TBL_COLLATERAL_USAGE
+            WHERE USAGE_STATUS = 'ACTIVE'
+            GROUP BY COLLATERAL_ID
+        ) usage ON c.ID = usage.COLLATERAL_ID
+        WHERE c.COLLATERAL_NO = #{collateralNo}
+    </select>
+
+    <!-- 检查担保物编号是否存在 -->
+    <select id="checkCollateralNoExists" resultType="int">
+        SELECT COUNT(1) FROM TBL_COLLATERAL_INFO
+        WHERE COLLATERAL_NO = #{collateralNo}
+        <if test="excludeId != null">
+            AND ID != #{excludeId}
+        </if>
+    </select>
+
+    <!-- 根据所有者查询担保物列表 -->
+    <select id="selectByOwnerId" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Extended_Column_List"/>
+        FROM TBL_COLLATERAL_INFO c
+        LEFT JOIN TBL_COMPANY comp ON c.OWNER_ID = comp.ID AND c.OWNER_TYPE = 'COMPANY'
+        LEFT JOIN TBL_STAFF staff ON c.OWNER_ID = staff.ID AND c.OWNER_TYPE = 'INDIVIDUAL'
+        LEFT JOIN TBL_STAFF creator ON c.CREATED_BY = creator.ID
+        LEFT JOIN (
+            SELECT COLLATERAL_ID, SUM(USAGE_AMOUNT) AS USED_AMOUNT
+            FROM TBL_COLLATERAL_USAGE
+            WHERE USAGE_STATUS = 'ACTIVE'
+            GROUP BY COLLATERAL_ID
+        ) usage ON c.ID = usage.COLLATERAL_ID
+        WHERE c.OWNER_ID = #{ownerId}
+        <if test="ownerType != null and ownerType != ''">
+            AND c.OWNER_TYPE = #{ownerType}
+        </if>
+        ORDER BY c.CREATED_TIME DESC
+    </select>
+
+    <!-- 查询可用担保物列表 -->
+    <select id="selectAvailableCollaterals" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Extended_Column_List"/>
+        FROM TBL_COLLATERAL_INFO c
+        LEFT JOIN TBL_COMPANY comp ON c.OWNER_ID = comp.ID AND c.OWNER_TYPE = 'COMPANY'
+        LEFT JOIN TBL_STAFF staff ON c.OWNER_ID = staff.ID AND c.OWNER_TYPE = 'INDIVIDUAL'
+        LEFT JOIN TBL_STAFF creator ON c.CREATED_BY = creator.ID
+        LEFT JOIN (
+            SELECT COLLATERAL_ID, SUM(USAGE_AMOUNT) AS USED_AMOUNT
+            FROM TBL_COLLATERAL_USAGE
+            WHERE USAGE_STATUS = 'ACTIVE'
+            GROUP BY COLLATERAL_ID
+        ) usage ON c.ID = usage.COLLATERAL_ID
+        WHERE c.COLLATERAL_STATUS = 'AVAILABLE'
+        <if test="ownerId != null">
+            AND c.OWNER_ID = #{ownerId}
+        </if>
+        <if test="minValue != null">
+            AND c.CURRENT_VALUE >= #{minValue}
+        </if>
+        ORDER BY c.CURRENT_VALUE DESC
+    </select>
+
+    <!-- 查询即将到期的保险 -->
+    <select id="selectExpiringInsurance" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Extended_Column_List"/>
+        FROM TBL_COLLATERAL_INFO c
+        LEFT JOIN TBL_COMPANY comp ON c.OWNER_ID = comp.ID AND c.OWNER_TYPE = 'COMPANY'
+        LEFT JOIN TBL_STAFF staff ON c.OWNER_ID = staff.ID AND c.OWNER_TYPE = 'INDIVIDUAL'
+        LEFT JOIN TBL_STAFF creator ON c.CREATED_BY = creator.ID
+        LEFT JOIN (
+            SELECT COLLATERAL_ID, SUM(USAGE_AMOUNT) AS USED_AMOUNT
+            FROM TBL_COLLATERAL_USAGE
+            WHERE USAGE_STATUS = 'ACTIVE'
+            GROUP BY COLLATERAL_ID
+        ) usage ON c.ID = usage.COLLATERAL_ID
+        WHERE c.INSURANCE_STATUS = 'INSURED'
+        AND c.INSURANCE_END_DATE BETWEEN SYSDATE AND SYSDATE + #{days}
+        ORDER BY c.INSURANCE_END_DATE ASC
+    </select>
+
+    <!-- 统计担保物数量 -->
+    <select id="countCollateralsByStatus" resultType="map">
+        SELECT 
+            COUNT(1) AS TOTAL_COUNT,
+            SUM(CASE WHEN COLLATERAL_STATUS = 'AVAILABLE' THEN 1 ELSE 0 END) AS AVAILABLE_COUNT,
+            SUM(CASE WHEN COLLATERAL_STATUS = 'MORTGAGED' THEN 1 ELSE 0 END) AS MORTGAGED_COUNT,
+            SUM(CASE WHEN COLLATERAL_STATUS = 'PLEDGED' THEN 1 ELSE 0 END) AS PLEDGED_COUNT,
+            SUM(CASE WHEN COLLATERAL_STATUS = 'FROZEN' THEN 1 ELSE 0 END) AS FROZEN_COUNT,
+            SUM(CASE WHEN COLLATERAL_STATUS = 'DISPOSED' THEN 1 ELSE 0 END) AS DISPOSED_COUNT
+        FROM TBL_COLLATERAL_INFO
+        WHERE ORGID = #{orgid}
+    </select>
+
+    <!-- 统计担保物价值 -->
+    <select id="sumCollateralValues" resultType="map">
+        SELECT 
+            SUM(ORIGINAL_VALUE) AS TOTAL_ORIGINAL_VALUE,
+            SUM(CURRENT_VALUE) AS TOTAL_CURRENT_VALUE,
+            SUM(CASE WHEN COLLATERAL_STATUS = 'AVAILABLE' THEN CURRENT_VALUE ELSE 0 END) AS AVAILABLE_VALUE,
+            SUM(CASE WHEN COLLATERAL_STATUS IN ('MORTGAGED', 'PLEDGED') THEN CURRENT_VALUE ELSE 0 END) AS USED_VALUE,
+            AVG(CURRENT_VALUE) AS AVG_VALUE
+        FROM TBL_COLLATERAL_INFO
+        WHERE ORGID = #{orgid}
+    </select>
+
+    <!-- 更新担保物状态 -->
+    <update id="updateCollateralStatus">
+        UPDATE TBL_COLLATERAL_INFO
+        SET COLLATERAL_STATUS = #{status},
+            UPDATED_BY = #{updatedBy},
+            UPDATED_TIME = SYSDATE
+        WHERE ID = #{id}
+    </update>
+
+    <!-- 更新担保物价值 -->
+    <update id="updateCollateralValue">
+        UPDATE TBL_COLLATERAL_INFO
+        SET CURRENT_VALUE = #{currentValue},
+            VALUATION_DATE = #{valuationDate},
+            UPDATED_BY = #{updatedBy},
+            UPDATED_TIME = SYSDATE
+        WHERE ID = #{id}
+    </update>
+
+    <!-- 批量更新担保物状态 -->
+    <update id="batchUpdateStatus">
+        UPDATE TBL_COLLATERAL_INFO
+        SET COLLATERAL_STATUS = #{status},
+            UPDATED_BY = #{updatedBy},
+            UPDATED_TIME = SYSDATE
+        WHERE ID IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 获取担保物概览数据 -->
+    <select id="getCollateralOverview" resultType="map">
+        SELECT 
+            COUNT(1) AS TOTAL_COUNT,
+            SUM(CURRENT_VALUE) AS TOTAL_VALUE,
+            SUM(CASE WHEN COLLATERAL_STATUS = 'AVAILABLE' THEN 1 ELSE 0 END) AS AVAILABLE_COUNT,
+            SUM(CASE WHEN COLLATERAL_STATUS = 'AVAILABLE' THEN CURRENT_VALUE ELSE 0 END) AS AVAILABLE_VALUE,
+            SUM(CASE WHEN RISK_LEVEL = 'HIGH' OR RISK_LEVEL = 'CRITICAL' THEN 1 ELSE 0 END) AS HIGH_RISK_COUNT,
+            SUM(CASE WHEN INSURANCE_STATUS = 'EXPIRED' OR (INSURANCE_END_DATE IS NOT NULL AND INSURANCE_END_DATE &lt; SYSDATE) THEN 1 ELSE 0 END) AS EXPIRED_INSURANCE_COUNT
+        FROM TBL_COLLATERAL_INFO
+        WHERE ORGID = #{orgid}
+    </select>
+
+    <!-- 自动生成担保物编号 -->
+    <select id="generateCollateralNo" resultType="string">
+        SELECT #{prefix} || TO_CHAR(SYSDATE, 'YYYYMMDD') || LPAD(NVL(MAX(TO_NUMBER(SUBSTR(COLLATERAL_NO, -4))), 0) + 1, 4, '0')
+        FROM TBL_COLLATERAL_INFO
+        WHERE COLLATERAL_NO LIKE #{prefix} || TO_CHAR(SYSDATE, 'YYYYMMDD') || '%'
+    </select>
+
+</mapper>

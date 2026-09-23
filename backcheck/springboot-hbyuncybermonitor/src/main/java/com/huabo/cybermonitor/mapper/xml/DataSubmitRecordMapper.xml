@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.cybermonitor.mapper.DataSubmitRecordMapper">
+
+    <!-- 基础结果映射 -->
+    <resultMap id="BaseResultMap" type="com.huabo.cybermonitor.entity.DataSubmitRecord">
+        <id column="RECORD_ID" property="recordId" />
+        <result column="TASK_ID" property="taskId" />
+        <result column="ENTERPRISE_ID" property="enterpriseId" />
+        <result column="SUBMIT_DATA" property="submitData" />
+        <result column="SUBMIT_TIME" property="submitTime" />
+        <result column="SUBMIT_STATUS" property="submitStatus" />
+        <result column="REVIEW_STATUS" property="reviewStatus" />
+        <result column="REVIEW_TIME" property="reviewTime" />
+        <result column="REVIEW_BY" property="reviewBy" />
+        <result column="REVIEW_REMARK" property="reviewRemark" />
+        <result column="QUALITY_SCORE" property="qualityScore" />
+        <result column="FILE_NAME" property="fileName" />
+        <result column="FILE_PATH" property="filePath" />
+        <result column="FILE_SIZE" property="fileSize" />
+        <result column="REMARK" property="remark" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <!-- 非数据库字段 -->
+        <result column="TASK_NAME" property="taskName" />
+        <result column="ENTERPRISE_NAME" property="enterpriseName" />
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        RECORD_ID, TASK_ID, ENTERPRISE_ID, SUBMIT_DATA, SUBMIT_TIME, SUBMIT_STATUS,
+        REVIEW_STATUS, REVIEW_TIME, REVIEW_BY, REVIEW_REMARK, QUALITY_SCORE,
+        FILE_NAME, FILE_PATH, FILE_SIZE, REMARK, CREATE_TIME, UPDATE_TIME
+    </sql>
+
+    <!-- 扩展列（包含关联表字段） -->
+    <sql id="Extended_Column_List">
+        r.RECORD_ID, r.TASK_ID, r.ENTERPRISE_ID, r.SUBMIT_DATA, r.SUBMIT_TIME, r.SUBMIT_STATUS,
+        r.REVIEW_STATUS, r.REVIEW_TIME, r.REVIEW_BY, r.REVIEW_REMARK, r.QUALITY_SCORE,
+        r.FILE_NAME, r.FILE_PATH, r.FILE_SIZE, r.REMARK, r.CREATE_TIME, r.UPDATE_TIME,
+        t.TASK_NAME, e.ENTERPRISE_NAME
+    </sql>
+
+    <!-- 查询条件 -->
+    <sql id="Query_Where_Clause">
+        <where>
+            <if test="taskId != null and taskId != ''">
+                AND r.TASK_ID = #{taskId}
+            </if>
+            <if test="enterpriseId != null and enterpriseId != ''">
+                AND r.ENTERPRISE_ID = #{enterpriseId}
+            </if>
+            <if test="submitStatus != null and submitStatus != ''">
+                AND r.SUBMIT_STATUS = #{submitStatus}
+            </if>
+            <if test="reviewStatus != null and reviewStatus != ''">
+                AND r.REVIEW_STATUS = #{reviewStatus}
+            </if>
+            <if test="taskName != null and taskName != ''">
+                AND t.TASK_NAME LIKE CONCAT('%', #{taskName}, '%')
+            </if>
+            <if test="enterpriseName != null and enterpriseName != ''">
+                AND e.ENTERPRISE_NAME LIKE CONCAT('%', #{enterpriseName}, '%')
+            </if>
+            <if test="submitTimeStart != null">
+                AND r.SUBMIT_TIME >= #{submitTimeStart}
+            </if>
+            <if test="submitTimeEnd != null">
+                <choose>
+                    <when test="_databaseId == 'mysql'">
+                        AND r.SUBMIT_TIME &lt;= DATE_ADD(#{submitTimeEnd}, INTERVAL 1 DAY)
+                    </when>
+                    <when test="_databaseId == 'dm'">
+                        AND r.SUBMIT_TIME &lt;= #{submitTimeEnd} + 1
+                    </when>
+                    <otherwise>
+                        AND r.SUBMIT_TIME &lt;= #{submitTimeEnd}
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="qualityScoreMin != null">
+                AND r.QUALITY_SCORE >= #{qualityScoreMin}
+            </if>
+            <if test="qualityScoreMax != null">
+                AND r.QUALITY_SCORE &lt;= #{qualityScoreMax}
+            </if>
+        </where>
+    </sql>
+
+    <!-- 分页查询记录列表 -->
+    <select id="selectRecordList" resultMap="BaseResultMap">
+        SELECT <include refid="Extended_Column_List" />
+        FROM SYS_DATA_SUBMIT_RECORD r
+        LEFT JOIN SYS_DATA_SUBMIT_TASK t ON r.TASK_ID = t.TASK_ID
+        LEFT JOIN SYS_ENTERPRISE_INFO e ON r.ENTERPRISE_ID = e.ENTERPRISE_ID
+        <include refid="Query_Where_Clause" />
+        ORDER BY r.CREATE_TIME DESC
+    </select>
+
+    <!-- 根据任务ID查询记录列表 -->
+    <select id="selectRecordsByTaskId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM SYS_DATA_SUBMIT_RECORD
+        WHERE TASK_ID = #{taskId}
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据企业ID查询记录列表 -->
+    <select id="selectRecordsByEnterpriseId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM SYS_DATA_SUBMIT_RECORD
+        WHERE ENTERPRISE_ID = #{enterpriseId}
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据提交状态查询记录列表 -->
+    <select id="selectRecordsBySubmitStatus" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM SYS_DATA_SUBMIT_RECORD
+        WHERE SUBMIT_STATUS = #{submitStatus}
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据审核状态查询记录列表 -->
+    <select id="selectRecordsByReviewStatus" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM SYS_DATA_SUBMIT_RECORD
+        WHERE REVIEW_STATUS = #{reviewStatus}
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 查询待审核的记录列表 -->
+    <select id="selectPendingReviewRecords" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM SYS_DATA_SUBMIT_RECORD
+        WHERE SUBMIT_STATUS = 'SUBMITTED' AND REVIEW_STATUS = 'PENDING'
+        ORDER BY SUBMIT_TIME ASC
+    </select>
+
+    <!-- 查询数据质量评分低于阈值的记录 -->
+    <select id="selectLowQualityRecords" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM SYS_DATA_SUBMIT_RECORD
+        WHERE QUALITY_SCORE IS NOT NULL AND QUALITY_SCORE &lt; #{threshold}
+        ORDER BY QUALITY_SCORE ASC, CREATE_TIME DESC
+    </select>
+
+    <!-- 更新提交状态 -->
+    <update id="updateSubmitStatus">
+        UPDATE SYS_DATA_SUBMIT_RECORD
+        SET SUBMIT_STATUS = #{submitStatus},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <when test="_databaseId == 'dm'">SYSDATE</when>
+                <otherwise>NOW()</otherwise>
+            </choose>
+        WHERE RECORD_ID = #{recordId}
+    </update>
+
+    <!-- 更新审核状态 -->
+    <update id="updateReviewStatus">
+        UPDATE SYS_DATA_SUBMIT_RECORD
+        SET REVIEW_STATUS = #{reviewStatus},
+            REVIEW_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <when test="_databaseId == 'dm'">SYSDATE</when>
+                <otherwise>NOW()</otherwise>
+            </choose>,
+            REVIEW_BY = #{reviewBy},
+            REVIEW_REMARK = #{reviewRemark},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <when test="_databaseId == 'dm'">SYSDATE</when>
+                <otherwise>NOW()</otherwise>
+            </choose>
+        WHERE RECORD_ID = #{recordId}
+    </update>
+
+    <!-- 批量更新审核状态 -->
+    <update id="batchUpdateReviewStatus">
+        UPDATE SYS_DATA_SUBMIT_RECORD
+        SET REVIEW_STATUS = #{reviewStatus},
+            REVIEW_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <when test="_databaseId == 'dm'">SYSDATE</when>
+                <otherwise>NOW()</otherwise>
+            </choose>,
+            REVIEW_BY = #{reviewBy},
+            REVIEW_REMARK = #{reviewRemark},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <when test="_databaseId == 'dm'">SYSDATE</when>
+                <otherwise>NOW()</otherwise>
+            </choose>
+        WHERE RECORD_ID IN
+        <foreach collection="recordIds" item="recordId" open="(" separator="," close=")">
+            #{recordId}
+        </foreach>
+    </update>
+
+    <!-- 更新数据质量评分 -->
+    <update id="updateQualityScore">
+        UPDATE SYS_DATA_SUBMIT_RECORD
+        SET QUALITY_SCORE = #{qualityScore},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <when test="_databaseId == 'dm'">SYSDATE</when>
+                <otherwise>NOW()</otherwise>
+            </choose>
+        WHERE RECORD_ID = #{recordId}
+    </update>
+
+    <!-- 获取记录统计信息 -->
+    <select id="selectRecordStatistics" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as totalRecords,
+            COUNT(CASE WHEN SUBMIT_STATUS = 'DRAFT' THEN 1 END) as draftCount,
+            COUNT(CASE WHEN SUBMIT_STATUS = 'SUBMITTED' THEN 1 END) as submittedCount,
+            COUNT(CASE WHEN REVIEW_STATUS = 'PENDING' THEN 1 END) as pendingReviewCount,
+            COUNT(CASE WHEN REVIEW_STATUS = 'APPROVED' THEN 1 END) as approvedCount,
+            COUNT(CASE WHEN REVIEW_STATUS = 'REJECTED' THEN 1 END) as rejectedCount,
+            AVG(QUALITY_SCORE) as avgQualityScore,
+            MAX(QUALITY_SCORE) as maxQualityScore,
+            MIN(QUALITY_SCORE) as minQualityScore
+        FROM SYS_DATA_SUBMIT_RECORD
+    </select>
+
+    <!-- 获取提交状态分布统计 -->
+    <select id="selectSubmitStatusDistribution" resultType="java.util.Map">
+        SELECT 
+            SUBMIT_STATUS as status,
+            COUNT(*) as count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM SYS_DATA_SUBMIT_RECORD), 2) as percentage
+        FROM SYS_DATA_SUBMIT_RECORD
+        GROUP BY SUBMIT_STATUS
+        ORDER BY count DESC
+    </select>
+
+    <!-- 获取审核状态分布统计 -->
+    <select id="selectReviewStatusDistribution" resultType="java.util.Map">
+        SELECT 
+            REVIEW_STATUS as status,
+            COUNT(*) as count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM SYS_DATA_SUBMIT_RECORD), 2) as percentage
+        FROM SYS_DATA_SUBMIT_RECORD
+        GROUP BY REVIEW_STATUS
+        ORDER BY count DESC
+    </select>
+
+    <!-- 获取数据质量分布统计 -->
+    <select id="selectQualityDistribution" resultType="java.util.Map">
+        SELECT 
+            CASE 
+                WHEN QUALITY_SCORE >= 90 THEN '优秀(90-100)'
+                WHEN QUALITY_SCORE >= 80 THEN '良好(80-89)'
+                WHEN QUALITY_SCORE >= 70 THEN '中等(70-79)'
+                WHEN QUALITY_SCORE >= 60 THEN '及格(60-69)'
+                ELSE '不及格(0-59)'
+            END as qualityLevel,
+            COUNT(*) as count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM SYS_DATA_SUBMIT_RECORD WHERE QUALITY_SCORE IS NOT NULL), 2) as percentage
+        FROM SYS_DATA_SUBMIT_RECORD
+        WHERE QUALITY_SCORE IS NOT NULL
+        GROUP BY 
+            CASE 
+                WHEN QUALITY_SCORE >= 90 THEN '优秀(90-100)'
+                WHEN QUALITY_SCORE >= 80 THEN '良好(80-89)'
+                WHEN QUALITY_SCORE >= 70 THEN '中等(70-79)'
+                WHEN QUALITY_SCORE >= 60 THEN '及格(60-69)'
+                ELSE '不及格(0-59)'
+            END
+        ORDER BY count DESC
+    </select>
+
+    <!-- 根据任务ID获取记录统计 -->
+    <select id="selectRecordStatisticsByTaskId" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as totalRecords,
+            COUNT(CASE WHEN SUBMIT_STATUS = 'SUBMITTED' THEN 1 END) as submittedCount,
+            COUNT(CASE WHEN REVIEW_STATUS = 'APPROVED' THEN 1 END) as approvedCount,
+            COUNT(CASE WHEN REVIEW_STATUS = 'REJECTED' THEN 1 END) as rejectedCount,
+            AVG(QUALITY_SCORE) as avgQualityScore
+        FROM SYS_DATA_SUBMIT_RECORD
+        WHERE TASK_ID = #{taskId}
+    </select>
+
+    <!-- 根据企业ID获取记录统计 -->
+    <select id="selectRecordStatisticsByEnterpriseId" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as totalRecords,
+            COUNT(CASE WHEN SUBMIT_STATUS = 'SUBMITTED' THEN 1 END) as submittedCount,
+            COUNT(CASE WHEN REVIEW_STATUS = 'APPROVED' THEN 1 END) as approvedCount,
+            COUNT(CASE WHEN REVIEW_STATUS = 'REJECTED' THEN 1 END) as rejectedCount,
+            AVG(QUALITY_SCORE) as avgQualityScore
+        FROM SYS_DATA_SUBMIT_RECORD
+        WHERE ENTERPRISE_ID = #{enterpriseId}
+    </select>
+
+    <!-- 导出记录列表 -->
+    <select id="selectRecordListForExport" resultMap="BaseResultMap">
+        SELECT <include refid="Extended_Column_List" />
+        FROM SYS_DATA_SUBMIT_RECORD r
+        LEFT JOIN SYS_DATA_SUBMIT_TASK t ON r.TASK_ID = t.TASK_ID
+        LEFT JOIN SYS_ENTERPRISE_INFO e ON r.ENTERPRISE_ID = e.ENTERPRISE_ID
+        <include refid="Query_Where_Clause" />
+        ORDER BY r.CREATE_TIME DESC
+    </select>
+
+</mapper>

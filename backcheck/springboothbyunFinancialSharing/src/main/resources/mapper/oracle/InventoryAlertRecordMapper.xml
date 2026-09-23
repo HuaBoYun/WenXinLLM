@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.oracle.mapper.InventoryAlertRecordMapper">
+
+    <!-- 分页查询预警记录列表 -->
+    <select id="selectRecordPage" resultType="java.util.HashMap">
+        SELECT
+            RECORD_ID AS "recordId",
+            RULE_ID AS "ruleId",
+            INVENTORY_ID AS "inventoryId",
+            INVENTORY_CODE AS "inventoryCode",
+            INVENTORY_NAME AS "inventoryName",
+            WAREHOUSE_ID AS "warehouseId",
+            WAREHOUSE_NAME AS "warehouseName",
+            ALERT_TYPE AS "alertType",
+            ALERT_TYPE_NAME AS "alertTypeName",
+            ALERT_LEVEL AS "alertLevel",
+            CURRENT_QUANTITY AS "currentQuantity",
+            ALERT_VALUE AS "alertValue",
+            ALERT_MESSAGE AS "alertMessage",
+            CASE PROCESS_STATUS
+                WHEN 0 THEN 'PENDING'
+                WHEN 1 THEN 'PROCESSING'
+                WHEN 2 THEN 'PROCESSED'
+                WHEN 3 THEN 'IGNORED'
+                ELSE 'UNKNOWN'
+            END AS "status",
+            PROCESSOR_ID AS "processorId",
+            PROCESSOR_NAME AS "processorName",
+            TO_CHAR(PROCESS_TIME, 'YYYY-MM-DD HH24:MI:SS') AS "processTime",
+            PROCESS_REMARK AS "processRemark",
+            TO_CHAR(CREATE_TIME, 'YYYY-MM-DD HH24:MI:SS') AS "alertTime"
+        FROM TBL_INVENTORY_ALERT_RECORD
+        WHERE 1=1
+        <if test="param.tenantId != null">
+            AND TENANT_ID = #{param.tenantId}
+        </if>
+        <if test="param.alertType != null and param.alertType != ''">
+            AND ALERT_TYPE = #{param.alertType}
+        </if>
+        <if test="param.alertLevel != null">
+            AND ALERT_LEVEL = #{param.alertLevel}
+        </if>
+        <if test="param.status != null and param.status != ''">
+            AND PROCESS_STATUS = CASE #{param.status}
+                WHEN 'PENDING' THEN 0
+                WHEN 'PROCESSING' THEN 1
+                WHEN 'PROCESSED' THEN 2
+                WHEN 'IGNORED' THEN 3
+                ELSE -1
+            END
+        </if>
+        <if test="param.inventoryName != null and param.inventoryName != ''">
+            AND INVENTORY_NAME LIKE '%' || #{param.inventoryName} || '%'
+        </if>
+        <if test="param.warehouseId != null">
+            AND WAREHOUSE_ID = #{param.warehouseId}
+        </if>
+        <if test="param.startDate != null and param.startDate != ''">
+            AND CREATE_TIME &gt;= TO_DATE(#{param.startDate}, 'YYYY-MM-DD')
+        </if>
+        <if test="param.endDate != null and param.endDate != ''">
+            AND CREATE_TIME &lt;= TO_DATE(#{param.endDate}, 'YYYY-MM-DD') + 1
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 统计预警数据 -->
+    <select id="countAlertStatistics" resultType="java.util.HashMap">
+        SELECT
+            COUNT(*) AS "totalCount",
+            SUM(CASE WHEN PROCESS_STATUS = 0 THEN 1 ELSE 0 END) AS "pendingCount",
+            SUM(CASE WHEN ALERT_TYPE = 'LOWER_LIMIT' THEN 1 ELSE 0 END) AS "lowStockCount",
+            SUM(CASE WHEN ALERT_TYPE = 'UPPER_LIMIT' THEN 1 ELSE 0 END) AS "highStockCount",
+            SUM(CASE WHEN ALERT_TYPE = 'STAGNANT' THEN 1 ELSE 0 END) AS "slowMovingCount",
+            SUM(CASE WHEN ALERT_TYPE = 'EXPIRED' THEN 1 ELSE 0 END) AS "expiredCount",
+            SUM(CASE WHEN ALERT_LEVEL = 3 THEN 1 ELSE 0 END) AS "highLevelCount",
+            SUM(CASE WHEN ALERT_LEVEL = 2 THEN 1 ELSE 0 END) AS "mediumLevelCount",
+            SUM(CASE WHEN ALERT_LEVEL = 1 THEN 1 ELSE 0 END) AS "lowLevelCount"
+        FROM TBL_INVENTORY_ALERT_RECORD
+        WHERE 1=1
+        <if test="param.tenantId != null">
+            AND TENANT_ID = #{param.tenantId}
+        </if>
+    </select>
+
+    <!-- 处理预警 -->
+    <update id="processAlert">
+        UPDATE TBL_INVENTORY_ALERT_RECORD
+        SET PROCESS_STATUS = #{processStatus},
+            PROCESS_REMARK = #{processRemark},
+            PROCESSOR_ID = #{processorId},
+            PROCESSOR_NAME = #{processorName},
+            PROCESS_TIME = SYSDATE,
+            UPDATE_TIME = SYSDATE
+        WHERE RECORD_ID = #{alertId}
+    </update>
+
+    <!-- 忽略预警 -->
+    <update id="ignoreAlert">
+        UPDATE TBL_INVENTORY_ALERT_RECORD
+        SET PROCESS_STATUS = 3,
+            PROCESSOR_ID = #{processorId},
+            PROCESSOR_NAME = #{processorName},
+            PROCESS_TIME = SYSDATE,
+            UPDATE_TIME = SYSDATE
+        WHERE RECORD_ID = #{alertId}
+    </update>
+
+    <!-- 批量处理预警 -->
+    <update id="batchProcessAlert">
+        UPDATE TBL_INVENTORY_ALERT_RECORD
+        SET PROCESS_STATUS = #{processStatus},
+            PROCESSOR_ID = #{processorId},
+            PROCESS_TIME = SYSDATE,
+            UPDATE_TIME = SYSDATE
+        WHERE RECORD_ID IN
+        <foreach collection="recordIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 获取预警趋势分析 -->
+    <select id="selectAlertTrend" resultType="java.util.HashMap">
+        SELECT
+            TO_CHAR(CREATE_TIME, 'YYYY-MM-DD') AS "date",
+            COUNT(*) AS "count",
+            SUM(CASE WHEN ALERT_LEVEL = 3 THEN 1 ELSE 0 END) AS "highCount",
+            SUM(CASE WHEN ALERT_LEVEL = 2 THEN 1 ELSE 0 END) AS "mediumCount",
+            SUM(CASE WHEN ALERT_LEVEL = 1 THEN 1 ELSE 0 END) AS "lowCount"
+        FROM TBL_INVENTORY_ALERT_RECORD
+        WHERE 1=1
+        <if test="param.tenantId != null">
+            AND TENANT_ID = #{param.tenantId}
+        </if>
+        <if test="param.startDate != null and param.startDate != ''">
+            AND CREATE_TIME &gt;= TO_DATE(#{param.startDate}, 'YYYY-MM-DD')
+        </if>
+        <if test="param.endDate != null and param.endDate != ''">
+            AND CREATE_TIME &lt;= TO_DATE(#{param.endDate}, 'YYYY-MM-DD') + 1
+        </if>
+        GROUP BY TO_CHAR(CREATE_TIME, 'YYYY-MM-DD')
+        ORDER BY TO_CHAR(CREATE_TIME, 'YYYY-MM-DD')
+    </select>
+
+    <!-- 获取预警类型分布 -->
+    <select id="selectAlertDistribution" resultType="java.util.HashMap">
+        SELECT
+            ALERT_TYPE AS "alertType",
+            ALERT_TYPE_NAME AS "alertTypeName",
+            COUNT(*) AS "count",
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM TBL_INVENTORY_ALERT_RECORD WHERE TENANT_ID = #{param.tenantId}), 2) AS "percentage"
+        FROM TBL_INVENTORY_ALERT_RECORD
+        WHERE 1=1
+        <if test="param.tenantId != null">
+            AND TENANT_ID = #{param.tenantId}
+        </if>
+        GROUP BY ALERT_TYPE, ALERT_TYPE_NAME
+        ORDER BY COUNT(*) DESC
+    </select>
+
+</mapper>
+

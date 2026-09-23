@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.mapper.TblMobileSettingVersionMapper">
+
+    <select id="selectBySettingId" resultType="com.financial.sharing.entity.TblMobileSettingVersion">
+        SELECT * FROM TBL_MOBILE_SETTING_VERSION WHERE SETTING_ID = #{settingId} ORDER BY CREATE_TIME DESC
+    </select>
+
+    <select id="selectByVersionNumber" resultType="com.financial.sharing.entity.TblMobileSettingVersion">
+        SELECT * FROM TBL_MOBILE_SETTING_VERSION WHERE VERSION_NUMBER = #{versionNumber} ORDER BY CREATE_TIME DESC
+    </select>
+
+    <select id="selectLatestBySettingId" resultType="com.financial.sharing.entity.TblMobileSettingVersion">
+        SELECT * FROM TBL_MOBILE_SETTING_VERSION
+        WHERE SETTING_ID = #{settingId}
+        ORDER BY CREATE_TIME DESC
+        FETCH FIRST 1 ROWS ONLY
+    </select>
+
+</mapper>

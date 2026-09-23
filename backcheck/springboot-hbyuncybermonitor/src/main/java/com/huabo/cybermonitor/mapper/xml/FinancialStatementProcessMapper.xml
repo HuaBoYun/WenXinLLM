@@ -1,0 +1,413 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.cybermonitor.mapper.FinancialStatementProcessMapper">
+
+    <!-- 通用结果映射 -->
+    <resultMap id="BaseResultMap" type="com.huabo.cybermonitor.entity.FinancialStatementProcess">
+        <id column="PROCESS_ID" property="processId" />
+        <result column="ENTERPRISE_ID" property="enterpriseId" />
+        <result column="ENTERPRISE_NAME" property="enterpriseName" />
+        <result column="STATEMENT_TYPE" property="statementType" />
+        <result column="STATEMENT_NAME" property="statementName" />
+        <result column="REPORTING_PERIOD" property="reportingPeriod" />
+        <result column="REPORTING_YEAR" property="reportingYear" />
+        <result column="REPORTING_MONTH" property="reportingMonth" />
+        <result column="COMPILATION_PLAN_ID" property="compilationPlanId" />
+        <result column="COMPILATION_STATUS" property="compilationStatus" />
+        <result column="COMPILATION_PROGRESS" property="compilationProgress" />
+        <result column="PLANNED_START_TIME" property="plannedStartTime" />
+        <result column="PLANNED_END_TIME" property="plannedEndTime" />
+        <result column="ACTUAL_START_TIME" property="actualStartTime" />
+        <result column="ACTUAL_END_TIME" property="actualEndTime" />
+        <result column="COMPILATION_MANAGER" property="compilationManager" />
+        <result column="COMPILATION_DEPARTMENT" property="compilationDepartment" />
+        <result column="PARTICIPANTS" property="participants" />
+        <result column="DATA_SOURCES" property="dataSources" />
+        <result column="DATA_COLLECTION_STATUS" property="dataCollectionStatus" />
+        <result column="DATA_COLLECTION_PROGRESS" property="dataCollectionProgress" />
+        <result column="DATA_QUALITY_SCORE" property="dataQualityScore" />
+        <result column="AUDIT_STATUS" property="auditStatus" />
+        <result column="AUDIT_PROGRESS" property="auditProgress" />
+        <result column="FIRST_AUDITOR" property="firstAuditor" />
+        <result column="FIRST_AUDIT_TIME" property="firstAuditTime" />
+        <result column="FIRST_AUDIT_OPINION" property="firstAuditOpinion" />
+        <result column="SECOND_AUDITOR" property="secondAuditor" />
+        <result column="SECOND_AUDIT_TIME" property="secondAuditTime" />
+        <result column="SECOND_AUDIT_OPINION" property="secondAuditOpinion" />
+        <result column="FINAL_AUDITOR" property="finalAuditor" />
+        <result column="FINAL_AUDIT_TIME" property="finalAuditTime" />
+        <result column="FINAL_AUDIT_OPINION" property="finalAuditOpinion" />
+        <result column="SIGNATORY" property="signatory" />
+        <result column="SIGNATURE_TIME" property="signatureTime" />
+        <result column="QUALITY_CONTROL_STATUS" property="qualityControlStatus" />
+        <result column="QUALITY_ASSESSMENT_RESULT" property="qualityAssessmentResult" />
+        <result column="ACCURACY_SCORE" property="accuracyScore" />
+        <result column="COMPLETENESS_SCORE" property="completenessScore" />
+        <result column="TIMELINESS_SCORE" property="timelinessScore" />
+        <result column="COMPLIANCE_SCORE" property="complianceScore" />
+        <result column="OVERALL_QUALITY_SCORE" property="overallQualityScore" />
+        <result column="IDENTIFIED_ISSUES" property="identifiedIssues" />
+        <result column="ISSUE_COUNT" property="issueCount" />
+        <result column="CRITICAL_ISSUE_COUNT" property="criticalIssueCount" />
+        <result column="ISSUE_RESOLUTION_STATUS" property="issueResolutionStatus" />
+        <result column="CORRECTIVE_MEASURES" property="correctiveMeasures" />
+        <result column="CORRECTION_COMPLETION_TIME" property="correctionCompletionTime" />
+        <result column="EFFECTIVENESS_VERIFICATION" property="effectivenessVerification" />
+        <result column="PROCESS_IMPROVEMENT_SUGGESTIONS" property="processImprovementSuggestions" />
+        <result column="TEMPLATE_VERSION" property="templateVersion" />
+        <result column="FORMAT_STANDARDS" property="formatStandards" />
+        <result column="ACCOUNT_SETUP" property="accountSetup" />
+        <result column="FORMULA_CONFIGURATION" property="formulaConfiguration" />
+        <result column="VERSION_CONTROL" property="versionControl" />
+        <result column="SUPERVISION_RECORDS" property="supervisionRecords" />
+        <result column="COMPLIANCE_CHECK_RESULT" property="complianceCheckResult" />
+        <result column="INNOVATION_POINTS" property="innovationPoints" />
+        <result column="LESSONS_LEARNED" property="lessonsLearned" />
+        <result column="BEST_PRACTICES" property="bestPractices" />
+        <result column="TRAINING_REQUIREMENTS" property="trainingRequirements" />
+        <result column="CAPABILITY_IMPROVEMENT_SUGGESTIONS" property="capabilityImprovementSuggestions" />
+        <result column="RELATED_ATTACHMENTS" property="relatedAttachments" />
+        <result column="REMARKS" property="remarks" />
+        <result column="EXT_FIELD1" property="extField1" />
+        <result column="EXT_FIELD2" property="extField2" />
+        <result column="EXT_FIELD3" property="extField3" />
+        <result column="CREATE_BY" property="createBy" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_BY" property="updateBy" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="DEL_FLAG" property="delFlag" />
+    </resultMap>
+
+    <!-- 通用查询条件 -->
+    <sql id="Query_Where_Clause">
+        <where>
+            DEL_FLAG = '0'
+            <if test="queryVo.enterpriseId != null and queryVo.enterpriseId != ''">
+                AND ENTERPRISE_ID = #{queryVo.enterpriseId}
+            </if>
+            <if test="queryVo.enterpriseName != null and queryVo.enterpriseName != ''">
+                AND ENTERPRISE_NAME LIKE CONCAT('%', #{queryVo.enterpriseName}, '%')
+            </if>
+            <if test="queryVo.statementType != null and queryVo.statementType != ''">
+                AND STATEMENT_TYPE = #{queryVo.statementType}
+            </if>
+            <if test="queryVo.statementName != null and queryVo.statementName != ''">
+                AND STATEMENT_NAME LIKE CONCAT('%', #{queryVo.statementName}, '%')
+            </if>
+            <if test="queryVo.reportingPeriod != null and queryVo.reportingPeriod != ''">
+                AND REPORTING_PERIOD = #{queryVo.reportingPeriod}
+            </if>
+            <if test="queryVo.reportingYear != null">
+                AND REPORTING_YEAR = #{queryVo.reportingYear}
+            </if>
+            <if test="queryVo.reportingMonth != null">
+                AND REPORTING_MONTH = #{queryVo.reportingMonth}
+            </if>
+            <if test="queryVo.compilationStatus != null and queryVo.compilationStatus != ''">
+                <choose>
+                    <when test="queryVo.compilationStatus == '待开始'">
+                        AND COMPILATION_STATUS IN ('待开始', 'not_started', 'NOT_STARTED')
+                    </when>
+                    <when test="queryVo.compilationStatus == '进行中'">
+                        AND COMPILATION_STATUS IN ('进行中', 'in_progress', 'IN_PROGRESS')
+                    </when>
+                    <when test="queryVo.compilationStatus == '已完成'">
+                        AND COMPILATION_STATUS IN ('已完成', 'completed', 'COMPLETED')
+                    </when>
+                    <when test="queryVo.compilationStatus == '已暂停'">
+                        AND COMPILATION_STATUS IN ('已暂停', 'paused', 'PAUSED')
+                    </when>
+                    <when test="queryVo.compilationStatus == '已取消'">
+                        AND COMPILATION_STATUS IN ('已取消', 'cancelled', 'CANCELLED')
+                    </when>
+                    <otherwise>
+                        AND COMPILATION_STATUS = #{queryVo.compilationStatus}
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="queryVo.compilationProgressMin != null">
+                AND COMPILATION_PROGRESS >= #{queryVo.compilationProgressMin}
+            </if>
+            <if test="queryVo.compilationProgressMax != null">
+                AND COMPILATION_PROGRESS &lt;= #{queryVo.compilationProgressMax}
+            </if>
+            <if test="queryVo.plannedStartTimeBegin != null">
+                AND PLANNED_START_TIME >= #{queryVo.plannedStartTimeBegin}
+            </if>
+            <if test="queryVo.plannedStartTimeEnd != null">
+                AND PLANNED_START_TIME &lt;= #{queryVo.plannedStartTimeEnd}
+            </if>
+            <if test="queryVo.plannedEndTimeBegin != null">
+                AND PLANNED_END_TIME >= #{queryVo.plannedEndTimeBegin}
+            </if>
+            <if test="queryVo.plannedEndTimeEnd != null">
+                AND PLANNED_END_TIME &lt;= #{queryVo.plannedEndTimeEnd}
+            </if>
+            <if test="queryVo.compilationManager != null and queryVo.compilationManager != ''">
+                AND COMPILATION_MANAGER LIKE CONCAT('%', #{queryVo.compilationManager}, '%')
+            </if>
+            <if test="queryVo.compilationDepartment != null and queryVo.compilationDepartment != ''">
+                AND COMPILATION_DEPARTMENT LIKE CONCAT('%', #{queryVo.compilationDepartment}, '%')
+            </if>
+            <if test="queryVo.dataCollectionStatus != null and queryVo.dataCollectionStatus != ''">
+                AND DATA_COLLECTION_STATUS = #{queryVo.dataCollectionStatus}
+            </if>
+            <if test="queryVo.dataCollectionProgressMin != null">
+                AND DATA_COLLECTION_PROGRESS >= #{queryVo.dataCollectionProgressMin}
+            </if>
+            <if test="queryVo.dataCollectionProgressMax != null">
+                AND DATA_COLLECTION_PROGRESS &lt;= #{queryVo.dataCollectionProgressMax}
+            </if>
+            <if test="queryVo.dataQualityScoreMin != null">
+                AND DATA_QUALITY_SCORE >= #{queryVo.dataQualityScoreMin}
+            </if>
+            <if test="queryVo.dataQualityScoreMax != null">
+                AND DATA_QUALITY_SCORE &lt;= #{queryVo.dataQualityScoreMax}
+            </if>
+            <if test="queryVo.auditStatus != null and queryVo.auditStatus != ''">
+                <choose>
+                    <when test="queryVo.auditStatus == '未提交'">
+                        AND AUDIT_STATUS IN ('未提交', 'not_submitted', 'NOT_SUBMITTED')
+                    </when>
+                    <when test="queryVo.auditStatus == '待审核'">
+                        AND AUDIT_STATUS IN ('待审核', 'pending_audit', 'PENDING_AUDIT', 'pending')
+                    </when>
+                    <when test="queryVo.auditStatus == '初审通过'">
+                        AND AUDIT_STATUS IN ('初审通过', 'first_audit_passed', 'FIRST_AUDIT_PASSED')
+                    </when>
+                    <when test="queryVo.auditStatus == '复审通过'">
+                        AND AUDIT_STATUS IN ('复审通过', 'second_audit_passed', 'SECOND_AUDIT_PASSED')
+                    </when>
+                    <when test="queryVo.auditStatus == '终审通过'">
+                        AND AUDIT_STATUS IN ('终审通过', 'final_audit_passed', 'FINAL_AUDIT_PASSED')
+                    </when>
+                    <when test="queryVo.auditStatus == '已签字确认'">
+                        AND AUDIT_STATUS IN ('已签字确认', 'signed_confirmed', 'SIGNED_CONFIRMED')
+                    </when>
+                    <otherwise>
+                        AND AUDIT_STATUS = #{queryVo.auditStatus}
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="queryVo.auditProgressMin != null">
+                AND AUDIT_PROGRESS >= #{queryVo.auditProgressMin}
+            </if>
+            <if test="queryVo.auditProgressMax != null">
+                AND AUDIT_PROGRESS &lt;= #{queryVo.auditProgressMax}
+            </if>
+            <if test="queryVo.firstAuditor != null and queryVo.firstAuditor != ''">
+                AND FIRST_AUDITOR LIKE CONCAT('%', #{queryVo.firstAuditor}, '%')
+            </if>
+            <if test="queryVo.firstAuditTimeBegin != null">
+                AND FIRST_AUDIT_TIME >= #{queryVo.firstAuditTimeBegin}
+            </if>
+            <if test="queryVo.firstAuditTimeEnd != null">
+                AND FIRST_AUDIT_TIME &lt;= #{queryVo.firstAuditTimeEnd}
+            </if>
+            <if test="queryVo.secondAuditor != null and queryVo.secondAuditor != ''">
+                AND SECOND_AUDITOR LIKE CONCAT('%', #{queryVo.secondAuditor}, '%')
+            </if>
+            <if test="queryVo.secondAuditTimeBegin != null">
+                AND SECOND_AUDIT_TIME >= #{queryVo.secondAuditTimeBegin}
+            </if>
+            <if test="queryVo.secondAuditTimeEnd != null">
+                AND SECOND_AUDIT_TIME &lt;= #{queryVo.secondAuditTimeEnd}
+            </if>
+            <if test="queryVo.finalAuditor != null and queryVo.finalAuditor != ''">
+                AND FINAL_AUDITOR LIKE CONCAT('%', #{queryVo.finalAuditor}, '%')
+            </if>
+            <if test="queryVo.finalAuditTimeBegin != null">
+                AND FINAL_AUDIT_TIME >= #{queryVo.finalAuditTimeBegin}
+            </if>
+            <if test="queryVo.finalAuditTimeEnd != null">
+                AND FINAL_AUDIT_TIME &lt;= #{queryVo.finalAuditTimeEnd}
+            </if>
+            <if test="queryVo.signatory != null and queryVo.signatory != ''">
+                AND SIGNATORY LIKE CONCAT('%', #{queryVo.signatory}, '%')
+            </if>
+            <if test="queryVo.signatureTimeBegin != null">
+                AND SIGNATURE_TIME >= #{queryVo.signatureTimeBegin}
+            </if>
+            <if test="queryVo.signatureTimeEnd != null">
+                AND SIGNATURE_TIME &lt;= #{queryVo.signatureTimeEnd}
+            </if>
+            <if test="queryVo.qualityControlStatus != null and queryVo.qualityControlStatus != ''">
+                AND QUALITY_CONTROL_STATUS = #{queryVo.qualityControlStatus}
+            </if>
+            <if test="queryVo.qualityAssessmentResult != null and queryVo.qualityAssessmentResult != ''">
+                AND QUALITY_ASSESSMENT_RESULT = #{queryVo.qualityAssessmentResult}
+            </if>
+            <if test="queryVo.accuracyScoreMin != null">
+                AND ACCURACY_SCORE >= #{queryVo.accuracyScoreMin}
+            </if>
+            <if test="queryVo.accuracyScoreMax != null">
+                AND ACCURACY_SCORE &lt;= #{queryVo.accuracyScoreMax}
+            </if>
+            <if test="queryVo.completenessScoreMin != null">
+                AND COMPLETENESS_SCORE >= #{queryVo.completenessScoreMin}
+            </if>
+            <if test="queryVo.completenessScoreMax != null">
+                AND COMPLETENESS_SCORE &lt;= #{queryVo.completenessScoreMax}
+            </if>
+            <if test="queryVo.timelinessScoreMin != null">
+                AND TIMELINESS_SCORE >= #{queryVo.timelinessScoreMin}
+            </if>
+            <if test="queryVo.timelinessScoreMax != null">
+                AND TIMELINESS_SCORE &lt;= #{queryVo.timelinessScoreMax}
+            </if>
+            <if test="queryVo.complianceScoreMin != null">
+                AND COMPLIANCE_SCORE >= #{queryVo.complianceScoreMin}
+            </if>
+            <if test="queryVo.complianceScoreMax != null">
+                AND COMPLIANCE_SCORE &lt;= #{queryVo.complianceScoreMax}
+            </if>
+            <if test="queryVo.overallQualityScoreMin != null">
+                AND OVERALL_QUALITY_SCORE >= #{queryVo.overallQualityScoreMin}
+            </if>
+            <if test="queryVo.overallQualityScoreMax != null">
+                AND OVERALL_QUALITY_SCORE &lt;= #{queryVo.overallQualityScoreMax}
+            </if>
+            <if test="queryVo.issueCountMin != null">
+                AND ISSUE_COUNT >= #{queryVo.issueCountMin}
+            </if>
+            <if test="queryVo.issueCountMax != null">
+                AND ISSUE_COUNT &lt;= #{queryVo.issueCountMax}
+            </if>
+            <if test="queryVo.criticalIssueCountMin != null">
+                AND CRITICAL_ISSUE_COUNT >= #{queryVo.criticalIssueCountMin}
+            </if>
+            <if test="queryVo.criticalIssueCountMax != null">
+                AND CRITICAL_ISSUE_COUNT &lt;= #{queryVo.criticalIssueCountMax}
+            </if>
+            <if test="queryVo.issueResolutionStatus != null and queryVo.issueResolutionStatus != ''">
+                AND ISSUE_RESOLUTION_STATUS = #{queryVo.issueResolutionStatus}
+            </if>
+            <if test="queryVo.correctionCompletionTimeBegin != null">
+                AND CORRECTION_COMPLETION_TIME >= #{queryVo.correctionCompletionTimeBegin}
+            </if>
+            <if test="queryVo.correctionCompletionTimeEnd != null">
+                AND CORRECTION_COMPLETION_TIME &lt;= #{queryVo.correctionCompletionTimeEnd}
+            </if>
+            <if test="queryVo.templateVersion != null and queryVo.templateVersion != ''">
+                AND TEMPLATE_VERSION = #{queryVo.templateVersion}
+            </if>
+            <if test="queryVo.formatStandards != null and queryVo.formatStandards != ''">
+                AND FORMAT_STANDARDS = #{queryVo.formatStandards}
+            </if>
+            <if test="queryVo.versionControl != null and queryVo.versionControl != ''">
+                AND VERSION_CONTROL = #{queryVo.versionControl}
+            </if>
+            <if test="queryVo.complianceCheckResult != null and queryVo.complianceCheckResult != ''">
+                AND COMPLIANCE_CHECK_RESULT = #{queryVo.complianceCheckResult}
+            </if>
+            <if test="queryVo.createTimeBegin != null">
+                AND CREATE_TIME >= #{queryVo.createTimeBegin}
+            </if>
+            <if test="queryVo.createTimeEnd != null">
+                AND CREATE_TIME &lt;= #{queryVo.createTimeEnd}
+            </if>
+            <if test="queryVo.updateTimeBegin != null">
+                AND UPDATE_TIME >= #{queryVo.updateTimeBegin}
+            </if>
+            <if test="queryVo.updateTimeEnd != null">
+                AND UPDATE_TIME &lt;= #{queryVo.updateTimeEnd}
+            </if>
+            <if test="queryVo.createBy != null and queryVo.createBy != ''">
+                AND CREATE_BY LIKE CONCAT('%', #{queryVo.createBy}, '%')
+            </if>
+            <if test="queryVo.updateBy != null and queryVo.updateBy != ''">
+                AND UPDATE_BY LIKE CONCAT('%', #{queryVo.updateBy}, '%')
+            </if>
+        </where>
+    </sql>
+
+    <!-- 分页查询财务报表编制流程 -->
+    <select id="selectFinancialStatementProcessPage" resultMap="BaseResultMap">
+        SELECT * FROM GZCT_FINANCIAL_STATEMENT_PROCESS
+        <include refid="Query_Where_Clause" />
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据企业ID获取财务报表编制流程统计 -->
+    <select id="selectStatisticsByEnterpriseId" resultType="map">
+        SELECT
+            COUNT(*) as totalProcesses,
+            SUM(CASE WHEN COMPILATION_STATUS IN ('进行中', 'in_progress', 'IN_PROGRESS') THEN 1 ELSE 0 END) as inProgressProcesses,
+            SUM(CASE WHEN COMPILATION_STATUS IN ('已完成', 'completed', 'COMPLETED') THEN 1 ELSE 0 END) as completedProcesses,
+            SUM(CASE WHEN COMPILATION_STATUS IN ('已暂停', 'paused', 'PAUSED') THEN 1 ELSE 0 END) as pausedProcesses,
+            SUM(CASE WHEN AUDIT_STATUS IN ('待审核', 'pending_audit', 'PENDING_AUDIT') THEN 1 ELSE 0 END) as pendingAuditProcesses,
+            SUM(CASE WHEN AUDIT_STATUS IN ('审核中', 'auditing', 'AUDITING') THEN 1 ELSE 0 END) as auditingProcesses,
+            SUM(CASE WHEN AUDIT_STATUS IN ('审核通过', '终审通过', 'approved', 'APPROVED', 'final_audit_passed') THEN 1 ELSE 0 END) as approvedProcesses,
+            SUM(CASE WHEN AUDIT_STATUS IN ('审核不通过', 'rejected', 'REJECTED') THEN 1 ELSE 0 END) as rejectedProcesses,
+            AVG(COMPILATION_PROGRESS) as avgCompilationProgress,
+            AVG(DATA_COLLECTION_PROGRESS) as avgDataCollectionProgress,
+            AVG(AUDIT_PROGRESS) as avgAuditProgress,
+            AVG(DATA_QUALITY_SCORE) as avgDataQualityScore,
+            COALESCE(AVG(OVERALL_QUALITY_SCORE), 0) as avgOverallQualityScore,
+            COALESCE(SUM(ISSUE_COUNT), 0) as totalIssueCount,
+            COALESCE(SUM(CRITICAL_ISSUE_COUNT), 0) as totalCriticalIssueCount
+        FROM GZCT_FINANCIAL_STATEMENT_PROCESS
+        WHERE ENTERPRISE_ID = #{enterpriseId} AND DEL_FLAG = '0'
+    </select>
+
+    <!-- 根据企业ID获取报表类型分布 -->
+    <select id="selectStatementTypeDistribution" resultType="map">
+        SELECT 
+            STATEMENT_TYPE as statementType,
+            COUNT(*) as count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM GZCT_FINANCIAL_STATEMENT_PROCESS WHERE ENTERPRISE_ID = #{enterpriseId} AND DEL_FLAG = '0'), 2) as percentage
+        FROM GZCT_FINANCIAL_STATEMENT_PROCESS 
+        WHERE ENTERPRISE_ID = #{enterpriseId} AND DEL_FLAG = '0'
+        GROUP BY STATEMENT_TYPE
+        ORDER BY count DESC
+    </select>
+
+    <!-- 根据企业ID获取编制状态分布 -->
+    <select id="selectCompilationStatusDistribution" resultType="map">
+        SELECT 
+            COMPILATION_STATUS as compilationStatus,
+            COUNT(*) as count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM GZCT_FINANCIAL_STATEMENT_PROCESS WHERE ENTERPRISE_ID = #{enterpriseId} AND DEL_FLAG = '0'), 2) as percentage
+        FROM GZCT_FINANCIAL_STATEMENT_PROCESS 
+        WHERE ENTERPRISE_ID = #{enterpriseId} AND DEL_FLAG = '0'
+        GROUP BY COMPILATION_STATUS
+        ORDER BY count DESC
+    </select>
+
+    <!-- 根据企业ID获取审核状态分布 -->
+    <select id="selectAuditStatusDistribution" resultType="map">
+        SELECT 
+            AUDIT_STATUS as auditStatus,
+            COUNT(*) as count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM GZCT_FINANCIAL_STATEMENT_PROCESS WHERE ENTERPRISE_ID = #{enterpriseId} AND DEL_FLAG = '0'), 2) as percentage
+        FROM GZCT_FINANCIAL_STATEMENT_PROCESS 
+        WHERE ENTERPRISE_ID = #{enterpriseId} AND DEL_FLAG = '0'
+        GROUP BY AUDIT_STATUS
+        ORDER BY count DESC
+    </select>
+
+    <!-- 根据企业ID获取质量评分分布 -->
+    <select id="selectQualityScoreDistribution" resultType="map">
+        SELECT 
+            CASE 
+                WHEN OVERALL_QUALITY_SCORE >= 90 THEN '优秀(90-100)'
+                WHEN OVERALL_QUALITY_SCORE >= 80 THEN '良好(80-89)'
+                WHEN OVERALL_QUALITY_SCORE >= 70 THEN '一般(70-79)'
+                WHEN OVERALL_QUALITY_SCORE >= 60 THEN '及格(60-69)'
+                ELSE '不及格(0-59)'
+            END as scoreRange,
+            COUNT(*) as count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM GZCT_FINANCIAL_STATEMENT_PROCESS WHERE ENTERPRISE_ID = #{enterpriseId} AND DEL_FLAG = '0' AND OVERALL_QUALITY_SCORE IS NOT NULL), 2) as percentage
+        FROM GZCT_FINANCIAL_STATEMENT_PROCESS 
+        WHERE ENTERPRISE_ID = #{enterpriseId} AND DEL_FLAG = '0' AND OVERALL_QUALITY_SCORE IS NOT NULL
+        GROUP BY 
+            CASE 
+                WHEN OVERALL_QUALITY_SCORE >= 90 THEN '优秀(90-100)'
+                WHEN OVERALL_QUALITY_SCORE >= 80 THEN '良好(80-89)'
+                WHEN OVERALL_QUALITY_SCORE >= 70 THEN '一般(70-79)'
+                WHEN OVERALL_QUALITY_SCORE >= 60 THEN '及格(60-69)'
+                ELSE '不及格(0-59)'
+            END
+        ORDER BY count DESC
+    </select>
+</mapper>

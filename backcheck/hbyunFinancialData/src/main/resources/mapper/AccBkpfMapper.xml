@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.financialdata.mapper.AccBkpfMapper">
+
+
+    <sql id="statusList">
+        <if test="status != null and status != '' ">
+            <if test="status == '等于'">
+                =
+            </if>
+
+            <if test="status == '不等于'">
+                !=
+            </if>
+            <if test="status == '大于'">
+                >
+            </if>
+            <if test="status == '小于'">
+                <![CDATA[ < ]]>
+            </if>
+            <if test="status == '小于等于'">
+                <![CDATA[ <= ]]>
+            </if>
+            <if test="status == '大于等于'">
+                >=
+            </if>
+        </if>
+    </sql>
+    <sql id="conditions">
+        <if test="accid != null and accid != ''">
+            AND C.ACCID = #{accid}
+        </if>
+        <if test="accNameOne != null and accNameOne != ''">
+            <if test="status == '包含'">
+                AND C.ACCNAME1 LIKE '%${accNameOne}%'
+            </if>
+            <if test="status == '不包含'">
+                AND C.ACCNAME1 not LIKE '%${accNameOne}%'
+            </if>
+            <if test="status != '包含' and status != '不包含'">
+                AND C.ACCNAME1
+                <include refid="statusList"/>
+                #{accNameOne}
+            </if>
+        </if>
+        <if test="lineText != null and lineText != ''">
+            <if test="status == '包含'">
+                AND B.LINETEXT LIKE '%${lineText}%'
+            </if>
+            <if test="status == '不包含'">
+                AND B.LINETEXT not LIKE '%${lineText}%'
+            </if>
+            <if test="status != '包含' and status != '不包含'">
+                AND B.LINETEXT
+                <include refid="statusList"/>
+                #{lineText}
+            </if>
+        </if>
+        <if test="md != null and md != ''">
+            AND NVL(B.MD,0)
+            <include refid="statusList"/>
+            #{md}
+        </if>
+        <if test="mc != null and mc != ''">
+            AND NVL(B.MC,0)
+            <include refid="statusList"/>
+            #{mc}
+        </if>
+        <if test="pzh != null and pzh != ''">
+            <if test="status == '包含'">
+                AND A.PZH LIKE '%${pzh}%'
+            </if>
+            <if test="status == '不包含'">
+                AND A.PZH not LIKE '%${pzh}%'
+            </if>
+            <if test="status != '包含' and status != '不包含'">
+                AND A.PZH
+                <include refid="statusList"/>
+                #{pzh}
+            </if>
+        </if>
+        <if test="pzDate != null and pzDate != ''">
+            AND TO_CHAR(A.PZ_DATE, 'yyyy-MM-dd')
+            <include refid="statusList"/>
+            #{pzDate}
+        </if>
+        <if test="cnr != null and cnr != ''">
+            AND A.CNR
+            <include refid="statusList"/>
+            #{cnr}
+        </if>
+        <if test="fj != null and fj != ''">
+            AND A.FJ
+            <include refid="statusList"/>
+            #{fj}
+        </if>
+        <if test="cwzg != null and cwzg != ''">
+            AND A.CWZG
+            <include refid="statusList"/>
+            #{cwzg}
+        </if>
+        <if test="zdr != null and zdr != ''">
+            AND A.ZDR
+            <include refid="statusList"/>
+            #{zdr}
+        </if>
+        <if test="jzrl != null and jzrl != ''">
+            AND A.JZR
+            <include refid="statusList"/>
+            #{jzrl}
+        </if>
+        <if test="shrs != null and shrs != ''">
+            AND A.SHR
+            <include refid="statusList"/>
+            #{shrs}
+        </if>
+        <if test="type == 'AMONTH'">
+            AND A .AMONTH <![CDATA[ <= ]]> #{maxMonth}
+            AND A .AMONTH >= #{minMonth}
+        </if>
+        <if test="wh1 != null and wh1 != ''">
+            and wh1
+        </if>
+    </sql>
+
+    <select id="selectAuxiliaryBookList" parameterType="com.huabo.financialdata.entity.vo.accBkpf.AccBkpfRequestVo"
+            resultType="com.huabo.financialdata.entity.vo.accBkpf.AccBkpfResponseVo">
+        SELECT
+        C.ACCID as accid, C.ACCNAME1 as accName, A .PZ_DATE as pzDate, A .PZH as pzh, B.LINETEXT as lineText,
+        NVL (B.MD, 0.00) as md, NVL (B.MC, 0.00) as mc, A .PZTYPE as pzType, A .FJ as fj,
+        A .AMONTH as aMonth, A .CWZG as cwzh, A .JZR as jzr, A .CNR as cnr, A .SHR as shr, A .ZDR as zdr,B.ENTRYID AS entryId,B.GLH AS GLH
+        FROM ${dbSource}.TBL_ACC_BKPF A
+        LEFT JOIN ${dbSource}.TBL_ACC_BSEG${bookYear} B ON A .GLH = B.GLH AND A .AMONTH = B.AMONTH AND A .AYEAR =
+        B.AYEAR
+        LEFT JOIN ${dbSource}.TBL_ACCOUNT C ON C.ACCID = B.ACCID AND C.AYEAR = B.AYEAR
+        WHERE A .AYEAR = ${bookYear}
+        <include refid="conditions"/>
+        ORDER BY A.PZ_DATE,A.PZH,B.ENTRYID
+    </select>
+
+    <select id="selectAuxiliaryBookCount"
+            parameterType="com.huabo.financialdata.entity.vo.auxiliaryBook.AuxiliaryBookRequestVo"
+            resultType="java.lang.Integer">
+
+        SELECT COUNT (*) FROM ${dbSource}.TBL_ACC_BKPF A
+        LEFT JOIN ${dbSource}.TBL_ACC_BSEG${bookYear} B ON A .GLH = B.GLH
+        AND A .AMONTH = B.AMONTH
+        AND A .AYEAR = B.AYEAR
+        LEFT JOIN ${dbSource}.TBL_ACCOUNT C ON C.ACCID = B.ACCID
+        AND C.AYEAR = B.AYEAR
+        WHERE A .AYEAR = ${bookYear}
+        <include refid="conditions"/>
+
+    </select>
+
+    <select id="findAccBkpfAmonth" resultType="com.huabo.financialdata.entity.entity.TblAccBkpf">
+        SELECT BS.LINETEXT     lineText,
+               CONCAT(CONCAT(AC.ACCID, '-'), AC.ACCNAME1),
+               NVL(BS.MD, '0') md,
+               NVL(BS.MC, '0') mc,
+               B.CWZG          cwzg,
+               B.JZR           jzrl,
+               B.CNR           cnr,
+               B.SHR           shr,
+               B.ZDR           zdr,
+               B.FJ            fj,
+               AC.ACCNAME1     accNameOne
+        FROM ${book}.TBL_ACC_BKPF B
+                 LEFT JOIN ${book}.TBL_ACC_BSEG${year} BS ON B.GLH = BS.GLH
+            AND BS.AYEAR = B.AYEAR
+                 LEFT JOIN ${book}.TBL_ACCOUNT AC ON BS.ACCID = AC.ACCID
+            AND BS.AYEAR = AC.AYEAR
+        WHERE B.AYEAR = ${year}
+          AND TO_CHAR(B.PZ_DATE, 'MM') = TO_CHAR(trunc(to_date(#{pzDate}, 'yyyy-MM-dd')), 'MM')
+          AND trunc(to_date(#{pzDate}, 'yyyy-MM-dd')) >= B.PZ_DATE
+          AND b.PZH = #{pzh}
+          AND AC.ACCID IS NOT NULL
+        ORDER BY B.PZ_DATE
+    </select>
+
+
+	<select id="selectListByExportPzk" parameterType="com.huabo.financialdata.entity.vo.diaryBook.DiaryBookRequestVo"
+            resultType="com.huabo.financialdata.entity.vo.accBkpf.AccBkpfResponseVo">
+        SELECT
+        C.ACCID as accid, C.ACCNAME1 as accName, A .PZ_DATE as pzDate, A .PZH as pzh, B.LINETEXT as lineText,
+        NVL (B.MD, 0.00) as md, NVL (B.MC, 0.00) as mc, A .PZTYPE as pzType, A .FJ as fj,
+        A .AMONTH as aMonth, A .CWZG as cwzh, A .JZR as jzr, A .CNR as cnr, A .SHR as shr, A .ZDR as zdr
+        FROM ${dbSource}.TBL_ACC_BKPF A
+        LEFT JOIN ${dbSource}.TBL_ACC_BSEG${year} B ON A .GLH = B.GLH AND A .AMONTH = B.AMONTH AND A .AYEAR =
+        B.AYEAR
+        LEFT JOIN ${dbSource}.TBL_ACCOUNT C ON C.ACCID = B.ACCID AND C.AYEAR = B.AYEAR
+        WHERE A .AYEAR = ${year} AND ${sqlStr}
+        ORDER BY A.PZ_DATE,A.PZH,B.ENTRYID
+    </select>
+</mapper>

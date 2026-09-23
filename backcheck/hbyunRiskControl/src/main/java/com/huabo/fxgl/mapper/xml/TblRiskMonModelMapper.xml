@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.fxgl.mapper.TblRiskMonModelMapper">
+
+<select id="getOrgList" resultType="com.huabo.fxgl.entity.TblRiskMonModel">
+SELECT 
+    'DEPT'||ROW_NUMBER() OVER(ORDER BY MIN(t.sort)) AS sort,
+    deptid,
+    deptName,versionid
+FROM (
+    SELECT 
+        m.deptid,
+        o.orgname AS deptName,
+        d.sort,
+         m.versionid
+    FROM TBL_RISK_MONMODEL m 
+     LEFT JOIN TBL_MONMODEL_VERSION v ON v.id=m.versionid
+    LEFT JOIN tbl_organization o ON o.orgid = m.deptid  
+    LEFT JOIN TBL_RISK_MONDICTONARY d ON d.id = m.dictonaryid 
+    WHERE m.linkorgid = #{orgid} 
+    AND V.VERSION=(select max(version) from tbl_monmodel_version where orgid=#{orgid} ) 
+    ORDER BY d.sort
+) t
+GROUP BY deptid, deptName,VERSIONID
+</select>
+</mapper>

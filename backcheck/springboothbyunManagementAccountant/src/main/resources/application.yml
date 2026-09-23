@@ -1,0 +1,26 @@
+server:
+  port: 8685
+
+spring:
+  profiles:
+    active: dev
+
+# MyBatis-Plus配置
+mybatis-plus:
+  configuration:
+    # 下划线转驼峰
+    map-underscore-to-camel-case: true
+    # 日志实现
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  # mapper xml文件路径
+  mapper-locations: classpath:mapper/budget/*.xml
+  # 实体类包路径
+  type-aliases-package: com.management.accountant.oracle.entity.budget
+  global-config:
+    # 主键类型
+    db-config:
+      id-type: assign_uuid
+      # 逻辑删除字段
+      logic-delete-field: delFlag
+      logic-delete-value: 1
+      logic-not-delete-value: 0

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.cybermonitor.mapper.TblProcurementProjectMapper">
+
+    <select id="selectPageList" resultType="com.huabo.cybermonitor.entity.TblProcurementProject">
+        SELECT * FROM TBL_PROCUREMENT_PROJECT
+        <where>
+            <if test="query.companyId != null and query.companyId != ''">AND COMPANY_ID = #{query.companyId}</if>
+            <if test="query.procurementType != null and query.procurementType != ''">AND PROCUREMENT_TYPE = #{query.procurementType}</if>
+            <if test="query.projectName != null and query.projectName != ''">AND PROJECT_NAME LIKE CONCAT('%', #{query.projectName}, '%')</if>
+            <if test="query.projectStatus != null and query.projectStatus != ''">AND PROJECT_STATUS = #{query.projectStatus}</if>
+        </where>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 采购统计分析 -->
+    <select id="selectProcurementStats" resultType="java.util.Map">
+        SELECT PROCUREMENT_TYPE, COUNT(*) AS cnt,
+               SUM(BUDGET_AMOUNT) AS totalBudget, SUM(ACTUAL_AMOUNT) AS totalActual,
+               CASE WHEN SUM(BUDGET_AMOUNT) > 0 THEN ROUND(SUM(ACTUAL_AMOUNT) / SUM(BUDGET_AMOUNT) * 100, 2) ELSE 0 END AS savingRate
+        FROM TBL_PROCUREMENT_PROJECT
+        <where><if test="companyId != null and companyId != ''">AND COMPANY_ID = #{companyId}</if></where>
+        GROUP BY PROCUREMENT_TYPE
+    </select>
+
+</mapper>
+

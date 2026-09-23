@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.TblGtDirectConnectAuthMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TblGtDirectConnectAuth">
+        <id column="AUTH_ID" property="authId"/>
+        <result column="ACCOUNT_ID" property="accountId"/>
+        <result column="ACCOUNT_NAME" property="accountName"/>
+        <result column="ACCOUNT_NO" property="accountNo"/>
+        <result column="BANK_CODE" property="bankCode"/>
+        <result column="BANK_NAME" property="bankName"/>
+        <result column="DIRECT_PLATFORM" property="directPlatform"/>
+        <result column="AUTH_TYPE" property="authType"/>
+        <result column="AUTH_SCOPE" property="authScope"/>
+        <result column="START_DATE" property="startDate"/>
+        <result column="END_DATE" property="endDate"/>
+        <result column="AUTH_STATUS" property="authStatus"/>
+        <result column="AUTHORIZER_ID" property="authorizerId"/>
+        <result column="AUTHORIZER_NAME" property="authorizerName"/>
+        <result column="AUTH_DATE" property="authDate"/>
+        <result column="APPROVER_ID" property="approverId"/>
+        <result column="APPROVAL_DATE" property="approvalDate"/>
+        <result column="APPROVAL_OPINION" property="approvalOpinion"/>
+        <result column="ATTACHMENTS" property="attachments"/>
+        <result column="REMARK" property="remark"/>
+        <result column="CREATE_USER" property="createUser"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_USER" property="updateUser"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        AUTH_ID, ACCOUNT_ID, ACCOUNT_NAME, ACCOUNT_NO, BANK_CODE, BANK_NAME,
+        DIRECT_PLATFORM, AUTH_TYPE, AUTH_SCOPE, START_DATE, END_DATE, AUTH_STATUS,
+        AUTHORIZER_ID, AUTHORIZER_NAME, AUTH_DATE, APPROVER_ID, APPROVAL_DATE,
+        APPROVAL_OPINION, ATTACHMENTS, REMARK, CREATE_USER, CREATE_TIME, UPDATE_USER, UPDATE_TIME
+    </sql>
+
+    <!-- 分页查询直联授权列表 -->
+    <select id="selectPageList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_GT_DIRECT_CONNECT_AUTH
+        WHERE 1=1
+        <if test="accountNumber != null and accountNumber != ''">
+            AND ACCOUNT_NO LIKE '%' || #{accountNumber} || '%'
+        </if>
+        <if test="authType != null and authType != ''">
+            AND AUTH_TYPE = #{authType}
+        </if>
+        <if test="authStatus != null and authStatus != ''">
+            AND AUTH_STATUS = #{authStatus}
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+</mapper>
+

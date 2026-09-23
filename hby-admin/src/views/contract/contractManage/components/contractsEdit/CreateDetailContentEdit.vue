@@ -1944,7 +1944,7 @@
         this.tableDataProject[c].budgetname = info.budgetname
         this.tableDataProject[c].bugetId = info.budgetid
       },
-      //引迈提交
+      //流程提交
       ymsubmit: debounce(function (val) {
         this.handleApproval(val)
       }, 1000), //延迟执行时间可以视具体情况而定

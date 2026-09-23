@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.oracle.mapper.ExchangeRateManageMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TreasuryExchangeRate">
+        <id column="RATE_ID" property="rateId" jdbcType="BIGINT"/>
+        <result column="FROM_CURRENCY" property="fromCurrency" jdbcType="VARCHAR"/>
+        <result column="TO_CURRENCY" property="toCurrency" jdbcType="VARCHAR"/>
+        <result column="RATE_DATE" property="rateDate" jdbcType="DATE"/>
+        <result column="MIDDLE_RATE" property="middleRate" jdbcType="DECIMAL"/>
+        <result column="BUY_RATE" property="buyRate" jdbcType="DECIMAL"/>
+        <result column="SELL_RATE" property="sellRate" jdbcType="DECIMAL"/>
+        <result column="CASH_BUY_RATE" property="cashBuyRate" jdbcType="DECIMAL"/>
+        <result column="CASH_SELL_RATE" property="cashSellRate" jdbcType="DECIMAL"/>
+        <result column="RATE_TYPE" property="rateType" jdbcType="VARCHAR"/>
+        <result column="RATE_SOURCE" property="rateSource" jdbcType="VARCHAR"/>
+        <result column="IS_ACTIVE" property="isActive" jdbcType="INTEGER"/>
+        <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="CREATE_USER" property="createUser" jdbcType="BIGINT"/>
+        <result column="UPDATE_USER" property="updateUser" jdbcType="BIGINT"/>
+        <result column="ORG_ID" property="orgId" jdbcType="BIGINT"/>
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        RATE_ID, FROM_CURRENCY, TO_CURRENCY, RATE_DATE, MIDDLE_RATE, BUY_RATE, SELL_RATE,
+        CASH_BUY_RATE, CASH_SELL_RATE, RATE_TYPE, RATE_SOURCE, IS_ACTIVE, CREATE_TIME,
+        UPDATE_TIME, CREATE_USER, UPDATE_USER, ORG_ID
+    </sql>
+
+    <!-- 分页查询汇率列表 -->
+    <select id="selectExchangeRateList" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM TBL_EXCHANGE_RATE
+        <where>
+            <if test="params.fromCurrency != null and params.fromCurrency != ''">
+                AND FROM_CURRENCY = #{params.fromCurrency}
+            </if>
+            <if test="params.toCurrency != null and params.toCurrency != ''">
+                AND TO_CURRENCY = #{params.toCurrency}
+            </if>
+            <if test="params.rateSource != null and params.rateSource != ''">
+                AND RATE_SOURCE = #{params.rateSource}
+            </if>
+            <if test="params.rateDate != null and params.rateDate != ''">
+                AND RATE_DATE = #{params.rateDate}
+            </if>
+            <if test="params.isActive != null">
+                AND IS_ACTIVE = #{params.isActive}
+            </if>
+        </where>
+        ORDER BY RATE_DATE DESC, CREATE_TIME DESC
+    </select>
+
+    <!-- 检查汇率是否已存在 -->
+    <select id="checkRateExists" resultType="int">
+        SELECT COUNT(1)
+        FROM TBL_EXCHANGE_RATE
+        WHERE FROM_CURRENCY = #{params.fromCurrency}
+        AND TO_CURRENCY = #{params.toCurrency}
+        AND RATE_DATE = #{params.rateDate}
+        <if test="params.rateType != null and params.rateType != ''">
+            AND RATE_TYPE = #{params.rateType}
+        </if>
+        <if test="params.excludeId != null">
+            AND RATE_ID != #{params.excludeId}
+        </if>
+    </select>
+
+    <!-- 插入汇率 -->
+    <insert id="insertExchangeRate" useGeneratedKeys="true" keyProperty="rateId">
+        INSERT INTO TBL_EXCHANGE_RATE (
+            FROM_CURRENCY, TO_CURRENCY, RATE_DATE, MIDDLE_RATE, BUY_RATE, SELL_RATE,
+            CASH_BUY_RATE, CASH_SELL_RATE, RATE_TYPE, RATE_SOURCE, IS_ACTIVE,
+            CREATE_TIME, UPDATE_TIME, CREATE_USER, UPDATE_USER, ORG_ID
+        ) VALUES (
+            #{fromCurrency}, #{toCurrency}, #{rateDate}, #{middleRate}, #{buyRate}, #{sellRate},
+            #{cashBuyRate}, #{cashSellRate}, #{rateType}, #{rateSource}, #{isActive},
+            #{createTime}, #{updateTime}, #{createUser}, #{updateUser}, #{orgId}
+        )
+    </insert>
+
+    <!-- 更新汇率 -->
+    <update id="updateExchangeRate">
+        UPDATE TBL_EXCHANGE_RATE
+        <set>
+            <if test="fromCurrency != null">FROM_CURRENCY = #{fromCurrency},</if>
+            <if test="toCurrency != null">TO_CURRENCY = #{toCurrency},</if>
+            <if test="rateDate != null">RATE_DATE = #{rateDate},</if>
+            <if test="middleRate != null">MIDDLE_RATE = #{middleRate},</if>
+            <if test="buyRate != null">BUY_RATE = #{buyRate},</if>
+            <if test="sellRate != null">SELL_RATE = #{sellRate},</if>
+            <if test="cashBuyRate != null">CASH_BUY_RATE = #{cashBuyRate},</if>
+            <if test="cashSellRate != null">CASH_SELL_RATE = #{cashSellRate},</if>
+            <if test="rateType != null">RATE_TYPE = #{rateType},</if>
+            <if test="rateSource != null">RATE_SOURCE = #{rateSource},</if>
+            <if test="isActive != null">IS_ACTIVE = #{isActive},</if>
+            <if test="updateUser != null">UPDATE_USER = #{updateUser},</if>
+            UPDATE_TIME = #{updateTime}
+        </set>
+        WHERE RATE_ID = #{rateId}
+    </update>
+
+    <!-- 删除汇率 -->
+    <delete id="deleteExchangeRate">
+        DELETE FROM TBL_EXCHANGE_RATE WHERE RATE_ID = #{rateId}
+    </delete>
+
+    <!-- 批量删除汇率 -->
+    <delete id="batchDeleteExchangeRates">
+        DELETE FROM TBL_EXCHANGE_RATE
+        WHERE RATE_ID IN
+        <foreach collection="rateIds" item="rateId" open="(" separator="," close=")">
+            #{rateId}
+        </foreach>
+    </delete>
+
+    <!-- 根据ID查询汇率 -->
+    <select id="selectExchangeRateById" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM TBL_EXCHANGE_RATE
+        WHERE RATE_ID = #{rateId}
+    </select>
+
+    <!-- 更新汇率状态 -->
+    <update id="updateExchangeRateStatus">
+        UPDATE TBL_EXCHANGE_RATE
+        SET IS_ACTIVE = #{params.isActive},
+            UPDATE_TIME = #{params.updateTime}
+        WHERE RATE_ID = #{params.rateId}
+    </update>
+
+    <!-- 获取汇率统计信息 -->
+    <select id="getExchangeRateStatistics" resultType="map">
+        SELECT
+            COUNT(DISTINCT FROM_CURRENCY) as totalCurrencies,
+            (SELECT MIDDLE_RATE FROM TBL_EXCHANGE_RATE
+             WHERE FROM_CURRENCY = 'USD' AND TO_CURRENCY = 'CNY'
+             AND ROWNUM = 1 ORDER BY RATE_DATE DESC) as usdRate,
+            (SELECT MIDDLE_RATE FROM TBL_EXCHANGE_RATE
+             WHERE FROM_CURRENCY = 'EUR' AND TO_CURRENCY = 'CNY'
+             AND ROWNUM = 1 ORDER BY RATE_DATE DESC) as eurRate
+        FROM TBL_EXCHANGE_RATE
+        WHERE IS_ACTIVE = 1
+    </select>
+
+    <!-- 根据币种对查询最新汇率 -->
+    <select id="selectLatestRateByCurrencyPair" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM TBL_EXCHANGE_RATE
+        WHERE FROM_CURRENCY = #{fromCurrency}
+        AND TO_CURRENCY = #{toCurrency}
+        ORDER BY RATE_DATE DESC
+        FETCH FIRST 1 ROWS ONLY
+    </select>
+
+    <!-- 根据日期范围查询汇率 -->
+    <select id="selectExchangeRateByDateRange" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM TBL_EXCHANGE_RATE
+        WHERE FROM_CURRENCY = #{fromCurrency}
+        AND TO_CURRENCY = #{toCurrency}
+        AND RATE_DATE BETWEEN #{startDate} AND #{endDate}
+        ORDER BY RATE_DATE ASC
+    </select>
+
+</mapper>
