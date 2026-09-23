@@ -1,4 +1,0 @@
-# 敏感信息配置文件 - 禁止提交到版本控制
-application-secret.yml
-/target/
-**/target/

@@ -1,6 +1,0 @@
-server: 
-  port: 8066
-  
-spring:
-  profiles:
-    active: dev

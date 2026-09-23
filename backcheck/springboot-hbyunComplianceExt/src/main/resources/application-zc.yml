@@ -1,9 +1,0 @@
-#redis配置
-redisAddressIp: 192.0.2.200
-redisAddressPort: 6379
-redisPwd: 123456
-redisMaxTotal: 512
-redisMaxIdle: 100
-redisMaxWait: 10000
-redisTimeOut: 1000
-redisTextonBorrow: true

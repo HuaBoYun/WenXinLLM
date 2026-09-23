@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.huabo.fxgl.mapper.BiPageMapper">
-    <!--<select id="selectList" resultType="BiPage">
-        select * from TBL_BI_PAGE TBP WHERE 1=1
-		 AND TBP.UNIT=#{orgid} AND TBP.PAGEBODY  is not null AND TBP.TREEID=#{userid} AND TYPE != 1
-         order by TBP.SORT
-    </select>-->
-</mapper>
