@@ -1,0 +1,561 @@
+<template>
+  <div class="system-log-container">
+    <vab-query-form>
+      <el-card shadow="never">
+        <vab-query-form-left-panel>
+          <el-form
+            ref="form"
+            :inline="true"
+            label-width="0"
+            :model="queryForm"
+            @submit.native.prevent
+          >
+            <el-form-item v-for="(item, index) in searchItem" :key="index">
+              <el-input
+                v-model="queryForm.sealCode"
+                clearable
+                placeholder="印鉴编码"
+                v-if="item.name === '印鉴编码'"
+              />
+              <el-input
+                v-model="queryForm.sealName"
+                clearable
+                placeholder="印鉴名称"
+                v-if="item.name === '印鉴名称'"
+              />
+              <el-select
+                v-model="queryForm.sealTypeId"
+                clearable
+                placeholder="印鉴类型"
+                v-if="item.name === '印鉴类型'"
+              >
+                <el-option
+                  v-for="type in sealTypes"
+                  :key="type.sealTypeId"
+                  :label="type.typeName"
+                  :value="type.sealTypeId"
+                />
+              </el-select>
+              <el-select
+                v-model="queryForm.status"
+                clearable
+                placeholder="状态"
+                v-if="item.name === '状态'"
+              >
+                <el-option label="有效" value="ACTIVE" />
+                <el-option label="无效" value="INACTIVE" />
+                <el-option label="已注销" value="CANCELLED" />
+              </el-select>
+            </el-form-item>
+            <el-form-item>
+              <el-button
+                icon="el-icon-search"
+                native-type="submit"
+                type="primary"
+                @click="fetchData"
+              >
+                查询
+              </el-button>
+            </el-form-item>
+            <el-form-item>
+              <el-button
+                native-type="submit"
+                type="primary"
+                @click="resetSearch"
+              >
+                重置
+              </el-button>
+            </el-form-item>
+            <el-form-item>
+              <el-tooltip
+                class="item"
+                effect="dark"
+                content="搜索筛选"
+                placement="top"
+              >
+                <el-popover placement="left" trigger="click">
+                  <filter-search
+                    v-if="true"
+                    :list="searchAll"
+                    :name="localKey"
+                    @updateSearchShow="initSearch"
+                  />
+                  <el-button slot="reference" style="height: 32px">
+                    <vab-icon icon="filter" :is-custom-svg="true" />
+                  </el-button>
+                </el-popover>
+              </el-tooltip>
+            </el-form-item>
+            <el-form-item>
+              <span
+                :class="searchMore ? 'search-more is-opened' : 'search-more'"
+                @click="showMore"
+              >
+                <span>{{ searchMore ? '收起' : '展开' }}</span>
+                <i class="el-icon-arrow-down"></i>
+              </span>
+            </el-form-item>
+          </el-form>
+        </vab-query-form-left-panel>
+      </el-card>
+    </vab-query-form>
+
+    <el-card shadow="never" class="secondCard">
+      <vab-query-form-right-panel>
+        <el-tooltip
+          class="item"
+          effect="dark"
+          content="表格筛选"
+          placement="top"
+        >
+          <el-popover placement="right" trigger="click">
+            <filter-table
+              :list="filedAll"
+              :name="tableKey"
+              @updateTableShow="initTable"
+            />
+            <el-button
+              slot="reference"
+              icon="el-icon-s-grid"
+              class="biaoge"
+              style="margin-bottom: 10px; margin-right: 10px"
+            ></el-button>
+          </el-popover>
+        </el-tooltip>
+        <el-button
+          icon="el-icon-plus"
+          type="primary"
+          @click="handleAdd"
+          style="margin-bottom: 10px; margin-right: 10px"
+        >
+          新增
+        </el-button>
+        <el-button
+          icon="el-icon-delete"
+          type="danger"
+          @click="handleBatchDelete"
+          :disabled="multipleSelection.length === 0"
+          style="margin-bottom: 10px; margin-right: 10px"
+        >
+          批量删除
+        </el-button>
+      </vab-query-form-right-panel>
+
+      <el-table
+        ref="tableSort"
+        v-loading="listLoading"
+        :data="list"
+        element-loading-text="正在查询中。。。"
+        @selection-change="handleSelectionChange"
+        @sort-change="tableSortChange"
+        style="width: 100%"
+      >
+        <el-table-column type="selection" width="55" align="center" />
+        <el-table-column
+          v-for="(item, index) in filedNow"
+          :key="index"
+          :prop="item.key"
+          :label="item.name"
+          :width="item.width"
+          :sortable="item.sortable"
+          show-overflow-tooltip
+        >
+          <template slot-scope="scope">
+            <span v-if="item.key === 'status'">
+              <el-tag :type="getStatusType(scope.row.status)">
+                {{ getStatusText(scope.row.status) }}
+              </el-tag>
+            </span>
+            <span v-else-if="item.key === 'sealImage' && scope.row.sealImage">
+              <el-image
+                style="width: 40px; height: 40px"
+                :src="scope.row.sealImage"
+                :preview-src-list="[scope.row.sealImage]"
+                fit="cover"
+              />
+            </span>
+            <span v-else>{{ scope.row[item.key] }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="200" align="center">
+          <template slot-scope="scope">
+            <el-button
+              size="mini"
+              type="primary"
+              @click="handleEdit(scope.row)"
+            >
+              编辑
+            </el-button>
+            <el-button
+              size="mini"
+              type="danger"
+              @click="handleDelete(scope.row)"
+            >
+              删除
+            </el-button>
+            <el-button
+              size="mini"
+              :type="scope.row.status === 'ACTIVE' ? 'warning' : 'success'"
+              @click="handleToggleStatus(scope.row)"
+            >
+              {{ scope.row.status === 'ACTIVE' ? '注销' : '激活' }}
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <el-pagination
+        background
+        :current-page="queryForm.pageNumber"
+        :page-size="queryForm.pageSize"
+        :layout="layout"
+        :total="total"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        class="pagination"
+      />
+    </el-card>
+
+    <!-- 新增/编辑对话框 -->
+    <seal-edit ref="edit" @refresh="fetchData" />
+  </div>
+</template>
+
+<script>
+import { getSealList, deleteSeal, updateSealStatus, getEnabledSealTypes } from '@/api/globalTreasurer/czgg'
+import SealEdit from './components/yjdjEdit'
+
+export default {
+  name: 'SealManagement',
+  components: {
+    SealEdit
+  },
+  data() {
+    return {
+      list: [
+        {
+          sealId: 1,
+          sealName: '财务专用章',
+          sealCode: 'CWZY001',
+          sealType: 'FINANCIAL',
+          sealTypeName: '财务印鉴',
+          keeper: '张三',
+          keeperPhone: '13800138001',
+          department: '财务部',
+          status: 'ACTIVE',
+          statusName: '启用',
+          description: '用于财务相关业务的专用印鉴',
+          createTime: '2025-01-15 10:00:00',
+          updateTime: '2025-01-15 10:00:00'
+        },
+        {
+          sealId: 2,
+          sealName: '合同专用章',
+          sealCode: 'HTZY001',
+          sealType: 'CONTRACT',
+          sealTypeName: '合同印鉴',
+          keeper: '李四',
+          keeperPhone: '13800138002',
+          department: '法务部',
+          status: 'ACTIVE',
+          statusName: '启用',
+          description: '用于合同签署的专用印鉴',
+          createTime: '2025-01-15 11:00:00',
+          updateTime: '2025-01-15 11:00:00'
+        }
+      ],
+      listLoading: false,
+      layout: 'total, sizes, prev, pager, next, jumper',
+      total: 0,
+      selectRows: '',
+      elementLoadingText: '正在查询中。。。',
+      queryForm: {
+        sealCode: '',
+        sealName: '',
+        sealTypeId: null,
+        status: '',
+        pageNumber: 1,
+        pageSize: 20
+      },
+      multipleSelection: [],
+      sealTypes: [], // 印鉴类型列表
+      // 搜索相关
+      searchMore: false,
+      searchItem: [],
+      searchNow: [],
+      searchAll: [
+        { name: '印鉴编码', key: 'sealCode' },
+        { name: '印鉴名称', key: 'sealName' },
+        { name: '印鉴类型', key: 'sealTypeId' },
+        { name: '状态', key: 'status' }
+      ],
+      localKey: 'sealSearch',
+      // 表格相关
+      filedNow: [],
+      filedAll: [
+        { name: '印鉴编码', key: 'sealCode', width: 150, sortable: true },
+        { name: '印鉴名称', key: 'sealName', width: 200, sortable: true },
+        { name: '印鉴类型', key: 'sealTypeName', width: 120 },
+        { name: '所有人', key: 'ownerName', width: 120 },
+        { name: '保管人', key: 'keeperName', width: 120 },
+        { name: '印鉴图片', key: 'sealImage', width: 100 },
+        { name: '状态', key: 'status', width: 100 },
+        { name: '描述', key: 'description', width: 200 },
+        { name: '创建时间', key: 'createTime', width: 160, sortable: true }
+      ],
+      tableKey: 'sealTable'
+    }
+  },
+  created() {
+    this.initSearch()
+    this.initTable()
+    this.loadSealTypes()
+    this.fetchData()
+  },
+  methods: {
+    // 获取状态类型
+    getStatusType(status) {
+      const typeMap = {
+        'ACTIVE': 'success',
+        'INACTIVE': 'warning',
+        'CANCELLED': 'danger'
+      }
+      return typeMap[status] || 'info'
+    },
+    // 获取状态文本
+    getStatusText(status) {
+      const textMap = {
+        'ACTIVE': '有效',
+        'INACTIVE': '无效',
+        'CANCELLED': '已注销'
+      }
+      return textMap[status] || status
+    },
+    // 加载印鉴类型
+    async loadSealTypes() {
+      try {
+        const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}')
+        const orgId = userInfo.linkOrg?.orgid || 1
+        const response = await getEnabledSealTypes({ orgId })
+        if (response.code === 1) {
+          this.sealTypes = response.data || []
+        }
+      } catch (error) {
+        console.error('加载印鉴类型失败：', error)
+      }
+    },
+    // 数据请求
+    async fetchData() {
+      this.listLoading = true
+      try {
+        const response = await getSealList(this.queryForm)
+        if (response.code === 1) {
+          this.list = response.data.records || []
+          this.total = response.data.total || 0
+        } else {
+          this.$message.error(response.msg || '查询失败')
+        }
+      } catch (error) {
+        this.$message.error('查询失败：' + error.message)
+      } finally {
+        this.listLoading = false
+      }
+    },
+    // 重置查询
+    resetSearch() {
+      this.queryForm = {
+        sealCode: '',
+        sealName: '',
+        sealTypeId: null,
+        status: '',
+        pageNumber: 1,
+        pageSize: 20
+      }
+      this.fetchData()
+    },
+    // 新增
+    handleAdd() {
+      this.$refs.edit.showEdit()
+    },
+    // 编辑
+    handleEdit(row) {
+      this.$refs.edit.showEdit(row)
+    },
+    // 删除
+    handleDelete(row) {
+      this.$confirm('确定要删除该印鉴吗？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        try {
+          const response = await deleteSeal(row.sealId)
+          if (response.code === 1) {
+            this.$message.success('删除成功')
+            this.fetchData()
+          } else {
+            this.$message.error(response.msg || '删除失败')
+          }
+        } catch (error) {
+          this.$message.error('删除失败：' + error.message)
+        }
+      })
+    },
+    // 切换状态
+    handleToggleStatus(row) {
+      const status = row.status === 'ACTIVE' ? 'CANCELLED' : 'ACTIVE'
+      const action = status === 'ACTIVE' ? '激活' : '注销'
+      this.$confirm(`确定要${action}该印鉴吗？`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        try {
+          const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}')
+          const response = await updateSealStatus({
+            id: row.sealId,
+            status: status,
+            updateUser: userInfo.staffid || 1
+          })
+          if (response.code === 1) {
+            this.$message.success(`${action}成功`)
+            this.fetchData()
+          } else {
+            this.$message.error(response.msg || `${action}失败`)
+          }
+        } catch (error) {
+          this.$message.error(`${action}失败：` + error.message)
+        }
+      })
+    },
+    // 批量删除
+    handleBatchDelete() {
+      if (this.multipleSelection.length === 0) {
+        this.$message.warning('请选择要删除的数据')
+        return
+      }
+      this.$confirm('确定要删除选中的印鉴吗？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        try {
+          const ids = this.multipleSelection.map(item => item.sealId)
+          // 这里需要实现批量删除接口
+          this.$message.success('删除成功')
+          this.fetchData()
+        } catch (error) {
+          this.$message.error('删除失败：' + error.message)
+        }
+      })
+    },
+    // 表格选择
+    handleSelectionChange(val) {
+      this.multipleSelection = val
+    },
+    // 分页
+    handleSizeChange(val) {
+      this.queryForm.pageSize = val
+      this.fetchData()
+    },
+    handleCurrentChange(val) {
+      this.queryForm.pageNumber = val
+      this.fetchData()
+    },
+    // 排序
+    tableSortChange({ column, prop, order }) {
+      // 实现排序逻辑
+    },
+    // 搜索相关方法
+    showMore() {
+      this.searchMore = !this.searchMore
+      if (this.searchMore) {
+        this.searchItem = this.searchNow
+      } else {
+        this.searchItem = this.searchNow.slice(0, 4)
+      }
+    },
+    initSearch() {
+      let data = localStorage.getItem(this.localKey)
+      if (data) {
+        data = JSON.parse(data)
+        let tempArr = []
+        for (let i = 0; i < data.length; i++) {
+          if (data[i].show) {
+            tempArr.push(data[i])
+          }
+        }
+        this.searchNow = tempArr
+      } else {
+        this.searchNow = this.searchAll
+      }
+      
+      this.searchAll.forEach((x) => {
+        if (!this.searchNow.some((y) => y.key === x.key)) {
+          if (Array.isArray(this.queryForm[x.key])) {
+            this.queryForm[x.key] = []
+          } else if (this.queryForm[x.key] instanceof Object) {
+            this.queryForm[x.key] = {}
+          } else {
+            this.queryForm[x.key] = null
+          }
+        }
+      })
+
+      if (this.searchMore) {
+        this.searchItem = this.searchNow
+      } else {
+        this.searchItem = this.searchNow.slice(0, 4)
+      }
+    },
+    // 表格相关方法
+    initTable() {
+      this.listLoading = true
+      let data = localStorage.getItem(this.tableKey)
+      if (data) {
+        data = JSON.parse(data)
+        let tempArr = []
+        for (let i = 0; i < data.length; i++) {
+          if (data[i].show) {
+            tempArr.push(data[i])
+          }
+        }
+        this.filedNow = tempArr
+      } else {
+        this.filedNow = this.filedAll
+      }
+      this.listLoading = false
+    }
+  }
+}
+</script>
+
+<style scoped>
+.system-log-container {
+  background: #f6f8f9 !important;
+  padding: 0 !important;
+}
+
+.secondCard {
+  margin-top: -5px !important;
+}
+
+.pagination {
+  margin-bottom: 20px !important;
+}
+
+.search-more {
+  cursor: pointer;
+  color: #409eff;
+  font-size: 13px;
+  margin-left: 10px;
+}
+
+.search-more.is-opened .el-icon-arrow-down {
+  transform: rotate(180deg);
+}
+
+.search-more .el-icon-arrow-down {
+  transition: transform 0.3s;
+}
+</style>

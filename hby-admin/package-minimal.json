@@ -1,0 +1,32 @@
+{
+  "name": "hb-admin-minimal",
+  "version": "2.0.0",
+  "private": true,
+  "author": "hb",
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "eslint --ext .js --fix"
+  },
+  "dependencies": {
+    "vue": "^2.6.14",
+    "vue-router": "^3.5.2",
+    "vuex": "^3.6.2",
+    "element-ui": "2.15.8",
+    "axios": "^0.21.1",
+    "core-js": "^3.15.2"
+  },
+  "devDependencies": {
+    "@vue/cli-service": "^4.5.13",
+    "@vue/cli-plugin-router": "^4.5.13",
+    "@vue/cli-plugin-vuex": "^4.5.13",
+    "webpack": "^4.46.0",
+    "webpackbar": "^5.0.0-3",
+    "sass": "~1.32.13",
+    "sass-loader": "^192.0.2.200"
+  },
+  "engines": {
+    "node": ">= 12.0.0",
+    "npm": ">= 3.0.0"
+  }
+}

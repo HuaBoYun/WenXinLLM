@@ -1,0 +1,499 @@
+<!-- 费用申请控制 - 组织 -->
+<template>
+  <div class="box_container">
+    <div class="box_container_left">
+      <el-tree
+        :data="treeData"
+        :props="defaultProps"
+        @node-click="handleNodeClick"
+      ></el-tree>
+    </div>
+    <div class="system-log-container">
+      <vab-query-form>
+        <el-card shadow="never">
+          <vab-query-form-left-panel :span="24">
+            <el-form
+              ref="form"
+              :inline="true"
+              label-width="0"
+              :model="queryForm"
+              @submit.native.prevent
+            >
+              <el-form-item v-for="(item, index) in searchItem" :key="index">
+                <el-input
+                  v-model="queryForm.jsFinance"
+                  clearable
+                  placeholder="财务组织"
+                  v-if="item.name === '财务组织'"
+                />
+              </el-form-item>
+              <el-form-item>
+                <el-button
+                  icon="el-icon-search"
+                  native-type="submit"
+                  type="primary"
+                  @click="fetchData"
+                >
+                  查询
+                </el-button>
+              </el-form-item>
+              <el-form-item>
+                <el-button
+                  native-type="submit"
+                  type="primary"
+                  @click="resetSearch"
+                >
+                  重置
+                </el-button>
+              </el-form-item>
+              <el-form-item>
+                <el-tooltip
+                  class="item"
+                  effect="dark"
+                  content="搜索筛选"
+                  placement="top"
+                >
+                  <el-popover placement="left" trigger="click">
+                    <filter-search
+                      v-if="true"
+                      :list="searchAll"
+                      :name="localKey"
+                      @updateSearchShow="initSearch"
+                    />
+                    <el-button slot="reference" style="height: 32px">
+                      <vab-icon icon="filter" :is-custom-svg="true" />
+                    </el-button>
+                  </el-popover>
+                </el-tooltip>
+              </el-form-item>
+              <el-form-item>
+                <span
+                  :class="searchMore ? 'search-more is-opened' : 'search-more'"
+                  @click="showMore"
+                >
+                  <span>{{ searchMore ? '收起' : '展开' }}</span>
+                  <i class="el-icon-arrow-down"></i>
+                </span>
+              </el-form-item>
+            </el-form>
+          </vab-query-form-left-panel>
+        </el-card>
+      </vab-query-form>
+
+      <el-card shadow="never" class="secondCard">
+        <div class="top__bpx">
+          <div class="title">控制维度</div>
+          <el-button type="success" @click="handleEdit(false, false)">
+            新建
+          </el-button>
+        </div>
+
+        <el-table v-loading="listLoading" :data="list">
+          <el-table-column
+            align="center"
+            label="序号"
+            prop="qdcode"
+            width="100"
+          ></el-table-column>
+          <el-table-column
+            align="center"
+            label="字段编码"
+            prop="projectOrderName"
+            show-overflow-tooltip
+          />
+          <el-table-column
+            align="center"
+            label="控制维度"
+            prop="projectOrderName"
+            show-overflow-tooltip
+          />
+          <el-table-column
+            align="center"
+            label="可调剂"
+            prop="projectOrderName"
+            show-overflow-tooltip
+          />
+          <el-table-column
+            align="center"
+            label="操作"
+            show-overflow-tooltip
+            width="120"
+          >
+            <template slot-scope="scope">
+              <el-button
+                type="text"
+                @click="handleEdit(scope.row, false)"
+                :disabled="!!scope.row.spzt"
+              >
+                修改
+              </el-button>
+              <el-dropdown style="margin-left: 10px">
+                <el-button type="text">更多</el-button>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item>
+                    <el-button
+                      @click="handleDelete(scope.row)"
+                      type="text"
+                      :disabled="!!scope.row.spzt"
+                    >
+                      删除
+                    </el-button>
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-card>
+
+      <el-pagination
+        background
+        :current-page="queryForm.pageNumber"
+        :layout="layout"
+        :page-size="queryForm.pageSize"
+        :total="total"
+        @current-change="handleCurrentChange"
+        @size-change="handleSizeChange"
+      />
+
+      <el-card shadow="never" class="secondCard_2">
+        <div class="top__bpx">
+          <div class="title">控制单据</div>
+          <el-button type="success" @click="handleKzObjEdit(false, false)">
+            新建
+          </el-button>
+        </div>
+
+        <el-table v-loading="listLoading" :data="list">
+          <el-table-column
+            align="center"
+            label="序号"
+            prop="qdcode"
+            width="100"
+          ></el-table-column>
+          <el-table-column
+            align="center"
+            label="控制对象"
+            prop="projectOrderName"
+            show-overflow-tooltip
+          />
+          <el-table-column
+            align="center"
+            label="操作"
+            show-overflow-tooltip
+            width="120"
+          >
+            <template slot-scope="scope">
+              <el-button
+                type="text"
+                @click="handleKzObjEdit(scope.row, false)"
+                :disabled="!!scope.row.spzt"
+              >
+                修改
+              </el-button>
+              <el-dropdown style="margin-left: 10px">
+                <el-button type="text">更多</el-button>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item>
+                    <el-button
+                      @click="handleDelete(scope.row)"
+                      type="text"
+                      :disabled="!!scope.row.spzt"
+                    >
+                      删除
+                    </el-button>
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-card>
+
+      <el-pagination
+        background
+        :current-page="queryForm.pageNumber"
+        :layout="layout"
+        :page-size="queryForm.pageSize"
+        :total="total"
+        @current-change="handleCurrentChange"
+        @size-change="handleSizeChange"
+      />
+
+      <Edit ref="edit" @fetch-data="fetchData"></Edit>
+      <kzObjEdit ref="kzObjdit" @fetch-data="fetchData"></kzObjEdit>
+    </div>
+  </div>
+</template>
+
+<script>
+  import {
+    implementPlanList,
+    implementPlanDelete,
+    fpzyksry,
+  } from '@/oapi/audit/project'
+  import Edit from './components/dimensionEdit'
+  import kzObjEdit from './components/kzObjectEdit'
+  import filterSearch from '@/components/filterSearch'
+  import filterTable from '@/components/filterTable'
+  import { searchTableMixis } from '@/mixis/index'
+
+  export default {
+    name: 'fysqkzzz',
+    mixins: [searchTableMixis],
+    components: {
+      Edit,
+      kzObjEdit,
+      filterSearch,
+      filterTable,
+    },
+    data() {
+      return {
+        list: [],
+        planNum: '',
+        listLoading: true,
+        layout: 'total, sizes, prev, pager, next, jumper',
+        total: 0,
+        queryForm: {
+          startStatus: undefined,
+          sxName: undefined,
+          pageNumber: 1,
+          pageSize: 10,
+          xmnd: '',
+        },
+        currProjectId: '',
+        filedAll: [
+          { name: '发送方财务组织' },
+          { name: '接收方财务组织' },
+          { name: '发送方单据类型' },
+          { name: '接收方单据类型' },
+          { name: '说明' },
+          { name: '协同消息接收人' },
+          { name: '业务名称' },
+        ], //所有表格项
+        filedNow: [], //当前表格项
+        searchAll: this.getFiled(), //所有搜索项
+        searchNow: [], //当前所有搜索项
+        searchItem: [], //可见搜索项
+        localKey: 'cwgx-fygl-fysqkzzz-search',
+        tableKey: 'cwgx-fygl-fysqkzzz-list',
+        searchMore: false,
+        select: [],
+        treeData: [
+          {
+            label: '一级 1',
+            children: [
+              {
+                label: '二级 1-1',
+                children: [
+                  {
+                    label: '三级 1-1-1',
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            label: '一级 2',
+            children: [
+              {
+                label: '二级 2-1',
+                children: [
+                  {
+                    label: '三级 2-1-1',
+                  },
+                ],
+              },
+              {
+                label: '二级 2-2',
+                children: [
+                  {
+                    label: '三级 2-2-1',
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            label: '一级 3',
+            children: [
+              {
+                label: '二级 3-1',
+                children: [
+                  {
+                    label: '三级 3-1-1',
+                  },
+                ],
+              },
+              {
+                label: '二级 3-2',
+                children: [
+                  {
+                    label: '三级 3-2-1',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        defaultProps: {
+          children: 'children',
+          label: 'label',
+        },
+      }
+    },
+    created() {
+      this.fetchData()
+      this.initTable()
+      this.searchNow = this.getFiled()
+      this.searchItem = this.searchNow.slice(0, 4)
+      this.initSearch()
+    },
+    mounted() {
+      this.$bus.on('updateMsg', (value) => {
+        if (value == 0) {
+          this.fetchData()
+        }
+      })
+    },
+    methods: {
+      getFiled() {
+        return [{ name: '财务组织', key: 'sxName' }]
+      },
+      selectTeamList(val, flagTitle) {
+        console.log(val, flagTitle)
+        if (flagTitle) {
+          this.queryForm.projectOrderName = val[0].realname
+          this.queryForm.projectOrderId = val[0].staffid
+        } else {
+          let arrStr = ''
+          let arr = []
+          val.forEach((item) => {
+            arr.push(item.realname)
+          })
+          arrStr = arr.join(',')
+          this.tableData[this.sIndex].zyNames = arrStr
+          //拿到组员id字符串
+          let arrStrZy = ''
+          let arrZy = []
+          val.forEach((item) => {
+            arrZy.push(item.staffid)
+          })
+          arrStrZy = arrZy.join(',')
+          this.zyStaffids = arrStrZy
+        }
+      },
+      showGroupLeader() {
+        this.$refs['select'].showEdit('leader')
+      },
+      resetQueryForm() {
+        this.queryForm = {
+          projectOrderName: undefined,
+          projectOrderId: undefined,
+          pageNumber: 1,
+          pageSize: 10,
+          xmnd: '',
+        }
+      },
+      resetSearch() {
+        this.resetQueryForm()
+        this.fetchData()
+      },
+      handleSizeChange(val) {
+        this.queryForm.pageSize = val
+        this.fetchData()
+      },
+      handleCurrentChange(val) {
+        this.queryForm.pageNumber = val
+        this.fetchData()
+      },
+      queryData() {
+        this.queryForm.pageNumber = 1
+        this.fetchData()
+      },
+      async fetchData() {
+        this.listLoading = false
+        let { ...other } = this.queryForm
+        const {
+          data: { tlist, totalRecord, currProjectId },
+        } = await implementPlanList({
+          ...other,
+        })
+        this.listLoading = false
+        return
+        this.currProjectId = currProjectId
+
+        this.list = tlist
+        this.total = totalRecord
+        this.planNum = tlist[0].projectCode
+      },
+      days(start, end) {
+        let s = new Date(start)
+        let e = new Date(end)
+        let hours = (e - s) / (1000 * 60 * 60 * 24)
+        return hours + '天'
+      },
+
+      handleEdit(row, disabled, type) {
+        this.$refs['edit'].handleOpen(row, disabled, this.planNum, type)
+      },
+      handleKzObjEdit(row, disabled, type) {
+        this.$refs['kzObjdit'].handleOpen(row, disabled, this.planNum, type)
+      },
+      async handleDelete(row) {
+        this.$baseConfirm('你确定要删除当前项吗', null, async () => {
+          const { msg, code } = await implementPlanDelete({ ids: row.id })
+          if (code == 1) {
+            this.$baseMessage(msg, 'success')
+            await this.fetchData()
+          } else {
+            this.$baseMessage(msg, 'error')
+          }
+        })
+      },
+      sendModel() {
+        this.$refs['sendModel'].showEdit()
+      },
+      send() {
+        this.$refs['send'].showEdit()
+      },
+      color(row) {
+        if (row.id == this.currProjectId) {
+          return { color: '#7fcf7c' }
+        } else {
+          return { color: '' }
+        }
+      },
+      handleNodeClick(data) {
+        console.log(data)
+      },
+    },
+  }
+</script>
+
+<style scoped lang="scss">
+  .box_container {
+    display: flex;
+  }
+  .box_container_left {
+    width: 200px;
+    padding: 15px;
+  }
+  .system-log-container {
+    width: calc(100% - 200px);
+    padding: 0 !important;
+    background: #f6f8f9 !important;
+  }
+  .margin-b0 {
+    margin-bottom: 0;
+  }
+  .top__bpx {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .secondCard_2 {
+    margin-top: 20px;
+  }
+</style>

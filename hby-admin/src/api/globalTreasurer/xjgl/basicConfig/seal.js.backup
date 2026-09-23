@@ -1,0 +1,269 @@
+import request from '@/utils/request'
+
+// 印章档案管理接口
+export function getSealArchiveList(query) {
+  return request({
+    url: '/zbgl/financial/xjgl/seal/archive/list',
+    method: 'post',
+    data: query
+  })
+}
+
+export function createSealArchive(data) {
+  return request({
+    url: '/zbgl/financial/xjgl/seal/archive/create',
+    method: 'post',
+    data
+  })
+}
+
+export function updateSealArchive(data) {
+  return request({
+    url: '/zbgl/financial/xjgl/seal/archive/update',
+    method: 'post',
+    data
+  })
+}
+
+export function deleteSealArchive(data) {
+  return request({
+    url: '/zbgl/financial/xjgl/seal/archive/delete',
+    method: 'post',
+    data
+  })
+}
+
+export function getSealArchiveDetail(sealId) {
+  return request({
+    url: '/zbgl/financial/xjgl/seal/archive/detail',
+    method: 'get',
+    params: { sealId }
+  })
+}
+
+export function updateSealArchiveStatus(data) {
+  return request({
+    url: '/zbgl/financial/xjgl/seal/archive/updateStatus',
+    method: 'post',
+    data
+  })
+}
+
+export function importSealArchive(data) {
+  return request({
+    url: '/zbgl/financial/xjgl/basicConfig/seal/importArchive',
+    method: 'post',
+    data,
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  })
+}
+
+export function exportSealArchive(query) {
+  return request({
+    url: '/zbgl/financial/xjgl/basicConfig/seal/exportArchive',
+    method: 'get',
+    params: query,
+    responseType: 'blob'
+  })
+}
+
+export function downloadSealTemplate() {
+  return request({
+    url: '/zbgl/financial/xjgl/basicConfig/seal/downloadTemplate',
+    method: 'get',
+    responseType: 'blob'
+  })
+}
+
+// 印章组合配置接口
+export function getSealCombinationList(query) {
+  return request({
+    url: '/zbgl/financial/xjgl/basicConfig/seal/combinationList',
+    method: 'get',
+    params: query
+  })
+}
+
+export function createSealCombination(data) {
+  return request({
+    url: '/zbgl/financial/xjgl/basicConfig/seal/createCombination',
+    method: 'post',
+    data
+  })
+}
+
+export function updateSealCombination(data) {
+  return request({
+    url: '/zbgl/financial/xjgl/basicConfig/seal/updateCombination',
+    method: 'post',
+    data
+  })
+}
+
+export function deleteSealCombination(data) {
+  return request({
+    url: '/zbgl/financial/xjgl/basicConfig/seal/deleteCombination',
+    method: 'post',
+    data
+  })
+}
+
+export function getSealCombinationDetail(combinationId) {
+  return request({
+    url: '/zbgl/financial/xjgl/basicConfig/seal/combinationDetail',
+    method: 'get',
+    params: { combinationId }
+  })
+}
+
+export function updateSealCombinationStatus(data) {
+  return request({
+    url: '/zbgl/financial/xjgl/basicConfig/seal/updateCombinationStatus',
+    method: 'post',
+    data
+  })
+}
+
+export function exportSealCombination(query) {
+  return request({
+    url: '/zbgl/financial/xjgl/basicConfig/seal/exportCombination',
+    method: 'get',
+    params: query,
+    responseType: 'blob'
+  })
+}
+
+// 印章类型管理接口
+export function getSealTypeList(query) {
+  return request({
+    url: '/zbgl/financial/xjgl/seal/type/list',
+    method: 'post',
+    params: query
+  })
+}
+
+export function createSealType(data) {
+  return request({
+    url: '/zbgl/financial/xjgl/seal/type/create',
+    method: 'post',
+    data
+  })
+}
+
+export function updateSealType(data) {
+  return request({
+    url: '/zbgl/financial/xjgl/seal/type/update',
+    method: 'post',
+    data
+  })
+}
+
+export function deleteSealType(data) {
+  return request({
+    url: '/zbgl/financial/xjgl/seal/type/delete',
+    method: 'post',
+    data
+  })
+}
+
+export function getSealTypeDetail(typeId) {
+  return request({
+    url: '/zbgl/financial/xjgl/seal/type/detail',
+    method: 'get',
+    params: { typeId }
+  })
+}
+
+export function updateSealTypeStatus(data) {
+  return request({
+    url: '/zbgl/financial/xjgl/seal/type/updateStatus',
+    method: 'post',
+    data
+  })
+}
+
+export function exportSealType(query) {
+  return request({
+    url: '/zbgl/financial/xjgl/basicConfig/seal/exportType',
+    method: 'get',
+    params: query,
+    responseType: 'blob'
+  })
+}
+
+// 印章使用记录接口
+export function getSealUsageRecordList(query) {
+  return request({
+    url: '/zbgl/financial/xjgl/basicConfig/seal/usageRecordList',
+    method: 'get',
+    params: query
+  })
+}
+
+export function createSealUsageRecord(data) {
+  return request({
+    url: '/zbgl/financial/xjgl/basicConfig/seal/createUsageRecord',
+    method: 'post',
+    data
+  })
+}
+
+export function updateSealUsageRecord(data) {
+  return request({
+    url: '/zbgl/financial/xjgl/basicConfig/seal/updateUsageRecord',
+    method: 'post',
+    data
+  })
+}
+
+export function deleteSealUsageRecord(data) {
+  return request({
+    url: '/zbgl/financial/xjgl/basicConfig/seal/deleteUsageRecord',
+    method: 'post',
+    data
+  })
+}
+
+export function getSealUsageRecordDetail(recordId) {
+  return request({
+    url: '/zbgl/financial/xjgl/basicConfig/seal/usageRecordDetail',
+    method: 'get',
+    params: { recordId }
+  })
+}
+
+export function exportSealUsageRecord(query) {
+  return request({
+    url: '/zbgl/financial/xjgl/basicConfig/seal/exportUsageRecord',
+    method: 'get',
+    params: query,
+    responseType: 'blob'
+  })
+}
+
+export function getSealUsageStatistics(query) {
+  return request({
+    url: '/zbgl/financial/xjgl/basicConfig/seal/usageStatistics',
+    method: 'get',
+    params: query
+  })
+}
+
+// 获取印章类型选项
+export function getSealTypeOptions() {
+  return request({
+    url: '/zbgl/financial/xjgl/seal/type/options',
+    method: 'get'
+  })
+}
+
+// 获取印章使用统计
+export function getSealStatistics() {
+  return request({
+    url: '/zbgl/financial/xjgl/seal/archive/statistics',
+    method: 'get'
+  })
+}
+

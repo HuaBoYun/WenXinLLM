@@ -1,0 +1,240 @@
+import request from '@/utils/request'
+
+// 数据映射配置管理 API接口
+
+/**
+ * 分页查询数据映射列表
+ */
+export function listDataMapping(params) {
+  return request({
+    url: '/centralaudit/financial/basicConfig/mapping/list',
+    method: 'get',
+    params
+  })
+}
+
+/**
+ * 分页查询数据映射列表
+ */
+export function pageDataMapping(params) {
+  return request({
+    url: '/centralaudit/financial/basicConfig/mapping/page',
+    method: 'get',
+    params
+  })
+}
+
+/**
+ * 搜索数据映射列表
+ */
+export function searchDataMapping(data) {
+  return request({
+    url: '/centralaudit/financial/basicConfig/mapping/search',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 根据ID查询数据映射详情
+ */
+export function getDataMapping(id) {
+  return request({
+    url: `/centralaudit/financial/basicConfig/mapping/detail?id=${id}`,
+    method: 'get'
+  })
+}
+
+/**
+ * 删除数据映射
+ */
+export function delDataMapping(id) {
+  return request({
+    url: `/centralaudit/financial/basicConfig/mapping/${id}`,
+    method: 'delete'
+  })
+}
+
+/**
+ * 添加数据映射
+ */
+export function addDataMapping(data) {
+  return request({
+    url: '/centralaudit/financial/basicConfig/mapping/create',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 更新数据映射
+ */
+export function updateDataMapping(data) {
+  return request({
+    url: '/centralaudit/financial/basicConfig/mapping/update',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 获取初始化数据
+ */
+export function getInitData() {
+  return request({
+    url: '/centralaudit/financial/basicConfig/mapping/initData',
+    method: 'get'
+  })
+}
+
+/**
+ * 检查映射名称唯一性
+ */
+export function checkMappingName(data) {
+  return request({
+    url: '/centralaudit/financial/basicConfig/mapping/checkName',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 验证字段映射
+ */
+export function validateFieldMappings(data) {
+  return request({
+    url: '/centralaudit/financial/basicConfig/mapping/validateFields',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 测试数据映射规则 (旧版本接口)
+ */
+export function testDataMappingOld(data) {
+  return request({
+    url: '/centralaudit/financial/basicConfig/mapping/test',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 获取映射类型选项
+ */
+export function getMappingTypes() {
+  return request({
+    url: '/centralaudit/financial/basicConfig/mapping/mappingTypes',
+    method: 'get'
+  })
+}
+
+/**
+ * 获取源系统选项
+ */
+export function getSourceSystems() {
+  return request({
+    url: '/centralaudit/financial/basicConfig/mapping/sourceSystems',
+    method: 'get'
+  })
+}
+
+/**
+ * 获取目标系统选项
+ */
+export function getTargetSystems() {
+  return request({
+    url: '/centralaudit/financial/basicConfig/mapping/targetSystems',
+    method: 'get'
+  })
+}
+
+/**
+ * 获取源系统字段列表
+ */
+export function getSourceFields(systemId) {
+  return request({
+    url: `/centralaudit/financial/basicConfig/mapping/sourceFields?systemId=${systemId}`,
+    method: 'get'
+  })
+}
+
+/**
+ * 获取目标系统字段列表
+ */
+export function getTargetFields(systemId) {
+  return request({
+    url: `/centralaudit/financial/basicConfig/mapping/targetFields?systemId=${systemId}`,
+    method: 'get'
+  })
+}
+
+/**
+ * 批量删除数据映射
+ */
+export function batchDeleteDataMapping(ids) {
+  return request({
+    url: '/centralaudit/financial/basicConfig/mapping/batch',
+    method: 'delete',
+    data: ids
+  })
+}
+
+/**
+ * 获取数据映射统计信息
+ */
+export function getDataMappingStatistics() {
+  return request({
+    url: '/centralaudit/financial/basicConfig/mapping/statistics',
+    method: 'get'
+  })
+}
+
+/**
+ * 批量导入数据映射
+ */
+export function batchImportDataMapping(file, updateUser) {
+  const formData = new FormData()
+  formData.append('file', file)
+  return request({
+    url: '/centralaudit/financial/basicConfig/mapping/import',
+    method: 'post',
+    data: formData,
+    params: { updateUser },
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  })
+}
+
+/**
+ * 获取字段类型选项
+ */
+export function getFieldTypes() {
+  return request({
+    url: '/centralaudit/financial/basicConfig/mapping/fieldTypes',
+    method: 'get'
+  })
+}
+
+/**
+ * 获取转换规则选项
+ */
+export function getTransformRules() {
+  return request({
+    url: '/centralaudit/financial/basicConfig/mapping/transformRules',
+    method: 'get'
+  })
+}
+
+/**
+ * 测试数据映射
+ */
+export function testDataMapping(data) {
+  return request({
+    url: '/centralaudit/financial/basicConfig/mapping/test',
+    method: 'post',
+    data
+  })
+}

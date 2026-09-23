@@ -1,0 +1,13 @@
+/*可以在这里添加你自己的css*/
+
+html.view {
+  overflow-y: scroll !important;
+  min-height: 100% !important;
+}
+/*标注*/
+.mark-content {
+  background: #76dc76;
+}
+.mark-delete {
+  background: #ef6464;
+}

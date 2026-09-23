@@ -1,0 +1,375 @@
+import request from '@/utils/request'
+
+// 业务系统注册管理 API接口
+
+/**
+ * 分页查询业务系统列表
+ */
+export function listBusinessSystem(params) {
+  return request({
+    url: '/cwgxAi/basicConfig/system/list',
+    method: 'get',
+    params
+  })
+}
+
+/**
+ * 根据ID查询业务系统
+ */
+export function getBusinessSystem(id) {
+  return request({
+    url: `/cwgxAi/basicConfig/system/detail?id=${id}`,
+    method: 'get'
+  })
+}
+
+/**
+ * 搜索业务系统列表
+ */
+export function searchBusinessSystem(data) {
+  return request({
+    url: '/cwgxAi/basicConfig/system/search',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 删除业务系统
+ */
+export function delBusinessSystem(ids) {
+  return request({
+    url: '/cwgxAi/basicConfig/system/delete',
+    method: 'delete',
+    data: Array.isArray(ids) ? ids : [ids]
+  })
+}
+
+/**
+ * 批量删除业务系统 (旧版本接口)
+ */
+export function batchDeleteBusinessSystemOld(ids) {
+  return request({
+    url: '/cwgxAi/basicConfig/system/batchDelete',
+    method: 'delete',
+    data: ids
+  })
+}
+
+/**
+ * 添加业务系统
+ */
+export function addBusinessSystem(data) {
+  return request({
+    url: '/cwgxAi/basicConfig/system/create',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 更新业务系统
+ */
+export function updateBusinessSystem(data) {
+  return request({
+    url: '/cwgxAi/basicConfig/system/update',
+    method: 'put',
+    data
+  })
+}
+
+/**
+ * 获取初始化数据
+ */
+export function getInitData() {
+  return request({
+    url: '/cwgxAi/basicConfig/system/initData',
+    method: 'get'
+  })
+}
+
+/**
+ * 获取编辑数据
+ */
+export function getEditData(id) {
+  return request({
+    url: `/cwgxAi/basicConfig/system/editData?id=${id}`,
+    method: 'get'
+  })
+}
+
+/**
+ * 检查系统编码唯一性
+ */
+export function checkSystemCode(data) {
+  return request({
+    url: '/cwgxAi/basicConfig/system/checkCode',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 验证表单数据
+ */
+export function validateForm(data) {
+  return request({
+    url: '/cwgxAi/basicConfig/system/validate',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 验证编辑表单数据
+ */
+export function validateEditForm(data) {
+  return request({
+    url: '/cwgxAi/basicConfig/system/validateUpdate',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 检查删除依赖
+ */
+export function checkDeleteDependencies(ids) {
+  return request({
+    url: '/cwgxAi/basicConfig/system/checkDependencies',
+    method: 'post',
+    data: ids
+  })
+}
+
+/**
+ * 启用业务系统
+ */
+export function enableBusinessSystem(data) {
+  return request({
+    url: '/cwgxAi/basicConfig/system/enable',
+    method: 'put',
+    data
+  })
+}
+
+/**
+ * 禁用业务系统
+ */
+export function disableBusinessSystem(data) {
+  return request({
+    url: '/cwgxAi/basicConfig/system/disable',
+    method: 'put',
+    data
+  })
+}
+
+/**
+ * 批量启用业务系统
+ */
+export function batchEnableBusinessSystem(ids) {
+  return request({
+    url: '/cwgxAi/basicConfig/system/batchEnable',
+    method: 'put',
+    data: ids
+  })
+}
+
+/**
+ * 批量禁用业务系统
+ */
+export function batchDisableBusinessSystem(ids) {
+  return request({
+    url: '/cwgxAi/basicConfig/system/batchDisable',
+    method: 'put',
+    data: ids
+  })
+}
+
+/**
+ * 测试连接
+ */
+export function testConnection(data) {
+  return request({
+    url: '/cwgxAi/basicConfig/system/testConnection',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 测试业务系统连接(根据ID)
+ */
+export function testSystemConnection(id) {
+  return request({
+    url: '/cwgxAi/basicConfig/system/testConnection',
+    method: 'post',
+    data: { id }
+  })
+}
+
+/**
+ * 批量测试连接
+ */
+export function batchTestConnection(ids) {
+  return request({
+    url: '/cwgxAi/basicConfig/system/batchTest',
+    method: 'post',
+    data: ids
+  })
+}
+
+/**
+ * 导出业务系统
+ */
+export function exportBusinessSystem(params) {
+  return request({
+    url: '/cwgxAi/basicConfig/system/export',
+    method: 'get',
+    params,
+    responseType: 'blob'
+  })
+}
+
+/**
+ * 批量删除业务系统
+ */
+export function batchDeleteBusinessSystem(ids) {
+  return request({
+    url: '/cwgxAi/treasury-common/business-system/batch',
+    method: 'delete',
+    data: ids
+  })
+}
+
+/**
+ * 切换业务系统状态
+ */
+export function toggleBusinessSystemStatus(data) {
+  return request({
+    url: '/cwgxAi/treasury-common/business-system/status',
+    method: 'put',
+    data
+  })
+}
+
+/**
+ * 同步业务系统状态
+ */
+export function syncBusinessSystemStatus() {
+  return request({
+    url: '/cwgxAi/treasury-common/business-system/sync-status',
+    method: 'post'
+  })
+}
+
+/**
+ * 获取系统类型选项
+ */
+export function getSystemTypes() {
+  return request({
+    url: '/cwgxAi/basicConfig/system/systemTypes',
+    method: 'get'
+  })
+}
+
+/**
+ * 获取认证方式选项
+ */
+export function getAuthTypes() {
+  return request({
+    url: '/cwgxAi/basicConfig/system/authTypes',
+    method: 'get'
+  })
+}
+
+/**
+ * 获取系统状态选项
+ */
+export function getSystemStatuses() {
+  return request({
+    url: '/cwgxAi/basicConfig/system/systemStatuses',
+    method: 'get'
+  })
+}
+
+/**
+ * 获取连接状态选项
+ */
+export function getConnectionStatuses() {
+  return request({
+    url: '/cwgxAi/treasury-common/business-system/connection-statuses',
+    method: 'get'
+  })
+}
+
+/**
+ * 验证业务系统配置
+ */
+export function validateBusinessSystemConfig(data) {
+  return request({
+    url: '/cwgxAi/treasury-common/business-system/validate',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 获取业务系统统计信息
+ */
+export function getBusinessSystemStatistics() {
+  return request({
+    url: '/cwgxAi/treasury-common/business-system/statistics',
+    method: 'get'
+  })
+}
+
+/**
+ * 批量导入业务系统
+ */
+export function batchImportBusinessSystem(file, updateUser) {
+  const formData = new FormData()
+  formData.append('file', file)
+  return request({
+    url: '/cwgxAi/treasury-common/business-system/import',
+    method: 'post',
+    data: formData,
+    params: { updateUser },
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  })
+}
+
+/**
+ * 获取业务系统日志
+ */
+export function getBusinessSystemLogs(params) {
+  return request({
+    url: '/cwgxAi/treasury-common/business-system/logs',
+    method: 'get',
+    params
+  })
+}
+
+/**
+ * 清理业务系统日志
+ */
+export function cleanBusinessSystemLogs(params) {
+  return request({
+    url: '/cwgxAi/treasury-common/business-system/clean-logs',
+    method: 'delete',
+    params
+  })
+}
+
+/**
+ * 重置业务系统密码
+ */
+export function resetBusinessSystemPassword(id, newPassword) {
+  return request({
+    url: `/cwgxAi/treasury-common/business-system/reset-password/${id}`,
+    method: 'post',
+    data: { newPassword }
+  })
+}

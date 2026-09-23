@@ -1,0 +1,615 @@
+/* 🎯 数据模型管理模块专用z-index层级管理 */
+/* ⚠️ 注意：此文件只影响数据模型管理模块，不会影响其他模块 */
+
+/* 🔒 作用域限制：只在数据模型管理页面生效 */
+.risk-mxgl-sjmxgl-page .el-dialog__wrapper {
+  z-index: 2500 !important;
+}
+
+.risk-mxgl-sjmxgl-page .el-dialog {
+  z-index: 2501 !important;
+}
+
+/* 🔒 数据模型管理主要对话框 - 限制作用域 */
+.risk-mxgl-sjmxgl-page .data-model-dialog,
+.risk-mxgl-sjmxgl-page .sql-template-dialog,
+.risk-mxgl-sjmxgl-page .sql-editor-dialog,
+.risk-mxgl-sjmxgl-page .indicator-combination-dialog {
+  z-index: 2500 !important;
+}
+
+.risk-mxgl-sjmxgl-page .data-model-dialog .el-dialog__wrapper,
+.risk-mxgl-sjmxgl-page .sql-template-dialog .el-dialog__wrapper,
+.risk-mxgl-sjmxgl-page .sql-editor-dialog .el-dialog__wrapper,
+.risk-mxgl-sjmxgl-page .indicator-combination-dialog .el-dialog__wrapper {
+  z-index: 2500 !important;
+}
+
+.risk-mxgl-sjmxgl-page .data-model-dialog .el-dialog,
+.risk-mxgl-sjmxgl-page .sql-template-dialog .el-dialog,
+.risk-mxgl-sjmxgl-page .sql-editor-dialog .el-dialog,
+.risk-mxgl-sjmxgl-page .indicator-combination-dialog .el-dialog {
+  z-index: 2501 !important;
+}
+
+/* 🔒 指标配置对话框 - 限制作用域 */
+.risk-mxgl-sjmxgl-page .indicator-config-dialog {
+  z-index: 2600 !important;
+}
+
+.risk-mxgl-sjmxgl-page .indicator-config-dialog .el-dialog__wrapper {
+  z-index: 2600 !important;
+}
+
+.risk-mxgl-sjmxgl-page .indicator-config-dialog .el-dialog {
+  z-index: 2601 !important;
+}
+
+/* 🔒 流程图查看对话框 - 限制作用域 */
+.risk-mxgl-sjmxgl-page .flow-view-dialog {
+  z-index: 2700 !important;
+}
+
+.risk-mxgl-sjmxgl-page .flow-view-dialog .el-dialog__wrapper {
+  z-index: 2700 !important;
+}
+
+.risk-mxgl-sjmxgl-page .flow-view-dialog .el-dialog {
+  z-index: 2701 !important;
+}
+
+/* 🔒 流程图对话框的遮罩层 - 限制作用域 */
+.risk-mxgl-sjmxgl-page .flow-view-dialog + .v-modal {
+  z-index: 2699 !important;
+}
+
+/* 🔒 拖拽SQL构建器对话框 - 最高层级，限制作用域 */
+.risk-mxgl-sjmxgl-page .drag-sql-builder-dialog .el-dialog__wrapper {
+  z-index: 3000 !important;
+}
+
+.risk-mxgl-sjmxgl-page .drag-sql-builder-dialog .el-dialog {
+  z-index: 3001 !important;
+}
+
+/* 🔒 拖拽构建器内部的子对话框 - 限制作用域 */
+.risk-mxgl-sjmxgl-page .drag-sql-builder-dialog .el-dialog__wrapper[aria-label*="SQL预览"],
+.risk-mxgl-sjmxgl-page .drag-sql-builder-dialog .el-dialog__wrapper[aria-label*="使用帮助"] {
+  z-index: 3100 !important;
+}
+
+/* 🔒 确保遮罩层不会覆盖对话框 - 限制作用域 */
+.risk-mxgl-sjmxgl-page .el-dialog__wrapper .el-overlay {
+  z-index: inherit !important;
+}
+
+/* 🔒 Element UI 遮罩层控制 - 限制作用域 */
+.risk-mxgl-sjmxgl-page .v-modal {
+  z-index: 2499 !important;
+}
+
+.risk-mxgl-sjmxgl-page .el-overlay {
+  z-index: 2499 !important;
+}
+
+/* 🔒 修复可能的遮罩层问题 - 限制作用域 */
+.risk-mxgl-sjmxgl-page .el-loading-mask {
+  z-index: 2999 !important;
+}
+
+/* 🔒 指标配置对话框的遮罩层 - 限制作用域 */
+.risk-mxgl-sjmxgl-page .indicator-config-dialog + .v-modal {
+  z-index: 2499 !important;
+}
+
+/* 🔒 新建/编辑指标组合对话框 - 限制作用域 */
+.risk-mxgl-sjmxgl-page .combination-edit-dialog {
+  z-index: 2800 !important;
+}
+
+.risk-mxgl-sjmxgl-page .combination-edit-dialog .el-dialog__wrapper {
+  z-index: 2800 !important;
+}
+
+.risk-mxgl-sjmxgl-page .combination-edit-dialog .el-dialog {
+  z-index: 2801 !important;
+}
+
+/* 🔒 新建指标组合对话框的遮罩层 - 限制作用域 */
+.risk-mxgl-sjmxgl-page .combination-edit-dialog + .v-modal {
+  z-index: 2799 !important;
+}
+
+/* 🔒 确保消息提示在最顶层 - 限制作用域 */
+.risk-mxgl-sjmxgl-page .el-message {
+  z-index: 4000 !important;
+}
+
+.risk-mxgl-sjmxgl-page .el-message-box__wrapper {
+  z-index: 4000 !important;
+}
+
+/* 🔒 下拉菜单等组件的层级 - 限制作用域 */
+.risk-mxgl-sjmxgl-page .el-select-dropdown,
+.risk-mxgl-sjmxgl-page .el-picker-panel,
+.risk-mxgl-sjmxgl-page .el-cascader-menus {
+  z-index: 3200 !important;
+}
+
+
+
+/* 🔒 修复新建指标组合对话框中业务分类下拉菜单层级问题 - 限制作用域 */
+.risk-mxgl-sjmxgl-page .el-select-dropdown {
+  z-index: 4000 !important;
+}
+
+/* 🔒 工具提示 - 限制作用域 */
+.risk-mxgl-sjmxgl-page .el-tooltip__popper {
+  z-index: 3300 !important;
+}
+
+/* 🔒 确保拖拽元素在正确层级 - 限制作用域 */
+.risk-mxgl-sjmxgl-page .sortable-ghost,
+.risk-mxgl-sjmxgl-page .sortable-chosen {
+  z-index: 3050 !important;
+}
+
+/* 🔒 局部深度样式 - 只在数据模型管理模块生效 */
+.risk-mxgl-sjmxgl-page .data-model-dialog,
+.risk-mxgl-sjmxgl-page .sql-template-dialog,
+.risk-mxgl-sjmxgl-page .sql-editor-dialog,
+.risk-mxgl-sjmxgl-page .indicator-combination-dialog {
+  z-index: 2500 !important;
+}
+
+.risk-mxgl-sjmxgl-page .data-model-dialog .el-dialog__wrapper,
+.risk-mxgl-sjmxgl-page .sql-template-dialog .el-dialog__wrapper,
+.risk-mxgl-sjmxgl-page .sql-editor-dialog .el-dialog__wrapper,
+.risk-mxgl-sjmxgl-page .indicator-combination-dialog .el-dialog__wrapper {
+  z-index: 2500 !important;
+}
+
+.risk-mxgl-sjmxgl-page .data-model-dialog .el-dialog,
+.risk-mxgl-sjmxgl-page .sql-template-dialog .el-dialog,
+.risk-mxgl-sjmxgl-page .sql-editor-dialog .el-dialog,
+.risk-mxgl-sjmxgl-page .indicator-combination-dialog .el-dialog {
+  z-index: 2501 !important;
+}
+
+/* 🔒 流程图对话框特殊处理 - 限制作用域 */
+.risk-mxgl-sjmxgl-page .flow-view-dialog {
+  z-index: 2700 !important;
+}
+
+.risk-mxgl-sjmxgl-page .flow-view-dialog .el-dialog__wrapper {
+  z-index: 2700 !important;
+}
+
+.risk-mxgl-sjmxgl-page .flow-view-dialog .el-dialog {
+  z-index: 2701 !important;
+}
+
+/* 🔒 节点结果对话框 - 最高优先级，限制作用域 */
+.risk-mxgl-sjmxgl-page .node-result-dialog-wrapper {
+  z-index: 10100 !important;
+}
+
+.risk-mxgl-sjmxgl-page .node-result-dialog-wrapper .el-dialog {
+  z-index: 10101 !important;
+}
+
+.risk-mxgl-sjmxgl-page .indicator-result-dialog-wrapper {
+  z-index: 10000 !important;
+}
+
+.risk-mxgl-sjmxgl-page .indicator-result-dialog-wrapper .el-dialog {
+  z-index: 10001 !important;
+}
+
+/* 🔒 防止遮罩层残留的样式 - 限制作用域 */
+.risk-mxgl-sjmxgl-page .flow-view-dialog-mask-fix {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 2699 !important;
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  display: none !important;
+}
+
+/* 🔒 确保关闭时遮罩层被正确移除 - 限制作用域 */
+.risk-mxgl-sjmxgl-page .flow-view-dialog.el-dialog__wrapper[style*="display: none"] + .v-modal,
+.risk-mxgl-sjmxgl-page .flow-view-dialog.el-dialog__wrapper[style*="display:none"] + .v-modal {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* 🔒 执行指标组合对话框 - 确保在指标组合分析对话框之上，限制作用域 */
+.risk-mxgl-sjmxgl-page .execution-dialog-wrapper {
+  z-index: 3500 !important;
+}
+
+.risk-mxgl-sjmxgl-page .execution-dialog-wrapper .el-dialog {
+  z-index: 3501 !important;
+}
+
+.risk-mxgl-sjmxgl-page .execution-dialog {
+  z-index: 3500 !important;
+}
+
+.risk-mxgl-sjmxgl-page .execution-dialog .el-dialog__wrapper {
+  z-index: 3500 !important;
+}
+
+.risk-mxgl-sjmxgl-page .execution-dialog .el-dialog {
+  z-index: 3501 !important;
+}
+
+/* 🔒 执行对话框顶层CSS类 - 限制作用域 */
+.risk-mxgl-sjmxgl-page .execution-dialog-top-layer {
+  z-index: 3500 !important;
+}
+
+.risk-mxgl-sjmxgl-page .execution-dialog-top-layer .el-dialog {
+  z-index: 3501 !important;
+}
+
+/* 🔒 执行对话框的遮罩层 - 限制作用域 */
+.risk-mxgl-sjmxgl-page .execution-dialog-wrapper + .v-modal {
+  z-index: 3499 !important;
+}
+
+/* 🔒 执行对话框内的结果详情对话框 - 更高层级，限制作用域 */
+.risk-mxgl-sjmxgl-page .result-detail-dialog {
+  z-index: 3400 !important;
+}
+
+.risk-mxgl-sjmxgl-page .result-detail-dialog .el-dialog__wrapper {
+  z-index: 3400 !important;
+}
+
+.risk-mxgl-sjmxgl-page .result-detail-dialog .el-dialog {
+  z-index: 3401 !important;
+}
+
+/* 🔒 SQL执行结果对话框 - 确保在指标组合分析对话框之上，限制作用域 */
+.risk-mxgl-sjmxgl-page .sql-result-dialog-wrapper {
+  z-index: 3500 !important;
+}
+
+.risk-mxgl-sjmxgl-page .sql-result-dialog-wrapper .el-dialog {
+  z-index: 3501 !important;
+}
+
+.risk-mxgl-sjmxgl-page .sql-result-dialog {
+  z-index: 3500 !important;
+}
+
+.risk-mxgl-sjmxgl-page .sql-result-dialog .el-dialog__wrapper {
+  z-index: 3500 !important;
+}
+
+.risk-mxgl-sjmxgl-page .sql-result-dialog .el-dialog {
+  z-index: 3501 !important;
+}
+
+/* 🔒 SQL结果对话框顶层CSS类 - 限制作用域 */
+.risk-mxgl-sjmxgl-page .sql-result-dialog-top-layer {
+  z-index: 3500 !important;
+}
+
+.risk-mxgl-sjmxgl-page .sql-result-dialog-top-layer .el-dialog {
+  z-index: 3501 !important;
+}
+
+/* 🔒 SQL结果对话框的遮罩层 - 限制作用域 */
+.risk-mxgl-sjmxgl-page .sql-result-dialog-wrapper + .v-modal {
+  z-index: 3499 !important;
+}
+
+/* 🔒 防止SQL结果对话框遮罩层残留 - 限制作用域 */
+.risk-mxgl-sjmxgl-page .sql-result-dialog-wrapper .v-modal {
+  z-index: 3499 !important;
+}
+
+/* 🔒 确保SQL结果对话框关闭时遮罩层被正确移除 - 限制作用域 */
+.risk-mxgl-sjmxgl-page .sql-result-dialog.el-dialog__wrapper[style*="display: none"] + .v-modal,
+.risk-mxgl-sjmxgl-page .sql-result-dialog.el-dialog__wrapper[style*="display:none"] + .v-modal {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* 🔒 执行对话框内的下拉框弹出层 - 限制作用域 */
+.risk-mxgl-sjmxgl-page .execution-dialog-dropdown {
+  z-index: 3600 !important;
+}
+
+.risk-mxgl-sjmxgl-page .execution-dialog-dropdown .el-select-dropdown {
+  z-index: 3600 !important;
+}
+
+/* 🔒 交集分析下拉框弹出层 - 限制作用域 */
+.risk-mxgl-sjmxgl-page .intersection-select-dropdown {
+  z-index: 3600 !important;
+}
+
+.risk-mxgl-sjmxgl-page .intersection-select-dropdown .el-select-dropdown {
+  z-index: 3600 !important;
+}
+
+.risk-mxgl-sjmxgl-page .intersection-select-dropdown .el-select-dropdown__item {
+  z-index: 3601 !important;
+}
+
+/* 🔒 确保执行对话框内所有下拉框都能正确显示 - 限制作用域 */
+.risk-mxgl-sjmxgl-page .execution-dialog-wrapper .el-select-dropdown {
+  z-index: 3600 !important;
+}
+
+.risk-mxgl-sjmxgl-page .execution-dialog-wrapper .el-popper {
+  z-index: 3600 !important;
+}
+
+/* 🔒 修复Element-UI下拉框在对话框中的显示问题 - 限制作用域 */
+.risk-mxgl-sjmxgl-page .execution-dialog-wrapper .el-select .el-select-dropdown {
+  z-index: 3600 !important;
+  position: fixed !important;
+}
+
+/* 🔒 确保下拉框选项可见 - 限制作用域 */
+.risk-mxgl-sjmxgl-page .el-select-dropdown.execution-dialog-dropdown {
+  z-index: 3600 !important;
+  position: fixed !important;
+}
+
+.risk-mxgl-sjmxgl-page .el-select-dropdown.intersection-select-dropdown {
+  z-index: 3600 !important;
+  position: fixed !important;
+}
+
+/* 🔥 新增：交集分析结果样式 - 限制作用域 */
+.risk-mxgl-sjmxgl-page .intersection-result {
+  margin-top: 16px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.risk-mxgl-sjmxgl-page .intersection-result h4 {
+  margin: 0 0 12px 0;
+  color: #2c3e50;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.risk-mxgl-sjmxgl-page .intersection-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.risk-mxgl-sjmxgl-page .intersection-actions .el-button {
+  font-size: 12px;
+  padding: 5px 12px;
+}
+
+/* 🔥 修复：交集详情MessageBox样式优化 */
+.intersection-detail-msgbox {
+  max-width: 95vw !important;
+  width: 95vw !important;
+}
+
+.intersection-detail-msgbox .el-message-box {
+  max-width: 95vw !important;
+  width: 95vw !important;
+}
+
+.intersection-detail-msgbox .el-message-box__content {
+  max-height: 70vh !important;
+  overflow: auto !important;
+  padding: 10px !important;
+}
+
+.intersection-detail-msgbox .el-message-box__message {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* 🔥 新增：确保MessageBox在最顶层 */
+.intersection-detail-msgbox {
+  z-index: 4500 !important;
+}
+
+.intersection-detail-msgbox .el-overlay {
+  z-index: 4499 !important;
+}
+
+/* 🔥 新增：表格样式优化 */
+.intersection-detail-msgbox table {
+  border-collapse: collapse !important;
+  width: 100% !important;
+  font-size: 12px !important;
+}
+
+.intersection-detail-msgbox table th,
+.intersection-detail-msgbox table td {
+  border: 1px solid #dcdfe6 !important;
+  padding: 4px 8px !important;
+  text-align: left !important;
+  vertical-align: top !important;
+}
+
+.intersection-detail-msgbox table th {
+  background-color: #f5f7fa !important;
+  font-weight: 600 !important;
+  text-align: center !important;
+}
+
+.intersection-detail-msgbox table tbody tr:nth-child(even) {
+  background-color: #fafafa !important;
+}
+
+.intersection-detail-msgbox table tbody tr:hover {
+  background-color: #f0f9ff !important;
+}
+
+/* 🔥 修复：交集分析详情对话框层级问题 - 确保在执行对话框之上显示 */
+/* ⚠️ 问题：交集详情对话框被包装在执行对话框内部，导致层级受限 */
+/* 💡 解决方案：设置极高的z-index，确保交集详情对话框能够正常显示在最上层 */
+
+.risk-mxgl-sjmxgl-page .intersection-detail-dialog-wrapper {
+  z-index: 10000 !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.risk-mxgl-sjmxgl-page .intersection-detail-dialog-wrapper .el-dialog {
+  z-index: 10001 !important;
+  position: relative !important;
+}
+
+.risk-mxgl-sjmxgl-page .intersection-detail-dialog {
+  z-index: 10000 !important;
+}
+
+.risk-mxgl-sjmxgl-page .intersection-detail-dialog .el-dialog__wrapper {
+  z-index: 10000 !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.risk-mxgl-sjmxgl-page .intersection-detail-dialog .el-dialog {
+  z-index: 10001 !important;
+  position: relative !important;
+}
+
+/* 🔥 新增：交集详情对话框顶层样式类 - 确保最高优先级 */
+.risk-mxgl-sjmxgl-page .intersection-detail-top-layer {
+  z-index: 10000 !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.risk-mxgl-sjmxgl-page .intersection-detail-top-layer .el-dialog {
+  z-index: 10001 !important;
+  position: relative !important;
+}
+
+/* 🔥 新增：强制覆盖Element-UI的默认样式 */
+.risk-mxgl-sjmxgl-page .el-dialog__wrapper.intersection-detail-dialog-wrapper,
+.risk-mxgl-sjmxgl-page .el-dialog__wrapper.intersection-detail-top-layer {
+  z-index: 10000 !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* 🔥 新增：交集详情对话框的遮罩层 */
+.risk-mxgl-sjmxgl-page .intersection-detail-dialog-wrapper + .v-modal,
+.risk-mxgl-sjmxgl-page .intersection-detail-top-layer + .v-modal {
+  z-index: 9999 !important;
+}
+
+/* 🔥 新增：交集详情对话框内容样式 */
+.risk-mxgl-sjmxgl-page .intersection-detail-content {
+  padding: 0;
+}
+
+.risk-mxgl-sjmxgl-page .intersection-detail-content .detail-header {
+  margin-bottom: 16px;
+}
+
+.risk-mxgl-sjmxgl-page .intersection-detail-content .detail-table {
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+}
+
+.risk-mxgl-sjmxgl-page .intersection-detail-content .el-table {
+  border: none;
+}
+
+.risk-mxgl-sjmxgl-page .intersection-detail-content .el-table th {
+  background-color: #f5f7fa;
+  font-weight: 600;
+}
+
+.risk-mxgl-sjmxgl-page .intersection-detail-content .el-table td {
+  padding: 8px 12px;
+}
+
+.risk-mxgl-sjmxgl-page .intersection-detail-content pre {
+  font-family: 'Courier New', Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.3;
+  margin: 0;
+  padding: 4px;
+  background-color: #f8f9fa;
+  border-radius: 2px;
+  max-height: 100px;
+  overflow-y: auto;
+}
+
+/* 🔥 新增：全局强制样式 - 确保交集详情对话框在任何情况下都能正确显示 */
+/* 使用更高的优先级选择器来覆盖所有可能的样式冲突 */
+body .risk-mxgl-sjmxgl-page .intersection-detail-dialog-wrapper,
+body .risk-mxgl-sjmxgl-page .intersection-detail-top-layer,
+html .risk-mxgl-sjmxgl-page .intersection-detail-dialog-wrapper,
+html .risk-mxgl-sjmxgl-page .intersection-detail-top-layer {
+  z-index: 10000 !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* 🔥 新增：确保对话框内容可见 */
+body .risk-mxgl-sjmxgl-page .intersection-detail-dialog-wrapper .el-dialog,
+body .risk-mxgl-sjmxgl-page .intersection-detail-top-layer .el-dialog,
+html .risk-mxgl-sjmxgl-page .intersection-detail-dialog-wrapper .el-dialog,
+html .risk-mxgl-sjmxgl-page .intersection-detail-top-layer .el-dialog {
+  z-index: 10001 !important;
+  position: relative !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* 🔥 新增：防止被其他元素遮挡 */
+.risk-mxgl-sjmxgl-page .intersection-detail-dialog-wrapper *,
+.risk-mxgl-sjmxgl-page .intersection-detail-top-layer * {
+  pointer-events: auto !important;
+}
+
+/* 🔥 新增：确保遮罩层正确显示 */
+.risk-mxgl-sjmxgl-page .intersection-detail-dialog-wrapper .v-modal,
+.risk-mxgl-sjmxgl-page .intersection-detail-top-layer .v-modal {
+  z-index: 9999 !important;
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* 🔥 移除全局样式，只保留作用域限制的样式 */
+/* 所有样式都限制在 .risk-mxgl-sjmxgl-page 作用域内，不影响其他页面 */

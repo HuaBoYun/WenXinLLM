@@ -1,0 +1,214 @@
+<template>
+  <el-dialog
+    :close-on-click-modal="false"
+    :append-to-body="true"
+    :title="title"
+    :visible.sync="dialogFormVisible"
+    width="1000px"
+    @close="close"
+  >
+    <el-row :gutter="14">
+      <el-form
+        ref="ruleForm"
+        label-width="100px"
+        :model="formData"
+        :rules="rules"
+        size="mini"
+        :disabled="allDisabled"
+      >
+        <el-col :span="12">
+          <el-form-item label="开始时间" label-width="140px" prop="startTime">
+            <el-date-picker
+              :style="{ width: '100%' }"
+              v-model="formData.startTime"
+              placeholder="开始时间"
+              type="date"
+              format="yyyy-MM-dd "
+              value-format="yyyy-MM-dd HH:mm:ss"
+            />
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="结束时间" label-width="140px" prop="endTime">
+            <el-date-picker
+              :style="{ width: '100%' }"
+              v-model="formData.endTime"
+              placeholder="结束时间"
+              type="date"
+              format="yyyy-MM-dd"
+              value-format="yyyy-MM-dd HH:mm:ss"
+            />
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="工作单位" label-width="140px" prop="workUnitExt">
+            <el-input
+              v-model="formData.workUnitExt"
+              clearable
+              placeholder="请输入工作单位"
+              :style="{ width: '100%' }"
+            />
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="职务" label-width="140px" prop="position">
+            <el-input
+              v-model="formData.position"
+              clearable
+              placeholder="请输入职务"
+              :style="{ width: '100%' }"
+            />
+          </el-form-item>
+        </el-col>
+        <!-- <el-col :span="24">
+          <el-form-item
+            label="工作成果"
+            label-width="140px"
+            prop="workAchievement"
+          >
+            <el-input
+              v-model="formData.workAchievement"
+              clearable
+              type="textarea"
+              rows="2"
+              placeholder="请输入工作成果"
+              :style="{ width: '100%' }"
+            />
+          </el-form-item>
+        </el-col> -->
+        <el-col :span="24">
+          <el-form-item label="备注" label-width="140px" prop="remark">
+            <el-input
+              v-model="formData.remark"
+              clearable
+              type="textarea"
+              rows="2"
+              placeholder="请输入备注"
+              :style="{ width: '100%' }"
+            />
+          </el-form-item>
+        </el-col>
+      </el-form>
+    </el-row>
+    <div slot="footer" v-if="footer">
+      <el-button @click="close">取消</el-button>
+      <el-button @click="add" type="primary">确定</el-button>
+    </div>
+    <template #footer v-if="footer">
+      <el-button @click="close">关 闭</el-button>
+      <el-button @click="add" type="primary">确定</el-button>
+    </template>
+  </el-dialog>
+</template>
+
+<script>
+  import { addGZJL, addgfwryzjl } from '@/api/fwgl/zzxx'
+  export default {
+    name: 'SummanyInfo',
+    components: {},
+    inheritAttrs: false,
+    props: ['gzjltype'],
+    data() {
+      return {
+        formData: {
+          entercoed: undefined,
+          entername: undefined,
+          content: undefined,
+        },
+        footer: true,
+        rules: {
+          entercoed: [
+            {
+              required: true,
+              message: '请输入进场纪要编号',
+              trigger: 'blur',
+            },
+          ],
+          entername: [
+            {
+              required: true,
+              message: '请输入进场纪要名称',
+              trigger: 'blur',
+            },
+          ],
+          content: [
+            {
+              required: true,
+              message: '请输入编辑器',
+              trigger: 'blur',
+            },
+          ],
+        },
+        dialogFormVisible: false,
+        title: '新增',
+        allDisabled: false,
+      }
+    },
+    computed: {},
+    watch: {},
+    created() {},
+    mounted() {},
+    methods: {
+      /**
+       * @description: 外部打开dialog
+       * @param {*} title 表单类型
+       * @param {*} row 行数据
+       * @return {*}
+       */      
+      showEdit(title, row) {
+        this.dialogFormVisible = true
+        if (row) {
+          this.formData = Object.assign({}, row)
+        }
+        if (title == 'edit') {
+          this.title = '编辑'
+        } else if (title == 'detail') {
+          this.title = '详细'
+          this.footer = false
+          this.allDisabled = true
+        } else {
+          this.title = '新增'
+          this.formData = this.$options.data().formData
+        }
+      },
+      /**
+       * @description: 关闭弹窗并清理缓存数据
+       * @return {*}
+       */      
+      close() {
+        this.formData = {}
+        this.dialogFormVisible = false
+        this.allDisabled = false
+        this.footer = true
+      },
+      /**
+       * @description: 保存表单
+       * @return {*}
+       */      
+      add() {
+        if (this.gzjltype == '1') {
+          addGZJL(this.formData).then((res) => {
+            if (res.msg == '成功') {
+              this.dialogFormVisible = false
+              this.$emit('addList', res.data)
+            }
+          })
+        } else {
+          addgfwryzjl(this.formData).then((res) => {
+            if (res.msg == '成功') {
+              this.dialogFormVisible = false
+              this.$emit('addList', res.data)
+            }
+          })
+        }
+      },
+    },
+  }
+</script>
+<style scoped>
+  .el-form-item__content span {
+    font-size: 14px;
+    font-weight: 500;
+    color: darkgray;
+  }
+</style>

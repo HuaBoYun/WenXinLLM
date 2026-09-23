@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全球司库API测试</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .test-button { padding: 8px 16px; margin: 5px; background: #409EFF; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .test-button:hover { background: #66b1ff; }
+        .result { margin-top: 10px; padding: 10px; background: #f5f5f5; border-radius: 4px; white-space: pre-wrap; }
+        .error { background: #fef0f0; color: #f56c6c; }
+        .success { background: #f0f9ff; color: #67c23a; }
+    </style>
+</head>
+<body>
+    <h1>全球司库API测试工具</h1>
+    
+    <div class="test-section">
+        <h3>1. 测试数据映射配置API</h3>
+        <button class="test-button" onclick="testDataMappingList()">测试获取数据映射列表</button>
+        <div id="dataMappingResult" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>2. 测试业务系统注册API</h3>
+        <button class="test-button" onclick="testBusinessSystemList()">测试获取业务系统列表</button>
+        <div id="businessSystemResult" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>3. 测试网络连接</h3>
+        <button class="test-button" onclick="testConnection()">测试后端连接</button>
+        <div id="connectionResult" class="result"></div>
+    </div>
+
+    <script>
+        // 模拟transData函数
+        function transData(data) {
+            const token = localStorage.getItem('token') || 'test-token';
+            return {
+                ...data,
+                token: token
+            };
+        }
+
+        // 测试数据映射配置API
+        async function testDataMappingList() {
+            const resultDiv = document.getElementById('dataMappingResult');
+            resultDiv.textContent = '正在测试...';
+            
+            try {
+                const params = new URLSearchParams(transData({
+                    pageNum: 1,
+                    pageSize: 10
+                }));
+                
+                const response = await fetch(`http://127.0.0.1:8683/api-auth/treasury-common/data-mapping/list?${params}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                resultDiv.className = 'result success';
+                resultDiv.textContent = `✅ 请求成功!\n状态码: ${response.status}\n响应数据: ${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ 请求失败!\n错误信息: ${error.message}\n错误详情: ${error.stack}`;
+            }
+        }
+
+        // 测试业务系统注册API
+        async function testBusinessSystemList() {
+            const resultDiv = document.getElementById('businessSystemResult');
+            resultDiv.textContent = '正在测试...';
+            
+            try {
+                const params = new URLSearchParams(transData({
+                    pageNum: 1,
+                    pageSize: 10
+                }));
+                
+                const response = await fetch(`http://127.0.0.1:8683/api-auth/treasury-common/business-system/list?${params}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                resultDiv.className = 'result success';
+                resultDiv.textContent = `✅ 请求成功!\n状态码: ${response.status}\n响应数据: ${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ 请求失败!\n错误信息: ${error.message}\n错误详情: ${error.stack}`;
+            }
+        }
+
+        // 测试后端连接
+        async function testConnection() {
+            const resultDiv = document.getElementById('connectionResult');
+            resultDiv.textContent = '正在测试...';
+            
+            try {
+                const response = await fetch('http://127.0.0.1:8683/api-auth/weekly/remind', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(transData({
+                        belongGroup: 0,
+                        creator: 0,
+                        workUnit: 0
+                    }))
+                });
+                
+                const data = await response.json();
+                resultDiv.className = 'result success';
+                resultDiv.textContent = `✅ 后端连接正常!\n状态码: ${response.status}\n响应数据: ${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ 后端连接失败!\n错误信息: ${error.message}\n错误详情: ${error.stack}`;
+            }
+        }
+
+        // 页面加载时显示当前token
+        window.onload = function() {
+            const token = localStorage.getItem('token');
+            console.log('当前token:', token);
+            if (!token) {
+                alert('警告：未找到token，请先登录系统');
+            }
+        };
+    </script>
+</body>
+</html>

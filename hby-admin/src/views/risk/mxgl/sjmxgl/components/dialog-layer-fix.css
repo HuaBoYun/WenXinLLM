@@ -1,0 +1,257 @@
+/* 🔥 对话框层级修复样式 - 解决弹出组件层级问题 */
+/* ⚠️ 作用域限制：只影响数据模型管理模块的对话框组件 */
+
+/* 🔒 作用域容器：限制样式影响范围 */
+.sjmxgl-dialog-scope {
+  /* 作用域标识，确保样式只在特定组件内生效 */
+}
+
+/* 基础流程图对话框层级 - 禁用遮罩层避免黑屏 */
+.sjmxgl-dialog-scope .flow-view-dialog {
+  z-index: 2500 !important;
+}
+
+.sjmxgl-dialog-scope .flow-view-dialog .el-dialog__wrapper {
+  z-index: 2500 !important;
+  background: rgba(0, 0, 0, 0.3) !important; /* 🔥 使用半透明背景 */
+}
+
+.sjmxgl-dialog-scope .flow-view-dialog .el-dialog {
+  z-index: 2501 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important; /* 🔥 添加阴影确保可见性 */
+}
+
+/* 🔥 新增：指标组合分析对话框层级 */
+.sjmxgl-dialog-scope .indicator-combination-dialog {
+  z-index: 2400 !important;
+}
+
+.sjmxgl-dialog-scope .indicator-combination-dialog .el-dialog__wrapper {
+  z-index: 2400 !important;
+}
+
+.sjmxgl-dialog-scope .indicator-combination-dialog .el-dialog {
+  z-index: 2401 !important;
+}
+
+/* 流程图内的节点结果对话框 */
+.sjmxgl-dialog-scope .node-result-dialog {
+  z-index: 9500 !important;
+}
+
+.sjmxgl-dialog-scope .node-result-dialog-wrapper {
+  z-index: 9500 !important;
+}
+
+.sjmxgl-dialog-scope .node-result-dialog-wrapper .el-dialog {
+  z-index: 9501 !important;
+}
+
+/* 🔥 指标执行结果对话框 - 最高层级 */
+.sjmxgl-dialog-scope .indicator-result-dialog {
+  z-index: 9600 !important;
+}
+
+.sjmxgl-dialog-scope .indicator-result-dialog-wrapper {
+  z-index: 9600 !important;
+}
+
+.sjmxgl-dialog-scope .indicator-result-dialog-wrapper .el-dialog {
+  z-index: 9601 !important;
+}
+
+/* 汇聚结果对话框 */
+.sjmxgl-dialog-scope .merge-result-dialog-wrapper {
+  z-index: 3600 !important;
+}
+
+.sjmxgl-dialog-scope .merge-result-dialog-wrapper .el-dialog {
+  z-index: 3601 !important;
+}
+
+/* 遮罩层层级管理 */
+.sjmxgl-dialog-scope .indicator-combination-dialog .v-modal {
+  z-index: 2399 !important;
+}
+
+.sjmxgl-dialog-scope .flow-view-dialog .v-modal {
+  z-index: 2499 !important;
+}
+
+.sjmxgl-dialog-scope .node-result-dialog-wrapper .v-modal {
+  z-index: 9499 !important;
+}
+
+.sjmxgl-dialog-scope .indicator-result-dialog-wrapper .v-modal {
+  z-index: 9599 !important;
+}
+
+.sjmxgl-dialog-scope .merge-result-dialog-wrapper .v-modal {
+  z-index: 3599 !important;
+}
+
+/* 🔥 新增：防止遮罩层重叠和残留 - 限制作用域 */
+.sjmxgl-dialog-scope .v-modal {
+  transition: opacity 0.3s ease !important;
+}
+
+.sjmxgl-dialog-scope .v-modal[style*="display: none"] {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* 🔥 新增：确保对话框关闭时遮罩层也被移除 - 限制作用域 */
+.sjmxgl-dialog-scope .el-dialog__wrapper[style*="display: none"] + .v-modal {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* 🔒 移除全局强制覆盖，改为作用域限制 */
+.sjmxgl-dialog-scope .flow-view-dialog .el-dialog__wrapper {
+  z-index: 2500 !important;
+}
+
+.sjmxgl-dialog-scope .node-result-dialog-wrapper .el-dialog__wrapper {
+  z-index: 9500 !important;
+}
+
+.sjmxgl-dialog-scope .indicator-result-dialog-wrapper .el-dialog__wrapper {
+  z-index: 9600 !important;
+}
+
+.sjmxgl-dialog-scope .merge-result-dialog-wrapper .el-dialog__wrapper {
+  z-index: 3600 !important;
+}
+
+/* 确保 Mermaid 流程图不会覆盖对话框 - 限制作用域 */
+.sjmxgl-dialog-scope .mermaid-container {
+  z-index: 1 !important;
+  position: relative;
+}
+
+.sjmxgl-dialog-scope .mermaid-graph {
+  z-index: 1 !important;
+  position: relative;
+}
+
+.sjmxgl-dialog-scope .mermaid-container svg {
+  z-index: 1 !important;
+  position: relative;
+}
+
+/* 流程图工具栏确保不会覆盖对话框 - 限制作用域 */
+.sjmxgl-dialog-scope .toolbar {
+  z-index: 10 !important;
+  position: relative;
+}
+
+/* 🔒 移除全局对话框层级排序，改为作用域限制 */
+.sjmxgl-dialog-scope .el-dialog__wrapper[style*="z-index: 2500"] {
+  z-index: 2500 !important;
+}
+
+.sjmxgl-dialog-scope .el-dialog__wrapper[style*="z-index: 9500"] {
+  z-index: 9500 !important;
+}
+
+.sjmxgl-dialog-scope .el-dialog__wrapper[style*="z-index: 9600"] {
+  z-index: 9600 !important;
+}
+
+/* 🔒 移除全局body样式，改为组件内管理 */
+.sjmxgl-dialog-scope.el-popup-parent--hidden {
+  overflow: hidden !important;
+}
+
+/* 🔒 确保最新打开的对话框在最上层 - 限制作用域 */
+.sjmxgl-dialog-scope .el-dialog__wrapper:last-of-type {
+  z-index: 9700 !important;
+}
+
+.sjmxgl-dialog-scope .el-dialog__wrapper:last-of-type .el-dialog {
+  z-index: 9701 !important;
+}
+
+.sjmxgl-dialog-scope .el-dialog__wrapper:last-of-type .v-modal {
+  z-index: 9699 !important;
+}
+
+/* 🔒 修复可能的遮罩层重叠问题 - 限制作用域 */
+.sjmxgl-dialog-scope .v-modal {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+/* 🔒 确保对话框内容可以正常交互 - 限制作用域 */
+.sjmxgl-dialog-scope .el-dialog {
+  pointer-events: auto !important;
+}
+
+.sjmxgl-dialog-scope .el-dialog__body {
+  pointer-events: auto !important;
+}
+
+/* 🔒 防止流程图 SVG 元素干扰对话框 - 限制作用域 */
+.sjmxgl-dialog-scope .flow-display svg {
+  pointer-events: auto;
+  z-index: 1 !important;
+}
+
+.sjmxgl-dialog-scope .flow-display svg * {
+  pointer-events: auto;
+}
+
+/* 🔒 确保节点点击事件正常工作 - 限制作用域 */
+.sjmxgl-dialog-scope .flow-display svg g.node {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+
+.sjmxgl-dialog-scope .flow-display svg g[class*="node"] {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+
+/* 🔒 新增：遮罩层清理样式 - 限制作用域 */
+.sjmxgl-dialog-scope .modal-cleanup {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* 🔒 新增：确保页面在对话框关闭后可以正常交互 - 限制作用域 */
+.sjmxgl-dialog-scope.dialog-cleanup {
+  overflow: auto !important;
+  padding-right: 0 !important;
+}
+
+.sjmxgl-dialog-scope.dialog-cleanup .el-popup-parent--hidden {
+  overflow: auto !important;
+}
+
+/* 🔒 新增：防止多个遮罩层叠加 - 限制作用域 */
+.sjmxgl-dialog-scope .v-modal + .v-modal {
+  display: none !important;
+}
+
+/* 🔒 新增：确保最后一个对话框的遮罩层在正确位置 - 限制作用域 */
+.sjmxgl-dialog-scope .el-dialog__wrapper:last-of-type .v-modal {
+  z-index: 9699 !important;
+}
+
+/* 调试用样式 - 可以在开发时启用 */
+/*
+.el-dialog__wrapper {
+  border: 2px solid red !important;
+}
+
+.el-dialog {
+  border: 2px solid blue !important;
+}
+
+.v-modal {
+  border: 2px solid green !important;
+}
+*/

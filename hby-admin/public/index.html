@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="IE=edge" http-equiv="X-UA-Compatible" />
+    <meta content="webkit" name="renderer" />
+    <meta
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+      name="viewport"
+    />
+    <link href="<%= BASE_URL %>favicon.ico" rel="icon" />
+    <title><%= VUE_APP_TITLE %></title>
+    <meta content="数字风控" name="keywords" />
+    <meta content="<%= VUE_APP_AUTHOR %>" name="author" />
+    <link href="<%= BASE_URL %>static/css/loading.css" rel="stylesheet" />
+  </head>
+  <body>
+    <noscript></noscript>
+    <div id="app">
+      <div class="first-loading-wrp">
+        <div class="loading-wrp">
+          <span class="dot dot-spin">
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+          </span>
+        </div>
+        <h1>&nbsp;</h1>
+        <!-- <h1><%= VUE_APP_TITLE %></h1> -->
+      </div>
+    </div>
+    <script src="https://res.wx.qq.com/connect/zh_CN/htmledition/js/wxLogin.js"></script>
+    <!-- 引入 CryptoJS -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script> -->
+    <!-- <script src="https://unpkg.com/vconsole@latest/dist/vconsole.min.js"></script>
+    <script>
+      const clientWidth = document.body.clientWidth
+      if (clientWidth <= 768) {
+        console.warn('is phone size')
+        var vConsole = new window.VConsole()
+        console.warn('VConsole start~~')
+      }
+    </script> -->
+  </body>
+</html>

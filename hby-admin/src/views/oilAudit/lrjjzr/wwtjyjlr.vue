@@ -1,0 +1,581 @@
+<template>
+  <!-- 未委托及预计离任 -->
+  <div class="system-log-container">
+    <vab-query-form>
+      <el-card shadow="never">
+        <vab-query-form-left-panel :span="24">
+          <el-form
+            ref="form"
+            checkable
+            :inline="true"
+            label-width="0"
+            :model="queryForm"
+            @submit.native.prevent
+          >
+            <el-form-item v-for="(item, index) in searchItem" :key="index">
+              <el-input
+                v-model="queryForm.projectName"
+                clearable
+                placeholder="项目名称"
+                style="width: 140px; margin-right: 20px"
+                v-if="item.name === '项目名称'"
+              ></el-input>
+            </el-form-item>
+            <el-form-item>
+              <el-button
+                icon="el-icon-search"
+                native-type="submit"
+                type="primary"
+                @click="fetchData"
+              >
+                查询
+              </el-button>
+            </el-form-item>
+            <el-form-item>
+              <el-button @click="resetSearch()" type="primary">重置</el-button>
+            </el-form-item>
+            <el-form-item>
+              <el-tooltip
+                class="item"
+                effect="dark"
+                content="搜索筛选"
+                placement="top"
+              >
+                <el-popover placement="left" trigger="click">
+                  <filter-search
+                    v-if="true"
+                    :list="searchAll"
+                    :name="localKey"
+                    @updateSearchShow="initSearch"
+                  />
+                  <el-button slot="reference" style="height: 32px">
+                    <vab-icon icon="filter" :is-custom-svg="true" />
+                  </el-button>
+                </el-popover>
+              </el-tooltip>
+            </el-form-item>
+            <el-form-item>
+              <span
+                :class="searchMore ? 'search-more is-opened' : 'search-more'"
+                @click="showMore"
+              >
+                <span>{{ searchMore ? '收起' : '展开' }}</span>
+                <i class="el-icon-arrow-down"></i>
+              </span>
+            </el-form-item>
+          </el-form>
+        </vab-query-form-left-panel>
+      </el-card>
+    </vab-query-form>
+
+    <!-- 表格项筛选 -->
+    <el-card shadow="never" class="secondCard">
+      <vab-query-form-right-panel :span="24">
+        <el-tooltip
+          class="item"
+          effect="dark"
+          content="表格筛选"
+          placement="top"
+        >
+          <el-popover placement="right" trigger="click">
+            <filter-table
+              :list="filedAll"
+              :name="tableKey"
+              @updateTableShow="initTable"
+            />
+            <!-- <i class="el-icon-delete" slot="reference"></i> -->
+            <el-button
+              slot="reference"
+              icon="el-icon-s-grid"
+              class="biaoge"
+              style="margin-bottom: 10px; margin-right: 10px"
+            ></el-button>
+          </el-popover>
+        </el-tooltip>
+        <el-button type="success" @click="handleAdd">新建</el-button>
+        <el-upload
+          class="upload-demo"
+          :show-file-list="false"
+          :action="baseApi + api"
+          :headers="headers"
+          :on-success="handleSuccess"
+        >
+          <el-button type="success">导入</el-button>
+        </el-upload>
+        <el-button type="success" @click="handleExport()">导出</el-button>
+        <el-button type="success" @click="hadnlePush">下发</el-button>
+      </vab-query-form-right-panel>
+
+      <!-- 列表 -->
+      <el-table
+        v-loading="listLoading"
+        :data="list"
+        @select-all="handleSelectAll"
+        @select="handleSelection"
+        ref="multipleTable"
+      >
+        <el-table-column
+          width="48"
+          type="selection"
+          :reserve-selection="true"
+        ></el-table-column>
+        <el-table-column align="center" label="序号" prop="id" width="100">
+          <template #default="{ row }">
+            <el-button type="text" @click="handleDetail(row)">
+              {{ row.id }}
+            </el-button>
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="单位">
+          <template #default="{ row }">
+            {{ row.tblOrganization?.orgname }}
+          </template>
+        </el-table-column>
+        <el-table-column
+          align="center"
+          label="预计退二线时间"
+          prop="retireTime"
+        />
+        <el-table-column label="上次审计情况" align="center">
+          <div v-for="(item, index) in filedAll" :key="index">
+            <el-table-column
+              align="center"
+              label="审计时间"
+              prop="auditTime"
+              v-if="item.name === '审计时间'"
+            ></el-table-column>
+            <el-table-column
+              align="center"
+              label="项目名称"
+              prop="projectName"
+              v-if="item.name === '项目名称'"
+            />
+            <el-table-column
+              align="center"
+              label="任职时间(审计范围)"
+              prop="workTime"
+              width="200"
+              v-if="item.name === '任职时间(审计范围)'"
+            ></el-table-column>
+            <el-table-column
+              align="center"
+              label="审计实施时间"
+              prop="doAuditTime"
+              v-if="item.name === '审计实施时间'"
+            ></el-table-column>
+            <el-table-column
+              align="center"
+              label="组长"
+              prop="teamLeaderName"
+              v-if="item.name === '组长'"
+            ></el-table-column>
+            <el-table-column
+              align="center"
+              label="牵头人"
+              prop="leaderName"
+              v-if="item.name === '牵头人'"
+            ></el-table-column>
+            <el-table-column
+              align="center"
+              label="主审"
+              prop="chiefReviewerName"
+              v-if="item.name === '主审'"
+            ></el-table-column>
+            <el-table-column
+              align="center"
+              label="助审"
+              prop="deputyReviewerName"
+              v-if="item.name === '助审'"
+            ></el-table-column>
+          </div>
+        </el-table-column>
+        <el-table-column align="center" label="操作" width="120">
+          <template #default="{ row }">
+            <el-button type="text" @click="handleEdit(row)">修改</el-button>
+            <el-button type="text" @click.native="handleDelete(row)">
+              删除
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-card>
+    <WWTJYJLRview ref="edit" @fetchData="fetchData"></WWTJYJLRview>
+    <el-pagination
+      class="pagination"
+      background
+      :current-page="queryForm.pageNumber"
+      :layout="layout"
+      :page-size="queryForm.pageSize"
+      :total="total"
+      @current-change="handleCurrentChange"
+      @size-change="handleSizeChange"
+    />
+    <lxjybSelectModal @projectManage="getChildlistPro" ref="person" />
+    <ProcessList ref="process" @fetchData="fetchData" />
+    <WfqdDeal ref="wfqddeal" />
+  </div>
+</template>
+
+<script>
+  import {
+    wwtjyjlrList,
+    wwtjyjlrDelete,
+    wwtjyjlrExportList,
+    wwtjyjlrXf,
+  } from '@/oapi/audit/plan'
+  import WWTJYJLRview from './components/wwtjyjlrView.vue'
+  import filterSearch from '@/components/filterSearch.vue'
+  import filterTable from '@/components/filterTable.vue'
+  import wwtjyjlrSelectModal from './components/wwtjyjlrSelectModal'
+  import { baseURL } from '@/config'
+  import store from '@/store'
+  const token = store.getters['user/token']
+  import ProcessList from '@/views/contract/contractManage/components/ProcessList.vue'
+  import WfqdDeal from '@/views/msg/components/options/WfqdDeal'
+  import { xiafaListNew } from '@/oapi/audit/preparation'
+  import lxjybSelectModal from '@/components/selectPerson'
+  import { getFlowPkInfo } from '@/api/contract/manage'
+  export default {
+    components: {
+      WWTJYJLRview,
+      filterTable,
+      filterSearch,
+      lxjybSelectModal,
+      ProcessList,
+      WfqdDeal,
+    },
+    data() {
+      return {
+        baseApi: baseURL,
+        api: '/oiaudit/plan/leave/expect/import',
+        headers: { token },
+        select: [],
+        list: [],
+        listLoading: true,
+        layout: 'total, sizes, prev, pager, next, jumper',
+        total: 0,
+        queryForm: {
+          projectName: '',
+          pageNumber: 1,
+          pageSize: 20,
+        },
+        filedAll: [
+          { name: '审计时间' },
+          { name: '项目名称' },
+          { name: '任职时间(审计范围)' },
+          { name: '审计实施时间' },
+          { name: '组长' },
+          { name: '牵头人' },
+          { name: '主审' },
+          { name: '助审' },
+        ], //所有表格项
+        filedNow: [],
+        searchAll: this.getFiled(), //所有搜索项
+        localKey: 'oilAudit-lrjjzr-wwtjyjlr-search',
+        tableKey: 'oilAudit-lrjjzr-wwtjyjlr-list',
+        searchNow: [], //当前所有搜索项
+        searchItem: [], //可见搜索项
+        searchMore: true,
+      }
+    },
+    created() {
+      this.fetchData()
+      this.initTable() //初始化表格
+      this.searchNow = this.getFiled()
+      this.searchItem = this.searchNow.slice(0, 4)
+      this.initSearch()
+    },
+    methods: {
+      handleSuccess(response) {
+        if (response.data == '200') {
+          this.fetchData()
+          this.$baseMessage('导入成功', 'success')
+        } else {
+          this.$baseMessage(response.msg, 'error')
+        }
+      },
+      hadnlePush() {
+        if (this.select && this.select.length > 0) {
+          this.$refs.person.showEdit()
+        } else {
+          this.$baseMessage(
+            '请选择需要下发的数据',
+            'error',
+            'vab-hey-message-error'
+          )
+        }
+      },
+
+      async handleExport() {
+        const ids = this.select.map((res) => res.id)
+        const data = await wwtjyjlrExportList({
+          ...this.queryForm,
+          ids: ids.join(),
+        })
+        let fileName = '未委托及预计离任表'
+        let blob = new Blob([data], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        })
+        if (window.navigator.msSaveOrOpenBlob) {
+          navigator.msSaveBlob(blob, fileName)
+        } else {
+          let link = document.createElement('a')
+          link.href = window.URL.createObjectURL(blob)
+          link.download = fileName
+          link.click()
+          // 释放内存
+          window.URL.revokeObjectURL(link.href)
+        }
+      },
+      // 定义表单所有项
+      getFiled() {
+        let fields = [{ name: '项目名称', key: 'projectName' }]
+        return fields
+      },
+      initSearch() {
+        let self = this
+        this.$nextTick(function () {
+          let data = localStorage.getItem(self.localKey)
+          if (data) {
+            data = JSON.parse(data)
+            let tempArr = []
+            for (let i = 0; i < data.length; i++) {
+              if (data[i].show) {
+                tempArr.push(data[i])
+              }
+            }
+            this.searchNow = tempArr
+          } else {
+            this.searchNow = this.searchAll
+          }
+
+          // 重置非展示搜索项
+          this.searchAll.forEach((x) => {
+            if (!this.searchNow.some((y) => y.key === x.key)) {
+              if (Array.isArray(this.queryForm[x.key])) {
+                this.queryForm[x.key] = []
+              } else if (this.queryForm[x.key] instanceof Object) {
+                this.queryForm[x.key] = {}
+              } else {
+                this.queryForm[x.key] = null
+              }
+            }
+          })
+          if (this.searchMore) {
+            this.searchItem = this.searchNow
+          } else {
+            this.searchItem = this.searchNow.slice(0, 4)
+          }
+        })
+      },
+      showMore() {
+        this.searchMore = !this.searchMore
+
+        if (this.searchMore) {
+          this.searchItem = this.searchNow
+        } else {
+          this.searchItem = this.searchNow.slice(0, 4)
+        }
+      },
+
+      // 动态表格开始
+      initTable() {
+        this.loading = true
+        let self = this
+        this.$nextTick(function () {
+          let data = localStorage.getItem(self.tableKey)
+          if (data) {
+            data = JSON.parse(data)
+            let tempArr = []
+            for (let i = 0; i < data.length; i++) {
+              if (data[i].show) {
+                tempArr.push(data[i])
+              }
+            }
+            this.filedNow = tempArr
+          } else {
+            this.filedNow = this.filedAll
+          }
+          this.loading = false
+        })
+      },
+      handleSizeChange(val) {
+        this.queryForm.pageSize = val
+        this.fetchData()
+      },
+      handleCurrentChange(val) {
+        this.queryForm.pageNumber = val
+        this.fetchData()
+      },
+      queryData() {
+        this.queryForm.pageNumber = 1
+        this.fetchData()
+      },
+      async fetchData() {
+        this.listLoading = true
+        const {
+          data: { tlist, totalRecord },
+          code,
+        } = await wwtjyjlrList(this.queryForm)
+        if (code === 1) {
+          this.list = tlist.map((item) => {
+            // 每个赋值，为了避免某字段不存在造成阻塞导致新增修改的无法点击
+            return {
+              ...item,
+              projectName: item.projectName || '',
+              retireTime: item.retireTime || '',
+              auditTime: item.auditTime || '',
+              workTime: item.workStartTime + '~' + item.workEndTime,
+              // doAuditTime: item. || '',
+              teamLeader: item.teamLeader ? item.teamLeader.realname : '',
+              leader: item.leader ? item.leader.realname : '',
+              chiefReviewer: item.chiefReviewer
+                ? item.chiefReviewer.realname
+                : '',
+              deputyReviewer: item.deputyReviewer
+                ? item.deputyReviewer.realname
+                : '',
+            }
+          })
+          this.total = totalRecord || 0
+        }
+        this.listLoading = false
+        this.setCheckedRows()
+      },
+      handleDetail(row) {
+        this.$refs['edit'].showEdit(row, true)
+      },
+      handleEdit(row) {
+        this.$refs['edit'].showEdit(row, false)
+      },
+      handleAdd() {
+        this.$refs['edit'].showEdit(null)
+      },
+      handleDelete(row) {
+        this.$baseConfirm('你确定要删除当前项吗', null, async () => {
+          const res = await wwtjyjlrDelete({ ids: row.id })
+          if (res.code == 1) {
+            this.$baseMessage('成功', 'success', 'vab-hey-message-success')
+            await this.fetchData()
+          }
+        })
+      },
+      resetSearch() {
+        this.resetQueryForm()
+      },
+      resetQueryForm() {
+        this.queryForm = {
+          projectName: '',
+          createType: 1,
+          pageNumber: 1,
+          pageSize: 20,
+        }
+        this.fetchData()
+      },
+      async handleDeal(row) {
+        console.log('🚀 ~ handleDeal ~ row:', row)
+        const res = await getFlowPkInfo({
+          formId: row.id,
+          tableId: 115,
+        })
+
+        this.$refs.wfqddeal.show(res.data, false)
+      },
+      handleSubmit(row) {
+        this.$baseConfirm('你确定要提交审批当前项吗', null, async () => {
+          this.$refs['process'].save(115, row.id)
+        })
+      },
+      async getChildlistPro(val) {
+        const ids = this.select.map((res) => res.id)
+        const titles = this.select.map((res) => res.projectName)
+        const names = val.map((res) => res.staffid)
+
+        const arr = []
+        for (let i = 0; i < this.select.length; i++) {
+          for (let k = 0; k < names.length; k++) {
+            arr.push({
+              formId: ids[i],
+              distributionTitle: titles[i],
+              isread: 0,
+              reciver: names[k],
+              moduleType: 'yqns',
+            })
+          }
+        }
+        //下发保存
+        wwtjyjlrXf({
+          ids: ids.toString(),
+          personIds: names.toString(),
+        })
+        //下发通知
+        xiafaListNew({
+          tableId: '1495',
+          jsondistribution: JSON.stringify([...arr]),
+        }).then((res) => {
+          if (res.msg == '成功') {
+            this.$baseMessage(res.msg, 'success')
+            this.fetchData()
+            this.select = []
+          }
+        })
+      },
+      handleSelection(val, row) {
+        const i = this.select.findIndex((x) => x.id == row.id)
+        if (i < 0) {
+          this.select.push(row)
+        } else {
+          this.select.splice(i, 1)
+        }
+      },
+      handleSelectAll(val) {
+        const curSelected = val.filter((x) => !!x)
+        if (curSelected && curSelected.length) {
+          curSelected.map((row) => {
+            if (row && !this.select.some((x) => x.id == row.id)) {
+              this.select.push(row)
+            }
+          })
+        } else {
+          this.list.map((row) => {
+            const i = this.select.findIndex((x) => x.id == row.id)
+            if (i >= 0) {
+              this.select.splice(i, 1)
+            }
+          })
+        }
+      },
+
+      // 翻页的时候回显已勾选的数据
+      setCheckedRows() {
+        this.$nextTick(() => {
+          this.select.forEach((row) => {
+            this.$refs.multipleTable.toggleRowSelection(
+              this.list.find((item) => {
+                return row.id == item.id
+              }),
+              true
+            )
+          })
+        })
+      },
+    },
+  }
+</script>
+
+<style scoped lang="scss">
+  .system-log-container {
+    background: #f6f8f9 !important;
+    padding: 0 !important;
+  }
+  .secondCard {
+    margin-top: -5px !important;
+  }
+  .pagination {
+    margin-bottom: 20px !important;
+  }
+  .upload-demo {
+    display: inline-block;
+    margin: 0 10px;
+  }
+</style>

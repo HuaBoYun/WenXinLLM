@@ -1,0 +1,213 @@
+<!--
+ * @Date: 2022-04-24 17:56:43
+ * @LastEditors: zengping.liu
+ * @LastEditTime: 2022-04-24 18:20:57
+ * @FilePath: /hb-admin/src/views/contract/opposite/components/MaintainDetailContent.vue
+-->
+<template>
+  <el-row :gutter="15">
+    <el-form ref="form" label-width="125px" :model="formData" size="medium">
+      <el-col :span="12">
+        <el-form-item label="相对方编号" prop="counterpartno">
+          {{ formData.counterpartno }}
+        </el-form-item>
+      </el-col>
+      <el-col :span="12">
+        <el-form-item label="相对方名称" prop="budgetname">
+          {{ formData.budgetname }}
+        </el-form-item>
+      </el-col>
+      <!-- <el-col :span="12">
+        <el-form-item label="第三方编号" prop="othermoney">
+          {{ formData.othermoney }}
+        </el-form-item>
+      </el-col>
+      <el-col :span="12">
+        <el-form-item label="所属行业" prop="financemoney">
+          {{ formData.financemoney }}
+        </el-form-item>
+      </el-col>
+      <el-col :span="12">
+        <el-form-item label="相对方类型" prop="counterparttypeparttype">
+          {{ formData.counterparttype }}
+        </el-form-item>
+      </el-col>
+      <el-col :span="12">
+        <el-form-item label="相对方性质" prop="oppositenature">
+          {{ formData.oppositenature }}
+        </el-form-item>
+      </el-col> -->
+      <el-col :span="12">
+        <el-form-item label="证件类型" prop="projectrisk">
+          {{ formData.projectrisk }}
+        </el-form-item>
+      </el-col>
+      <el-col :span="12">
+        <el-form-item label="证件编号" prop="cretificateno">
+          {{ formData.cretificateno }}
+        </el-form-item>
+      </el-col>
+      <!-- <el-col :span="12">
+        <el-form-item label="证件有效期">
+          {{ formData.pstartdate }} 至 {{ formData.penddate }}
+        </el-form-item>
+      </el-col> -->
+      <el-col :span="12">
+        <el-form-item label="内部单位" prop="servicetype">
+          {{ formData.servicetype }}
+        </el-form-item>
+      </el-col>
+      <el-col :span="12">
+        <el-form-item label="注册资本" prop="totaltmoney">
+          {{ formData.totaltmoney }}
+        </el-form-item>
+      </el-col>
+      <el-col :span="12">
+        <el-form-item label="法定代表人" prop="projectstagegoal">
+          {{ formData.projectstagegoal }}
+        </el-form-item>
+      </el-col>
+      <el-col :span="12">
+        <el-form-item label="企业状态" prop="resultdescription">
+          {{ formData.resultdescription }}
+        </el-form-item>
+      </el-col>
+      <!-- <el-col :span="12">
+        <el-form-item label="邮编" prop="counterpartcode">
+          {{ formData.counterpartcode }}
+        </el-form-item>
+      </el-col>
+      <el-col :span="12">
+        <el-form-item label="网址" prop="counterpartnetaddress">
+          {{ formData.counterpartnetaddress }}
+        </el-form-item>
+      </el-col>
+      <el-col :span="12">
+        <el-form-item label="负责人" prop="director">
+          {{ formData.director }}
+        </el-form-item>
+      </el-col>
+      <el-col :span="12">
+        <el-form-item label="负责人联系电话" prop="counterpartphone">
+          {{ formData.counterpartphone }}
+        </el-form-item>
+      </el-col>
+      <el-col :span="24">
+        <el-form-item label="地址" prop="counterpartaddress">
+          {{ formData.counterpartaddress }}
+        </el-form-item>
+      </el-col> -->
+      <!-- <el-col :span="12">
+        <el-form-item label="纳税人识别号" prop="resultdescription">
+          {{ formData.resultdescription }}
+        </el-form-item>
+      </el-col> -->
+      <el-col :span="12">
+        <el-form-item label="证件有效期类型" prop="cerType">
+          {{ formData.cerType == 0 ? '短期' : '长期' }}
+        </el-form-item>
+      </el-col>
+      <el-col :span="12">
+        <el-form-item label="有效期开始时间">
+          {{ formData.pstartdateStr }}
+        </el-form-item>
+      </el-col>
+      <el-col :span="12" v-if="formData.cerType == 0">
+        <el-form-item label="有效期结束时间">
+          {{ formData.penddateStr }}
+        </el-form-item>
+      </el-col>
+
+      <el-col :span="24">
+        <el-form-item label="备注" prop="counterpartdesc">
+          {{ formData.counterpartdesc }}
+        </el-form-item>
+      </el-col>
+      <el-col :span="12">
+        <el-form-item label="创建人" prop="staffid">
+          {{ formData.staffid }}
+        </el-form-item>
+      </el-col>
+      <el-col :span="12">
+        <el-form-item label="创建日期" prop="date">
+          {{ formData.date }}
+        </el-form-item>
+      </el-col>
+      <el-col :span="24">
+        <el-divider>联系人信息</el-divider>
+      </el-col>
+      <el-col :span="12">
+        <el-form-item label="联系人" prop="contacts">
+          {{ formData.contacts }}
+        </el-form-item>
+      </el-col>
+      <!--   <el-col :span="12">
+        <el-form-item label="联系人电话" prop="contactsphone">
+          {{ formData.contactsphone }}
+        </el-form-item>
+      </el-col>
+      <el-col :span="12">
+        <el-form-item label="联系人地址" prop="contactsadress">
+          {{ formData.contactsadress }}
+        </el-form-item>
+      </el-col>
+      <el-col :span="12">
+        <el-form-item label="电子邮箱" prop="contactsemail">
+          {{ formData.contactsemail }}
+        </el-form-item>
+      </el-col>
+      <el-col :span="12">
+        <el-form-item label="岗位" prop="station">
+          {{ formData.station }}
+        </el-form-item>
+      </el-col>
+      <el-col :span="12">
+        <el-form-item label="称呼" prop="callname">
+          {{ formData.callname }}
+        </el-form-item>
+      </el-col>
+      <el-col :span="24">
+        <el-form-item label="备注" prop="remarks">
+          {{ formData.remarks }}
+        </el-form-item>
+      </el-col> -->
+      <el-col :span="24">
+        <el-divider>银行账户</el-divider>
+        <Bank :opposite="current" :readonly="true" />
+      </el-col>
+      <el-col :span="24">
+        <el-divider>资质信息</el-divider>
+        <AttachList :att-list="formData.attList" :readonly="true" />
+      </el-col>
+    </el-form>
+  </el-row>
+</template>
+
+<script>
+  import AttachList from './AttachList.vue'
+  import Bank from './Bank.vue'
+  export default {
+    components: { AttachList, Bank },
+    props: {
+      formData: {
+        type: Object,
+        default: () => {},
+      },
+      current: {
+        type: Object,
+        default: () => {},
+      },
+    },
+    data() {
+      return {
+        form: this.formData,
+      }
+    },
+    watch: {
+      formData(val) {
+        this.form = val
+      },
+    },
+    mounted() {},
+  }
+</script>

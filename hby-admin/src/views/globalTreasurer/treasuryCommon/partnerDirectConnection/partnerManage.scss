@@ -1,0 +1,356 @@
+/* 合作伙伴管理页面样式 */
+/* 使用父级类名限定作用域，避免全局污染 */
+
+/* 父级选择器 - 匹配三个页面的根类名 */
+.partner-archive-manage,
+.partner-risk-manage,
+.partner-type-manage {
+  /* 页面头部样式 */
+  .page-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px 0;
+    margin-bottom: 20px;
+    border-radius: 8px;
+  }
+
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .header-left h2 {
+    margin: 0 0 8px 0;
+    font-size: 24px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+  }
+
+  .header-left h2 i {
+    margin-right: 10px;
+    font-size: 28px;
+  }
+
+  .header-left p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 14px;
+  }
+
+  .header-right .el-button {
+    margin-left: 10px;
+  }
+
+  /* 统计卡片样式 */
+  .partner-overview,
+  .risk-overview,
+  .type-overview {
+    margin-bottom: 20px;
+  }
+
+  .overview-card {
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    animation: fadeIn 0.6s ease-out;
+  }
+
+  .overview-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.15);
+  }
+
+  .overview-card:nth-child(1) { animation-delay: 0.1s; }
+  .overview-card:nth-child(2) { animation-delay: 0.2s; }
+  .overview-card:nth-child(3) { animation-delay: 0.3s; }
+  .overview-card:nth-child(4) { animation-delay: 0.4s; }
+
+  .card-content {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+  }
+
+  .card-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    font-size: 24px;
+    color: white;
+  }
+
+  .total-icon {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  .bank-icon {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  }
+
+  .supplier-icon,
+  .business-icon {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  }
+
+  .high-risk-icon {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  }
+
+  .medium-risk-icon {
+    background: linear-gradient(135deg, #feca57 0%, #ff9ff3 100%);
+  }
+
+  .low-risk-icon,
+  .active-icon {
+    background: linear-gradient(135deg, #48dbfb 0%, #0abde3 100%);
+  }
+
+  .card-info {
+    flex: 1;
+  }
+
+  .card-title {
+    font-size: 14px;
+    color: #909399;
+    margin-bottom: 5px;
+  }
+
+  .card-value {
+    font-size: 28px;
+    font-weight: bold;
+    color: #303133;
+    margin-bottom: 5px;
+  }
+
+  .card-change {
+    font-size: 12px;
+    color: #909399;
+  }
+
+  .card-change.positive {
+    color: #67c23a;
+  }
+
+  .card-change.negative {
+    color: #f56c6c;
+  }
+
+  /* 搜索区域样式 */
+  .search-card {
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+  }
+
+  .search-form {
+    padding: 10px 0;
+  }
+
+  .search-form .el-form-item {
+    margin-bottom: 15px;
+  }
+
+  /* 表格样式 - 限定在当前页面 */
+  .el-table {
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  }
+
+  .el-table th {
+    background-color: #f8f9fa !important;
+    color: #606266;
+    font-weight: 600;
+    border-bottom: 1px solid #ebeef5;
+  }
+
+  .el-table td {
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .el-table--border::after,
+  .el-table--group::after,
+  .el-table::before {
+    background-color: #ebeef5;
+  }
+
+  /* 标签样式 - 限定在当前页面 */
+  .el-tag {
+    border-radius: 4px;
+    border: none;
+    font-weight: 500;
+  }
+
+  /* 表单样式 - 限定在当前页面 */
+  .el-form-item__label {
+    font-weight: 500;
+    color: #606266;
+  }
+
+  .el-input__inner,
+  .el-textarea__inner,
+  .el-select .el-input__inner,
+  .el-input-number .el-input__inner {
+    border-radius: 4px;
+    border: 1px solid #dcdfe6;
+    transition: all 0.3s ease;
+  }
+
+  .el-input__inner:focus,
+  .el-textarea__inner:focus,
+  .el-select:hover .el-input__inner {
+    border-color: #409eff;
+  }
+
+  /* 分页样式 */
+  .pagination-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+  }
+
+  /* 按钮样式 - 限定在当前页面 */
+  .el-button--primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  .el-button--primary:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    transform: translateY(-1px);
+  }
+
+  .el-button--success {
+    background: linear-gradient(135deg, #67c23a 0%, #85ce61 100%);
+    border: none;
+    border-radius: 6px;
+  }
+
+  .el-button--warning {
+    background: linear-gradient(135deg, #e6a23c 0%, #ebb563 100%);
+    border: none;
+    border-radius: 6px;
+  }
+
+  .el-button--info {
+    background: linear-gradient(135deg, #909399 0%, #a6a9ad 100%);
+    border: none;
+    border-radius: 6px;
+  }
+
+  .el-button--danger {
+    background: linear-gradient(135deg, #f56c6c 0%, #f78989 100%);
+    border: none;
+    border-radius: 6px;
+  }
+
+  /* 加载动画 - 限定在当前页面 */
+  .el-loading-mask {
+    background-color: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(4px);
+  }
+}
+
+/* 对话框样式 - 使用属性选择器限定作用域 */
+[class*="partner-"] .el-dialog,
+[class*="bank-"] .el-dialog,
+[class*="cloud-"] .el-dialog {
+  border-radius: 8px;
+}
+
+[class*="partner-"] .el-dialog__header,
+[class*="bank-"] .el-dialog__header,
+[class*="cloud-"] .el-dialog__header {
+  background: white;
+  color: #303133;
+  padding: 20px 20px 10px 20px;
+  border-radius: 8px 8px 0 0;
+  border-bottom: 1px solid #ebeef5;
+}
+
+[class*="partner-"] .el-dialog__title,
+[class*="bank-"] .el-dialog__title,
+[class*="cloud-"] .el-dialog__title {
+  color: #303133;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+[class*="partner-"] .el-dialog__headerbtn .el-dialog__close,
+[class*="bank-"] .el-dialog__headerbtn .el-dialog__close,
+[class*="cloud-"] .el-dialog__headerbtn .el-dialog__close {
+  color: #909399;
+}
+
+[class*="partner-"] .el-dialog__body,
+[class*="bank-"] .el-dialog__body,
+[class*="cloud-"] .el-dialog__body {
+  padding: 20px;
+}
+
+[class*="partner-"] .el-dialog__footer,
+[class*="bank-"] .el-dialog__footer,
+[class*="cloud-"] .el-dialog__footer {
+  padding: 10px 20px 20px 20px;
+}
+
+/* 响应式设计 - 限定在当前页面 */
+@media (max-width: 768px) {
+  .partner-archive-manage,
+  .partner-risk-manage,
+  .partner-type-manage {
+    .header-content {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .header-right {
+      margin-top: 15px;
+      width: 100%;
+    }
+
+    .header-right .el-button {
+      margin: 5px 5px 5px 0;
+    }
+
+    .card-content {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .card-icon {
+      margin-right: 0;
+      margin-bottom: 10px;
+    }
+
+    .search-form .el-form-item {
+      margin-bottom: 10px;
+    }
+  }
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

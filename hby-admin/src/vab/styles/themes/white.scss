@@ -1,0 +1,216 @@
+/**
+ * @description 碰触纯白主题
+ */
+
+body.vab-theme-white {
+  // $base-menu-background: #fff;
+  $base-menu-background: #fffdfd;
+  $base-color-blue: #1890ff;
+  $base-color-blue-light: mix($base-color-white, $base-color-blue, 90%);
+
+  @mixin container {
+    color: #515a6e !important;
+    background: $base-menu-background !important;
+  }
+
+  @mixin container-column {
+    color: #515a6e !important;
+    background: #f7f9ff !important;
+  }
+
+  @mixin active {
+    &:hover {
+      color: $base-color-blue !important;
+      background-color: $base-color-blue-light !important;
+    }
+
+    &.is-active {
+      color: $base-color-blue !important;
+      background-color: $base-color-blue-light !important;
+    }
+  }
+
+  .logo-container-common,
+  .logo-container-vertical,
+  .logo-container-horizontal,
+  .logo-container-comprehensive,
+  .logo-container-float {
+    @include container;
+
+    .title,
+    .vab-icon {
+      @include container;
+    }
+  }
+
+  .logo-container-column {
+    @include container;
+
+    .title {
+      @include container;
+    }
+
+    .logo,
+    .vab-icon {
+      @include container-column;
+    }
+  }
+
+  .vab-column-bar-container {
+    .el-tabs {
+      @include container-column;
+
+      .el-tabs__nav-wrap.is-left {
+        background: #f7faff !important;
+      }
+
+      .el-tabs__item,
+      .el-tabs__nav {
+        @include container-column;
+      }
+
+      .el-tabs__item.is-active {
+        color: $base-color-white !important;
+        background: $base-color-blue !important;
+      }
+    }
+
+    .el-menu {
+      .el-menu-item.is-active,
+      .el-submenu__title.is-active,
+      .el-menu-item:hover,
+      .el-submenu__title:hover {
+        i {
+          color: $base-color-blue !important;
+        }
+
+        color: $base-color-blue !important;
+        background-color: $base-color-blue-light !important;
+      }
+    }
+
+    &-card {
+      .el-tabs {
+        .el-tabs__item {
+          &.is-active {
+            background: transparent !important;
+          }
+        }
+      }
+    }
+
+    &-arrow {
+      .el-tabs {
+        .el-tabs__item {
+          &.is-active {
+            color: $base-color-black !important;
+            background: transparent !important;
+
+            .vab-column-grid {
+              background: transparent !important;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .vab-layout-vertical,
+  .vab-layout-horizontal,
+  .vab-layout-comprehensive,
+  .vab-layout-common,
+  .vab-layout-float {
+    .el-menu {
+      @include container;
+
+      .el-submenu__title {
+        @include container;
+      }
+
+      .el-menu-item {
+        @include container;
+      }
+    }
+
+    .vab-side-bar,
+    .comprehensive-bar-container {
+      @include container;
+      box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08) !important;
+
+      .el-menu-item {
+        @include active;
+      }
+    }
+  }
+
+  .vab-layout-float {
+    .el-scrollbar__view .el-menu--collapse.el-menu li.el-submenu.is-active {
+      .el-submenu__title {
+        background-color: transparent !important;
+      }
+      > .el-submenu__title {
+        color: $base-color-blue !important;
+        background-color: $base-color-blue-light !important;
+      }
+    }
+  }
+
+  .vab-header {
+    @include container;
+
+    .right-panel {
+      .user-name,
+      .user-name *,
+      > i,
+      > div > i,
+      > span > i,
+      > div > span > i,
+      > svg,
+      > div > svg,
+      > span > svg,
+      > div > span > svg {
+        @include container;
+      }
+    }
+
+    .vab-main {
+      @include container;
+
+      i {
+        color: #515a6e !important;
+      }
+      .ri-notification-line {
+        color: #515a6e !important;
+      }
+
+      .el-menu {
+        &--horizontal {
+          .el-menu-item {
+            &.is-active {
+              @include active;
+            }
+          }
+
+          .el-submenu,
+          .el-menu-item {
+            @include active;
+          }
+        }
+      }
+    }
+  }
+  .vab-layout-horizontal .ri-search-line,
+  .vab-layout-horizontal .ri-fullscreen-fill,
+  .vab-layout-horizontal .ri-t-shirt-line {
+    color: #515a6e !important;
+  }
+  .menu-view .active,
+  .menu-view .active label,
+  .menu-view .titleActive {
+    color: $base-color-blue !important;
+  }
+  .menu-view .active::before,
+  .menu-view .titleActive::before {
+    background: $base-color-blue !important;
+  }
+}
