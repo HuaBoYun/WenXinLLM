@@ -1,4 +1,4 @@
-# JNPF 微服务 Docker 离线部署指南
+# 微服务 Docker 离线部署指南
 
 本文件夹是**自包含部署包**:包含全部服务镜像、全部配置文件和全部脚本,不需要联网、不依赖其他任何文件。
 请从本文档第 0 步开始按顺序操作,直到第五章确认服务完全启动。
@@ -100,7 +100,7 @@ powershell -ExecutionPolicy Bypass -File .\setup.ps1
 |---|---|---|---|
 | 1 | **Nacos 自身数据库**:类型/地址/端口/库名/账号/密码 | 第 2 步准备的 `nacos` 库信息 | `docker/nacos-conf/application.properties` |
 | 2 | **workflow 数据库**:类型/地址/端口/库名/账号/密码/模式名 | 工作流管理端专用库;达梦/Oracle 必填模式名,金仓/PG 回车默认 public,MySQL/SQLServer 无需 | deploy 根目录 `application-dev.yml` |
-| 3 | (可选)**业务库**:y 确认后填连接信息 | 业务库| `nacos-config/**/datasource.yaml` |
+| 3 | (可选)**业务库**:确认后填连接信息 | 业务库| `nacos-config/**/datasource.yaml` |
 | 4 | (可选)**Redis**:地址/端口/密码 | 无密码直接回车 | 同上 |
 | 5 | (可选)**立即导入配置**:Nacos 已启动时才出现 | 回车=导入 | 写入 Nacos |
 
@@ -182,9 +182,9 @@ docker compose --profile workflow up -d workflow
 
 | 现象 | 排查与处理 |
 |---|---|
-| Nacos 起不来、反复重启 | `docker logs nacos-server`:数据库连接错误 → 核对 `nacos-conf/application.properties` 后 `docker compose restart nacos-server`;`Table doesn't exist` → `jnpf_nacos` 表结构未初始化;`Public Key Retrieval` → URL 追加 `&allowPublicKeyRetrieval=true` |
+| Nacos 起不来、反复重启 | `docker logs nacos-server`:数据库连接错误 → 核对 `nacos-conf/application.properties` 后 `docker compose restart nacos-server`;`Table doesn't exist` → `nacos` 表结构未初始化;`Public Key Retrieval` → URL 追加 `&allowPublicKeyRetrieval=true` |
 | 服务一直 Restarting | `docker logs <服务名>`:连不上 `nacos-server:30099` → 等 Nacos 就绪;`datasource/Redis` 连接错误 → 核对 `datasource.yaml` 后重新导入配置并 `docker compose restart` |
-| 配置导入脚本报 403 / User not found | `jnpf_nacos` 库缺 `nacos` 账号或 ADMIN 角色 → 按第 2 步 SQL 补齐并重启 nacos;Windows 提示禁止运行脚本 → 加 `-ExecutionPolicy Bypass` |
+| 配置导入脚本报 403 / User not found | `nacos` 库缺 `nacos` 账号或 ADMIN 角色 → 按第 2 步 SQL 补齐并重启 nacos;Windows 提示禁止运行脚本 → 加 `-ExecutionPolicy Bypass` |
 | 端口被占用 | 修改 `docker-compose.yml` 中端口映射冒号左侧(宿主机侧),`docker compose up -d` 重建 |
 | 想调整某服务内存 | 改 `docker-compose.yml` 对应服务 `JAVA_OPTS` 的 `-Xmx` 后 `docker compose up -d` |
 | 彻底重来 | `cd deploy/docker && docker compose down` 后从第 4 步重跑(镜像和配置文件都保留) |
