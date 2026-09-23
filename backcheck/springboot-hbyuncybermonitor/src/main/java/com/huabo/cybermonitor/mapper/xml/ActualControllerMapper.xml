@@ -1,0 +1,493 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.cybermonitor.mapper.ActualControllerMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.huabo.cybermonitor.entity.ActualController">
+        <id column="CONTROLLER_ID" property="controllerId" />
+        <result column="CONTROLLED_ENTERPRISE_ID" property="controlledEnterpriseId" />
+        <result column="CONTROLLED_ENTERPRISE_NAME" property="controlledEnterpriseName" />
+        <result column="CONTROLLER_ENTERPRISE_ID" property="controllerEnterpriseId" />
+        <result column="CONTROLLER_ENTERPRISE_NAME" property="controllerEnterpriseName" />
+        <result column="CONTROLLER_TYPE" property="controllerType" />
+        <result column="CONTROLLER_NATURE" property="controllerNature" />
+        <result column="CONTROL_METHOD" property="controlMethod" />
+        <result column="CONTROL_STATUS" property="controlStatus" />
+        <result column="TOTAL_SHAREHOLDING_RATIO" property="totalShareholdingRatio" />
+        <result column="VOTING_RIGHT_RATIO" property="votingRightRatio" />
+        <result column="BOARD_CONTROL_RATIO" property="boardControlRatio" />
+        <result column="CONTROL_LEVEL" property="controlLevel" />
+        <result column="CONTROL_PATH" property="controlPath" />
+        <result column="IS_ULTIMATE_CONTROLLER" property="isUltimateController" />
+        <result column="IS_CONCERTED_ACTION" property="isConcertedAction" />
+        <result column="CONCERTED_ACTION_AGREEMENT" property="concertedActionAgreement" />
+        <result column="CONTROL_START_DATE" property="controlStartDate" />
+        <result column="CONTROL_END_DATE" property="controlEndDate" />
+        <result column="CONTROL_STABILITY" property="controlStability" />
+        <result column="CONTROL_RISK_LEVEL" property="controlRiskLevel" />
+        <result column="RISK_FACTORS" property="riskFactors" />
+        <result column="REGULATORY_ATTENTION" property="regulatoryAttention" />
+        <result column="ATTENTION_REASON" property="attentionReason" />
+        <result column="NEED_SPECIAL_SUPERVISION" property="needSpecialSupervision" />
+        <result column="SUPERVISION_MEASURES" property="supervisionMeasures" />
+        <result column="IDENTIFICATION_METHOD" property="identificationMethod" />
+        <result column="IDENTIFICATION_TIME" property="identificationTime" />
+        <result column="IDENTIFICATION_BASIS" property="identificationBasis" />
+        <result column="CONFIRMATION_STATUS" property="confirmationStatus" />
+        <result column="CONFIRMED_BY" property="confirmedBy" />
+        <result column="CONFIRMED_TIME" property="confirmedTime" />
+        <result column="DATA_SOURCE" property="dataSource" />
+        <result column="DATA_UPDATE_TIME" property="dataUpdateTime" />
+        <result column="REMARKS" property="remarks" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="CREATE_BY" property="createBy" />
+        <result column="UPDATE_BY" property="updateBy" />
+    </resultMap>
+
+    <!-- 基础查询条件 -->
+    <sql id="BaseWhere">
+        <where>
+            <if test="controlledEnterpriseId != null and controlledEnterpriseId != ''">
+                AND CONTROLLED_ENTERPRISE_ID = #{controlledEnterpriseId}
+            </if>
+            <if test="controllerEnterpriseId != null and controllerEnterpriseId != ''">
+                AND CONTROLLER_ENTERPRISE_ID = #{controllerEnterpriseId}
+            </if>
+            <if test="controllerType != null and controllerType != ''">
+                AND CONTROLLER_TYPE = #{controllerType}
+            </if>
+            <if test="controllerNature != null and controllerNature != ''">
+                AND CONTROLLER_NATURE = #{controllerNature}
+            </if>
+            <if test="controlMethod != null and controlMethod != ''">
+                AND CONTROL_METHOD = #{controlMethod}
+            </if>
+            <if test="controlStatus != null and controlStatus != ''">
+                AND CONTROL_STATUS = #{controlStatus}
+            </if>
+            <if test="controlStability != null and controlStability != ''">
+                AND CONTROL_STABILITY = #{controlStability}
+            </if>
+            <if test="controlRiskLevel != null and controlRiskLevel != ''">
+                AND CONTROL_RISK_LEVEL = #{controlRiskLevel}
+            </if>
+            <if test="regulatoryAttention != null and regulatoryAttention != ''">
+                AND REGULATORY_ATTENTION = #{regulatoryAttention}
+            </if>
+            <if test="confirmationStatus != null and confirmationStatus != ''">
+                AND CONFIRMATION_STATUS = #{confirmationStatus}
+            </if>
+            <if test="isUltimateController != null">
+                AND IS_ULTIMATE_CONTROLLER = #{isUltimateController}
+            </if>
+            <if test="isConcertedAction != null">
+                AND IS_CONCERTED_ACTION = #{isConcertedAction}
+            </if>
+            <if test="needSpecialSupervision != null">
+                AND NEED_SPECIAL_SUPERVISION = #{needSpecialSupervision}
+            </if>
+            <if test="minShareholdingRatio != null">
+                AND TOTAL_SHAREHOLDING_RATIO >= #{minShareholdingRatio}
+            </if>
+            <if test="maxShareholdingRatio != null">
+                AND TOTAL_SHAREHOLDING_RATIO &lt;= #{maxShareholdingRatio}
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND CONTROL_START_DATE >= #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND CONTROL_START_DATE &lt;= #{endDate}
+            </if>
+        </where>
+    </sql>
+
+    <!-- 分页查询实际控制人列表 -->
+    <select id="selectActualControllerList" resultMap="BaseResultMap">
+        SELECT * FROM ACTUAL_CONTROLLER
+        <include refid="BaseWhere" />
+        ORDER BY TOTAL_SHAREHOLDING_RATIO DESC, UPDATE_TIME DESC
+        <if test="pageNumber != null and pageSize != null">
+            <if test="_databaseId == 'mysql'">
+                LIMIT #{pageSize} OFFSET #{pageNumber}
+            </if>
+            <if test="_databaseId == 'dm'">
+                OFFSET #{pageNumber} ROWS FETCH NEXT #{pageSize} ROWS ONLY
+            </if>
+        </if>
+    </select>
+
+    <!-- 根据被控制企业ID查询 -->
+    <select id="selectByControlledEnterpriseId" resultMap="BaseResultMap">
+        SELECT * FROM ACTUAL_CONTROLLER
+        WHERE CONTROLLED_ENTERPRISE_ID = #{controlledEnterpriseId}
+        AND CONTROL_STATUS = 'ACTIVE'
+        ORDER BY TOTAL_SHAREHOLDING_RATIO DESC
+    </select>
+
+    <!-- 根据控制人企业ID查询 -->
+    <select id="selectByControllerEnterpriseId" resultMap="BaseResultMap">
+        SELECT * FROM ACTUAL_CONTROLLER
+        WHERE CONTROLLER_ENTERPRISE_ID = #{controllerEnterpriseId}
+        AND CONTROL_STATUS = 'ACTIVE'
+        ORDER BY TOTAL_SHAREHOLDING_RATIO DESC
+    </select>
+
+    <!-- 查询最终控制人 -->
+    <select id="selectUltimateControllers" resultMap="BaseResultMap">
+        SELECT * FROM ACTUAL_CONTROLLER
+        WHERE CONTROLLED_ENTERPRISE_ID = #{controlledEnterpriseId}
+        AND IS_ULTIMATE_CONTROLLER = 1
+        AND CONTROL_STATUS = 'ACTIVE'
+        ORDER BY TOTAL_SHAREHOLDING_RATIO DESC
+    </select>
+
+    <!-- 查询一致行动人 -->
+    <select id="selectConcertedActionControllers" resultMap="BaseResultMap">
+        SELECT * FROM ACTUAL_CONTROLLER
+        WHERE CONTROLLED_ENTERPRISE_ID = #{controlledEnterpriseId}
+        AND IS_CONCERTED_ACTION = 1
+        AND CONTROL_STATUS = 'ACTIVE'
+        ORDER BY TOTAL_SHAREHOLDING_RATIO DESC
+    </select>
+
+    <!-- 按控制人类型查询 -->
+    <select id="selectByControllerType" resultMap="BaseResultMap">
+        SELECT * FROM ACTUAL_CONTROLLER
+        WHERE CONTROLLER_TYPE = #{controllerType}
+        AND CONTROL_STATUS = 'ACTIVE'
+        ORDER BY TOTAL_SHAREHOLDING_RATIO DESC
+    </select>
+
+    <!-- 按控制人性质查询 -->
+    <select id="selectByControllerNature" resultMap="BaseResultMap">
+        SELECT * FROM ACTUAL_CONTROLLER
+        WHERE CONTROLLER_NATURE = #{controllerNature}
+        AND CONTROL_STATUS = 'ACTIVE'
+        ORDER BY TOTAL_SHAREHOLDING_RATIO DESC
+    </select>
+
+    <!-- 按控制方式查询 -->
+    <select id="selectByControlMethod" resultMap="BaseResultMap">
+        SELECT * FROM ACTUAL_CONTROLLER
+        WHERE CONTROL_METHOD = #{controlMethod}
+        AND CONTROL_STATUS = 'ACTIVE'
+        ORDER BY TOTAL_SHAREHOLDING_RATIO DESC
+    </select>
+
+    <!-- 按控制状态查询 -->
+    <select id="selectByControlStatus" resultMap="BaseResultMap">
+        SELECT * FROM ACTUAL_CONTROLLER
+        WHERE CONTROL_STATUS = #{controlStatus}
+        ORDER BY UPDATE_TIME DESC
+    </select>
+
+    <!-- 按控制风险等级查询 -->
+    <select id="selectByControlRiskLevel" resultMap="BaseResultMap">
+        SELECT * FROM ACTUAL_CONTROLLER
+        WHERE CONTROL_RISK_LEVEL = #{controlRiskLevel}
+        AND CONTROL_STATUS = 'ACTIVE'
+        ORDER BY TOTAL_SHAREHOLDING_RATIO DESC
+    </select>
+
+    <!-- 查询需要特别监管的控制关系 -->
+    <select id="selectSpecialSupervisionControllers" resultMap="BaseResultMap">
+        SELECT * FROM ACTUAL_CONTROLLER
+        WHERE NEED_SPECIAL_SUPERVISION = #{needSpecialSupervision}
+        AND CONTROL_STATUS = 'ACTIVE'
+        ORDER BY CONTROL_RISK_LEVEL DESC, TOTAL_SHAREHOLDING_RATIO DESC
+    </select>
+
+    <!-- 按监管关注度查询 -->
+    <select id="selectByRegulatoryAttention" resultMap="BaseResultMap">
+        SELECT * FROM ACTUAL_CONTROLLER
+        WHERE REGULATORY_ATTENTION = #{regulatoryAttention}
+        AND CONTROL_STATUS = 'ACTIVE'
+        ORDER BY TOTAL_SHAREHOLDING_RATIO DESC
+    </select>
+
+    <!-- 按确认状态查询 -->
+    <select id="selectByConfirmationStatus" resultMap="BaseResultMap">
+        SELECT * FROM ACTUAL_CONTROLLER
+        WHERE CONFIRMATION_STATUS = #{confirmationStatus}
+        ORDER BY UPDATE_TIME DESC
+    </select>
+
+    <!-- 查询控制链路 -->
+    <select id="selectControlChain" resultMap="BaseResultMap">
+        SELECT * FROM ACTUAL_CONTROLLER
+        WHERE CONTROL_PATH LIKE CONCAT('%', #{startEnterpriseId}, '%', #{endEnterpriseId}, '%')
+        AND CONTROL_STATUS = 'ACTIVE'
+        ORDER BY CONTROL_LEVEL
+    </select>
+
+    <!-- 查询控制层级结构 -->
+    <select id="selectControlHierarchy" resultMap="BaseResultMap">
+        <if test="_databaseId == 'mysql'">
+            WITH RECURSIVE control_tree AS (
+                SELECT *, 1 as level FROM ACTUAL_CONTROLLER
+                WHERE CONTROLLER_ENTERPRISE_ID = #{controllerEnterpriseId}
+                AND CONTROL_STATUS = 'ACTIVE'
+                UNION ALL
+                SELECT ac.*, ct.level + 1 FROM ACTUAL_CONTROLLER ac
+                INNER JOIN control_tree ct ON ac.CONTROLLER_ENTERPRISE_ID = ct.CONTROLLED_ENTERPRISE_ID
+                WHERE ct.level &lt; #{maxLevel} AND ac.CONTROL_STATUS = 'ACTIVE'
+            )
+            SELECT * FROM control_tree ORDER BY level, TOTAL_SHAREHOLDING_RATIO DESC
+        </if>
+        <if test="_databaseId == 'dm'">
+            SELECT * FROM ACTUAL_CONTROLLER
+            WHERE CONTROLLER_ENTERPRISE_ID = #{controllerEnterpriseId}
+            AND CONTROL_STATUS = 'ACTIVE'
+            ORDER BY CONTROL_LEVEL, TOTAL_SHAREHOLDING_RATIO DESC
+        </if>
+    </select>
+
+    <!-- 按控制人类型统计 -->
+    <select id="selectControllerTypeStatistics" resultType="java.util.Map">
+        SELECT 
+            CONTROLLER_TYPE as controllerType,
+            COUNT(*) as count,
+            COUNT(DISTINCT CONTROLLED_ENTERPRISE_ID) as controlledEnterprises,
+            AVG(TOTAL_SHAREHOLDING_RATIO) as avgShareholdingRatio
+        FROM ACTUAL_CONTROLLER
+        WHERE CONTROL_STATUS = 'ACTIVE'
+        GROUP BY CONTROLLER_TYPE
+        ORDER BY count DESC
+    </select>
+
+    <!-- 按控制人性质统计 -->
+    <select id="selectControllerNatureStatistics" resultType="java.util.Map">
+        SELECT 
+            CONTROLLER_NATURE as controllerNature,
+            COUNT(*) as count,
+            COUNT(DISTINCT CONTROLLED_ENTERPRISE_ID) as controlledEnterprises,
+            AVG(TOTAL_SHAREHOLDING_RATIO) as avgShareholdingRatio
+        FROM ACTUAL_CONTROLLER
+        WHERE CONTROL_STATUS = 'ACTIVE'
+        GROUP BY CONTROLLER_NATURE
+        ORDER BY count DESC
+    </select>
+
+    <!-- 按控制方式统计 -->
+    <select id="selectControlMethodStatistics" resultType="java.util.Map">
+        SELECT 
+            CONTROL_METHOD as controlMethod,
+            COUNT(*) as count,
+            COUNT(DISTINCT CONTROLLED_ENTERPRISE_ID) as controlledEnterprises,
+            AVG(TOTAL_SHAREHOLDING_RATIO) as avgShareholdingRatio
+        FROM ACTUAL_CONTROLLER
+        WHERE CONTROL_STATUS = 'ACTIVE'
+        GROUP BY CONTROL_METHOD
+        ORDER BY count DESC
+    </select>
+
+    <!-- 按控制状态统计 -->
+    <select id="selectControlStatusStatistics" resultType="java.util.Map">
+        SELECT 
+            CONTROL_STATUS as controlStatus,
+            COUNT(*) as count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM ACTUAL_CONTROLLER), 2) as percentage
+        FROM ACTUAL_CONTROLLER
+        GROUP BY CONTROL_STATUS
+        ORDER BY count DESC
+    </select>
+
+    <!-- 按控制稳定性统计 -->
+    <select id="selectControlStabilityStatistics" resultType="java.util.Map">
+        SELECT 
+            CONTROL_STABILITY as controlStability,
+            COUNT(*) as count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM ACTUAL_CONTROLLER WHERE CONTROL_STATUS = 'ACTIVE'), 2) as percentage
+        FROM ACTUAL_CONTROLLER
+        WHERE CONTROL_STATUS = 'ACTIVE'
+        GROUP BY CONTROL_STABILITY
+        ORDER BY 
+            CASE CONTROL_STABILITY 
+                WHEN 'STABLE' THEN 1
+                WHEN 'UNSTABLE' THEN 2
+                WHEN 'VOLATILE' THEN 3
+                WHEN 'UNCERTAIN' THEN 4
+                ELSE 5
+            END
+    </select>
+
+    <!-- 按控制风险等级统计 -->
+    <select id="selectControlRiskLevelStatistics" resultType="java.util.Map">
+        SELECT 
+            CONTROL_RISK_LEVEL as controlRiskLevel,
+            COUNT(*) as count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM ACTUAL_CONTROLLER WHERE CONTROL_STATUS = 'ACTIVE'), 2) as percentage
+        FROM ACTUAL_CONTROLLER
+        WHERE CONTROL_STATUS = 'ACTIVE'
+        GROUP BY CONTROL_RISK_LEVEL
+        ORDER BY 
+            CASE CONTROL_RISK_LEVEL 
+                WHEN 'CRITICAL' THEN 1
+                WHEN 'HIGH' THEN 2
+                WHEN 'MEDIUM' THEN 3
+                WHEN 'LOW' THEN 4
+                ELSE 5
+            END
+    </select>
+
+    <!-- 按监管关注度统计 -->
+    <select id="selectRegulatoryAttentionStatistics" resultType="java.util.Map">
+        SELECT 
+            REGULATORY_ATTENTION as regulatoryAttention,
+            COUNT(*) as count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM ACTUAL_CONTROLLER WHERE CONTROL_STATUS = 'ACTIVE'), 2) as percentage
+        FROM ACTUAL_CONTROLLER
+        WHERE CONTROL_STATUS = 'ACTIVE'
+        GROUP BY REGULATORY_ATTENTION
+        ORDER BY 
+            CASE REGULATORY_ATTENTION 
+                WHEN 'CRITICAL' THEN 1
+                WHEN 'HIGH' THEN 2
+                WHEN 'MEDIUM' THEN 3
+                WHEN 'LOW' THEN 4
+                ELSE 5
+            END
+    </select>
+
+    <!-- 查询控制关系变化趋势 -->
+    <select id="selectControlRelationTrend" resultType="java.util.Map">
+        SELECT 
+            <if test="_databaseId == 'mysql'">
+                DATE_FORMAT(CONTROL_START_DATE, '%Y-%m') as period,
+            </if>
+            <if test="_databaseId == 'dm'">
+                TO_CHAR(CONTROL_START_DATE, 'YYYY-MM') as period,
+            </if>
+            COUNT(*) as newControlRelations,
+            COUNT(DISTINCT CONTROLLED_ENTERPRISE_ID) as affectedEnterprises,
+            AVG(TOTAL_SHAREHOLDING_RATIO) as avgShareholdingRatio
+        FROM ACTUAL_CONTROLLER
+        WHERE CONTROL_START_DATE IS NOT NULL
+        <if test="startDate != null and startDate != ''">
+            AND CONTROL_START_DATE >= #{startDate}
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND CONTROL_START_DATE &lt;= #{endDate}
+        </if>
+        GROUP BY 
+            <if test="_databaseId == 'mysql'">
+                DATE_FORMAT(CONTROL_START_DATE, '%Y-%m')
+            </if>
+            <if test="_databaseId == 'dm'">
+                TO_CHAR(CONTROL_START_DATE, 'YYYY-MM')
+            </if>
+        ORDER BY period
+    </select>
+
+    <!-- 查询控制集中度分析 -->
+    <select id="selectControlConcentrationAnalysis" resultType="java.util.Map">
+        SELECT 
+            CONTROLLED_ENTERPRISE_ID as enterpriseId,
+            CONTROLLED_ENTERPRISE_NAME as enterpriseName,
+            COUNT(*) as controllerCount,
+            MAX(TOTAL_SHAREHOLDING_RATIO) as maxShareholdingRatio,
+            SUM(TOTAL_SHAREHOLDING_RATIO) as totalShareholdingRatio,
+            COUNT(CASE WHEN IS_ULTIMATE_CONTROLLER = 1 THEN 1 END) as ultimateControllerCount,
+            COUNT(CASE WHEN IS_CONCERTED_ACTION = 1 THEN 1 END) as concertedActionCount
+        FROM ACTUAL_CONTROLLER
+        WHERE CONTROL_STATUS = 'ACTIVE'
+        GROUP BY CONTROLLED_ENTERPRISE_ID, CONTROLLED_ENTERPRISE_NAME
+        HAVING COUNT(*) > 1
+        ORDER BY controllerCount DESC, totalShareholdingRatio DESC
+    </select>
+
+    <!-- 批量更新控制状态 -->
+    <update id="batchUpdateControlStatus">
+        UPDATE ACTUAL_CONTROLLER 
+        SET CONTROL_STATUS = #{controlStatus},
+            UPDATE_TIME = 
+            <if test="_databaseId == 'mysql'">NOW()</if>
+            <if test="_databaseId == 'dm'">SYSDATE</if>
+        WHERE CONTROLLER_ID IN
+        <foreach collection="controllerIds" item="controllerId" open="(" separator="," close=")">
+            #{controllerId}
+        </foreach>
+    </update>
+
+    <!-- 批量更新确认状态 -->
+    <update id="batchUpdateConfirmationStatus">
+        UPDATE ACTUAL_CONTROLLER 
+        SET CONFIRMATION_STATUS = #{confirmationStatus},
+            CONFIRMED_BY = #{confirmedBy},
+            CONFIRMED_TIME = 
+            <if test="_databaseId == 'mysql'">NOW()</if>
+            <if test="_databaseId == 'dm'">SYSDATE</if>,
+            UPDATE_TIME = 
+            <if test="_databaseId == 'mysql'">NOW()</if>
+            <if test="_databaseId == 'dm'">SYSDATE</if>
+        WHERE CONTROLLER_ID IN
+        <foreach collection="controllerIds" item="controllerId" open="(" separator="," close=")">
+            #{controllerId}
+        </foreach>
+    </update>
+
+    <!-- 批量更新监管关注度 -->
+    <update id="batchUpdateRegulatoryAttention">
+        UPDATE ACTUAL_CONTROLLER 
+        SET REGULATORY_ATTENTION = #{regulatoryAttention},
+            UPDATE_TIME = 
+            <if test="_databaseId == 'mysql'">NOW()</if>
+            <if test="_databaseId == 'dm'">SYSDATE</if>
+        WHERE CONTROLLER_ID IN
+        <foreach collection="controllerIds" item="controllerId" open="(" separator="," close=")">
+            #{controllerId}
+        </foreach>
+    </update>
+
+    <!-- 删除过期控制关系 -->
+    <delete id="deleteExpiredControlRelations">
+        DELETE FROM ACTUAL_CONTROLLER 
+        WHERE CONTROL_STATUS = 'TERMINATED'
+        AND UPDATE_TIME &lt; 
+        <if test="_databaseId == 'mysql'">
+            DATE_SUB(NOW(), INTERVAL #{days} DAY)
+        </if>
+        <if test="_databaseId == 'dm'">
+            SYSDATE - #{days}
+        </if>
+    </delete>
+
+    <!-- 获取控制关系统计概览 -->
+    <select id="selectControlStatisticsOverview" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as totalControlRelations,
+            COUNT(DISTINCT CONTROLLED_ENTERPRISE_ID) as controlledEnterprises,
+            COUNT(DISTINCT CONTROLLER_ENTERPRISE_ID) as controllerEnterprises,
+            SUM(CASE WHEN IS_ULTIMATE_CONTROLLER = 1 THEN 1 ELSE 0 END) as ultimateControllers,
+            SUM(CASE WHEN IS_CONCERTED_ACTION = 1 THEN 1 ELSE 0 END) as concertedActionControllers,
+            SUM(CASE WHEN NEED_SPECIAL_SUPERVISION = 1 THEN 1 ELSE 0 END) as specialSupervisionControllers,
+            SUM(CASE WHEN CONTROL_STATUS = 'ACTIVE' THEN 1 ELSE 0 END) as activeControlRelations,
+            AVG(TOTAL_SHAREHOLDING_RATIO) as avgShareholdingRatio
+        FROM ACTUAL_CONTROLLER
+    </select>
+
+    <!-- 导出实际控制人列表 -->
+    <select id="exportActualControllerList" resultType="java.util.Map">
+        SELECT 
+            CONTROLLER_ID as controllerId,
+            CONTROLLED_ENTERPRISE_NAME as controlledEnterpriseName,
+            CONTROLLER_ENTERPRISE_NAME as controllerEnterpriseName,
+            CONTROLLER_TYPE as controllerType,
+            CONTROLLER_NATURE as controllerNature,
+            CONTROL_METHOD as controlMethod,
+            CONTROL_STATUS as controlStatus,
+            TOTAL_SHAREHOLDING_RATIO as totalShareholdingRatio,
+            VOTING_RIGHT_RATIO as votingRightRatio,
+            IS_ULTIMATE_CONTROLLER as isUltimateController,
+            IS_CONCERTED_ACTION as isConcertedAction,
+            CONTROL_STABILITY as controlStability,
+            CONTROL_RISK_LEVEL as controlRiskLevel,
+            REGULATORY_ATTENTION as regulatoryAttention,
+            CONFIRMATION_STATUS as confirmationStatus
+        FROM ACTUAL_CONTROLLER
+        <include refid="BaseWhere" />
+        ORDER BY TOTAL_SHAREHOLDING_RATIO DESC
+    </select>
+
+</mapper>

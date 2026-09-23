@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.oracle.mapper.RevenueBatchSettlementMapper">
+
+    <!-- 分页查询收入批量结账列表 -->
+    <select id="selectSettlementPage" resultType="java.util.HashMap">
+        SELECT
+            SETTLEMENT_ID as settlementId,
+            ORG_CODE as orgCode,
+            ORG_NAME as orgName,
+            PERIOD_SCHEME as periodScheme,
+            ACCOUNTING_PERIOD as accountingPeriod,
+            SETTLEMENT_STATUS as settlementStatus,
+            CASE SETTLEMENT_STATUS
+                WHEN 0 THEN '未结账'
+                WHEN 1 THEN '已结账'
+                ELSE '未知'
+            END as settlementStatusName,
+            SETTLEMENT_USER_ID as settlementUserId,
+            SETTLEMENT_USER_NAME as settlementUserName,
+            SETTLEMENT_TIME as settlementTime,
+            CANCEL_USER_ID as cancelUserId,
+            CANCEL_USER_NAME as cancelUserName,
+            CANCEL_TIME as cancelTime,
+            BOOK_ID as bookId,
+            TENANT_ID as tenantId,
+            CREATE_TIME as createTime,
+            UPDATE_TIME as updateTime
+        FROM T_REVENUE_BATCH_SETTLEMENT
+        <where>
+            IS_DELETED = 0
+            <if test="param.orgCode != null and param.orgCode != ''">
+                AND ORG_CODE LIKE '%' || #{param.orgCode} || '%'
+            </if>
+            <if test="param.orgName != null and param.orgName != ''">
+                AND ORG_NAME LIKE '%' || #{param.orgName} || '%'
+            </if>
+            <if test="param.periodScheme != null and param.periodScheme != ''">
+                AND PERIOD_SCHEME = #{param.periodScheme}
+            </if>
+            <if test="param.accountingPeriod != null and param.accountingPeriod != ''">
+                AND ACCOUNTING_PERIOD = #{param.accountingPeriod}
+            </if>
+            <if test="param.settlementStatus != null">
+                AND SETTLEMENT_STATUS = #{param.settlementStatus}
+            </if>
+            <if test="param.bookId != null">
+                AND BOOK_ID = #{param.bookId}
+            </if>
+            <if test="param.tenantId != null">
+                AND TENANT_ID = #{param.tenantId}
+            </if>
+        </where>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 查询收入批量结账列表 -->
+    <select id="selectSettlementList" resultType="java.util.HashMap">
+        SELECT
+            SETTLEMENT_ID as SETTLEMENTID,
+            ORG_CODE as ORGCODE,
+            ORG_NAME as ORGNAME,
+            PERIOD_SCHEME as PERIODSCHEME,
+            ACCOUNTING_PERIOD as ACCOUNTINGPERIOD,
+            SETTLEMENT_STATUS as SETTLEMENTSTATUS,
+            CASE SETTLEMENT_STATUS
+                WHEN 0 THEN '未结账'
+                WHEN 1 THEN '已结账'
+                ELSE '未知'
+            END as SETTLEMENTSTATUSNAME,
+            SETTLEMENT_USER_ID as SETTLEMENTUSERID,
+            SETTLEMENT_USER_NAME as SETTLEMENTUSERNAME,
+            SETTLEMENT_TIME as SETTLEMENTTIME,
+            CANCEL_USER_ID as CANCELUSERID,
+            CANCEL_USER_NAME as CANCELUSERNAME,
+            CANCEL_TIME as CANCELTIME,
+            CREATE_TIME as CREATETIME
+        FROM T_REVENUE_BATCH_SETTLEMENT
+        <where>
+            IS_DELETED = 0
+            <if test="param.orgCode != null and param.orgCode != ''">
+                AND ORG_CODE LIKE '%' || #{param.orgCode} || '%'
+            </if>
+            <if test="param.orgName != null and param.orgName != ''">
+                AND ORG_NAME LIKE '%' || #{param.orgName} || '%'
+            </if>
+            <if test="param.periodScheme != null and param.periodScheme != ''">
+                AND PERIOD_SCHEME = #{param.periodScheme}
+            </if>
+            <if test="param.accountingPeriod != null and param.accountingPeriod != ''">
+                AND ACCOUNTING_PERIOD = #{param.accountingPeriod}
+            </if>
+            <if test="param.settlementStatus != null">
+                AND SETTLEMENT_STATUS = #{param.settlementStatus}
+            </if>
+        </where>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据ID查询结账详情 -->
+    <select id="selectSettlementById" resultType="java.util.HashMap">
+        SELECT
+            SETTLEMENT_ID as settlementId,
+            ORG_CODE as orgCode,
+            ORG_NAME as orgName,
+            PERIOD_SCHEME as periodScheme,
+            ACCOUNTING_PERIOD as accountingPeriod,
+            SETTLEMENT_STATUS as settlementStatus,
+            SETTLEMENT_USER_NAME as settlementUserName,
+            SETTLEMENT_TIME as settlementTime,
+            CANCEL_USER_NAME as cancelUserName,
+            CANCEL_TIME as cancelTime,
+            CREATE_TIME as createTime
+        FROM T_REVENUE_BATCH_SETTLEMENT
+        WHERE IS_DELETED = 0 AND SETTLEMENT_ID = #{settlementId}
+    </select>
+
+</mapper>
+

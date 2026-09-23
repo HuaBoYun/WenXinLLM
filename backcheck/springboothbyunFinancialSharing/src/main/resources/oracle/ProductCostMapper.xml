@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 达梦 alias 必须用 snake_case，由 MyBatis mapUnderscoreToCamelCase 自动转 camelCase -->
+<mapper namespace="com.financial.sharing.oracle.mapper.ProductCostMapper">
+
+    <!-- ========== 1. 分页查询产品成本列表 ========== -->
+    <select id="selectProductCostPage" resultType="java.util.Map">
+        SELECT
+            pc.COSTING_ID                                  AS costing_id,
+            pc.PRODUCT_ID                                  AS product_id,
+            pc.PRODUCT_CODE                                AS product_code,
+            pc.PRODUCT_NAME                                AS product_name,
+            pc.COSTING_PERIOD                              AS costing_period,
+            pc.COSTING_METHOD                              AS costing_method,
+            CASE pc.COSTING_METHOD WHEN 1 THEN '品种法' WHEN 2 THEN '分批法' WHEN 3 THEN '分步法' ELSE '未知' END AS costing_method_name,
+            pc.DIRECT_MATERIAL                             AS direct_material,
+            pc.DIRECT_LABOR                                AS direct_labor,
+            pc.MANUFACTURING_OVERHEAD                      AS manufacturing_overhead,
+            pc.TOTAL_COST                                  AS total_cost,
+            pc.UNIT_COST                                   AS unit_cost,
+            pc.PRODUCTION_QUANTITY                         AS production_quantity,
+            pc.COSTING_STATUS                              AS costing_status,
+            CASE pc.COSTING_STATUS WHEN 1 THEN '核算中' WHEN 2 THEN '已完成' ELSE '未知' END AS status_name,
+            pc.CREATE_TIME                                 AS create_time,
+            pc.UPDATE_TIME                                 AS update_time
+        FROM T_PRODUCT_COST pc
+        WHERE pc.IS_DELETED = 0
+        <if test="param.bookId != null">     AND pc.BOOK_ID   = #{param.bookId}   </if>
+        <if test="param.tenantId != null">   AND pc.TENANT_ID = #{param.tenantId} </if>
+        <if test="param.productCode != null and param.productCode != ''">
+            AND pc.PRODUCT_CODE LIKE '%' || #{param.productCode} || '%'
+        </if>
+        <if test="param.productName != null and param.productName != ''">
+            AND pc.PRODUCT_NAME LIKE '%' || #{param.productName} || '%'
+        </if>
+        <if test="param.costingPeriod != null and param.costingPeriod != ''">
+            AND pc.COSTING_PERIOD = #{param.costingPeriod}
+        </if>
+        <if test="param.costingMethod != null"> AND pc.COSTING_METHOD = #{param.costingMethod} </if>
+        <if test="param.costingStatus != null"> AND pc.COSTING_STATUS = #{param.costingStatus} </if>
+        ORDER BY pc.CREATE_TIME DESC
+    </select>
+
+    <!-- ========== 2. 成本统计概览（首页卡片） ========== -->
+    <select id="selectCostStatisticsOverview" resultType="java.util.Map">
+        SELECT
+            COUNT(DISTINCT pc.PRODUCT_ID)                           AS total_products,
+            COUNT(DISTINCT pc.PRODUCT_ID)                           AS product_count,
+            COALESCE(SUM(pc.TOTAL_COST), 0)                         AS total_cost,
+            COALESCE(AVG(pc.UNIT_COST), 0)                          AS avg_unit_cost,
+            COALESCE(ROUND(AVG(pc.VARIANCE_RATE), 2), 0)            AS cost_variance,
+            COALESCE(SUM(pc.DIRECT_MATERIAL), 0)                    AS total_direct_material,
+            COALESCE(SUM(pc.DIRECT_LABOR), 0)                       AS total_direct_labor,
+            COALESCE(SUM(pc.MANUFACTURING_OVERHEAD), 0)             AS total_manufacturing_overhead,
+            COUNT(*)                                                AS costing_count,
+            SUM(CASE WHEN pc.COSTING_STATUS = 1 THEN 1 ELSE 0 END)  AS costing_in_progress,
+            SUM(CASE WHEN pc.COSTING_STATUS = 2 THEN 1 ELSE 0 END)  AS costing_completed
+        FROM T_PRODUCT_COST pc
+        WHERE pc.IS_DELETED = 0
+        <if test="param.bookId != null">   AND pc.BOOK_ID   = #{param.bookId}   </if>
+        <if test="param.tenantId != null"> AND pc.TENANT_ID = #{param.tenantId} </if>
+        <if test="param.costingPeriod != null and param.costingPeriod != ''">
+            AND pc.COSTING_PERIOD = #{param.costingPeriod}
+        </if>
+    </select>
+
+    <!-- ========== 3. 成本分布统计 ========== -->
+    <select id="selectCostDistributionStatistics" resultType="java.util.Map">
+        SELECT
+            pc.PRODUCT_CODE                              AS product_code,
+            pc.PRODUCT_NAME                              AS product_name,
+            COALESCE(SUM(pc.TOTAL_COST), 0)              AS total_cost,
+            COALESCE(SUM(pc.DIRECT_MATERIAL), 0)         AS direct_material,
+            COALESCE(SUM(pc.DIRECT_LABOR), 0)            AS direct_labor,
+            COALESCE(SUM(pc.MANUFACTURING_OVERHEAD), 0)  AS manufacturing_overhead,
+            COALESCE(AVG(pc.UNIT_COST), 0)               AS avg_unit_cost,
+            COUNT(*)                                     AS costing_count
+        FROM T_PRODUCT_COST pc
+        WHERE pc.IS_DELETED = 0
+        <if test="param.bookId != null">   AND pc.BOOK_ID   = #{param.bookId}   </if>
+        <if test="param.tenantId != null"> AND pc.TENANT_ID = #{param.tenantId} </if>
+        <if test="param.costingPeriod != null and param.costingPeriod != ''">
+            AND pc.COSTING_PERIOD = #{param.costingPeriod}
+        </if>
+        GROUP BY pc.PRODUCT_CODE, pc.PRODUCT_NAME
+        ORDER BY total_cost DESC
+    </select>
+
+    <!-- ========== 4. 成本变化趋势 ========== -->
+    <select id="selectCostChangeTrend" resultType="java.util.Map">
+        SELECT
+            pc.COSTING_PERIOD                            AS period,
+            COALESCE(SUM(pc.TOTAL_COST), 0)              AS total_cost,
+            COALESCE(SUM(pc.DIRECT_MATERIAL), 0)         AS direct_material,
+            COALESCE(SUM(pc.DIRECT_LABOR), 0)            AS direct_labor,
+            COALESCE(SUM(pc.MANUFACTURING_OVERHEAD), 0)  AS manufacturing_overhead,
+            COALESCE(AVG(pc.UNIT_COST), 0)               AS avg_unit_cost,
+            COUNT(DISTINCT pc.PRODUCT_ID)                AS product_count
+        FROM T_PRODUCT_COST pc
+        WHERE pc.IS_DELETED = 0
+        <if test="param.bookId != null">   AND pc.BOOK_ID   = #{param.bookId}   </if>
+        <if test="param.tenantId != null"> AND pc.TENANT_ID = #{param.tenantId} </if>
+        GROUP BY pc.COSTING_PERIOD
+        ORDER BY pc.COSTING_PERIOD ASC
+    </select>
+
+    <!-- ========== 5. 产品成本详情 ========== -->
+    <select id="selectProductCostDetail" resultType="java.util.Map">
+        SELECT pc.COSTING_ID AS costing_id, pc.PRODUCT_ID AS product_id,
+            pc.PRODUCT_CODE AS product_code, pc.PRODUCT_NAME AS product_name,
+            pc.COSTING_PERIOD AS costing_period, pc.COSTING_METHOD AS costing_method,
+            pc.DIRECT_MATERIAL AS direct_material, pc.DIRECT_LABOR AS direct_labor,
+            pc.MANUFACTURING_OVERHEAD AS manufacturing_overhead, pc.TOTAL_COST AS total_cost,
+            pc.UNIT_COST AS unit_cost, pc.PRODUCTION_QUANTITY AS production_quantity,
+            pc.COSTING_STATUS AS costing_status, pc.BOOK_ID AS book_id, pc.TENANT_ID AS tenant_id,
+            pc.VERSION AS version, pc.CREATE_TIME AS create_time, pc.UPDATE_TIME AS update_time
+        FROM T_PRODUCT_COST pc
+        WHERE pc.COSTING_ID = #{costingId} AND pc.IS_DELETED = 0
+    </select>
+
+
+    <!-- ========== 6. 产品信息分页（基于 T_PRODUCT_INFO 独立表） ========== -->
+    <select id="selectProductInfoPage" resultType="java.util.Map">
+        SELECT
+            pi.PRODUCT_ID          AS product_id,
+            pi.PRODUCT_CODE        AS product_code,
+            pi.PRODUCT_NAME        AS product_name,
+            pi.PRODUCT_TYPE        AS product_type,
+            pi.PRODUCT_TYPE_NAME   AS product_type_name,
+            pi.SPECIFICATION       AS specification,
+            pi.UNIT                AS unit,
+            pi.STANDARD_COST       AS standard_cost,
+            pi.CURRENT_STOCK       AS current_stock,
+            pi.IS_ENABLED          AS is_enabled,
+            pi.CREATE_TIME         AS create_time,
+            pi.UPDATE_TIME         AS update_time
+        FROM T_PRODUCT_INFO pi
+        WHERE pi.IS_DELETED = 0
+        <if test="param.bookId != null">   AND pi.BOOK_ID   = #{param.bookId}   </if>
+        <if test="param.tenantId != null"> AND pi.TENANT_ID = #{param.tenantId} </if>
+        <if test="param.productCode != null and param.productCode != ''">
+            AND pi.PRODUCT_CODE LIKE '%' || #{param.productCode} || '%'
+        </if>
+        <if test="param.productName != null and param.productName != ''">
+            AND pi.PRODUCT_NAME LIKE '%' || #{param.productName} || '%'
+        </if>
+        <if test="param.productType != null"> AND pi.PRODUCT_TYPE = #{param.productType} </if>
+        ORDER BY pi.PRODUCT_ID ASC
+    </select>
+
+    <!-- ========== 7. 成本构成分析（基于 T_PRODUCT_COST 聚合，输出占比） ========== -->
+    <select id="selectCostCompositionAnalysis" resultType="java.util.Map">
+        SELECT
+            pc.PRODUCT_ID                                AS product_id,
+            MAX(pc.PRODUCT_CODE)                         AS product_code,
+            MAX(pc.PRODUCT_NAME)                         AS product_name,
+            COALESCE(SUM(pc.DIRECT_MATERIAL), 0)         AS direct_material,
+            COALESCE(SUM(pc.DIRECT_LABOR), 0)            AS direct_labor,
+            COALESCE(SUM(pc.MANUFACTURING_OVERHEAD), 0)  AS manufacturing_overhead,
+            COALESCE(SUM(pc.TOTAL_COST), 0)              AS total_cost,
+            CASE WHEN COALESCE(SUM(pc.TOTAL_COST), 0) = 0 THEN 0
+                 ELSE ROUND(COALESCE(SUM(pc.DIRECT_MATERIAL), 0) * 100.0 / SUM(pc.TOTAL_COST), 2)
+            END                                          AS material_ratio,
+            CASE WHEN COALESCE(SUM(pc.TOTAL_COST), 0) = 0 THEN 0
+                 ELSE ROUND(COALESCE(SUM(pc.DIRECT_LABOR), 0) * 100.0 / SUM(pc.TOTAL_COST), 2)
+            END                                          AS labor_ratio,
+            CASE WHEN COALESCE(SUM(pc.TOTAL_COST), 0) = 0 THEN 0
+                 ELSE ROUND(COALESCE(SUM(pc.MANUFACTURING_OVERHEAD), 0) * 100.0 / SUM(pc.TOTAL_COST), 2)
+            END                                          AS overhead_ratio
+        FROM T_PRODUCT_COST pc
+        WHERE pc.IS_DELETED = 0
+        <if test="param.bookId != null">   AND pc.BOOK_ID   = #{param.bookId}   </if>
+        <if test="param.tenantId != null"> AND pc.TENANT_ID = #{param.tenantId} </if>
+        <if test="param.costingPeriod != null and param.costingPeriod != ''">
+            AND pc.COSTING_PERIOD = #{param.costingPeriod}
+        </if>
+        GROUP BY pc.PRODUCT_ID
+        ORDER BY total_cost DESC
+    </select>
+
+    <!-- ========== 8. 成本预警记录（基于 T_COST_ALERT_RECORD 独立表） ========== -->
+    <select id="selectCostAlerts" resultType="java.util.Map">
+        SELECT
+            r.ALERT_ID         AS alert_id,
+            r.ALERT_TIME       AS alert_time,
+            r.PRODUCT_ID       AS product_id,
+            r.PRODUCT_NAME     AS product_name,
+            r.ALERT_TYPE       AS alert_type,
+            r.ALERT_LEVEL      AS alert_level,
+            r.ALERT_CONTENT    AS alert_content,
+            r.HANDLE_STATUS    AS handle_status,
+            r.CREATE_TIME      AS create_time
+        FROM T_COST_ALERT_RECORD r
+        WHERE r.IS_DELETED = 0
+        <if test="param.bookId != null">   AND r.BOOK_ID   = #{param.bookId}   </if>
+        <if test="param.tenantId != null"> AND r.TENANT_ID = #{param.tenantId} </if>
+        ORDER BY r.ALERT_TIME DESC
+    </select>
+
+    <!-- ========== 9. 成本预警规则（基于 T_COST_ALERT_RULE 独立表） ========== -->
+    <select id="selectAlertRules" resultType="java.util.Map">
+        SELECT
+            r.RULE_ID           AS rule_id,
+            r.RULE_NAME         AS rule_name,
+            r.ALERT_TYPE        AS alert_type,
+            r.ALERT_CONDITION   AS alert_condition,
+            r.THRESHOLD         AS threshold,
+            r.IS_ENABLED        AS is_enabled,
+            r.CREATE_TIME       AS create_time
+        FROM T_COST_ALERT_RULE r
+        WHERE r.IS_DELETED = 0
+        <if test="param.bookId != null">   AND r.BOOK_ID   = #{param.bookId}   </if>
+        <if test="param.tenantId != null"> AND r.TENANT_ID = #{param.tenantId} </if>
+        ORDER BY r.RULE_ID ASC
+    </select>
+
+    <!-- ========== 10. 成本控制措施（基于 T_COST_CONTROL_MEASURE 独立表） ========== -->
+    <select id="selectControlMeasures" resultType="java.util.Map">
+        SELECT
+            m.MEASURE_ID            AS measure_id,
+            m.MEASURE_NAME          AS measure_name,
+            m.MEASURE_TYPE          AS measure_type,
+            m.APPLICABLE_PRODUCTS   AS applicable_products,
+            m.EXPECTED_EFFECT       AS expected_effect,
+            m.IMPLEMENT_STATUS      AS implement_status,
+            m.CREATE_TIME           AS create_time
+        FROM T_COST_CONTROL_MEASURE m
+        WHERE m.IS_DELETED = 0
+        <if test="param.bookId != null">   AND m.BOOK_ID   = #{param.bookId}   </if>
+        <if test="param.tenantId != null"> AND m.TENANT_ID = #{param.tenantId} </if>
+        ORDER BY m.MEASURE_ID DESC
+    </select>
+
+    <!-- ========== 11. 成本异常列表（基于 T_COST_EXCEPTION 独立表） ========== -->
+    <select id="selectCostExceptions" resultType="java.util.Map">
+        SELECT
+            e.EXCEPTION_ID       AS exception_id,
+            e.EXCEPTION_TIME     AS exception_time,
+            e.PRODUCT_ID         AS product_id,
+            e.PRODUCT_NAME       AS product_name,
+            e.EXCEPTION_TYPE     AS exception_type,
+            e.EXCEPTION_AMOUNT   AS exception_amount,
+            e.EXCEPTION_REASON   AS exception_reason,
+            e.HANDLE_STATUS      AS handle_status,
+            e.CREATE_TIME        AS create_time
+        FROM T_COST_EXCEPTION e
+        WHERE e.IS_DELETED = 0
+        <if test="param.bookId != null">   AND e.BOOK_ID   = #{param.bookId}   </if>
+        <if test="param.tenantId != null"> AND e.TENANT_ID = #{param.tenantId} </if>
+        ORDER BY e.EXCEPTION_TIME DESC
+    </select>
+
+    <!-- ========== 12. 预算执行列表（基于 T_BUDGET_EXECUTION 独立表） ========== -->
+    <select id="selectBudgetExecution" resultType="java.util.Map">
+        SELECT
+            b.BUDGET_ID         AS budget_id,
+            b.BUDGET_NAME       AS budget_name,
+            b.PRODUCT_ID        AS product_id,
+            b.PRODUCT_NAME      AS product_name,
+            b.BUDGET_PERIOD     AS budget_period,
+            b.BUDGET_AMOUNT     AS budget_amount,
+            b.ACTUAL_AMOUNT     AS actual_amount,
+            b.VARIANCE_AMOUNT   AS variance_amount,
+            b.EXECUTION_RATE    AS execution_rate,
+            b.BUDGET_STATUS     AS budget_status,
+            CASE b.BUDGET_STATUS
+                WHEN 'WITHIN_BUDGET' THEN '预算内'
+                WHEN 'NEAR_BUDGET'   THEN '接近预算'
+                WHEN 'OVER_BUDGET'   THEN '超预算'
+                ELSE '未知' END AS budget_status_name,
+            b.CREATE_TIME       AS create_time
+        FROM T_BUDGET_EXECUTION b
+        WHERE b.IS_DELETED = 0
+        <if test="param.bookId != null">   AND b.BOOK_ID   = #{param.bookId}   </if>
+        <if test="param.tenantId != null"> AND b.TENANT_ID = #{param.tenantId} </if>
+        <if test="param.costingPeriod != null and param.costingPeriod != ''">
+            AND b.BUDGET_PERIOD = #{param.costingPeriod}
+        </if>
+        ORDER BY b.BUDGET_PERIOD DESC, b.PRODUCT_ID ASC
+    </select>
+
+    <!-- ========== 13. 成本控制效果（基于 T_BUDGET_EXECUTION 聚合） ========== -->
+    <select id="selectControlEffectivenessSummary" resultType="java.util.Map">
+        SELECT
+            COALESCE(SUM(b.BUDGET_AMOUNT), 0)                                          AS total_budget,
+            COALESCE(SUM(b.ACTUAL_AMOUNT), 0)                                          AS actual_cost,
+            COALESCE(SUM(b.VARIANCE_AMOUNT), 0)                                        AS variance,
+            CASE WHEN COALESCE(SUM(b.BUDGET_AMOUNT), 0) = 0 THEN 0
+                 ELSE ROUND(SUM(b.ACTUAL_AMOUNT) * 100.0 / SUM(b.BUDGET_AMOUNT), 2)
+            END                                                                        AS execution_rate,
+            CASE
+                WHEN SUM(b.ACTUAL_AMOUNT) &lt;= SUM(b.BUDGET_AMOUNT)              THEN '优秀'
+                WHEN SUM(b.ACTUAL_AMOUNT) &lt;= SUM(b.BUDGET_AMOUNT) * 1.05       THEN '良好'
+                WHEN SUM(b.ACTUAL_AMOUNT) &lt;= SUM(b.BUDGET_AMOUNT) * 1.10       THEN '一般'
+                ELSE '需改进'
+            END                                                                        AS overall_rating,
+            SUM(CASE WHEN b.BUDGET_STATUS = 'OVER_BUDGET' THEN 1 ELSE 0 END)           AS exceed_count,
+            CASE WHEN SUM(b.BUDGET_AMOUNT - b.ACTUAL_AMOUNT) &lt; 0 THEN 0
+                 ELSE COALESCE(SUM(b.BUDGET_AMOUNT - b.ACTUAL_AMOUNT), 0)
+            END                                                                        AS saving_amount,
+            '建议加强超预算项目的成本控制，保持当前节约项目的优化措施。' AS suggestion
+        FROM T_BUDGET_EXECUTION b
+        WHERE b.IS_DELETED = 0
+        <if test="param.bookId != null">   AND b.BOOK_ID   = #{param.bookId}   </if>
+        <if test="param.tenantId != null"> AND b.TENANT_ID = #{param.tenantId} </if>
+        <if test="param.costingPeriod != null and param.costingPeriod != ''">
+            AND b.BUDGET_PERIOD = #{param.costingPeriod}
+        </if>
+    </select>
+
+    <!-- ========== 14. 成本报告分页（基于 T_COST_REPORT 独立表） ========== -->
+    <select id="selectCostReportPage" resultType="java.util.Map">
+        SELECT
+            r.REPORT_ID          AS report_id,
+            r.REPORT_NAME        AS report_name,
+            r.REPORT_TYPE        AS report_type,
+            r.REPORT_TYPE_NAME   AS report_type_name,
+            r.REPORT_PERIOD      AS report_period,
+            r.GENERATE_TIME      AS generate_time,
+            r.GENERATOR_NAME     AS generator_name,
+            r.FILE_SIZE          AS file_size,
+            r.GENERATE_STATUS    AS generate_status,
+            r.REPORT_DESC        AS report_desc,
+            r.CREATE_TIME        AS create_time
+        FROM T_COST_REPORT r
+        WHERE r.IS_DELETED = 0
+        <if test="param.bookId != null">   AND r.BOOK_ID   = #{param.bookId}   </if>
+        <if test="param.tenantId != null"> AND r.TENANT_ID = #{param.tenantId} </if>
+        <if test="param.reportType != null and param.reportType != ''">
+            AND r.REPORT_TYPE = #{param.reportType}
+        </if>
+        ORDER BY r.GENERATE_TIME DESC, r.REPORT_ID DESC
+    </select>
+
+</mapper>

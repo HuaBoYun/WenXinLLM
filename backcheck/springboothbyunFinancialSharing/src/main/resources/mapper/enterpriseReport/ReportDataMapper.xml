@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.enterpriseReport.mapper.ReportDataMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.financial.sharing.enterpriseReport.entity.TblReportData">
+        <id column="DATA_ID" property="dataId" />
+        <result column="TASK_ID" property="taskId" />
+        <result column="TEMPLATE_ID" property="templateId" />
+        <result column="INDICATOR_ID" property="indicatorId" />
+        <result column="ORG_ID" property="orgId" />
+        <result column="PERIOD" property="period" />
+        <result column="DIMENSION_VALUES" property="dimensionValues" />
+        <result column="DATA_VALUE" property="dataValue" />
+        <result column="DATA_SOURCE" property="dataSource" />
+        <result column="CELL_COLOR" property="cellColor" />
+        <result column="IS_EDITABLE" property="isEditable" />
+        <result column="TENANT_ID" property="tenantId" />
+        <result column="CREATE_USER" property="createUser" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_USER" property="updateUser" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="TASK_NAME" property="taskName" />
+        <result column="TEMPLATE_NAME" property="templateName" />
+        <result column="INDICATOR_NAME" property="indicatorName" />
+        <result column="ORG_NAME" property="orgName" />
+    </resultMap>
+
+    <!-- 查询报表数据列表(关联任务、模板、指标名称) -->
+    <select id="selectReportDataList" resultMap="BaseResultMap">
+        SELECT 
+            d.DATA_ID,
+            d.TASK_ID,
+            d.TEMPLATE_ID,
+            d.INDICATOR_ID,
+            d.ORG_ID,
+            d.PERIOD,
+            d.DIMENSION_VALUES,
+            d.DATA_VALUE,
+            d.DATA_SOURCE,
+            d.CELL_COLOR,
+            d.IS_EDITABLE,
+            d.TENANT_ID,
+            d.CREATE_USER,
+            d.CREATE_TIME,
+            d.UPDATE_USER,
+            d.UPDATE_TIME,
+            t.TASK_NAME,
+            tp.TEMPLATE_NAME,
+            i.INDICATOR_NAME,
+            '' AS ORG_NAME
+        FROM TBL_REPORT_DATA d
+        LEFT JOIN TBL_REPORT_TASK t ON d.TASK_ID = t.TASK_ID
+        LEFT JOIN TBL_FORM_TEMPLATE tp ON d.TEMPLATE_ID = tp.TEMPLATE_ID
+        LEFT JOIN TBL_INDICATOR_INFO i ON d.INDICATOR_ID = i.INDICATOR_ID
+        WHERE d.TENANT_ID = #{tenantId}
+        <if test="taskId != null and taskId != ''">
+            AND d.TASK_ID = #{taskId}
+        </if>
+        <if test="templateId != null and templateId != ''">
+            AND d.TEMPLATE_ID = #{templateId}
+        </if>
+        <if test="indicatorId != null and indicatorId != ''">
+            AND d.INDICATOR_ID = #{indicatorId}
+        </if>
+        <if test="orgId != null and orgId != ''">
+            AND d.ORG_ID = #{orgId}
+        </if>
+        <if test="period != null and period != ''">
+            AND d.PERIOD = #{period}
+        </if>
+        <if test="dataSource != null and dataSource != ''">
+            AND d.DATA_SOURCE = #{dataSource}
+        </if>
+        ORDER BY d.CREATE_TIME DESC
+    </select>
+
+    <!-- 批量插入报表数据 -->
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO TBL_REPORT_DATA (
+            DATA_ID, TASK_ID, TEMPLATE_ID, INDICATOR_ID, ORG_ID, PERIOD,
+            DIMENSION_VALUES, DATA_VALUE, DATA_SOURCE, CELL_COLOR, IS_EDITABLE,
+            TENANT_ID, CREATE_USER, CREATE_TIME, UPDATE_USER, UPDATE_TIME
+        ) VALUES
+        <foreach collection="dataList" item="item" separator=",">
+            (
+                #{item.dataId}, #{item.taskId}, #{item.templateId}, #{item.indicatorId},
+                #{item.orgId}, #{item.period}, #{item.dimensionValues}, #{item.dataValue},
+                #{item.dataSource}, #{item.cellColor}, #{item.isEditable}, #{item.tenantId},
+                #{item.createUser}, #{item.createTime}, #{item.updateUser}, #{item.updateTime}
+            )
+        </foreach>
+    </insert>
+
+    <!-- 批量更新报表数据 -->
+    <update id="batchUpdate" parameterType="java.util.List">
+        <foreach collection="dataList" item="item" separator=";">
+            UPDATE TBL_REPORT_DATA
+            SET DATA_VALUE = #{item.dataValue},
+                DATA_SOURCE = #{item.dataSource},
+                CELL_COLOR = #{item.cellColor},
+                IS_EDITABLE = #{item.isEditable},
+                UPDATE_USER = #{item.updateUser},
+                UPDATE_TIME = #{item.updateTime}
+            WHERE DATA_ID = #{item.dataId}
+        </foreach>
+    </update>
+
+    <!-- 删除指定条件的报表数据 -->
+    <delete id="deleteByCondition">
+        DELETE FROM TBL_REPORT_DATA
+        WHERE TENANT_ID = #{tenantId}
+        <if test="taskId != null and taskId != ''">
+            AND TASK_ID = #{taskId}
+        </if>
+        <if test="templateId != null and templateId != ''">
+            AND TEMPLATE_ID = #{templateId}
+        </if>
+        <if test="orgId != null and orgId != ''">
+            AND ORG_ID = #{orgId}
+        </if>
+        <if test="period != null and period != ''">
+            AND PERIOD = #{period}
+        </if>
+    </delete>
+
+    <!-- 按指标汇总数据 -->
+    <select id="aggregateByIndicator" resultType="com.financial.sharing.enterpriseReport.dto.ReportDataQueryDTO">
+        SELECT
+            d.INDICATOR_ID as indicatorId,
+            i.INDICATOR_NAME as indicatorName,
+            COUNT(*) as dataCount,
+            SUM(CAST(d.DATA_VALUE AS DECIMAL(20,2))) as dataSum,
+            AVG(CAST(d.DATA_VALUE AS DECIMAL(20,2))) as dataAvg,
+            MAX(CAST(d.DATA_VALUE AS DECIMAL(20,2))) as dataMax,
+            MIN(CAST(d.DATA_VALUE AS DECIMAL(20,2))) as dataMin
+        FROM TBL_REPORT_DATA d
+        LEFT JOIN TBL_INDICATOR_INFO i ON d.INDICATOR_ID = i.INDICATOR_ID AND d.TENANT_ID = i.TENANT_ID
+        WHERE d.TENANT_ID = #{tenantId}
+        <if test="taskId != null and taskId != ''">
+            AND d.TASK_ID = #{taskId}
+        </if>
+        <if test="period != null and period != ''">
+            AND d.PERIOD = #{period}
+        </if>
+        GROUP BY d.INDICATOR_ID, i.INDICATOR_NAME
+        ORDER BY d.INDICATOR_ID
+    </select>
+
+    <!-- 按组织汇总数据 -->
+    <select id="aggregateByOrg" resultType="com.financial.sharing.enterpriseReport.dto.ReportDataQueryDTO">
+        SELECT
+            d.ORG_ID as orgId,
+            d.ORG_ID as orgName,
+            COUNT(*) as dataCount,
+            SUM(CAST(d.DATA_VALUE AS DECIMAL(20,2))) as dataSum,
+            AVG(CAST(d.DATA_VALUE AS DECIMAL(20,2))) as dataAvg,
+            MAX(CAST(d.DATA_VALUE AS DECIMAL(20,2))) as dataMax,
+            MIN(CAST(d.DATA_VALUE AS DECIMAL(20,2))) as dataMin
+        FROM TBL_REPORT_DATA d
+        WHERE d.TENANT_ID = #{tenantId}
+        <if test="taskId != null and taskId != ''">
+            AND d.TASK_ID = #{taskId}
+        </if>
+        <if test="period != null and period != ''">
+            AND d.PERIOD = #{period}
+        </if>
+        GROUP BY d.ORG_ID
+        ORDER BY d.ORG_ID
+    </select>
+
+    <!-- 按期间汇总数据 -->
+    <select id="aggregateByPeriod" resultType="com.financial.sharing.enterpriseReport.dto.ReportDataQueryDTO">
+        SELECT
+            d.PERIOD as period,
+            COUNT(*) as dataCount,
+            SUM(CAST(d.DATA_VALUE AS DECIMAL(20,2))) as dataSum,
+            AVG(CAST(d.DATA_VALUE AS DECIMAL(20,2))) as dataAvg,
+            MAX(CAST(d.DATA_VALUE AS DECIMAL(20,2))) as dataMax,
+            MIN(CAST(d.DATA_VALUE AS DECIMAL(20,2))) as dataMin
+        FROM TBL_REPORT_DATA d
+        WHERE d.TENANT_ID = #{tenantId}
+        <if test="taskId != null and taskId != ''">
+            AND d.TASK_ID = #{taskId}
+        </if>
+        <if test="indicatorId != null and indicatorId != ''">
+            AND d.INDICATOR_ID = #{indicatorId}
+        </if>
+        <if test="orgId != null and orgId != ''">
+            AND d.ORG_ID = #{orgId}
+        </if>
+        GROUP BY d.PERIOD
+        ORDER BY d.PERIOD
+    </select>
+
+    <!-- 期间对比查询 -->
+    <select id="comparePeriod" resultType="com.financial.sharing.enterpriseReport.dto.ReportDataQueryDTO">
+        SELECT
+            current.PERIOD as period,
+            current.INDICATOR_ID as indicatorId,
+            i.INDICATOR_NAME as indicatorName,
+            current.ORG_ID as orgId,
+            CAST(current.DATA_VALUE AS DECIMAL(20,2)) as dataValue,
+            CAST(compare.DATA_VALUE AS DECIMAL(20,2)) as compareValue,
+            CAST(current.DATA_VALUE AS DECIMAL(20,2)) - CAST(compare.DATA_VALUE AS DECIMAL(20,2)) as growthAmount,
+            CASE
+                WHEN CAST(compare.DATA_VALUE AS DECIMAL(20,2)) = 0 THEN NULL
+                ELSE ((CAST(current.DATA_VALUE AS DECIMAL(20,2)) - CAST(compare.DATA_VALUE AS DECIMAL(20,2))) / CAST(compare.DATA_VALUE AS DECIMAL(20,2))) * 100
+            END as growthRate
+        FROM TBL_REPORT_DATA current
+        LEFT JOIN TBL_REPORT_DATA compare ON current.TASK_ID = compare.TASK_ID
+            AND current.INDICATOR_ID = compare.INDICATOR_ID
+            AND current.ORG_ID = compare.ORG_ID
+            AND current.TENANT_ID = compare.TENANT_ID
+            AND compare.PERIOD = #{comparePeriod}
+        LEFT JOIN TBL_INDICATOR_INFO i ON current.INDICATOR_ID = i.INDICATOR_ID AND current.TENANT_ID = i.TENANT_ID
+        WHERE current.TENANT_ID = #{tenantId}
+            AND current.PERIOD = #{currentPeriod}
+        <if test="taskId != null and taskId != ''">
+            AND current.TASK_ID = #{taskId}
+        </if>
+        <if test="indicatorId != null and indicatorId != ''">
+            AND current.INDICATOR_ID = #{indicatorId}
+        </if>
+        <if test="orgId != null and orgId != ''">
+            AND current.ORG_ID = #{orgId}
+        </if>
+    </select>
+
+</mapper>
+

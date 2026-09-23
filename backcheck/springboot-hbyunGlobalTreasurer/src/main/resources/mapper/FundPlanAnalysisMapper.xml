@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.FundPlanAnalysisMapper">
+
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TblFundPlanAnalysis">
+        <id column="ANALYSIS_ID" property="analysisId"/>
+        <result column="ANALYSIS_NO" property="analysisNo"/>
+        <result column="PLAN_ID" property="planId"/>
+        <result column="ANALYSIS_TYPE" property="analysisType"/>
+        <result column="ANALYSIS_PERIOD" property="analysisPeriod"/>
+        <result column="QUALITY_SCORE" property="qualityScore"/>
+        <result column="IS_VALID" property="isValid"/>
+        <result column="VALID_UNTIL" property="validUntil"/>
+        <result column="VALUE_ASSESSMENT" property="valueAssessment"/>
+        <result column="TEMPLATE_ID" property="templateId"/>
+        <result column="ANALYSIS_CONTENT" property="analysisContent"/>
+        <result column="VALIDATE_NOTES" property="validateNotes"/>
+        <result column="DELETE_FLAG" property="deleteFlag"/>
+        <result column="CREATED_BY" property="createdBy"/>
+        <result column="CREATED_BY_NAME" property="createdByName"/>
+        <result column="CREATED_TIME" property="createdTime"/>
+        <result column="UPDATED_BY" property="updatedBy"/>
+        <result column="UPDATED_BY_NAME" property="updatedByName"/>
+        <result column="UPDATED_TIME" property="updatedTime"/>
+        <result column="ORG_ID" property="orgId"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        ANALYSIS_ID, ANALYSIS_NO, PLAN_ID, ANALYSIS_TYPE, ANALYSIS_PERIOD, QUALITY_SCORE,
+        IS_VALID, VALID_UNTIL, VALUE_ASSESSMENT, TEMPLATE_ID, ANALYSIS_CONTENT, VALIDATE_NOTES,
+        DELETE_FLAG, CREATED_BY, CREATED_BY_NAME, CREATED_TIME, UPDATED_BY, UPDATED_BY_NAME,
+        UPDATED_TIME, ORG_ID
+    </sql>
+
+    <select id="selectAnalysisPage" resultMap="BaseResultMap" parameterType="map">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_FUND_PLAN_ANALYSIS
+        WHERE DELETE_FLAG = 0
+        <if test="planId != null">
+            AND PLAN_ID = #{planId}
+        </if>
+        <if test="analysisType != null and analysisType != ''">
+            AND ANALYSIS_TYPE = #{analysisType}
+        </if>
+        ORDER BY CREATED_TIME DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
+    </select>
+
+    <select id="countAnalysisList" resultType="int" parameterType="map">
+        SELECT COUNT(*)
+        FROM TBL_FUND_PLAN_ANALYSIS
+        WHERE DELETE_FLAG = 0
+        <if test="planId != null">
+            AND PLAN_ID = #{planId}
+        </if>
+        <if test="analysisType != null and analysisType != ''">
+            AND ANALYSIS_TYPE = #{analysisType}
+        </if>
+    </select>
+
+    <select id="selectAnalysisSummary" resultType="map" parameterType="map">
+        SELECT
+            COUNT(*) AS totalCount,
+            AVG(QUALITY_SCORE) AS avgQualityScore,
+            SUM(CASE WHEN IS_VALID = 1 THEN 1 ELSE 0 END) AS validCount
+        FROM TBL_FUND_PLAN_ANALYSIS
+        WHERE DELETE_FLAG = 0
+        <if test="planId != null">
+            AND PLAN_ID = #{planId}
+        </if>
+    </select>
+
+</mapper>

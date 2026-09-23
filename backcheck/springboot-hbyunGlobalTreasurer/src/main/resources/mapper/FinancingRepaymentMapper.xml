@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.FinancingRepaymentMapper">
+
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TblFinancingRepayment">
+        <id column="REPAYMENT_ID" property="repaymentId"/>
+        <result column="REPAYMENT_NO" property="repaymentNo"/>
+        <result column="FINANCING_ID" property="financingId"/>
+        <result column="DRAWDOWN_ID" property="drawdownId"/>
+        <result column="DRAWDOWN_NO" property="drawdownNo"/>
+        <result column="FINANCING_TYPE" property="financingType"/>
+        <result column="REPAYMENT_TYPE" property="repaymentType"/>
+        <result column="COMPANY_ID" property="companyId"/>
+        <result column="COMPANY_NAME" property="companyName"/>
+        <result column="REPAYMENT_AMOUNT" property="repaymentAmount"/>
+        <result column="ACTUAL_AMOUNT" property="actualAmount"/>
+        <result column="TOTAL_AMOUNT" property="totalAmount"/>
+        <result column="PRINCIPAL_AMOUNT" property="principalAmount"/>
+        <result column="INTEREST_AMOUNT" property="interestAmount"/>
+        <result column="PENALTY_AMOUNT" property="penaltyAmount"/>
+        <result column="CURRENCY_CODE" property="currencyCode"/>
+        <result column="REPAYMENT_DATE" property="repaymentDate"/>
+        <result column="PLAN_DATE" property="planDate"/>
+        <result column="ACTUAL_DATE" property="actualDate"/>
+        <result column="ACTUAL_REPAYMENT_DATE" property="actualRepaymentDate"/>
+        <result column="REPAYMENT_STATUS" property="repaymentStatus"/>
+        <result column="PAYMENT_METHOD" property="paymentMethod"/>
+        <result column="PAYMENT_ACCOUNT" property="paymentAccount"/>
+        <result column="DELETE_FLAG" property="deleteFlag"/>
+        <result column="CREATED_BY" property="createdBy"/>
+        <result column="CREATED_TIME" property="createdTime"/>
+        <result column="UPDATED_BY" property="updatedBy"/>
+        <result column="UPDATED_TIME" property="updatedTime"/>
+        <result column="REMARK" property="remark"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        REPAYMENT_ID, REPAYMENT_NO, FINANCING_ID, DRAWDOWN_ID, DRAWDOWN_NO, FINANCING_TYPE, REPAYMENT_TYPE,
+        COMPANY_ID, COMPANY_NAME, REPAYMENT_AMOUNT, ACTUAL_AMOUNT, TOTAL_AMOUNT, PRINCIPAL_AMOUNT,
+        INTEREST_AMOUNT, PENALTY_AMOUNT, CURRENCY_CODE, REPAYMENT_DATE, PLAN_DATE, ACTUAL_DATE,
+        ACTUAL_REPAYMENT_DATE, REPAYMENT_STATUS, PAYMENT_METHOD, PAYMENT_ACCOUNT, DELETE_FLAG,
+        CREATED_BY, CREATED_TIME, UPDATED_BY, UPDATED_TIME, REMARK
+    </sql>
+
+    <select id="selectRepaymentList" resultMap="BaseResultMap" parameterType="map">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_FINANCING_REPAYMENT
+        WHERE DELETE_FLAG = 0
+        <if test="drawdownId != null">
+            AND DRAWDOWN_ID = #{drawdownId}
+        </if>
+        <if test="companyId != null">
+            AND COMPANY_ID = #{companyId}
+        </if>
+        <if test="repaymentStatus != null and repaymentStatus != ''">
+            AND REPAYMENT_STATUS = #{repaymentStatus}
+        </if>
+        ORDER BY PLAN_DATE ASC
+    </select>
+
+    <select id="selectRepaymentById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_FINANCING_REPAYMENT
+        WHERE REPAYMENT_ID = #{repaymentId} AND DELETE_FLAG = 0
+    </select>
+
+    <select id="selectUpcomingRepayments" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_FINANCING_REPAYMENT
+        WHERE DELETE_FLAG = 0 AND REPAYMENT_STATUS = 'PENDING'
+        AND PLAN_DATE BETWEEN SYSDATE AND SYSDATE + #{days}
+        ORDER BY PLAN_DATE ASC
+    </select>
+
+    <select id="selectRepaymentSummary" resultType="map">
+        SELECT
+            COUNT(*) AS totalCount,
+            SUM(CASE WHEN REPAYMENT_STATUS = 'PENDING' THEN 1 ELSE 0 END) AS pendingCount,
+            SUM(CASE WHEN REPAYMENT_STATUS = 'COMPLETED' THEN 1 ELSE 0 END) AS completedCount,
+            SUM(CASE WHEN REPAYMENT_STATUS = 'OVERDUE' THEN 1 ELSE 0 END) AS overdueCount,
+            SUM(CASE WHEN REPAYMENT_STATUS = 'PARTIAL' THEN 1 ELSE 0 END) AS partialCount,
+            SUM(REPAYMENT_AMOUNT) AS totalAmount,
+            SUM(CASE WHEN REPAYMENT_STATUS = 'COMPLETED' THEN REPAYMENT_AMOUNT ELSE 0 END) AS completedAmount,
+            SUM(CASE WHEN REPAYMENT_STATUS IN ('PENDING', 'OVERDUE', 'PARTIAL') THEN REPAYMENT_AMOUNT ELSE 0 END) AS pendingAmount
+        FROM TBL_FINANCING_REPAYMENT
+        WHERE DELETE_FLAG = 0
+        <if test="companyId != null">
+            AND COMPANY_ID = #{companyId}
+        </if>
+    </select>
+
+    <!-- 根据融资ID查询还款列表 -->
+    <select id="selectRepaymentsByFinancingId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_FINANCING_REPAYMENT
+        WHERE DELETE_FLAG = 0
+        <if test="financingId != null">
+            AND FINANCING_ID = #{financingId}
+        </if>
+        ORDER BY PLAN_DATE ASC
+    </select>
+
+    <!-- 更新还款状态 -->
+    <update id="updateRepaymentStatus">
+        UPDATE TBL_FINANCING_REPAYMENT
+        SET REPAYMENT_STATUS = #{status},
+            UPDATED_TIME = SYSDATE
+        WHERE REPAYMENT_ID = #{repaymentId}
+    </update>
+
+    <!-- 批量删除还款记录（逻辑删除） -->
+    <update id="batchDeleteByIds">
+        UPDATE TBL_FINANCING_REPAYMENT
+        SET DELETE_FLAG = 1,
+            UPDATED_TIME = SYSDATE
+        WHERE REPAYMENT_ID IN
+        <foreach collection="repaymentIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 查询逾期还款 -->
+    <select id="selectOverdueRepayments" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_FINANCING_REPAYMENT
+        WHERE DELETE_FLAG = 0
+        AND REPAYMENT_STATUS = 'PENDING'
+        AND PLAN_DATE &lt; SYSDATE
+        ORDER BY PLAN_DATE ASC
+    </select>
+
+</mapper>
+

@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.oracle.mapper.AccountingRuleMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="AccountingRuleVOMap" type="com.financial.sharing.vo.result.AccountingRuleVO">
+        <id column="RULE_ID" property="ruleId"/>
+        <result column="RULE_CODE" property="ruleCode"/>
+        <result column="RULE_NAME" property="ruleName"/>
+        <result column="RULE_TYPE" property="ruleType"/>
+        <result column="TRANSACTION_TYPE" property="transactionType"/>
+        <result column="RULE_CONDITION" property="ruleCondition"/>
+        <result column="RULE_ACTION" property="ruleAction"/>
+        <result column="PRIORITY" property="priority"/>
+        <result column="IS_ENABLED" property="isEnabled"/>
+        <result column="BOOK_ID" property="bookId"/>
+        <result column="TENANT_ID" property="tenantId"/>
+        <result column="VERSION" property="version"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="CREATOR" property="creator"/>
+        <result column="UPDATER" property="updater"/>
+    </resultMap>
+
+    <!-- 分页查询会计规则 -->
+    <select id="selectAccountingRulePage" resultMap="AccountingRuleVOMap">
+        SELECT 
+            RULE_ID, RULE_CODE, RULE_NAME, RULE_TYPE, TRANSACTION_TYPE,
+            RULE_CONDITION, RULE_ACTION, PRIORITY, IS_ENABLED,
+            BOOK_ID, TENANT_ID, VERSION, CREATE_TIME, UPDATE_TIME, CREATOR, UPDATER
+        FROM T_ACCOUNTING_RULE
+        WHERE IS_DELETED = 0
+        <if test="param.ruleCode != null and param.ruleCode != ''">
+            AND RULE_CODE LIKE '%' || #{param.ruleCode} || '%'
+        </if>
+        <if test="param.ruleName != null and param.ruleName != ''">
+            AND RULE_NAME LIKE '%' || #{param.ruleName} || '%'
+        </if>
+        <if test="param.ruleType != null">
+            AND RULE_TYPE = #{param.ruleType}
+        </if>
+        <if test="param.transactionType != null and param.transactionType != ''">
+            AND TRANSACTION_TYPE = #{param.transactionType}
+        </if>
+        <if test="param.isEnabled != null">
+            AND IS_ENABLED = #{param.isEnabled}
+        </if>
+        <if test="param.bookId != null">
+            AND BOOK_ID = #{param.bookId}
+        </if>
+        <if test="param.tenantId != null">
+            AND TENANT_ID = #{param.tenantId}
+        </if>
+        ORDER BY PRIORITY ASC, CREATE_TIME DESC
+    </select>
+
+    <!-- 根据规则编码查询会计规则 -->
+    <select id="selectByRuleCode" resultType="com.financial.sharing.oracle.entity.AccountingRuleEntity">
+        SELECT * FROM T_ACCOUNTING_RULE
+        WHERE RULE_CODE = #{ruleCode}
+        AND BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+        AND IS_DELETED = 0
+        <if test="excludeId != null">
+            AND RULE_ID != #{excludeId}
+        </if>
+        AND ROWNUM = 1
+    </select>
+
+    <!-- 根据规则类型查询会计规则列表 -->
+    <select id="selectByRuleType" resultMap="AccountingRuleVOMap">
+        SELECT 
+            RULE_ID, RULE_CODE, RULE_NAME, RULE_TYPE, TRANSACTION_TYPE,
+            RULE_CONDITION, RULE_ACTION, PRIORITY, IS_ENABLED,
+            BOOK_ID, TENANT_ID, VERSION, CREATE_TIME, UPDATE_TIME, CREATOR, UPDATER
+        FROM T_ACCOUNTING_RULE
+        WHERE RULE_TYPE = #{ruleType}
+        AND BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+        AND IS_DELETED = 0
+        ORDER BY PRIORITY ASC, CREATE_TIME DESC
+    </select>
+
+    <!-- 根据事项类型查询会计规则列表 -->
+    <select id="selectByTransactionType" resultMap="AccountingRuleVOMap">
+        SELECT 
+            RULE_ID, RULE_CODE, RULE_NAME, RULE_TYPE, TRANSACTION_TYPE,
+            RULE_CONDITION, RULE_ACTION, PRIORITY, IS_ENABLED,
+            BOOK_ID, TENANT_ID, VERSION, CREATE_TIME, UPDATE_TIME, CREATOR, UPDATER
+        FROM T_ACCOUNTING_RULE
+        WHERE TRANSACTION_TYPE = #{transactionType}
+        AND BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+        AND IS_DELETED = 0
+        ORDER BY PRIORITY ASC, CREATE_TIME DESC
+    </select>
+
+    <!-- 根据启用状态查询会计规则列表 -->
+    <select id="selectByEnabled" resultMap="AccountingRuleVOMap">
+        SELECT 
+            RULE_ID, RULE_CODE, RULE_NAME, RULE_TYPE, TRANSACTION_TYPE,
+            RULE_CONDITION, RULE_ACTION, PRIORITY, IS_ENABLED,
+            BOOK_ID, TENANT_ID, VERSION, CREATE_TIME, UPDATE_TIME, CREATOR, UPDATER
+        FROM T_ACCOUNTING_RULE
+        WHERE IS_ENABLED = #{isEnabled}
+        AND BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+        AND IS_DELETED = 0
+        ORDER BY PRIORITY ASC, CREATE_TIME DESC
+    </select>
+
+    <!-- 批量删除会计规则 -->
+    <update id="batchDelete">
+        UPDATE T_ACCOUNTING_RULE SET 
+            IS_DELETED = 1,
+            UPDATE_TIME = SYSDATE
+            <if test="updater != null">
+                , UPDATER = #{updater}
+            </if>
+        WHERE RULE_ID IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 批量更新启用状态 -->
+    <update id="batchUpdateEnabled">
+        UPDATE T_ACCOUNTING_RULE SET 
+            IS_ENABLED = #{isEnabled},
+            UPDATE_TIME = SYSDATE
+            <if test="updater != null">
+                , UPDATER = #{updater}
+            </if>
+        WHERE RULE_ID IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND IS_DELETED = 0
+    </update>
+
+    <!-- 获取规则类型列表 -->
+    <select id="selectRuleTypes" resultType="java.lang.Integer">
+        SELECT DISTINCT RULE_TYPE
+        FROM T_ACCOUNTING_RULE
+        WHERE BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+        AND IS_DELETED = 0
+        ORDER BY RULE_TYPE
+    </select>
+
+    <!-- 获取事项类型列表 -->
+    <select id="selectTransactionTypes" resultType="java.lang.String">
+        SELECT DISTINCT TRANSACTION_TYPE
+        FROM T_ACCOUNTING_RULE
+        WHERE BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+        AND IS_DELETED = 0
+        ORDER BY TRANSACTION_TYPE
+    </select>
+
+    <!-- 统计规则数量按类型分组 -->
+    <select id="countByRuleType" resultMap="AccountingRuleVOMap">
+        SELECT 
+            RULE_TYPE,
+            COUNT(*) as ruleId
+        FROM T_ACCOUNTING_RULE
+        WHERE BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+        AND IS_DELETED = 0
+        GROUP BY RULE_TYPE
+        ORDER BY RULE_TYPE
+    </select>
+
+    <!-- 统计规则数量按事项类型分组 -->
+    <select id="countByTransactionType" resultMap="AccountingRuleVOMap">
+        SELECT 
+            TRANSACTION_TYPE,
+            COUNT(*) as ruleId
+        FROM T_ACCOUNTING_RULE
+        WHERE BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+        AND IS_DELETED = 0
+        GROUP BY TRANSACTION_TYPE
+        ORDER BY TRANSACTION_TYPE
+    </select>
+
+</mapper>

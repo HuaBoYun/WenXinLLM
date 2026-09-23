@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.DataAnalysisTaskMapper">
+
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.DataAnalysisTask">
+        <id column="TASK_ID" property="taskId"/>
+        <result column="TASK_NO" property="taskNo"/>
+        <result column="TASK_NAME" property="taskName"/>
+        <result column="TASK_TYPE" property="taskType"/>
+        <result column="ANALYSIS_TYPE" property="analysisType"/>
+        <result column="DATA_SOURCE" property="dataSource"/>
+        <result column="DATA_RANGE" property="dataRange"/>
+        <result column="ANALYSIS_PARAMETERS" property="analysisParameters"/>
+        <result column="MODEL_ID" property="modelId"/>
+        <result column="SCHEDULE_TYPE" property="scheduleType"/>
+        <result column="SCHEDULE_CRON" property="scheduleCron"/>
+        <result column="RESULT_FORMAT" property="resultFormat"/>
+        <result column="TASK_STATUS" property="taskStatus"/>
+        <result column="EXECUTION_TIME" property="executionTime"/>
+        <result column="EXECUTE_USER" property="executeUser"/>
+        <result column="EXECUTION_RESULT" property="executionResult"/>
+        <result column="ERROR_MESSAGE" property="errorMessage"/>
+        <result column="REMARK" property="remark"/>
+        <result column="ORG_ID" property="orgId"/>
+        <result column="CREATE_BY" property="createBy"/>
+        <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="UPDATE_BY" property="updateBy"/>
+        <result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="DEL_FLAG" property="delFlag"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        TASK_ID, TASK_NO, TASK_NAME, TASK_TYPE, ANALYSIS_TYPE, DATA_SOURCE, DATA_RANGE,
+        ANALYSIS_PARAMETERS, MODEL_ID, SCHEDULE_TYPE, SCHEDULE_CRON, RESULT_FORMAT,
+        TASK_STATUS, EXECUTION_TIME, EXECUTE_USER, EXECUTION_RESULT, ERROR_MESSAGE,
+        REMARK, ORG_ID, CREATE_BY, CREATE_TIME, UPDATE_BY, UPDATE_TIME, DEL_FLAG
+    </sql>
+
+    <!-- MyBatis-Plus BaseMapper需要的selectList方法 -->
+    <select id="selectList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_DATA_ANALYSIS_TASK
+        WHERE DEL_FLAG = '0'
+    </select>
+
+    <!-- MyBatis-Plus BaseMapper需要的selectById方法 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_DATA_ANALYSIS_TASK
+        WHERE TASK_ID = #{taskId} AND DEL_FLAG = '0'
+    </select>
+
+    <!-- 根据条件查询数据分析任务列表 -->
+    <select id="selectByCondition" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TBL_DATA_ANALYSIS_TASK
+        WHERE DEL_FLAG = '0'
+        <if test="taskNo != null and taskNo != ''">
+            AND TASK_NO LIKE '%' || #{taskNo} || '%'
+        </if>
+        <if test="taskName != null and taskName != ''">
+            AND TASK_NAME LIKE '%' || #{taskName} || '%'
+        </if>
+        <if test="taskType != null and taskType != ''">
+            AND TASK_TYPE = #{taskType}
+        </if>
+        <if test="taskStatus != null and taskStatus != ''">
+            AND TASK_STATUS = #{taskStatus}
+        </if>
+        <if test="orgId != null">
+            AND ORG_ID = #{orgId}
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+</mapper>

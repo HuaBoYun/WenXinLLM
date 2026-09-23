@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.oracle.mapper.AccountingPeriodLogMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.financial.sharing.oracle.entity.TblAccountingPeriodLog">
+        <id column="LOG_ID" property="logId" />
+        <result column="PERIOD_ID" property="periodId" />
+        <result column="OLD_STATUS" property="oldStatus" />
+        <result column="NEW_STATUS" property="newStatus" />
+        <result column="OPERATION_TYPE" property="operationType" />
+        <result column="OPERATION_REASON" property="operationReason" />
+        <result column="OPERATOR_ID" property="operatorId" />
+        <result column="OPERATOR_NAME" property="operatorName" />
+        <result column="OPERATION_TIME" property="operationTime" />
+        <result column="BOOK_ID" property="bookId" />
+        <result column="TENANT_ID" property="tenantId" />
+        <result column="REMARK" property="remark" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        LOG_ID, PERIOD_ID, OLD_STATUS, NEW_STATUS, OPERATION_TYPE, OPERATION_REASON,
+        OPERATOR_ID, OPERATOR_NAME, OPERATION_TIME, BOOK_ID, TENANT_ID, REMARK
+    </sql>
+
+    <!-- 根据期间ID查询日志 -->
+    <select id="selectByPeriodId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TBL_ACCOUNTING_PERIOD_LOG
+        WHERE PERIOD_ID = #{periodId}
+        ORDER BY OPERATION_TIME DESC
+    </select>
+
+    <!-- 查询指定操作类型的日志 -->
+    <select id="selectByOperationType" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TBL_ACCOUNTING_PERIOD_LOG
+        WHERE OPERATION_TYPE = #{operationType}
+        AND BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+        ORDER BY OPERATION_TIME DESC
+    </select>
+
+</mapper>

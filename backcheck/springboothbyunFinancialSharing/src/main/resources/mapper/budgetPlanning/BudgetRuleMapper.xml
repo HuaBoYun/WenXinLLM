@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.budgetPlanning.mapper.BudgetRuleMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.financial.sharing.budgetPlanning.entity.TblBudgetRule">
+        <id column="RULE_ID" property="ruleId"/>
+        <result column="MODEL_ID" property="modelId"/>
+        <result column="RULE_CODE" property="ruleCode"/>
+        <result column="RULE_NAME" property="ruleName"/>
+        <result column="RULE_TYPE" property="ruleType"/>
+        <result column="RULE_EXPRESSION" property="ruleExpression"/>
+        <result column="PRIORITY" property="priority"/>
+        <result column="STATUS" property="status"/>
+        <result column="DESCRIPTION" property="description"/>
+        <result column="SORT_ORDER" property="sortOrder"/>
+        <result column="ORG_ID" property="orgId"/>
+        <result column="CREATE_USER" property="createUser"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_USER" property="updateUser"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="MODEL_NAME" property="modelName"/>
+    </resultMap>
+
+    <!-- 查询业务规则列表 -->
+    <select id="selectRuleList" resultMap="BaseResultMap">
+        SELECT
+            r.RULE_ID,
+            r.MODEL_ID,
+            r.RULE_CODE,
+            r.RULE_NAME,
+            r.RULE_TYPE,
+            r.RULE_EXPRESSION,
+            r.PRIORITY,
+            r.STATUS,
+            r.DESCRIPTION,
+            r.SORT_ORDER,
+            r.ORG_ID,
+            r.CREATE_USER,
+            r.CREATE_TIME,
+            r.UPDATE_USER,
+            r.UPDATE_TIME,
+            m.MODEL_NAME
+        FROM TBL_BUDGET_RULE r
+        LEFT JOIN TBL_BUDGET_MODEL m ON r.MODEL_ID = m.MODEL_ID
+        <where>
+            <if test="param.modelId != null and param.modelId != ''">
+                AND r.MODEL_ID = #{param.modelId}
+            </if>
+            <if test="param.ruleCode != null and param.ruleCode != ''">
+                AND r.RULE_CODE LIKE CONCAT('%', #{param.ruleCode}, '%')
+            </if>
+            <if test="param.ruleName != null and param.ruleName != ''">
+                AND r.RULE_NAME LIKE CONCAT('%', #{param.ruleName}, '%')
+            </if>
+            <if test="param.ruleType != null and param.ruleType != ''">
+                AND r.RULE_TYPE = #{param.ruleType}
+            </if>
+            <if test="param.status != null and param.status != ''">
+                AND r.STATUS = #{param.status}
+            </if>
+        </where>
+        ORDER BY r.PRIORITY, r.SORT_ORDER, r.CREATE_TIME DESC
+    </select>
+
+    <!-- 根据规则编码查询业务规则 -->
+    <select id="selectByRuleCode" resultMap="BaseResultMap">
+        SELECT
+            r.RULE_ID,
+            r.MODEL_ID,
+            r.RULE_CODE,
+            r.RULE_NAME,
+            r.RULE_TYPE,
+            r.RULE_EXPRESSION,
+            r.PRIORITY,
+            r.STATUS,
+            r.DESCRIPTION,
+            r.SORT_ORDER,
+            r.ORG_ID,
+            r.CREATE_USER,
+            r.CREATE_TIME,
+            r.UPDATE_USER,
+            r.UPDATE_TIME,
+            m.MODEL_NAME
+        FROM TBL_BUDGET_RULE r
+        LEFT JOIN TBL_BUDGET_MODEL m ON r.MODEL_ID = m.MODEL_ID
+        WHERE r.RULE_CODE = #{ruleCode}
+    </select>
+
+    <!-- 检查规则编码是否存在 -->
+    <select id="checkRuleCodeExists" resultType="int">
+        SELECT COUNT(*)
+        FROM TBL_BUDGET_RULE
+        WHERE RULE_CODE = #{ruleCode}
+        <if test="excludeId != null and excludeId != ''">
+            AND RULE_ID != #{excludeId}
+        </if>
+    </select>
+
+</mapper>
+

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.oracle.mapper.CostCollectionRuleMapper">
+
+    <resultMap id="BaseResultMap" type="com.financial.sharing.oracle.entity.CostCollectionRuleEntity">
+        <id column="RULE_ID" property="ruleId" />
+        <result column="RULE_NAME" property="ruleName" />
+        <result column="COST_CENTER_ID" property="costCenterId" />
+        <result column="SOURCE_ACCOUNT" property="sourceAccount" />
+        <result column="COLLECTION_METHOD" property="collectionMethod" />
+        <result column="COLLECTION_TYPE" property="collectionType" />
+        <result column="RULE_DESCRIPTION" property="ruleDescription" />
+        <result column="IS_ENABLED" property="isEnabled" />
+        <result column="PRIORITY" property="priority" />
+        <result column="BOOK_ID" property="bookId" />
+        <result column="TENANT_ID" property="tenantId" />
+        <result column="CREATE_BY" property="createBy" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_BY" property="updateBy" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="REMARK" property="remark" />
+    </resultMap>
+
+    <!-- 根据成本中心ID查询归集规则 -->
+    <!-- 注意：达梦/Oracle 默认会把未加双引号的标识符转大写，所以 alias 必须用双引号包裹 -->
+    <!-- 否则前端拿到的字段名会变成 RULEID/RULENAME 这种大写连写格式 -->
+    <select id="selectRulesByCenterId" resultType="map">
+        SELECT
+            RULE_ID            AS "ruleId",
+            RULE_NAME          AS "ruleName",
+            COST_CENTER_ID     AS "costCenterId",
+            SOURCE_ACCOUNT     AS "sourceAccount",
+            COLLECTION_METHOD  AS "collectionMethod",
+            COLLECTION_TYPE    AS "collectionType",
+            RULE_DESCRIPTION   AS "ruleDescription",
+            IS_ENABLED         AS "isEnabled",
+            PRIORITY           AS "priority",
+            CREATE_TIME        AS "createTime"
+        FROM TBL_COST_COLLECTION_RULE
+        WHERE BOOK_ID = #{bookId}
+          AND TENANT_ID = #{tenantId}
+          <if test="costCenterId != null and costCenterId != ''">
+              AND COST_CENTER_ID = #{costCenterId}
+          </if>
+        ORDER BY PRIORITY ASC, CREATE_TIME DESC
+    </select>
+
+    <!-- 查询所有启用的归集规则 -->
+    <select id="selectEnabledRules" resultType="map">
+        SELECT
+            RULE_ID            AS "ruleId",
+            RULE_NAME          AS "ruleName",
+            COST_CENTER_ID     AS "costCenterId",
+            SOURCE_ACCOUNT     AS "sourceAccount",
+            COLLECTION_METHOD  AS "collectionMethod",
+            COLLECTION_TYPE    AS "collectionType",
+            RULE_DESCRIPTION   AS "ruleDescription",
+            PRIORITY           AS "priority"
+        FROM TBL_COST_COLLECTION_RULE
+        WHERE BOOK_ID = #{bookId}
+          AND TENANT_ID = #{tenantId}
+          AND IS_ENABLED = 1
+        ORDER BY PRIORITY ASC
+    </select>
+
+    <!-- 批量更新规则状态 -->
+    <update id="batchUpdateStatus">
+        UPDATE TBL_COST_COLLECTION_RULE
+        SET IS_ENABLED = #{isEnabled},
+            UPDATE_TIME = SYSDATE
+        WHERE RULE_ID IN
+        <foreach collection="ruleIds" item="ruleId" open="(" separator="," close=")">
+            #{ruleId}
+        </foreach>
+    </update>
+
+    <!-- 检查规则名称是否存在 -->
+    <select id="checkRuleNameExists" resultType="int">
+        SELECT COUNT(1)
+        FROM TBL_COST_COLLECTION_RULE
+        WHERE RULE_NAME = #{ruleName}
+          AND BOOK_ID = #{bookId}
+          AND TENANT_ID = #{tenantId}
+          <if test="ruleId != null and ruleId != ''">
+              AND RULE_ID != #{ruleId}
+          </if>
+    </select>
+
+</mapper>
+

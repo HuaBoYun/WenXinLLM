@@ -1,0 +1,38 @@
+<configuration scan="true" scanPeriod="60 seconds" >
+
+    <property name="LOG_HOME" value="logs"/>
+    <!-- 项目名称 -->
+    <springProperty scope="context" name="appName" source="spring.application.name"/>
+
+    <!-- Configure the Console appender -->
+    <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="rollingFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_HOME}/${appName}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_HOME}/${appName}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy
+                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>5MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>15</maxHistory>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%-20(%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread]) %-5level %logger{50} - %msg%n</pattern>
+        </encoder>
+    </appender>
+    <!-- Configure the Sentry appender, overriding the logging threshold to the WARN level -->
+
+    <!-- 打印sql -->
+    <logger name="com.huabo.audit.mapper" level="DEBUG"/>
+
+    <!-- 打印error级信息 -->
+    <root level="error">
+        <appender-ref ref="stdout" />
+        <appender-ref ref="rollingFile" />
+    </root>
+</configuration>

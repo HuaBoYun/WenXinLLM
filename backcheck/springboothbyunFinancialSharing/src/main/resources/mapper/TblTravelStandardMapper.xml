@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.mapper.TblTravelStandardMapper">
+
+    <select id="selectByStandardCode" resultType="com.financial.sharing.entity.TblTravelStandard">
+        SELECT * FROM TBL_TRAVEL_STANDARD WHERE STANDARD_CODE = #{standardCode}
+    </select>
+
+    <select id="selectByCityAndPosition" resultType="com.financial.sharing.entity.TblTravelStandard">
+        SELECT * FROM TBL_TRAVEL_STANDARD 
+        WHERE CITY_LEVEL = #{cityLevel} AND POSITION_LEVEL = #{positionLevel} 
+        AND IS_ENABLED = 1 ORDER BY CREATE_TIME DESC
+    </select>
+
+    <select id="selectByCityLevel" resultType="com.financial.sharing.entity.TblTravelStandard">
+        SELECT * FROM TBL_TRAVEL_STANDARD WHERE CITY_LEVEL = #{cityLevel} AND IS_ENABLED = 1 ORDER BY CREATE_TIME DESC
+    </select>
+
+    <select id="selectByPositionLevel" resultType="com.financial.sharing.entity.TblTravelStandard">
+        SELECT * FROM TBL_TRAVEL_STANDARD WHERE POSITION_LEVEL = #{positionLevel} AND IS_ENABLED = 1 ORDER BY CREATE_TIME DESC
+    </select>
+
+</mapper>
+

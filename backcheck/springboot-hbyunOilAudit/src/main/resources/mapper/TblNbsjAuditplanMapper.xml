@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.audit.oracle.mapper.TblNbsjAuditplanMapper">
+    <select id="findList" resultType="com.huabo.audit.oracle.entity.TblNbsjAuditplan">
+        SELECT TNA.PLANID,TNA.PLANCODE,TNA.PLANNAME,TNA.PALNYEAR,TNA.PLANTYPE,TNA.PALNCOST,TNA.STARTTIME,TNA.ENDTIME,TNA.REMARKS,
+        TNA.CREATETIME,TNA.STATUS,TNA.OPINIONSTATUS,TNA.ISAUDITOR,PRINCIPAL.STAFFID AS PRISTAFFID,PRINCIPAL.REALNAME AS PRIREALNAME,
+        LEADER.STAFFID LEASTAFFID,LEADER.REALNAME LEAREALNAME,AUDITORG.ORGID AUDORGID,AUDITORG.ORGNAME AUDORGNAME,
+        CRESTAFF.STAFFID CRESTAFFID,CRESTAFF.REALNAME CREREALNAME FROM TBL_NBSJ_AUDITPLAN TNA
+        LEFT JOIN TBL_STAFF PRINCIPAL ON PRINCIPAL.STAFFID = TNA.PRINCIPALID
+        LEFT JOIN TBL_STAFF LEADER ON LEADER.STAFFID = TNA.LEADERID
+        LEFT JOIN TBL_ORGANIZATION AUDITORG ON AUDITORG.ORGID = TNA.AUDITORGID
+        LEFT JOIN TBL_STAFF CRESTAFF ON CRESTAFF.STAFFID = TNA.CREATESTAFFID
+        <where>
+            <!--字符串需要判断空字符串 精准查询-->
+            <if test="orgId != null and orgId != ''">
+                and TNA.AUDITORGID = = #{orgId}
+            </if>
+            <!--字符串需要判断空字符串 精准查询-->
+            <if test="re.principalid != null and re.principalid != ''">
+                AND AND TNA.PRINCIPALID =  #{re.principalid}
+            </if>
+            <!--字符串需要判断空字符串 精准查询-->
+            <if test="re.plancode != null and re.plancode != ''">
+                AND TNA.PLANCODE LIKE concat(concat('%',#{re.plancode}),'%')
+            </if>
+            <!--字符串需要判断空字符串 精准查询-->
+            <if test="re.planname != null and re.planname != ''">
+                and TNA.PLANNAME like concat(concat('%',#{re.planname}),'%')
+            </if>
+            <!--字符串需要判断空字符串 模糊查询-->
+            <if test="re.palnyear != null and re.palnyear != ''">
+                and TNA.PALNYEAR like concat(concat('%',#{re.palnyear}),'%')
+            </if>
+            <!--字符串需要判断空字符串 模糊查询-->
+            <if test="planStartDate != null and planStartDate != ''">
+                AND TNA.STARTTIME &gt;= #{planStartDate}
+            </if>
+            <!--字符串需要判断空字符串 模糊查询-->
+            <if test="planEndDate != null and planEndDate != ''">
+                AND TNA.ENDTIME &lt;= #{planEndDate}
+            </if>
+        </where>
+        ORDER BY TNA.PLANID DESC
+    </select>
+</mapper>

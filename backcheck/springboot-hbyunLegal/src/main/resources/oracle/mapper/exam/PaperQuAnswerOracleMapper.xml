@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.legal.exam.modules.paper.mapper.PaperQuAnswerMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.huabo.legal.exam.modules.paper.entity.PaperQuAnswer">
+        <id column="id" property="id" />
+        <result column="paperid" property="paperId" />
+        <result column="answerid" property="answerId" />
+        <result column="quid" property="quId" />
+        <result column="isright" property="isRight" />
+        <result column="checked" property="checked" />
+        <result column="sort" property="sort" />
+        <result column="abc" property="abc" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        `id`,`paperid`,`answerid`,`quid`,`isright`,`checked`,`sort`,`abc`
+    </sql>
+
+    <resultMap id="ListResultMap"
+               type="com.huabo.legal.exam.modules.paper.dto.ext.PaperQuAnswerExtDTO"
+               extends="BaseResultMap">
+        <result column="image" property="image" />
+        <result column="content" property="content" />
+    </resultMap>
+
+
+    <select id="list" resultMap="ListResultMap">
+        SELECT pa.id,pa.paperid,pa.answerid,pa.quid,pa.checked,pa.sort,pa.abc,qa.content,qa.image
+        FROM tbl_fwgl_paper_qu_answer pa
+        LEFT JOIN tbl_fwgl_qu_answer qa ON pa.answerid=qa.id
+        WHERE pa.paperid=#{paperId} AND pa.quid=#{quId}
+        ORDER BY pa.sort ASC
+    </select>
+
+    <select id="listForShow" resultMap="ListResultMap">
+        SELECT pa.id,pa.paperid,pa.answerid,pa.quid,pa.checked,pa.sort,pa.abc,qa.content,qa.isright,qa.image
+        FROM tbl_fwgl_paper_qu_answer pa
+        LEFT JOIN tbl_fwgl_qu_answer qa ON pa.answerid=qa.id
+        WHERE pa.paperid=#{paperId} AND pa.quid=#{quId}
+        ORDER BY pa.sort ASC
+    </select>
+
+</mapper>

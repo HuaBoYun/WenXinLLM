@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.oracle.mapper.InventoryCategoryMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.financial.sharing.oracle.entity.InventoryCategoryEntity">
+        <id column="CATEGORY_ID" property="categoryId"/>
+        <result column="CATEGORY_CODE" property="categoryCode"/>
+        <result column="CATEGORY_NAME" property="categoryName"/>
+        <result column="PARENT_ID" property="parentId"/>
+        <result column="CATEGORY_LEVEL" property="categoryLevel"/>
+        <result column="CATEGORY_PATH" property="categoryPath"/>
+        <result column="PRICING_METHOD" property="pricingMethod"/>
+        <result column="DEFAULT_UNIT_ID" property="defaultUnitId"/>
+        <result column="DEFAULT_WAREHOUSE_ID" property="defaultWarehouseId"/>
+        <result column="SORT_ORDER" property="sortOrder"/>
+        <result column="STATUS" property="status"/>
+        <result column="REMARK" property="remark"/>
+        <result column="TENANT_ID" property="tenantId"/>
+        <result column="CREATOR_ID" property="creatorId"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATER_ID" property="updaterId"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="DELETED" property="deleted"/>
+    </resultMap>
+
+    <!-- 查询存货分类树 -->
+    <select id="selectCategoryTree" resultType="map">
+        SELECT 
+            c.CATEGORY_ID as "categoryId",
+            c.CATEGORY_CODE as "categoryCode",
+            c.CATEGORY_NAME as "categoryName",
+            c.PARENT_ID as "parentId",
+            c.CATEGORY_LEVEL as "level",
+            c.SORT_ORDER as "sort",
+            c.STATUS as "status",
+            c.UPDATE_TIME as "updateTime",
+            (SELECT COUNT(*) FROM TBL_INVENTORY_MASTER m 
+             WHERE m.CATEGORY_ID = c.CATEGORY_ID 
+             AND m.TENANT_ID = #{tenantId} 
+             AND m.DELETED = 0) as "inventoryCount"
+        FROM TBL_INVENTORY_CATEGORY c
+        WHERE c.TENANT_ID = #{tenantId}
+        AND c.DELETED = 0
+        ORDER BY c.SORT_ORDER ASC, c.CATEGORY_ID ASC
+    </select>
+
+    <!-- 根据父级ID查询子分类列表 -->
+    <select id="selectByParentId" resultMap="BaseResultMap">
+        SELECT *
+        FROM TBL_INVENTORY_CATEGORY
+        WHERE PARENT_ID = #{parentId}
+        AND TENANT_ID = #{tenantId}
+        AND DELETED = 0
+        ORDER BY SORT_ORDER ASC, CATEGORY_ID ASC
+    </select>
+
+    <!-- 根据分类编码查询分类 -->
+    <select id="selectByCategoryCode" resultMap="BaseResultMap">
+        SELECT *
+        FROM TBL_INVENTORY_CATEGORY
+        WHERE CATEGORY_CODE = #{categoryCode}
+        AND TENANT_ID = #{tenantId}
+        AND DELETED = 0
+    </select>
+
+    <!-- 根据分类ID查询存货列表 -->
+    <select id="selectInventoriesByCategoryId" resultType="map">
+        SELECT 
+            INVENTORY_ID as "inventoryId",
+            INVENTORY_CODE as "inventoryCode",
+            INVENTORY_NAME as "inventoryName",
+            SPECIFICATION as "specification",
+            MODEL as "model",
+            UNIT_NAME as "unitName",
+            CURRENT_QUANTITY as "currentQuantity",
+            STATUS as "status"
+        FROM TBL_INVENTORY_MASTER
+        WHERE CATEGORY_ID = #{categoryId}
+        AND TENANT_ID = #{tenantId}
+        AND DELETED = 0
+        ORDER BY INVENTORY_CODE ASC
+    </select>
+
+    <!-- 更新分类排序 -->
+    <update id="updateSortOrder">
+        UPDATE TBL_INVENTORY_CATEGORY
+        SET SORT_ORDER = #{sortOrder},
+            UPDATE_TIME = SYSDATE
+        WHERE CATEGORY_ID = #{categoryId}
+    </update>
+
+    <!-- 更新分类路径 -->
+    <update id="updateCategoryPath">
+        UPDATE TBL_INVENTORY_CATEGORY
+        SET CATEGORY_PATH = #{categoryPath},
+            UPDATE_TIME = SYSDATE
+        WHERE CATEGORY_ID = #{categoryId}
+    </update>
+
+    <!-- 检查分类是否有子分类 -->
+    <select id="countChildCategories" resultType="int">
+        SELECT COUNT(*)
+        FROM TBL_INVENTORY_CATEGORY
+        WHERE PARENT_ID = #{categoryId}
+        AND TENANT_ID = #{tenantId}
+        AND DELETED = 0
+    </select>
+
+    <!-- 检查分类是否有存货 -->
+    <select id="countInventories" resultType="int">
+        SELECT COUNT(*)
+        FROM TBL_INVENTORY_MASTER
+        WHERE CATEGORY_ID = #{categoryId}
+        AND TENANT_ID = #{tenantId}
+        AND DELETED = 0
+    </select>
+
+</mapper>
+

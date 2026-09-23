@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.fxgl.mapper.YyPriceMapper">
+
+    <!--
+        selectListByIds：根据逗号分隔的 priceid 字符串查询价格列表。
+        兼容纯数字 ID（如 "2,19"）和 CJBDI 字符串 ID（如 "cjbdi_03,cjbdi_08"）。
+        使用 foreach 将每个 id 包裹单引号，避免达梦数据库将字符串值误识别为列名。
+    -->
+    <select id="selectListByIds" resultType="com.huabo.fxgl.entity.YyPrice">
+        SELECT * FROM TBL_YY_PRICE
+        WHERE PRICEID IN
+        <foreach collection="ids.split(',')" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+</mapper>

@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.TcDataMappingMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TcDataMapping">
+        <id column="ID" property="id" />
+        <result column="SYSTEM_ID" property="systemId" />
+        <result column="MAPPING_CODE" property="mappingCode" />
+        <result column="MAPPING_NAME" property="mappingName" />
+        <result column="SOURCE_SYSTEM" property="sourceSystem" />
+        <result column="TARGET_SYSTEM" property="targetSystem" />
+        <result column="MAPPING_TYPE" property="mappingType" />
+        <result column="MAPPING_RULE" property="mappingRule" />
+        <result column="SOURCE_FIELD" property="sourceField" />
+        <result column="TARGET_FIELD" property="targetField" />
+        <result column="FIELD_TYPE" property="fieldType" />
+        <result column="CONVERSION_RULE" property="conversionRule" />
+        <result column="DEFAULT_VALUE" property="defaultValue" />
+        <result column="IS_REQUIRED" property="isRequired" />
+        <result column="VALIDATION_RULE" property="validationRule" />
+        <result column="ERROR_STRATEGY" property="errorStrategy" />
+        <result column="SORT_ORDER" property="sortOrder" />
+        <result column="STATUS" property="status" />
+        <result column="REMARK" property="remark" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="CREATE_USER" property="createUser" />
+        <result column="UPDATE_USER" property="updateUser" />
+        <result column="VERSION_NO" property="versionNo" />
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        ID, SYSTEM_ID, MAPPING_CODE, MAPPING_NAME, SOURCE_SYSTEM, TARGET_SYSTEM, MAPPING_TYPE,
+        MAPPING_RULE, SOURCE_FIELD, TARGET_FIELD, FIELD_TYPE, CONVERSION_RULE, DEFAULT_VALUE,
+        IS_REQUIRED, VALIDATION_RULE, ERROR_STRATEGY, SORT_ORDER, STATUS, REMARK,
+        CREATE_TIME, UPDATE_TIME, CREATE_USER, UPDATE_USER, VERSION_NO
+    </sql>
+
+    <!-- selectById -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TC_DATA_MAPPING
+        WHERE ID = #{id}
+    </select>
+
+    <!-- insert -->
+    <insert id="insert" parameterType="com.global.treasurer.entity.TcDataMapping">
+        INSERT INTO TC_DATA_MAPPING (
+            ID, SYSTEM_ID, MAPPING_CODE, MAPPING_NAME, SOURCE_SYSTEM, TARGET_SYSTEM, MAPPING_TYPE,
+            MAPPING_RULE, SOURCE_FIELD, TARGET_FIELD, FIELD_TYPE, CONVERSION_RULE, DEFAULT_VALUE,
+            IS_REQUIRED, VALIDATION_RULE, ERROR_STRATEGY, SORT_ORDER, STATUS, REMARK,
+            CREATE_TIME, UPDATE_TIME, CREATE_USER, UPDATE_USER, VERSION_NO
+        ) VALUES (
+            #{id}, #{systemId}, #{mappingCode}, #{mappingName}, #{sourceSystem}, #{targetSystem}, #{mappingType},
+            #{mappingRule}, #{sourceField}, #{targetField}, #{fieldType}, #{conversionRule}, #{defaultValue},
+            #{isRequired}, #{validationRule}, #{errorStrategy}, #{sortOrder}, #{status}, #{remark},
+            #{createTime}, #{updateTime}, #{createUser}, #{updateUser}, #{versionNo}
+        )
+    </insert>
+
+    <!-- updateById -->
+    <update id="updateById" parameterType="com.global.treasurer.entity.TcDataMapping">
+        UPDATE TC_DATA_MAPPING
+        <set>
+            <if test="systemId != null">SYSTEM_ID = #{systemId},</if>
+            <if test="mappingCode != null">MAPPING_CODE = #{mappingCode},</if>
+            <if test="mappingName != null">MAPPING_NAME = #{mappingName},</if>
+            <if test="sourceSystem != null">SOURCE_SYSTEM = #{sourceSystem},</if>
+            <if test="targetSystem != null">TARGET_SYSTEM = #{targetSystem},</if>
+            <if test="mappingType != null">MAPPING_TYPE = #{mappingType},</if>
+            <if test="mappingRule != null">MAPPING_RULE = #{mappingRule},</if>
+            <if test="sourceField != null">SOURCE_FIELD = #{sourceField},</if>
+            <if test="targetField != null">TARGET_FIELD = #{targetField},</if>
+            <if test="fieldType != null">FIELD_TYPE = #{fieldType},</if>
+            <if test="conversionRule != null">CONVERSION_RULE = #{conversionRule},</if>
+            <if test="defaultValue != null">DEFAULT_VALUE = #{defaultValue},</if>
+            <if test="isRequired != null">IS_REQUIRED = #{isRequired},</if>
+            <if test="validationRule != null">VALIDATION_RULE = #{validationRule},</if>
+            <if test="errorStrategy != null">ERROR_STRATEGY = #{errorStrategy},</if>
+            <if test="sortOrder != null">SORT_ORDER = #{sortOrder},</if>
+            <if test="status != null">STATUS = #{status},</if>
+            <if test="remark != null">REMARK = #{remark},</if>
+            <if test="updateTime != null">UPDATE_TIME = #{updateTime},</if>
+            <if test="updateUser != null">UPDATE_USER = #{updateUser},</if>
+            <if test="versionNo != null">VERSION_NO = #{versionNo}</if>
+        </set>
+        WHERE ID = #{id}
+    </update>
+
+    <!-- deleteById -->
+    <delete id="deleteById">
+        DELETE FROM TC_DATA_MAPPING WHERE ID = #{id}
+    </delete>
+
+    <!-- selectListWithConditions - 自定义查询方法,使用PageHelper分页,兼容达梦数据库 -->
+    <select id="selectListWithConditions" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TC_DATA_MAPPING
+        <where>
+            <if test="systemId != null and systemId != ''">
+                AND SYSTEM_ID = #{systemId}
+            </if>
+            <if test="mappingName != null and mappingName != ''">
+                AND MAPPING_NAME LIKE CONCAT('%', #{mappingName}, '%')
+            </if>
+            <if test="mappingCode != null and mappingCode != ''">
+                AND MAPPING_CODE LIKE CONCAT('%', #{mappingCode}, '%')
+            </if>
+            <if test="sourceSystem != null and sourceSystem != ''">
+                AND SOURCE_SYSTEM = #{sourceSystem}
+            </if>
+            <if test="targetSystem != null and targetSystem != ''">
+                AND TARGET_SYSTEM = #{targetSystem}
+            </if>
+            <if test="mappingType != null and mappingType != ''">
+                AND MAPPING_TYPE = #{mappingType}
+            </if>
+            <if test="status != null and status != ''">
+                AND STATUS = #{status}
+            </if>
+        </where>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+
+</mapper>

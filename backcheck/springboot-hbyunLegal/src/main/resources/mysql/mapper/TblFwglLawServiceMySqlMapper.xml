@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.legal.mysql.mapper.TblFwglLawServiceMySqlMapper">
+  <resultMap id="BaseResultMap" type="com.huabo.legal.mysql.entity.TblFwglLawServiceMySql">
+    <!--@mbg.generated generated on Mon Sep 12 17:11:00 CST 2022.-->
+    <!--@Table hbgrctest.tbl_fwgl_perennial_law_service-->
+    <id column="LAWSERVICEID" jdbcType="INTEGER" property="lawServiceId" />
+    <result column="UNITNAME" jdbcType="VARCHAR" property="unitName" />
+    <result column="ORGANIZATIONNAME" jdbcType="VARCHAR" property="organizationName" />
+    <result column="ISAWARDOFCONTRACT" jdbcType="INTEGER" property="isAwardOfContract" />
+    <result column="EXPENSE" jdbcType="VARCHAR" property="expense" />
+    <result column="EMPLOYMENTTERMTYPE" jdbcType="INTEGER" property="employmentTermType" />
+    <result column="EMPLOYMENTTERMSTARTTIME" jdbcType="TIMESTAMP" property="employmentTermStartTime" />
+    <result column="EMPLOYMENTTERMENDTIME" jdbcType="TIMESTAMP" property="employmentTermEndTime" />
+    <result column="FILLINPERSON" jdbcType="VARCHAR" property="fillInPerson" />
+    <result column="FILLINTIME" jdbcType="TIMESTAMP" property="fillInTime" />
+    <result column="AUDITPERSON" jdbcType="VARCHAR" property="auditPerson" />
+    <result column="AUDITTIME" jdbcType="TIMESTAMP" property="auditTime" />
+    <result column="LAWSERVICETYPE" jdbcType="INTEGER" property="lawServiceType" />
+    <result column="STATE" jdbcType="INTEGER" property="state" />
+    <result column="SCOPEOFSERVICES" jdbcType="VARCHAR" property="scopeOfServices" />
+    <result column="LAWYERID" jdbcType="VARCHAR" property="lawyerId" />
+    <result column="WORKRECORDID" jdbcType="VARCHAR" property="workRecordId" />
+    <result column="WORKREPORTID" jdbcType="VARCHAR" property="workReportId" />
+    <result column="GRADEID" jdbcType="VARCHAR" property="gradeId" />
+    <result column="EXAMINEID" jdbcType="VARCHAR" property="examineId" />
+    <result column="CREATOR" jdbcType="VARCHAR" property="creator" />
+    <result column="WORKUNIT" jdbcType="VARCHAR" property="workUnit" />
+    <result column="BELONGGROUP" jdbcType="VARCHAR" property="belongGroup" />
+    <result column="CREATEDTIME" jdbcType="TIMESTAMP" property="createdTime" />
+    <result column="UPDATEDTIME" jdbcType="TIMESTAMP" property="updatedTime" />
+  </resultMap>
+</mapper>

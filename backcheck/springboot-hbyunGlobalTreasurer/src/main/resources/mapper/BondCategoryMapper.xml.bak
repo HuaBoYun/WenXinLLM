@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.global.treasurer.mapper.BondCategoryMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.BondCategory">
+        <id column="ID" property="id" jdbcType="VARCHAR"/>
+        <result column="CATEGORY_CODE" property="categoryCode" jdbcType="VARCHAR"/>
+        <result column="CATEGORY_NAME" property="categoryName" jdbcType="VARCHAR"/>
+        <result column="CATEGORY_TYPE" property="categoryType" jdbcType="VARCHAR"/>
+        <result column="PARENT_ID" property="parentId" jdbcType="VARCHAR"/>
+        <result column="TRADING_MARKET" property="tradingMarket" jdbcType="VARCHAR"/>
+        <result column="MARKET_CODE" property="marketCode" jdbcType="VARCHAR"/>
+        <result column="ISSUER_TYPE" property="issuerType" jdbcType="VARCHAR"/>
+        <result column="MATURITY_RANGE" property="maturityRange" jdbcType="VARCHAR"/>
+        <result column="INTEREST_TYPE" property="interestType" jdbcType="VARCHAR"/>
+        <result column="RATING_REQUIREMENT" property="ratingRequirement" jdbcType="VARCHAR"/>
+        <result column="MIN_ISSUE_AMOUNT" property="minIssueAmount" jdbcType="DECIMAL"/>
+        <result column="MAX_ISSUE_AMOUNT" property="maxIssueAmount" jdbcType="DECIMAL"/>
+        <result column="ISSUE_CURRENCY" property="issueCurrency" jdbcType="VARCHAR"/>
+        <result column="REGULATORY_AUTHORITY" property="regulatoryAuthority" jdbcType="VARCHAR"/>
+        <result column="APPROVAL_REQUIRED" property="approvalRequired" jdbcType="VARCHAR"/>
+        <result column="DISCLOSURE_REQUIRED" property="disclosureRequired" jdbcType="VARCHAR"/>
+        <result column="LISTING_REQUIRED" property="listingRequired" jdbcType="VARCHAR"/>
+        <result column="SORT_ORDER" property="sortOrder" jdbcType="INTEGER"/>
+        <result column="STATUS" property="status" jdbcType="VARCHAR"/>
+        <result column="REMARK" property="remark" jdbcType="VARCHAR"/>
+        <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="CREATE_USER" property="createUser" jdbcType="VARCHAR"/>
+        <result column="UPDATE_USER" property="updateUser" jdbcType="VARCHAR"/>
+        <result column="VERSION_NO" property="versionNo" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        ID, CATEGORY_CODE, CATEGORY_NAME, CATEGORY_TYPE, PARENT_ID, TRADING_MARKET,
+        MARKET_CODE, ISSUER_TYPE, MATURITY_RANGE, INTEREST_TYPE, RATING_REQUIREMENT,
+        MIN_ISSUE_AMOUNT, MAX_ISSUE_AMOUNT, ISSUE_CURRENCY, REGULATORY_AUTHORITY,
+        APPROVAL_REQUIRED, DISCLOSURE_REQUIRED, LISTING_REQUIRED, SORT_ORDER,
+        STATUS, REMARK, CREATE_TIME, UPDATE_TIME, CREATE_USER, UPDATE_USER, VERSION_NO
+    </sql>
+
+    <!-- 分页查询债券类别 -->
+    <select id="selectCategoryPage" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM FM_BOND_CATEGORY
+        <where>
+            <if test="categoryCode != null and categoryCode != ''">
+                AND CATEGORY_CODE LIKE '%' || #{categoryCode} || '%'
+            </if>
+            <if test="categoryName != null and categoryName != ''">
+                AND CATEGORY_NAME LIKE '%' || #{categoryName} || '%'
+            </if>
+            <if test="categoryType != null and categoryType != ''">
+                AND CATEGORY_TYPE = #{categoryType}
+            </if>
+            <if test="status != null and status != ''">
+                AND STATUS = #{status}
+            </if>
+            AND STATUS != '2'
+            ORDER BY SORT_ORDER ASC, CREATE_TIME DESC
+        </where>
+        OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
+    </select>
+
+    <!-- 查询债券类别总数 -->
+    <select id="selectCategoryCount" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM FM_BOND_CATEGORY
+        <where>
+            <if test="categoryCode != null and categoryCode != ''">
+                AND CATEGORY_CODE LIKE '%' || #{categoryCode} || '%'
+            </if>
+            <if test="categoryName != null and categoryName != ''">
+                AND CATEGORY_NAME LIKE '%' || #{categoryName} || '%'
+            </if>
+            <if test="categoryType != null and categoryType != ''">
+                AND CATEGORY_TYPE = #{categoryType}
+            </if>
+            <if test="status != null and status != ''">
+                AND STATUS = #{status}
+            </if>
+            AND STATUS != '2'
+        </where>
+    </select>
+
+    <!-- 获取类别类型列表 -->
+    <select id="selectCategoryTypes" resultType="java.util.Map">
+        SELECT DISTINCT
+            CATEGORY_TYPE as value,
+            CASE CATEGORY_TYPE
+                WHEN 'GOVERNMENT' THEN '政府债券'
+                WHEN 'CORPORATE' THEN '企业债券'
+                WHEN 'FINANCIAL' THEN '金融债券'
+                WHEN 'MUNICIPAL' THEN '市政债券'
+                ELSE CATEGORY_TYPE
+            END as label
+        FROM FM_BOND_CATEGORY
+        WHERE CATEGORY_TYPE IS NOT NULL
+        AND STATUS = '1'
+        ORDER BY CATEGORY_TYPE
+    </select>
+
+    <!-- 获取交易市场列表 -->
+    <select id="selectMarkets" resultType="java.util.Map">
+        SELECT DISTINCT
+            TRADING_MARKET as value,
+            TRADING_MARKET as label
+        FROM FM_BOND_CATEGORY
+        WHERE TRADING_MARKET IS NOT NULL
+        AND TRADING_MARKET != ''
+        AND STATUS = '1'
+        ORDER BY TRADING_MARKET
+    </select>
+
+</mapper>

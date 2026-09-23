@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.oracle.mapper.FinanceConfigMapper">
+    
+    <!-- 查询配置列表 -->
+    <select id="selectConfigList" resultType="java.util.Map">
+        SELECT 
+            config_id,
+            config_name,
+            config_code,
+            config_value,
+            config_type,
+            description,
+            status,
+            create_by,
+            create_time,
+            update_by,
+            update_time
+        FROM finance_config
+        <where>
+            <if test="params.configName != null and params.configName != ''">
+                AND config_name LIKE '%' || #{params.configName} || '%'
+            </if>
+            <if test="params.configCode != null and params.configCode != ''">
+                AND config_code = #{params.configCode}
+            </if>
+            <if test="params.configType != null and params.configType != ''">
+                AND config_type = #{params.configType}
+            </if>
+            <if test="params.status != null and params.status != ''">
+                AND status = #{params.status}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+    
+    <!-- 根据ID查询配置详情 -->
+    <select id="selectConfigById" resultType="java.util.Map">
+        SELECT 
+            config_id,
+            config_name,
+            config_code,
+            config_value,
+            config_type,
+            description,
+            status,
+            create_by,
+            create_time,
+            update_by,
+            update_time
+        FROM finance_config
+        WHERE config_id = #{configId}
+    </select>
+    
+    <!-- 插入配置 -->
+    <insert id="insertConfig">
+        INSERT INTO finance_config (
+            config_id,
+            config_name,
+            config_code,
+            config_value,
+            config_type,
+            description,
+            status,
+            create_by,
+            create_time
+        ) VALUES (
+            #{config.configId},
+            #{config.configName},
+            #{config.configCode},
+            #{config.configValue},
+            #{config.configType},
+            #{config.description},
+            #{config.status},
+            #{config.createBy},
+            SYSDATE
+        )
+    </insert>
+    
+    <!-- 更新配置 -->
+    <update id="updateConfig">
+        UPDATE finance_config
+        SET 
+            config_name = #{config.configName},
+            config_code = #{config.configCode},
+            config_value = #{config.configValue},
+            config_type = #{config.configType},
+            description = #{config.description},
+            status = #{config.status},
+            update_by = #{config.updateBy},
+            update_time = SYSDATE
+        WHERE config_id = #{config.configId}
+    </update>
+    
+    <!-- 删除配置 -->
+    <delete id="deleteConfig">
+        DELETE FROM finance_config WHERE config_id = #{configId}
+    </delete>
+    
+</mapper>

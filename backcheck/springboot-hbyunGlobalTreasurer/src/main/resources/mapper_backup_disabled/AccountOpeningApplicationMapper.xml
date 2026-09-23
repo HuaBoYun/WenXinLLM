@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.AccountOpeningApplicationMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.AccountOpeningApplication">
+        <id column="APPLICATION_ID" property="applicationId" jdbcType="BIGINT"/>
+        <result column="APPLICATION_NO" property="applicationNo" jdbcType="VARCHAR"/>
+        <result column="ACCOUNT_NAME" property="accountName" jdbcType="VARCHAR"/>
+        <result column="ACCOUNT_NAME_ENG" property="accountNameEng" jdbcType="VARCHAR"/>
+        <result column="ACCOUNT_TYPE" property="accountType" jdbcType="VARCHAR"/>
+        <result column="BANK_CODE" property="bankCode" jdbcType="VARCHAR"/>
+        <result column="BANK_NAME" property="bankName" jdbcType="VARCHAR"/>
+        <result column="BRANCH_CODE" property="branchCode" jdbcType="VARCHAR"/>
+        <result column="BRANCH_NAME" property="branchName" jdbcType="VARCHAR"/>
+        <result column="CURRENCY_CODE" property="currencyCode" jdbcType="VARCHAR"/>
+        <result column="BUSINESS_LICENSE" property="businessLicense" jdbcType="VARCHAR"/>
+        <result column="ORGANIZATION_CODE" property="organizationCode" jdbcType="VARCHAR"/>
+        <result column="TAX_REGISTRATION" property="taxRegistration" jdbcType="VARCHAR"/>
+        <result column="LEGAL_PERSON" property="legalPerson" jdbcType="VARCHAR"/>
+        <result column="CONTACT_PERSON" property="contactPerson" jdbcType="VARCHAR"/>
+        <result column="CONTACT_PHONE" property="contactPhone" jdbcType="VARCHAR"/>
+        <result column="CONTACT_EMAIL" property="contactEmail" jdbcType="VARCHAR"/>
+        <result column="APPLICATION_REASON" property="applicationReason" jdbcType="CLOB"/>
+        <result column="ATTACHMENTS" property="attachments" jdbcType="CLOB"/>
+        <result column="APPLICATION_STATUS" property="applicationStatus" jdbcType="VARCHAR"/>
+        <result column="APPLICATION_DATE" property="applicationDate" jdbcType="DATE"/>
+        <result column="APPROVAL_DATE" property="approvalDate" jdbcType="DATE"/>
+        <result column="APPROVAL_USER" property="approvalUser" jdbcType="BIGINT"/>
+        <result column="APPROVAL_OPINION" property="approvalOpinion" jdbcType="CLOB"/>
+        <result column="ACCOUNT_NUMBER" property="accountNumber" jdbcType="VARCHAR"/>
+        <result column="REMARK" property="remark" jdbcType="CLOB"/>
+        <result column="ORG_ID" property="orgId" jdbcType="BIGINT"/>
+        <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="CREATE_USER" property="createUser" jdbcType="BIGINT"/>
+        <result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="UPDATE_USER" property="updateUser" jdbcType="BIGINT"/>
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        APPLICATION_ID, APPLICATION_NO, ACCOUNT_NAME, ACCOUNT_NAME_ENG, ACCOUNT_TYPE,
+        BANK_CODE, BANK_NAME, BRANCH_CODE, BRANCH_NAME, CURRENCY_CODE,
+        BUSINESS_LICENSE, ORGANIZATION_CODE, TAX_REGISTRATION, LEGAL_PERSON,
+        CONTACT_PERSON, CONTACT_PHONE, CONTACT_EMAIL, APPLICATION_REASON,
+        ATTACHMENTS, APPLICATION_STATUS, APPLICATION_DATE, APPROVAL_DATE,
+        APPROVAL_USER, APPROVAL_OPINION, ACCOUNT_NUMBER, REMARK, ORG_ID,
+        CREATE_TIME, CREATE_USER, UPDATE_TIME, UPDATE_USER
+    </sql>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_ACCOUNT_OPENING_APPLICATIONS
+        WHERE APPLICATION_ID = #{applicationId,jdbcType=BIGINT}
+    </select>
+
+    <!-- 插入记录 -->
+    <insert id="insert" parameterType="com.global.treasurer.entity.AccountOpeningApplication" useGeneratedKeys="true" keyProperty="applicationId">
+        INSERT INTO TBL_ACCOUNT_OPENING_APPLICATIONS (
+            APPLICATION_NO, ACCOUNT_NAME, ACCOUNT_NAME_ENG, ACCOUNT_TYPE,
+            BANK_CODE, BANK_NAME, BRANCH_CODE, BRANCH_NAME, CURRENCY_CODE,
+            BUSINESS_LICENSE, ORGANIZATION_CODE, TAX_REGISTRATION, LEGAL_PERSON,
+            CONTACT_PERSON, CONTACT_PHONE, CONTACT_EMAIL, APPLICATION_REASON,
+            ATTACHMENTS, APPLICATION_STATUS, APPLICATION_DATE, APPROVAL_DATE,
+            APPROVAL_USER, APPROVAL_OPINION, ACCOUNT_NUMBER, REMARK, ORG_ID,
+            CREATE_TIME, CREATE_USER, UPDATE_TIME, UPDATE_USER
+        ) VALUES (
+            #{applicationNo,jdbcType=VARCHAR}, #{accountName,jdbcType=VARCHAR}, 
+            #{accountNameEng,jdbcType=VARCHAR}, #{accountType,jdbcType=VARCHAR},
+            #{bankCode,jdbcType=VARCHAR}, #{bankName,jdbcType=VARCHAR}, 
+            #{branchCode,jdbcType=VARCHAR}, #{branchName,jdbcType=VARCHAR}, 
+            #{currencyCode,jdbcType=VARCHAR}, #{businessLicense,jdbcType=VARCHAR},
+            #{organizationCode,jdbcType=VARCHAR}, #{taxRegistration,jdbcType=VARCHAR}, 
+            #{legalPerson,jdbcType=VARCHAR}, #{contactPerson,jdbcType=VARCHAR},
+            #{contactPhone,jdbcType=VARCHAR}, #{contactEmail,jdbcType=VARCHAR}, 
+            #{applicationReason,jdbcType=CLOB}, #{attachments,jdbcType=CLOB},
+            #{applicationStatus,jdbcType=VARCHAR}, #{applicationDate,jdbcType=DATE}, 
+            #{approvalDate,jdbcType=DATE}, #{approvalUser,jdbcType=BIGINT},
+            #{approvalOpinion,jdbcType=CLOB}, #{accountNumber,jdbcType=VARCHAR}, 
+            #{remark,jdbcType=CLOB}, #{orgId,jdbcType=BIGINT},
+            #{createTime,jdbcType=TIMESTAMP}, #{createUser,jdbcType=BIGINT}, 
+            #{updateTime,jdbcType=TIMESTAMP}, #{updateUser,jdbcType=BIGINT}
+        )
+    </insert>
+
+    <!-- 更新记录 -->
+    <update id="updateById" parameterType="com.global.treasurer.entity.AccountOpeningApplication">
+        UPDATE TBL_ACCOUNT_OPENING_APPLICATIONS
+        <set>
+            <if test="applicationNo != null">APPLICATION_NO = #{applicationNo,jdbcType=VARCHAR},</if>
+            <if test="accountName != null">ACCOUNT_NAME = #{accountName,jdbcType=VARCHAR},</if>
+            <if test="accountNameEng != null">ACCOUNT_NAME_ENG = #{accountNameEng,jdbcType=VARCHAR},</if>
+            <if test="accountType != null">ACCOUNT_TYPE = #{accountType,jdbcType=VARCHAR},</if>
+            <if test="bankCode != null">BANK_CODE = #{bankCode,jdbcType=VARCHAR},</if>
+            <if test="bankName != null">BANK_NAME = #{bankName,jdbcType=VARCHAR},</if>
+            <if test="branchCode != null">BRANCH_CODE = #{branchCode,jdbcType=VARCHAR},</if>
+            <if test="branchName != null">BRANCH_NAME = #{branchName,jdbcType=VARCHAR},</if>
+            <if test="currencyCode != null">CURRENCY_CODE = #{currencyCode,jdbcType=VARCHAR},</if>
+            <if test="businessLicense != null">BUSINESS_LICENSE = #{businessLicense,jdbcType=VARCHAR},</if>
+            <if test="organizationCode != null">ORGANIZATION_CODE = #{organizationCode,jdbcType=VARCHAR},</if>
+            <if test="taxRegistration != null">TAX_REGISTRATION = #{taxRegistration,jdbcType=VARCHAR},</if>
+            <if test="legalPerson != null">LEGAL_PERSON = #{legalPerson,jdbcType=VARCHAR},</if>
+            <if test="contactPerson != null">CONTACT_PERSON = #{contactPerson,jdbcType=VARCHAR},</if>
+            <if test="contactPhone != null">CONTACT_PHONE = #{contactPhone,jdbcType=VARCHAR},</if>
+            <if test="contactEmail != null">CONTACT_EMAIL = #{contactEmail,jdbcType=VARCHAR},</if>
+            <if test="applicationReason != null">APPLICATION_REASON = #{applicationReason,jdbcType=CLOB},</if>
+            <if test="attachments != null">ATTACHMENTS = #{attachments,jdbcType=CLOB},</if>
+            <if test="applicationStatus != null">APPLICATION_STATUS = #{applicationStatus,jdbcType=VARCHAR},</if>
+            <if test="applicationDate != null">APPLICATION_DATE = #{applicationDate,jdbcType=DATE},</if>
+            <if test="approvalDate != null">APPROVAL_DATE = #{approvalDate,jdbcType=DATE},</if>
+            <if test="approvalUser != null">APPROVAL_USER = #{approvalUser,jdbcType=BIGINT},</if>
+            <if test="approvalOpinion != null">APPROVAL_OPINION = #{approvalOpinion,jdbcType=CLOB},</if>
+            <if test="accountNumber != null">ACCOUNT_NUMBER = #{accountNumber,jdbcType=VARCHAR},</if>
+            <if test="remark != null">REMARK = #{remark,jdbcType=CLOB},</if>
+            <if test="orgId != null">ORG_ID = #{orgId,jdbcType=BIGINT},</if>
+            <if test="updateTime != null">UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP},</if>
+            <if test="updateUser != null">UPDATE_USER = #{updateUser,jdbcType=BIGINT},</if>
+        </set>
+        WHERE APPLICATION_ID = #{applicationId,jdbcType=BIGINT}
+    </update>
+
+    <!-- 删除记录 -->
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM TBL_ACCOUNT_OPENING_APPLICATIONS
+        WHERE APPLICATION_ID = #{applicationId,jdbcType=BIGINT}
+    </delete>
+
+    <!-- 根据申请编号和组织ID查询 -->
+    <select id="selectByApplicationNoAndOrgId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_ACCOUNT_OPENING_APPLICATIONS
+        WHERE APPLICATION_NO = #{applicationNo,jdbcType=VARCHAR}
+        AND ORG_ID = #{orgId,jdbcType=BIGINT}
+    </select>
+
+    <!-- 根据状态查询 -->
+    <select id="selectByStatus" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_ACCOUNT_OPENING_APPLICATIONS
+        WHERE APPLICATION_STATUS = #{status,jdbcType=VARCHAR}
+        <if test="orgId != null">
+            AND ORG_ID = #{orgId,jdbcType=BIGINT}
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据银行代码查询 -->
+    <select id="selectByBankCode" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_ACCOUNT_OPENING_APPLICATIONS
+        WHERE BANK_CODE = #{bankCode,jdbcType=VARCHAR}
+        <if test="orgId != null">
+            AND ORG_ID = #{orgId,jdbcType=BIGINT}
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据币种查询 -->
+    <select id="selectByCurrencyCode" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_ACCOUNT_OPENING_APPLICATIONS
+        WHERE CURRENCY_CODE = #{currencyCode,jdbcType=VARCHAR}
+        <if test="orgId != null">
+            AND ORG_ID = #{orgId,jdbcType=BIGINT}
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据日期范围查询 -->
+    <select id="selectByDateRange" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_ACCOUNT_OPENING_APPLICATIONS
+        WHERE 1=1
+        <if test="startDate != null">
+            AND APPLICATION_DATE >= #{startDate,jdbcType=DATE}
+        </if>
+        <if test="endDate != null">
+            AND APPLICATION_DATE &lt;= #{endDate,jdbcType=DATE}
+        </if>
+        <if test="orgId != null">
+            AND ORG_ID = #{orgId,jdbcType=BIGINT}
+        </if>
+        ORDER BY APPLICATION_DATE DESC
+    </select>
+
+    <!-- 统计指定状态的申请数量 -->
+    <select id="countByStatus" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM TBL_ACCOUNT_OPENING_APPLICATIONS
+        WHERE APPLICATION_STATUS = #{status,jdbcType=VARCHAR}
+        <if test="orgId != null">
+            AND ORG_ID = #{orgId,jdbcType=BIGINT}
+        </if>
+    </select>
+
+</mapper>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.CashForecastConfigMapper">
+
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.CashForecastConfig">
+        <id column="CONFIG_ID" property="configId" />
+        <result column="ORG_ID" property="orgId" />
+        <result column="START_DATE" property="startDate" />
+        <result column="FORECAST_DAYS" property="forecastDays" />
+        <result column="HISTORICAL_PERIOD" property="historicalPeriod" />
+        <result column="SEASONAL_ADJUSTMENT" property="seasonalAdjustment" />
+        <result column="OUTLIER_HANDLING" property="outlierHandling" />
+        <result column="BUSINESS_PLAN_WEIGHT" property="businessPlanWeight" />
+        <result column="UPDATE_FREQUENCY" property="updateFrequency" />
+        <result column="ALERT_THRESHOLD" property="alertThreshold" />
+        <result column="DELETE_FLAG" property="deleteFlag" />
+        <result column="CREATED_BY" property="createdBy" />
+        <result column="CREATED_BY_NAME" property="createdByName" />
+        <result column="CREATED_TIME" property="createdTime" />
+        <result column="UPDATED_BY" property="updatedBy" />
+        <result column="UPDATED_BY_NAME" property="updatedByName" />
+        <result column="UPDATED_TIME" property="updatedTime" />
+    </resultMap>
+
+    <select id="selectPage" resultMap="BaseResultMap">
+        SELECT * FROM TBL_CASH_FORECAST_CONFIG
+        <where>
+            DELETE_FLAG = 0
+            <if test="param.orgId != null">
+                AND ORG_ID = #{param.orgId}
+            </if>
+        </where>
+        ORDER BY CREATED_TIME DESC
+    </select>
+
+    <update id="batchDelete">
+        UPDATE TBL_CASH_FORECAST_CONFIG
+        SET DELETE_FLAG = 1, UPDATED_TIME = CURRENT_TIMESTAMP
+        WHERE CONFIG_ID IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+</mapper>

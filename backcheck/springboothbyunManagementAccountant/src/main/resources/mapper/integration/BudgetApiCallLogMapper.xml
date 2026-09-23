@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.management.accountant.oracle.mapper.integration.BudgetApiCallLogMapper">
+    <resultMap id="BaseResultMap" type="com.management.accountant.oracle.entity.integration.BudgetApiCallLog">
+        <id column="LOG_ID" property="logId"/>
+        <result column="API_ID" property="apiId"/>
+        <result column="REQUEST_ID" property="requestId"/>
+        <result column="CALL_TIME" property="callTime"/>
+        <result column="REQUEST_URL" property="requestUrl"/>
+        <result column="REQUEST_METHOD" property="requestMethod"/>
+        <result column="REQUEST_HEADERS" property="requestHeaders"/>
+        <result column="REQUEST_BODY" property="requestBody"/>
+        <result column="RESPONSE_STATUS" property="responseStatus"/>
+        <result column="RESPONSE_HEADERS" property="responseHeaders"/>
+        <result column="RESPONSE_BODY" property="responseBody"/>
+        <result column="RESPONSE_TIME" property="responseTime"/>
+        <result column="DATA_SIZE" property="dataSize"/>
+        <result column="ERROR_MESSAGE" property="errorMessage"/>
+        <result column="CALL_STATUS" property="callStatus"/>
+        <result column="CALLER_IP" property="callerIp"/>
+        <result column="CREATED_TIME" property="createdTime"/>
+    </resultMap>
+
+    <select id="listByApiId" resultMap="BaseResultMap">
+        SELECT LOG_ID, API_ID, REQUEST_ID, CALL_TIME, REQUEST_URL, REQUEST_METHOD,
+               REQUEST_HEADERS, REQUEST_BODY, RESPONSE_STATUS, RESPONSE_HEADERS,
+               RESPONSE_BODY, RESPONSE_TIME, DATA_SIZE, ERROR_MESSAGE, CALL_STATUS,
+               CALLER_IP, CREATED_TIME
+        FROM TBL_BUDGET_API_CALL_LOG
+        WHERE API_ID = #{apiId}
+        ORDER BY CALL_TIME DESC
+    </select>
+</mapper>

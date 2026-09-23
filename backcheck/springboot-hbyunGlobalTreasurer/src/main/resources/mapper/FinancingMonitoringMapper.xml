@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.FinancingMonitoringMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="FinancingMonitoringResult" type="com.global.treasurer.entity.TblFinancingMonitoring">
+        <id property="monitoringId" column="MONITORING_ID"/>
+        <result property="alertType" column="ALERT_TYPE"/>
+        <result property="alertLevel" column="ALERT_LEVEL"/>
+        <result property="alertMessage" column="ALERT_MESSAGE"/>
+        <result property="relatedFinancingId" column="RELATED_FINANCING_ID"/>
+        <result property="alertStatus" column="ALERT_STATUS"/>
+        <result property="alertDate" column="ALERT_DATE"/>
+        <result property="handlerId" column="HANDLER_ID"/>
+        <result property="handlerName" column="HANDLER_NAME"/>
+        <result property="handleDate" column="HANDLE_DATE"/>
+        <result property="handleOpinion" column="HANDLE_OPINION"/>
+        <result property="companyId" column="COMPANY_ID"/>
+        <result property="companyName" column="COMPANY_NAME"/>
+        <result property="deleteFlag" column="DELETE_FLAG"/>
+        <result property="createdTime" column="CREATED_TIME"/>
+        <result property="updatedTime" column="UPDATED_TIME"/>
+        <result property="remark" column="REMARK"/>
+    </resultMap>
+
+    <!-- 根据查询条件查询融资监控列表 -->
+    <select id="selectByQueryDTO" parameterType="com.global.treasurer.dto.FinancingMonitoringQueryDTO"
+            resultMap="FinancingMonitoringResult">
+        SELECT * FROM TBL_FINANCING_MONITORING
+        WHERE DELETE_FLAG = 0
+        <if test="alertType != null and alertType != ''">
+            AND ALERT_TYPE = #{alertType}
+        </if>
+        <if test="alertLevel != null and alertLevel != ''">
+            AND ALERT_LEVEL = #{alertLevel}
+        </if>
+        <if test="alertStatus != null and alertStatus != ''">
+            AND ALERT_STATUS = #{alertStatus}
+        </if>
+        <if test="relatedFinancingId != null">
+            AND RELATED_FINANCING_ID = #{relatedFinancingId}
+        </if>
+        <if test="companyId != null">
+            AND COMPANY_ID = #{companyId}
+        </if>
+        <if test="startDate != null">
+            AND ALERT_DATE &gt;= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND ALERT_DATE &lt;= #{endDate}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (ALERT_MESSAGE LIKE '%'||#{keyword}||'%'
+                 OR COMPANY_NAME LIKE '%'||#{keyword}||'%')
+        </if>
+        ORDER BY ALERT_DATE DESC
+    </select>
+
+    <!-- 获取监控概览统计 -->
+    <select id="selectMonitoringOverview" resultType="java.util.HashMap">
+        SELECT
+            COUNT(*) as "totalFinancing",
+            SUM(CASE WHEN ALERT_STATUS = 'PENDING' THEN 1 ELSE 0 END) as "activeFinancing",
+            NVL((SELECT SUM(CREDIT_LIMIT) FROM TBL_CREDIT_CONTRACT WHERE DELETE_FLAG = 0 AND CONTRACT_STATUS IN ('ACTIVE', 'EFFECTIVE')), 0) as "totalOutstanding",
+            SUM(CASE WHEN ALERT_LEVEL = 'HIGH' OR ALERT_LEVEL = 'MEDIUM' THEN 1 ELSE 0 END) as "riskAlerts",
+            SUM(CASE WHEN ALERT_STATUS = 'PENDING' THEN 1 ELSE 0 END) as "upcomingPayments",
+            ROUND(NVL(SUM(CASE WHEN ALERT_STATUS = 'CLOSED' OR ALERT_STATUS = 'HANDLED' THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(*), 0), 100), 1) as "complianceRate"
+        FROM TBL_FINANCING_MONITORING
+        WHERE DELETE_FLAG = 0
+    </select>
+
+    <!-- 获取仪表盘数据 -->
+    <select id="selectDashboardData" resultType="java.util.HashMap">
+        SELECT
+            NVL((SELECT SUM(CREDIT_LIMIT) FROM TBL_CREDIT_CONTRACT WHERE DELETE_FLAG = 0 AND CONTRACT_STATUS IN ('ACTIVE', 'EFFECTIVE')), 0) as "totalFinancing",
+            NVL((SELECT COUNT(*) FROM TBL_CREDIT_CONTRACT WHERE DELETE_FLAG = 0 AND CONTRACT_STATUS IN ('ACTIVE', 'EFFECTIVE')), 0) as "activeContracts",
+            NVL(SUM(CASE WHEN ALERT_STATUS = 'PENDING' THEN 1 ELSE 0 END), 0) as "riskAlerts",
+            NVL((SELECT AVG(INTEREST_RATE) FROM TBL_CREDIT_CONTRACT WHERE DELETE_FLAG = 0 AND CONTRACT_STATUS IN ('ACTIVE', 'EFFECTIVE')), 0) as "avgCostRate"
+        FROM TBL_FINANCING_MONITORING
+        WHERE DELETE_FLAG = 0
+    </select>
+
+    <!-- 获取趋势分析数据 -->
+    <select id="selectTrendsData" parameterType="String" resultType="java.util.HashMap">
+        SELECT
+            TRUNC(ALERT_DATE) as date_key,
+            ALERT_TYPE,
+            ALERT_LEVEL,
+            COUNT(*) as count
+        FROM TBL_FINANCING_MONITORING
+        WHERE DELETE_FLAG = 0
+        <if test="period == 'week'">
+            AND ALERT_DATE &gt;= TRUNC(SYSDATE - 7)
+        </if>
+        <if test="period == 'month'">
+            AND ALERT_DATE &gt;= TRUNC(SYSDATE - 30)
+        </if>
+        <if test="period == 'quarter'">
+            AND ALERT_DATE &gt;= TRUNC(SYSDATE - 90)
+        </if>
+        <if test="period == 'year'">
+            AND ALERT_DATE &gt;= TRUNC(SYSDATE - 365)
+        </if>
+        GROUP BY TRUNC(ALERT_DATE), ALERT_TYPE, ALERT_LEVEL
+        ORDER BY TRUNC(ALERT_DATE) DESC
+    </select>
+
+    <!-- 获取统计信息 -->
+    <select id="selectMonitoringStatistics" resultType="java.util.HashMap">
+        SELECT
+            ALERT_TYPE,
+            ALERT_LEVEL,
+            ALERT_STATUS,
+            COUNT(*) as count,
+            COUNT(DISTINCT COMPANY_ID) as company_count,
+            COUNT(DISTINCT RELATED_FINANCING_ID) as financing_count
+        FROM TBL_FINANCING_MONITORING
+        WHERE DELETE_FLAG = 0
+        GROUP BY ALERT_TYPE, ALERT_LEVEL, ALERT_STATUS
+    </select>
+
+    <!-- 根据预警级别查询预警列表 -->
+    <select id="selectByAlertLevel" parameterType="String" resultMap="FinancingMonitoringResult">
+        SELECT * FROM TBL_FINANCING_MONITORING
+        WHERE DELETE_FLAG = 0
+        AND ALERT_LEVEL = #{alertLevel}
+        AND ALERT_STATUS = 'PENDING'
+        ORDER BY ALERT_DATE DESC
+    </select>
+
+    <!-- 查询需要刷新的监控记录 -->
+    <select id="selectNeedRefresh" resultMap="FinancingMonitoringResult">
+        SELECT * FROM TBL_FINANCING_MONITORING
+        WHERE DELETE_FLAG = 0
+        AND ALERT_STATUS IN ('PENDING', 'HANDLED')
+        ORDER BY ALERT_DATE ASC
+    </select>
+
+    <!-- 获取融资类型分布数据 - 基于担保方式统计 -->
+    <select id="selectFinancingTypeDistribution" resultType="java.util.HashMap">
+        SELECT
+            NVL(GUARANTEE_METHOD, '其他') as code,
+            NVL(GUARANTEE_METHOD, '其他') as name,
+            COUNT(*) as value
+        FROM TBL_CREDIT_CONTRACT
+        WHERE DELETE_FLAG = 0
+        AND CONTRACT_STATUS IN ('ACTIVE', 'EFFECTIVE', 'SIGNED')
+        GROUP BY GUARANTEE_METHOD
+        ORDER BY COUNT(*) DESC
+    </select>
+
+    <!-- 获取风险等级分布数据 -->
+    <select id="selectRiskLevelDistribution" resultType="java.util.HashMap">
+        SELECT
+            NVL(ALERT_LEVEL, 'UNKNOWN') as "code",
+            CASE
+                WHEN ALERT_LEVEL = 'HIGH' THEN '高风险'
+                WHEN ALERT_LEVEL = 'MEDIUM' THEN '中风险'
+                WHEN ALERT_LEVEL = 'LOW' THEN '低风险'
+                ELSE '未评级'
+            END as "name",
+            COUNT(*) as "value"
+        FROM TBL_FINANCING_MONITORING
+        WHERE DELETE_FLAG = 0
+        GROUP BY ALERT_LEVEL
+        ORDER BY
+            CASE ALERT_LEVEL
+                WHEN 'HIGH' THEN 1
+                WHEN 'MEDIUM' THEN 2
+                WHEN 'LOW' THEN 3
+                ELSE 4
+            END
+    </select>
+
+    <!-- 获取合规状态分布数据 -->
+    <select id="selectComplianceDistribution" resultType="java.util.HashMap">
+        SELECT
+            NVL(ALERT_STATUS, 'UNKNOWN') as "code",
+            CASE
+                WHEN ALERT_STATUS = 'COMPLIANT' OR ALERT_STATUS = 'CLOSED' THEN '合规'
+                WHEN ALERT_STATUS = 'WARNING' OR ALERT_STATUS = 'PENDING' THEN '预警'
+                WHEN ALERT_STATUS = 'BREACH' OR ALERT_STATUS = 'HANDLED' THEN '违约'
+                ELSE '未知'
+            END as "name",
+            COUNT(*) as "value"
+        FROM TBL_FINANCING_MONITORING
+        WHERE DELETE_FLAG = 0
+        GROUP BY ALERT_STATUS
+    </select>
+
+    <!-- 获取融资规模趋势数据（按月统计） -->
+    <select id="selectFinancingScaleTrend" parameterType="Integer" resultType="java.util.HashMap">
+        SELECT
+            TO_CHAR(TRUNC(START_DATE, 'MM'), 'MM') || '月' as "month",
+            NVL(SUM(CREDIT_LIMIT), 0) as "amount"
+        FROM TBL_CREDIT_CONTRACT
+        WHERE DELETE_FLAG = 0
+        AND CONTRACT_STATUS IN ('ACTIVE', 'EFFECTIVE', 'SIGNED')
+        AND START_DATE >= ADD_MONTHS(TRUNC(SYSDATE, 'MM'), -#{months} + 1)
+        AND START_DATE &lt; ADD_MONTHS(TRUNC(SYSDATE, 'MM'), 1)
+        GROUP BY TRUNC(START_DATE, 'MM')
+        ORDER BY TRUNC(START_DATE, 'MM') ASC
+    </select>
+
+    <!-- 获取融资结构分析数据（按融资类型统计） -->
+    <select id="selectFinancingStructure" resultType="java.util.HashMap">
+        SELECT
+            CASE
+                WHEN GUARANTEE_METHOD = '信用' THEN '银行贷款'
+                WHEN GUARANTEE_METHOD = '抵押' THEN '抵押贷款'
+                WHEN GUARANTEE_METHOD = '质押' THEN '质押融资'
+                WHEN GUARANTEE_METHOD = '保证' THEN '担保融资'
+                WHEN GUARANTEE_METHOD = '组合' THEN '组合融资'
+                ELSE '其他融资'
+            END as "name",
+            NVL(SUM(CREDIT_LIMIT), 0) as "value"
+        FROM TBL_CREDIT_CONTRACT
+        WHERE DELETE_FLAG = 0
+        AND CONTRACT_STATUS IN ('ACTIVE', 'EFFECTIVE', 'SIGNED')
+        GROUP BY
+            CASE
+                WHEN GUARANTEE_METHOD = '信用' THEN '银行贷款'
+                WHEN GUARANTEE_METHOD = '抵押' THEN '抵押贷款'
+                WHEN GUARANTEE_METHOD = '质押' THEN '质押融资'
+                WHEN GUARANTEE_METHOD = '保证' THEN '担保融资'
+                WHEN GUARANTEE_METHOD = '组合' THEN '组合融资'
+                ELSE '其他融资'
+            END
+        ORDER BY NVL(SUM(CREDIT_LIMIT), 0) DESC
+    </select>
+
+</mapper>

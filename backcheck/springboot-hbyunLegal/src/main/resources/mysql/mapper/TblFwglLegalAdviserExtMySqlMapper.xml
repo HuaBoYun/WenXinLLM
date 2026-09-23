@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.legal.mysql.mapper.TblFwglLegalAdviserExtMySqlMapper">
+  <resultMap id="BaseResultMap" type="com.huabo.legal.mysql.entity.TblFwglLegalAdviserExtMySql">
+    <!--@mbg.generated generated on Sat Sep 10 18:37:27 CST 2022.-->
+    <!--@Table hbgrctest.tbl_fwgl_legal_adviser_ext-->
+    <id column="ADVISEREXTID" jdbcType="INTEGER" property="adviserExtId" />
+    <result column="STARTTIME" jdbcType="TIMESTAMP" property="startTime" />
+    <result column="ENDTIME" jdbcType="TIMESTAMP" property="endTime" />
+    <result column="WORKUNITExt" jdbcType="VARCHAR" property="workUnitExt" />
+    <result column="POSITION" jdbcType="VARCHAR" property="position" />
+    <result column="WORKACHIEVEMENT" jdbcType="VARCHAR" property="workAchievement" />
+    <result column="REMARK" jdbcType="VARCHAR" property="remark" />
+    <result column="STATE" jdbcType="INTEGER" property="state" />
+    <result column="CREATOR" jdbcType="VARCHAR" property="creator" />
+    <result column="BELONGGROUP" jdbcType="VARCHAR" property="belongGroup" />
+    <result column="WORKUNIT" jdbcType="VARCHAR" property="workUnit" />
+    <result column="CREATEDTIME" jdbcType="TIMESTAMP" property="createdTime" />
+    <result column="UPDATEDTIME" jdbcType="TIMESTAMP" property="updatedTime" />
+  </resultMap>
+</mapper>

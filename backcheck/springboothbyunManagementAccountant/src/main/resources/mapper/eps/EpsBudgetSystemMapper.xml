@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.management.accountant.mapper.eps.EpsBudgetSystemMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.management.accountant.entity.eps.EpsBudgetSystem">
+        <id column="system_id" property="systemId" />
+        <result column="system_code" property="systemCode" />
+        <result column="system_name" property="systemName" />
+        <result column="system_description" property="systemDescription" />
+        <result column="system_type" property="systemType" />
+        <result column="fiscal_year" property="fiscalYear" />
+        <result column="organization_id" property="organizationId" />
+        <result column="organization_name" property="organizationName" />
+        <result column="organization_level" property="organizationLevel" />
+        <result column="organization_path" property="organizationPath" />
+        <result column="entity_type" property="entityType" />
+        <result column="entity_id" property="entityId" />
+        <result column="entity_name" property="entityName" />
+        <result column="entity_code" property="entityCode" />
+        <result column="subject_system_id" property="subjectSystemId" />
+        <result column="subject_system_name" property="subjectSystemName" />
+        <result column="dimension_config" property="dimensionConfig" />
+        <result column="version_config" property="versionConfig" />
+        <result column="period_config" property="periodConfig" />
+        <result column="currency_config" property="currencyConfig" />
+        <result column="base_currency" property="baseCurrency" />
+        <result column="enable_multi_currency" property="enableMultiCurrency" />
+        <result column="exchange_rate_type" property="exchangeRateType" />
+        <result column="control_mode" property="controlMode" />
+        <result column="warning_threshold" property="warningThreshold" />
+        <result column="control_threshold" property="controlThreshold" />
+        <result column="enable_real_time_control" property="enableRealTimeControl" />
+        <result column="approval_workflow_id" property="approvalWorkflowId" />
+        <result column="require_approval" property="requireApproval" />
+        <result column="approval_level" property="approvalLevel" />
+        <result column="status" property="status" />
+        <result column="is_default" property="isDefault" />
+        <result column="effective_date" property="effectiveDate" />
+        <result column="expiry_date" property="expiryDate" />
+        <result column="created_by" property="createdBy" />
+        <result column="created_time" property="createdTime" />
+        <result column="updated_by" property="updatedBy" />
+        <result column="updated_time" property="updatedTime" />
+        <result column="deleted" property="deleted" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        system_id, system_code, system_name, system_description, system_type, fiscal_year,
+        organization_id, organization_name, organization_level, organization_path,
+        entity_type, entity_id, entity_name, entity_code, subject_system_id, subject_system_name,
+        dimension_config, version_config, period_config, currency_config, base_currency,
+        enable_multi_currency, exchange_rate_type, control_mode, warning_threshold, control_threshold,
+        enable_real_time_control, approval_workflow_id, require_approval, approval_level,
+        status, is_default, effective_date, expiry_date, created_by, created_time, updated_by, updated_time, deleted
+    </sql>
+
+    <!-- 分页查询预算体系 -->
+    <select id="selectBudgetSystemPage" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM tbl_eps_budget_system
+        WHERE deleted = 0
+        <if test="systemName != null and systemName != ''">
+            AND system_name LIKE CONCAT('%', #{systemName}, '%')
+        </if>
+        <if test="systemType != null and systemType != ''">
+            AND system_type = #{systemType}
+        </if>
+        <if test="fiscalYear != null">
+            AND fiscal_year = #{fiscalYear}
+        </if>
+        <if test="organizationId != null">
+            AND organization_id = #{organizationId}
+        </if>
+        <if test="status != null and status != ''">
+            AND status = #{status}
+        </if>
+        ORDER BY created_time DESC
+    </select>
+
+    <!-- 根据组织ID查询预算体系列表 -->
+    <select id="selectByOrganizationId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM tbl_eps_budget_system
+        WHERE deleted = 0 AND organization_id = #{organizationId}
+        ORDER BY created_time DESC
+    </select>
+
+    <!-- 根据体系编码查询预算体系 -->
+    <select id="selectBySystemCode" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM tbl_eps_budget_system
+        WHERE deleted = 0 AND system_code = #{systemCode}
+        LIMIT 1
+    </select>
+
+    <!-- 查询默认预算体系 -->
+    <select id="selectDefaultSystem" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM tbl_eps_budget_system
+        WHERE deleted = 0 AND organization_id = #{organizationId} AND is_default = 1
+        LIMIT 1
+    </select>
+
+    <!-- 设置默认预算体系 -->
+    <update id="setDefaultSystem">
+        UPDATE tbl_eps_budget_system
+        SET is_default = 1, updated_time = SYSDATE
+        WHERE system_id = #{systemId} AND organization_id = #{organizationId} AND deleted = 0
+    </update>
+
+    <!-- 取消默认预算体系 -->
+    <update id="unsetDefaultSystem">
+        UPDATE tbl_eps_budget_system
+        SET is_default = 0, updated_time = SYSDATE
+        WHERE organization_id = #{organizationId} AND deleted = 0
+    </update>
+
+    <!-- 根据预算年度查询预算体系 -->
+    <select id="selectByFiscalYear" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM tbl_eps_budget_system
+        WHERE deleted = 0 AND fiscal_year = #{fiscalYear}
+        <if test="organizationId != null">
+            AND organization_id = #{organizationId}
+        </if>
+        ORDER BY created_time DESC
+    </select>
+
+    <!-- 检查体系编码是否存在 -->
+    <select id="checkSystemCodeExists" resultType="int">
+        SELECT COUNT(1)
+        FROM tbl_eps_budget_system
+        WHERE deleted = 0 AND system_code = #{systemCode}
+        <if test="excludeId != null">
+            AND system_id != #{excludeId}
+        </if>
+    </select>
+
+    <!-- 批量更新状态 -->
+    <update id="batchUpdateStatus">
+        UPDATE tbl_eps_budget_system
+        SET status = #{status}, updated_by = #{updatedBy}, updated_time = SYSDATE
+        WHERE system_id IN
+        <foreach collection="systemIds" item="systemId" open="(" separator="," close=")">
+            #{systemId}
+        </foreach>
+        AND deleted = 0
+    </update>
+
+</mapper>

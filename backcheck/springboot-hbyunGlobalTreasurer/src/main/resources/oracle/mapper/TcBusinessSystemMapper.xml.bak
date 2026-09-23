@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.oracle.mapper.TcBusinessSystemMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.oracle.entity.TcBusinessSystem">
+        <id column="ID" property="id" />
+        <result column="SYSTEM_CODE" property="systemCode" />
+        <result column="SYSTEM_NAME" property="systemName" />
+        <result column="SYSTEM_TYPE" property="systemType" />
+        <result column="SYSTEM_DESC" property="systemDesc" />
+        <result column="INTERFACE_URL" property="interfaceUrl" />
+        <result column="INTERFACE_PORT" property="interfacePort" />
+        <result column="AUTH_TYPE" property="authType" />
+        <result column="AUTH_CONFIG" property="authConfig" />
+        <result column="DATA_FORMAT" property="dataFormat" />
+        <result column="CONNECTION_STATUS" property="connectionStatus" />
+        <result column="LAST_CONNECT_TIME" property="lastConnectTime" />
+        <result column="CONNECT_TIMEOUT" property="connectTimeout" />
+        <result column="READ_TIMEOUT" property="readTimeout" />
+        <result column="RETRY_COUNT" property="retryCount" />
+        <result column="STATUS" property="status" />
+        <result column="REMARK" property="remark" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="CREATE_USER" property="createUser" />
+        <result column="UPDATE_USER" property="updateUser" />
+        <result column="VERSION_NO" property="versionNo" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        ID, SYSTEM_CODE, SYSTEM_NAME, SYSTEM_TYPE, SYSTEM_DESC, INTERFACE_URL, INTERFACE_PORT,
+        AUTH_TYPE, AUTH_CONFIG, DATA_FORMAT, CONNECTION_STATUS, LAST_CONNECT_TIME,
+        CONNECT_TIMEOUT, READ_TIMEOUT, RETRY_COUNT, STATUS, REMARK, CREATE_TIME,
+        UPDATE_TIME, CREATE_USER, UPDATE_USER, VERSION_NO
+    </sql>
+
+    <!-- 根据条件查询业务系统列表 -->
+    <select id="selectList" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TC_BUSINESS_SYSTEM
+        WHERE 1=1
+        <if test="systemName != null and systemName != ''">
+            AND SYSTEM_NAME LIKE '%' || #{systemName} || '%'
+        </if>
+        <if test="systemCode != null and systemCode != ''">
+            AND SYSTEM_CODE LIKE '%' || #{systemCode} || '%'
+        </if>
+        <if test="systemType != null and systemType != ''">
+            AND SYSTEM_TYPE = #{systemType}
+        </if>
+        <if test="connectionStatus != null and connectionStatus != ''">
+            AND CONNECTION_STATUS = #{connectionStatus}
+        </if>
+        <if test="status != null and status != ''">
+            AND STATUS = #{status}
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据ID查询业务系统 -->
+    <select id="selectById" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TC_BUSINESS_SYSTEM
+        WHERE ID = #{id}
+    </select>
+
+    <!-- 新增业务系统 -->
+    <insert id="insert" parameterType="com.global.treasurer.oracle.entity.TcBusinessSystem">
+        INSERT INTO TC_BUSINESS_SYSTEM (
+            ID, SYSTEM_CODE, SYSTEM_NAME, SYSTEM_TYPE, SYSTEM_DESC, INTERFACE_URL,
+            INTERFACE_PORT, AUTH_TYPE, AUTH_CONFIG, DATA_FORMAT, CONNECTION_STATUS,
+            LAST_CONNECT_TIME, CONNECT_TIMEOUT, READ_TIMEOUT, RETRY_COUNT, STATUS,
+            REMARK, CREATE_TIME, UPDATE_TIME, CREATE_USER, UPDATE_USER, VERSION_NO
+        ) VALUES (
+            #{id}, #{systemCode}, #{systemName}, #{systemType}, #{systemDesc}, #{interfaceUrl},
+            #{interfacePort}, #{authType}, #{authConfig}, #{dataFormat}, #{connectionStatus},
+            #{lastConnectTime}, #{connectTimeout}, #{readTimeout}, #{retryCount}, #{status},
+            #{remark}, #{createTime}, #{updateTime}, #{createUser}, #{updateUser}, #{versionNo}
+        )
+    </insert>
+
+    <!-- 更新业务系统 -->
+    <update id="updateById" parameterType="com.global.treasurer.oracle.entity.TcBusinessSystem">
+        UPDATE TC_BUSINESS_SYSTEM
+        SET SYSTEM_NAME = #{systemName},
+            SYSTEM_TYPE = #{systemType},
+            SYSTEM_DESC = #{systemDesc},
+            INTERFACE_URL = #{interfaceUrl},
+            INTERFACE_PORT = #{interfacePort},
+            AUTH_TYPE = #{authType},
+            AUTH_CONFIG = #{authConfig},
+            DATA_FORMAT = #{dataFormat},
+            CONNECTION_STATUS = #{connectionStatus},
+            LAST_CONNECT_TIME = #{lastConnectTime},
+            CONNECT_TIMEOUT = #{connectTimeout},
+            READ_TIMEOUT = #{readTimeout},
+            RETRY_COUNT = #{retryCount},
+            STATUS = #{status},
+            REMARK = #{remark},
+            UPDATE_TIME = #{updateTime},
+            UPDATE_USER = #{updateUser},
+            VERSION_NO = #{versionNo}
+        WHERE ID = #{id}
+    </update>
+
+    <!-- 删除业务系统 -->
+    <delete id="deleteById" parameterType="java.lang.String">
+        DELETE FROM TC_BUSINESS_SYSTEM
+        WHERE ID = #{id}
+    </delete>
+
+    <!-- 批量删除业务系统 -->
+    <delete id="batchDelete" parameterType="java.util.List">
+        DELETE FROM TC_BUSINESS_SYSTEM
+        WHERE ID IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 根据系统编码查询业务系统 -->
+    <select id="selectBySystemCode" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TC_BUSINESS_SYSTEM
+        WHERE SYSTEM_CODE = #{systemCode}
+    </select>
+
+    <!-- 更新连接状态 -->
+    <update id="updateConnectionStatus">
+        UPDATE TC_BUSINESS_SYSTEM
+        SET CONNECTION_STATUS = #{connectionStatus},
+            LAST_CONNECT_TIME = #{lastConnectTime},
+            UPDATE_TIME = SYSDATE
+        WHERE ID = #{id}
+    </update>
+
+    <!-- 更新状态 -->
+    <update id="updateStatus">
+        UPDATE TC_BUSINESS_SYSTEM
+        SET STATUS = #{status},
+            UPDATE_USER = #{updateUser},
+            UPDATE_TIME = SYSDATE
+        WHERE ID = #{id}
+    </update>
+
+    <!-- 统计不同状态的系统数量 -->
+    <select id="countByStatus" resultType="java.util.Map">
+        SELECT
+            COUNT(*) as total,
+            SUM(CASE WHEN STATUS = '1' THEN 1 ELSE 0 END) as activeCount,
+            SUM(CASE WHEN STATUS = '0' THEN 1 ELSE 0 END) as inactiveCount,
+            SUM(CASE WHEN CONNECTION_STATUS = 'ONLINE' THEN 1 ELSE 0 END) as onlineCount,
+            SUM(CASE WHEN CONNECTION_STATUS = 'OFFLINE' THEN 1 ELSE 0 END) as offlineCount
+        FROM TC_BUSINESS_SYSTEM
+    </select>
+
+</mapper>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.BankReconDetailMatchedMapper">
+
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.BankReconDetailMatched">
+        <id column="DETAIL_ID" property="detailId" />
+        <result column="RECONCILIATION_ID" property="reconciliationId" />
+        <result column="TRANSACTION_DATE" property="transactionDate" />
+        <result column="DESCRIPTION" property="description" />
+        <result column="BOOK_AMOUNT" property="bookAmount" />
+        <result column="BANK_AMOUNT" property="bankAmount" />
+        <result column="MATCH_TYPE" property="matchType" />
+        <result column="DELETE_FLAG" property="deleteFlag" />
+        <result column="CREATED_TIME" property="createdTime" />
+    </resultMap>
+
+    <select id="selectPage" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BANK_RECON_DETAIL_MATCHED
+        <where>
+            DELETE_FLAG = 0
+            <if test="param.reconciliationId != null">
+                AND RECONCILIATION_ID = #{param.reconciliationId}
+            </if>
+        </where>
+        ORDER BY CREATED_TIME DESC
+    </select>
+
+    <update id="batchDelete">
+        UPDATE TBL_BANK_RECON_DETAIL_MATCHED
+        SET DELETE_FLAG = 1
+        WHERE DETAIL_ID IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+</mapper>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.legal.mysql.mapper.TblFwglPracticeActivityMySqlMapper">
+  <resultMap id="BaseResultMap" type="com.huabo.legal.mysql.entity.TblFwglPracticeActivityMySql">
+    <!--@mbg.generated generated on Fri Sep 16 23:20:12 CST 2022.-->
+    <!--@Table hbgrctest.tbl_fwgl_practice_activity-->
+    <id column="PRACTICEACTIVITYID" jdbcType="INTEGER" property="practiceActivityId" />
+    <result column="ACTIVITYNAME" jdbcType="VARCHAR" property="activityName" />
+    <result column="ACTIVITYCATEGORY" jdbcType="INTEGER" property="activityCategory" />
+    <result column="ACTIVITYTIME" jdbcType="TIMESTAMP" property="activityTime" />
+    <result column="AUDITTIME" jdbcType="TIMESTAMP" property="audittime" />
+    <result column="AUDITPERSON" jdbcType="VARCHAR" property="auditPerson" />
+    <result column="FILEIDS" jdbcType="VARCHAR" property="fileIds" />
+    <result column="LAWSUITAGENTNAME" jdbcType="VARCHAR" property="lawsuitAgentName" />
+    <result column="LAWSUITAGENTCASENUMBER" jdbcType="VARCHAR" property="lawsuitAgentCaseNumber" />
+    <result column="LAWSUITAGENTPLAINTIFF" jdbcType="VARCHAR" property="lawsuitAgentPlaintiff" />
+    <result column="LAWSUITAGENTDEFENDANT" jdbcType="VARCHAR" property="lawsuitAgentDefendant" />
+    <result column="LAWSUITAGENTMONEY" jdbcType="DECIMAL" property="lawsuitAgentMoney" />
+    <result column="LAWSUITAGENTTIME" jdbcType="VARCHAR" property="lawsuitAgentTime" />
+    <result column="LAWSUITAGENTTRIAL" jdbcType="VARCHAR" property="lawsuitAgentTrial" />
+    <result column="LAWSUITAGENTPERSONNEL" jdbcType="VARCHAR" property="lawsuitAgentPersonnel" />
+    <result column="ARTICLEPUBLISHTOPIC" jdbcType="VARCHAR" property="articlePublishTopic" />
+    <result column="ARTICLEPUBLISHTIME" jdbcType="TIMESTAMP" property="articlePublishTime" />
+    <result column="ARTICLEPUBLISHPUBLISHINGCARRIER" jdbcType="VARCHAR" property="articlePublishPublishingCarrier" />
+    <result column="ARTICLEPUBLISHAUTHOR" jdbcType="VARCHAR" property="articlePublishAuthor" />
+    <result column="LEGALTRAININGTOPIC" jdbcType="VARCHAR" property="legalTrainingTopic" />
+    <result column="LEGALTRAININGCONTENT" jdbcType="VARCHAR" property="legalTrainingContent" />
+    <result column="LEGALTRAININGTIME" jdbcType="TIMESTAMP" property="legalTrainingTime" />
+    <result column="LEGALAUDITTIME" jdbcType="TIMESTAMP" property="legalAuditTime" />
+    <result column="LEGALTRAININGPERSONNEL" jdbcType="VARCHAR" property="legalTrainingPersonnel" />
+    <result column="LEGALAUDITNAME" jdbcType="VARCHAR" property="legalAuditName" />
+    <result column="LEGALAUDITSUMMARY" jdbcType="VARCHAR" property="legalAuditSummary" />
+    <result column="LEGALAUDITPERSONNEL" jdbcType="VARCHAR" property="legalAuditPersonnel" />
+    <result column="LEGALADJUSTMENTWORKUNIT" jdbcType="VARCHAR" property="legalAdjustmentWorkUnit" />
+    <result column="LEGALADJUSTMENTCONTENT" jdbcType="VARCHAR" property="legalAdjustmentContent" />
+    <result column="LEGALADJUSTMENTTIME" jdbcType="TIMESTAMP" property="legalAdjustmentTime" />
+    <result column="LEGALADJUSTMENTPERSONNEL" jdbcType="VARCHAR" property="legalAdjustmentPersonnel" />
+    <result column="STATE" jdbcType="INTEGER" property="state" />
+    <result column="CREATOR" jdbcType="VARCHAR" property="creator" />
+    <result column="WORKUNIT" jdbcType="VARCHAR" property="workUnit" />
+    <result column="BELONGGROUP" jdbcType="VARCHAR" property="belongGroup" />
+    <result column="CREATEDTIME" jdbcType="TIMESTAMP" property="createdTime" />
+    <result column="UPDATEDTIME" jdbcType="TIMESTAMP" property="updatedTime" />
+  </resultMap>
+
+  <select id="findArticleList" resultType="com.huabo.legal.mysql.entity.TblFwglPracticeActivityMySql">
+        select * from tbl_fwgl_practice_activity where CREATOR = #{staffId} and ACTIVITYCATEGORY =#{type}
+  </select>
+
+</mapper>

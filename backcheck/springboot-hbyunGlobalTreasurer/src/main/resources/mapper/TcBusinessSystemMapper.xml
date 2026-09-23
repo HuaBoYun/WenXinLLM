@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.TcBusinessSystemMapper">
+
+    <!-- 通用查询映射结果 - 基于实际数据库字段 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TcBusinessSystem">
+        <id column="ID" property="id" />
+        <result column="SYSTEM_CODE" property="systemCode" />
+        <result column="SYSTEM_NAME" property="systemName" />
+        <result column="SYSTEM_TYPE" property="systemType" />
+        <result column="API_ENDPOINT" property="apiUrl" />
+        <result column="AUTH_TYPE" property="authType" />
+        <result column="AUTH_CONFIG" property="authConfig" />
+        <result column="SYSTEM_DESC" property="systemDesc" />
+        <result column="STATUS" property="status" />
+        <result column="CONNECTION_STATUS" property="connectionStatus" />
+        <result column="LAST_HEARTBEAT" property="lastHeartbeat" />
+        <result column="REMARK" property="remark" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="CREATE_USER" property="createUser" />
+        <result column="UPDATE_USER" property="updateUser" />
+        <result column="VERSION_NO" property="versionNo" />
+    </resultMap>
+
+    <!-- 通用查询结果列 - 基于实际数据库字段 -->
+    <sql id="Base_Column_List">
+        ID, SYSTEM_CODE, SYSTEM_NAME, SYSTEM_TYPE, API_ENDPOINT,
+        AUTH_TYPE, AUTH_CONFIG, SYSTEM_DESC, STATUS,
+        CONNECTION_STATUS, LAST_HEARTBEAT, REMARK,
+        CREATE_TIME, UPDATE_TIME, CREATE_USER, UPDATE_USER, VERSION_NO
+    </sql>
+
+    <!-- 根据条件查询业务系统列表 -->
+    <select id="selectByCondition" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TC_BUSINESS_SYSTEM
+        WHERE 1=1
+        <if test="systemCode != null and systemCode != ''">
+            AND SYSTEM_CODE LIKE '%' || #{systemCode} || '%'
+        </if>
+        <if test="systemName != null and systemName != ''">
+            AND SYSTEM_NAME LIKE '%' || #{systemName} || '%'
+        </if>
+        <if test="systemType != null and systemType != ''">
+            AND SYSTEM_TYPE = #{systemType}
+        </if>
+        <if test="connectionStatus != null and connectionStatus != ''">
+            AND CONNECTION_STATUS = #{connectionStatus}
+        </if>
+        <if test="status != null and status != ''">
+            AND STATUS = #{status}
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+</mapper>

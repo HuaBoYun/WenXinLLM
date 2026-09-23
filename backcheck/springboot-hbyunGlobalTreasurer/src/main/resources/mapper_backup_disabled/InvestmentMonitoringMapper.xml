@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.InvestmentMonitoringMapper">
+
+    <!-- 基础结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.InvestmentMonitoring">
+        <id column="monitoring_id" property="monitoringId" />
+        <result column="investment_id" property="investmentId" />
+        <result column="monitoring_date" property="monitoringDate" />
+        <result column="monitoring_type" property="monitoringType" />
+        <result column="current_value" property="currentValue" />
+        <result column="previous_value" property="previousValue" />
+        <result column="value_change" property="valueChange" />
+        <result column="value_change_rate" property="valueChangeRate" />
+        <result column="performance_score" property="performanceScore" />
+        <result column="risk_score" property="riskScore" />
+        <result column="alert_level" property="alertLevel" />
+        <result column="alert_message" property="alertMessage" />
+        <result column="monitoring_status" property="monitoringStatus" />
+        <result column="monitoring_notes" property="monitoringNotes" />
+        <result column="create_user" property="createUser" />
+        <result column="create_time" property="createTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="update_time" property="updateTime" />
+        <result column="org_id" property="orgId" />
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="Base_Column_List">
+        monitoring_id, investment_id, monitoring_date, monitoring_type, current_value, 
+        previous_value, value_change, value_change_rate, performance_score, risk_score, 
+        alert_level, alert_message, monitoring_status, monitoring_notes, 
+        create_user, create_time, update_user, update_time, org_id
+    </sql>
+
+    <!-- 分页查询投资监控 -->
+    <select id="selectMonitoringPage" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM gt_investment_monitoring
+        WHERE org_id = #{orgId}
+        <if test="investmentId != null">
+            AND investment_id = #{investmentId}
+        </if>
+        <if test="monitoringType != null and monitoringType != ''">
+            AND monitoring_type = #{monitoringType}
+        </if>
+        <if test="alertLevel != null and alertLevel != ''">
+            AND alert_level = #{alertLevel}
+        </if>
+        <if test="monitoringStatus != null and monitoringStatus != ''">
+            AND monitoring_status = #{monitoringStatus}
+        </if>
+        <if test="startDate != null">
+            AND monitoring_date &gt;= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND monitoring_date &lt;= #{endDate}
+        </if>
+        ORDER BY monitoring_date DESC
+    </select>
+
+    <!-- 根据投资ID查询 -->
+    <select id="selectByInvestmentId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM gt_investment_monitoring
+        WHERE investment_id = #{investmentId} AND org_id = #{orgId}
+        ORDER BY monitoring_date DESC
+    </select>
+
+    <!-- 根据监控类型查询 -->
+    <select id="selectByMonitoringType" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM gt_investment_monitoring
+        WHERE monitoring_type = #{monitoringType} AND org_id = #{orgId}
+        ORDER BY monitoring_date DESC
+    </select>
+
+    <!-- 根据预警级别查询 -->
+    <select id="selectByAlertLevel" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM gt_investment_monitoring
+        WHERE alert_level = #{alertLevel} AND org_id = #{orgId}
+        ORDER BY monitoring_date DESC
+    </select>
+
+    <!-- 查询活跃监控 -->
+    <select id="selectActiveMonitoring" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM gt_investment_monitoring
+        WHERE monitoring_status = 'ACTIVE' AND org_id = #{orgId}
+        ORDER BY monitoring_date DESC
+    </select>
+
+    <!-- 查询高风险监控 -->
+    <select id="selectHighRiskMonitoring" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM gt_investment_monitoring
+        WHERE alert_level = 'HIGH' AND org_id = #{orgId}
+        ORDER BY monitoring_date DESC
+    </select>
+
+    <!-- 查询异常监控 -->
+    <select id="selectAnomalyMonitoring" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM gt_investment_monitoring
+        WHERE (ABS(value_change_rate) > 0.1 OR performance_score < 60 OR risk_score > 80)
+        AND org_id = #{orgId}
+        ORDER BY monitoring_date DESC
+    </select>
+
+    <!-- 查询最新监控记录 -->
+    <select id="selectLatestMonitoring" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM gt_investment_monitoring
+        WHERE investment_id = #{investmentId} AND org_id = #{orgId}
+        ORDER BY monitoring_date DESC
+        LIMIT 1
+    </select>
+
+    <!-- 查询监控趋势 -->
+    <select id="selectMonitoringTrend" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM gt_investment_monitoring
+        WHERE investment_id = #{investmentId} 
+        AND monitoring_date BETWEEN #{startDate} AND #{endDate}
+        AND org_id = #{orgId}
+        ORDER BY monitoring_date ASC
+    </select>
+
+    <!-- 统计监控数量按类型 -->
+    <select id="countMonitoringByType" resultType="java.util.Map">
+        SELECT monitoring_type as type, COUNT(*) as count
+        FROM gt_investment_monitoring
+        WHERE org_id = #{orgId}
+        GROUP BY monitoring_type
+    </select>
+
+    <!-- 统计监控数量按预警级别 -->
+    <select id="countMonitoringByAlertLevel" resultType="java.util.Map">
+        SELECT alert_level as level, COUNT(*) as count
+        FROM gt_investment_monitoring
+        WHERE org_id = #{orgId}
+        GROUP BY alert_level
+    </select>
+
+    <!-- 统计监控数量按状态 -->
+    <select id="countMonitoringByStatus" resultType="java.util.Map">
+        SELECT monitoring_status as status, COUNT(*) as count
+        FROM gt_investment_monitoring
+        WHERE org_id = #{orgId}
+        GROUP BY monitoring_status
+    </select>
+
+    <!-- 计算平均绩效评分 -->
+    <select id="avgPerformanceScore" resultType="java.math.BigDecimal">
+        SELECT COALESCE(AVG(performance_score), 0)
+        FROM gt_investment_monitoring
+        WHERE org_id = #{orgId} AND performance_score IS NOT NULL
+    </select>
+
+    <!-- 计算平均风险评分 -->
+    <select id="avgRiskScore" resultType="java.math.BigDecimal">
+        SELECT COALESCE(AVG(risk_score), 0)
+        FROM gt_investment_monitoring
+        WHERE org_id = #{orgId} AND risk_score IS NOT NULL
+    </select>
+
+    <!-- 计算价值变化总和 -->
+    <select id="sumValueChange" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(value_change), 0)
+        FROM gt_investment_monitoring
+        WHERE org_id = #{orgId}
+    </select>
+
+    <!-- 分析监控绩效 -->
+    <select id="selectMonitoringPerformanceAnalysis" resultType="java.util.Map">
+        SELECT 
+            monitoring_type,
+            COUNT(*) as monitoringCount,
+            AVG(performance_score) as avgPerformanceScore,
+            AVG(risk_score) as avgRiskScore,
+            AVG(value_change_rate) as avgValueChangeRate
+        FROM gt_investment_monitoring
+        WHERE org_id = #{orgId}
+        GROUP BY monitoring_type
+    </select>
+
+    <!-- 月度监控统计 -->
+    <select id="selectMonthlyMonitoringStatistics" resultType="java.util.Map">
+        SELECT 
+            YEAR(monitoring_date) as year,
+            MONTH(monitoring_date) as month,
+            COUNT(*) as monitoringCount,
+            AVG(performance_score) as avgPerformanceScore,
+            AVG(risk_score) as avgRiskScore,
+            COUNT(CASE WHEN alert_level = 'HIGH' THEN 1 END) as highAlertCount
+        FROM gt_investment_monitoring
+        WHERE YEAR(monitoring_date) = #{year} AND org_id = #{orgId}
+        GROUP BY YEAR(monitoring_date), MONTH(monitoring_date)
+        ORDER BY year, month
+    </select>
+
+    <!-- 批量更新监控状态 -->
+    <update id="batchUpdateStatus">
+        UPDATE gt_investment_monitoring
+        SET monitoring_status = #{monitoringStatus}, update_user = #{userId}, update_time = NOW()
+        WHERE monitoring_id IN
+        <foreach collection="monitoringIds" item="monitoringId" open="(" separator="," close=")">
+            #{monitoringId}
+        </foreach>
+    </update>
+
+    <!-- 更新绩效评分 -->
+    <update id="updatePerformanceScore">
+        UPDATE gt_investment_monitoring
+        SET performance_score = #{performanceScore}, 
+            update_user = #{userId}, 
+            update_time = NOW()
+        WHERE monitoring_id = #{monitoringId}
+    </update>
+
+    <!-- 更新风险评分 -->
+    <update id="updateRiskScore">
+        UPDATE gt_investment_monitoring
+        SET risk_score = #{riskScore}, 
+            update_user = #{userId}, 
+            update_time = NOW()
+        WHERE monitoring_id = #{monitoringId}
+    </update>
+
+    <!-- 更新预警信息 -->
+    <update id="updateAlertInfo">
+        UPDATE gt_investment_monitoring
+        SET alert_level = #{alertLevel}, 
+            alert_message = #{alertMessage},
+            update_user = #{userId}, 
+            update_time = NOW()
+        WHERE monitoring_id = #{monitoringId}
+    </update>
+
+    <!-- 获取仪表盘数据 -->
+    <select id="selectDashboardData" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as totalMonitoring,
+            COUNT(CASE WHEN monitoring_status = 'ACTIVE' THEN 1 END) as activeMonitoring,
+            COUNT(CASE WHEN alert_level = 'HIGH' THEN 1 END) as highAlerts,
+            COUNT(CASE WHEN alert_level = 'MEDIUM' THEN 1 END) as mediumAlerts,
+            COUNT(CASE WHEN alert_level = 'LOW' THEN 1 END) as lowAlerts,
+            AVG(performance_score) as avgPerformanceScore,
+            AVG(risk_score) as avgRiskScore
+        FROM gt_investment_monitoring
+        WHERE org_id = #{orgId}
+    </select>
+
+    <!-- 获取监控预警 -->
+    <select id="selectMonitoringAlerts" resultType="java.util.Map">
+        SELECT 
+            monitoring_id,
+            investment_id,
+            monitoring_type,
+            alert_level as alertType,
+            alert_message,
+            monitoring_date as alertDate
+        FROM gt_investment_monitoring
+        WHERE alert_level IN ('HIGH', 'MEDIUM') 
+        AND monitoring_status = 'ACTIVE'
+        AND org_id = #{orgId}
+        ORDER BY 
+            CASE alert_level 
+                WHEN 'HIGH' THEN 1 
+                WHEN 'MEDIUM' THEN 2 
+                ELSE 3 
+            END,
+            monitoring_date DESC
+    </select>
+
+    <!-- 获取监控推荐 -->
+    <select id="selectMonitoringRecommendations" resultType="java.util.Map">
+        SELECT 
+            'PERFORMANCE_IMPROVEMENT' as recommendationType,
+            CONCAT('建议关注绩效评分低于60分的投资，当前有', COUNT(*), '项') as recommendationReason,
+            COUNT(*) as affectedCount
+        FROM gt_investment_monitoring
+        WHERE performance_score < 60 AND org_id = #{orgId}
+        
+        UNION ALL
+        
+        SELECT 
+            'RISK_CONTROL' as recommendationType,
+            CONCAT('建议加强风险控制，当前有', COUNT(*), '项高风险投资') as recommendationReason,
+            COUNT(*) as affectedCount
+        FROM gt_investment_monitoring
+        WHERE risk_score > 80 AND org_id = #{orgId}
+    </select>
+
+    <!-- 异常检测 -->
+    <select id="selectAnomalyDetection" resultType="java.util.Map">
+        SELECT 
+            monitoring_id,
+            investment_id,
+            monitoring_date,
+            'VALUE_CHANGE_ANOMALY' as anomalyType,
+            CONCAT('价值变化异常：', ROUND(value_change_rate * 100, 2), '%') as anomalyDescription,
+            ABS(value_change_rate) as anomalyScore
+        FROM gt_investment_monitoring
+        WHERE ABS(value_change_rate) > 0.15 AND org_id = #{orgId}
+        
+        UNION ALL
+        
+        SELECT 
+            monitoring_id,
+            investment_id,
+            monitoring_date,
+            'PERFORMANCE_ANOMALY' as anomalyType,
+            CONCAT('绩效异常：评分', performance_score) as anomalyDescription,
+            (100 - performance_score) as anomalyScore
+        FROM gt_investment_monitoring
+        WHERE performance_score < 40 AND org_id = #{orgId}
+        
+        ORDER BY anomalyScore DESC
+    </select>
+
+    <!-- 获取优化建议 */
+    <select id="selectOptimizationSuggestions" resultType="java.util.Map">
+        SELECT 
+            'DIVERSIFICATION' as suggestionType,
+            '建议分散投资以降低风险' as suggestionDescription,
+            COUNT(DISTINCT investment_id) as currentInvestmentCount
+        FROM gt_investment_monitoring
+        WHERE org_id = #{orgId}
+        HAVING COUNT(DISTINCT investment_id) < 5
+        
+        UNION ALL
+        
+        SELECT 
+            'REBALANCING' as suggestionType,
+            '建议重新平衡投资组合' as suggestionDescription,
+            COUNT(*) as imbalancedCount
+        FROM gt_investment_monitoring
+        WHERE risk_score > 70 AND performance_score < 70 AND org_id = #{orgId}
+        HAVING COUNT(*) > 0
+    </select>
+
+</mapper>

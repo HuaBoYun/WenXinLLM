@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.management.accountant.oracle.mapper.budget.BudgetWarningRuleMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.management.accountant.oracle.entity.budget.BudgetWarningRule">
+        <id column="RULE_ID" property="ruleId"/>
+        <result column="RULE_CODE" property="ruleCode"/>
+        <result column="RULE_NAME" property="ruleName"/>
+        <result column="WARNING_TYPE" property="warningType"/>
+        <result column="WARNING_LEVEL" property="warningLevel"/>
+        <result column="TRIGGER_CONDITION" property="triggerCondition"/>
+        <result column="THRESHOLD_VALUE" property="thresholdValue"/>
+        <result column="WARNING_CHANNELS" property="warningChannels"/>
+        <result column="RECIPIENTS" property="recipients"/>
+        <result column="MESSAGE_TEMPLATE" property="messageTemplate"/>
+        <result column="IS_ENABLED" property="isEnabled"/>
+        <result column="EFFECTIVE_DATE" property="effectiveDate"/>
+        <result column="EXPIRY_DATE" property="expiryDate"/>
+        <result column="RULE_DESCRIPTION" property="ruleDescription"/>
+        <result column="REMARK" property="remark"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="CREATE_BY" property="createBy"/>
+        <result column="UPDATE_BY" property="updateBy"/>
+        <result column="DEL_FLAG" property="delFlag"/>
+        <result column="TENANT_ID" property="tenantId"/>
+    </resultMap>
+
+    <!-- 根据规则编码查询 -->
+    <select id="selectByRuleCode" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BUDGET_WARNING_RULE
+        WHERE RULE_CODE = #{ruleCode}
+        AND DEL_FLAG = 0
+    </select>
+
+    <!-- 查询启用的规则 -->
+    <select id="selectEnabledRules" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BUDGET_WARNING_RULE
+        WHERE IS_ENABLED = 1
+        AND DEL_FLAG = 0
+        AND (EXPIRY_DATE IS NULL OR EXPIRY_DATE >= SYSDATE)
+        ORDER BY WARNING_LEVEL DESC
+    </select>
+
+    <!-- 根据预警类型查询 -->
+    <select id="selectByWarningType" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BUDGET_WARNING_RULE
+        WHERE WARNING_TYPE = #{warningType}
+        AND DEL_FLAG = 0
+        ORDER BY WARNING_LEVEL DESC
+    </select>
+
+    <!-- 批量启用/禁用 -->
+    <update id="batchUpdateEnabled">
+        UPDATE TBL_BUDGET_WARNING_RULE
+        SET IS_ENABLED = #{isEnabled},
+            UPDATE_TIME = SYSDATE
+        WHERE RULE_ID IN
+        <foreach collection="ruleIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 批量删除 -->
+    <update id="batchDeleteByIds">
+        UPDATE TBL_BUDGET_WARNING_RULE
+        SET DEL_FLAG = 1
+        WHERE RULE_ID IN
+        <foreach collection="ruleIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+</mapper>
+

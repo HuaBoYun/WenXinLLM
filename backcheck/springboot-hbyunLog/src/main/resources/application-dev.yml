@@ -1,0 +1,42 @@
+spring:
+ redis:
+  host: 127.0.0.1
+  port: 6379
+  password:REDACTED
+
+#日志配置
+logging:
+ level:
+  com.alibaba.druid: DEBUG
+  org:
+   springframework: WARN
+   spring:
+    springboot:
+     dao: info
+
+#eureka服务注册中心配置
+eureka:
+ instance:
+  ip-address: 127.0.0.1
+  instance-id: hbyunLog-8066
+  prefer-ip-address: true
+ client: 
+  serviceUrl:
+   defaultZone: http://hbyunadmin:REDACTED@127.0.0.1:8761/eureka
+  register-with-eureka: true    # 必须为true
+  fetch-registry: true          # 必须为true
+  enabled: true
+
+mybatis-plus:
+ configuration:
+  log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+ plugins:
+  pagination:
+   enabled: true
+
+knife4j:
+ enable: true
+ production: false
+
+
+

@@ -1,0 +1,84 @@
+spring:
+ application:
+  name: hbyunknow #应用名称
+ datasource:
+  type: com.alibaba.druid.pool.DruidDataSource
+  #Oracle数据库配置
+  url: jdbc:oracle:thin:@192.0.2.12:1521:orcl
+  username: REDACTED
+  password: REDACTED
+  driverClassName: oracle.jdbc.driver.OracleDriver
+  #Mysql数据库配置
+#  url: jdbc:mysql://192.0.2.13:3306/hbgrc?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&serverTimezone=GMT%2B8
+#  username: root
+#  password: HBGRC
+#  driverClassName: com.mysql.cj.jdbc.Driver
+ druid:
+  initialSize: 5
+  minIdle: 5
+  maxActive: 20
+  maxWait: 60000
+  timeBetweenEvictionRunsMillis: 60000
+  minEvictableIdleTimeMillis: 300000
+  validationQuery: SELECT 1 FROM DUAL
+  testWhileIdle: true
+  testOnBorrow: false
+  testOnReturn: false
+  poolPreparedStatement: true
+  maxPoolPreparedStatementPerConnectionSize: 20
+  filters: stat,wall,log4j
+  connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+ redis: 
+  host: 192.0.2.12
+  port: 6379
+  password:
+
+#日志配置
+logging:
+ level:
+  org:
+   springframework: WARN
+   spring:
+    springboot:
+     dao: info
+  com:
+   dc:
+    pcasweb:
+     mapper: debug
+ file: logs/spring-boot-logging.log
+ 
+#eureka服务注册中心配置
+eureka:
+ instance:
+  ip-address: 192.0.2.11
+  instance-id: hbyunSystemSetting-8763
+  prefer-ip-address: true
+  hostname: hbyun-systemSetting-service
+ client:
+  register-with-eureka: false
+  fetch-registry: false
+  serviceUrl:
+   defaultZone: http://hbyunadmin:REDACTED@192.0.2.11:8761/eureka
+security:
+  basic:
+    enabled: false
+
+acurl : http://192.0.2.11:8003
+formurl : http://192.0.2.11:8001
+activitiModelerUrl : http://192.0.2.11:8137
+getOrgChildrenUrl : http://192.0.2.11:8379
+insertOrgOneUrl : http://192.0.2.11:8379
+redisurl : http://192.0.2.11:8379
+
+application:
+ #文件上传
+ file-upload:
+  base-dir: D:\nginx-1.20.2\html\hbfk
+  #base-url: http://192.0.2.200/hbfk
+  base-url: http://192.0.2.13/hbfk
+ #图片上传前缀域名
+ file-url: http://cn-gz-txy.starryfrp.example:64108
+ #上帝视角用户名称
+ admin-name: 张孝昆
+
+

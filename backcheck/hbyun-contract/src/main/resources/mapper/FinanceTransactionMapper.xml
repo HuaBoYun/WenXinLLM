@@ -1,0 +1,384 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.contract.mapper.FinanceTransactionMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.huabo.contract.entity.FinanceTransaction">
+        <id column="id" property="id" javaType="String" jdbcType="VARCHAR" />
+        <result column="project_id" property="projectId" javaType="String" jdbcType="VARCHAR" />
+        <result column="transaction_no" property="transactionNo" javaType="String" jdbcType="VARCHAR" />
+        <result column="transaction_type" property="transactionType" javaType="Integer" jdbcType="INTEGER" />
+        <result column="transaction_category" property="transactionCategory" javaType="Integer" jdbcType="INTEGER" />
+        <result column="amount" property="amount" javaType="BigDecimal" jdbcType="DECIMAL" />
+        <result column="transaction_date" property="transactionDate" javaType="Date" jdbcType="DATE" />
+        <result column="account_subject" property="accountSubject" javaType="String" jdbcType="VARCHAR" />
+        <result column="counterpart_account" property="counterpartAccount" javaType="String" jdbcType="VARCHAR" />
+        <result column="payment_method" property="paymentMethod" javaType="String" jdbcType="VARCHAR" />
+        <result column="bank_name" property="bankName" javaType="String" jdbcType="VARCHAR" />
+        <result column="account_number" property="accountNumber" javaType="String" jdbcType="VARCHAR" />
+        <result column="transaction_status" property="transactionStatus" javaType="Integer" jdbcType="INTEGER" />
+        <result column="approval_status" property="approvalStatus" javaType="Integer" jdbcType="INTEGER" />
+        <result column="approver_id" property="approverId" javaType="String" jdbcType="VARCHAR" />
+        <result column="approver_name" property="approverName" javaType="String" jdbcType="VARCHAR" />
+        <result column="approval_date" property="approvalDate" javaType="Date" jdbcType="DATE" />
+        <result column="approval_comments" property="approvalComments" javaType="String" jdbcType="CLOB" />
+        <result column="invoice_no" property="invoiceNo" javaType="String" jdbcType="VARCHAR" />
+        <result column="invoice_amount" property="invoiceAmount" javaType="BigDecimal" jdbcType="DECIMAL" />
+        <result column="tax_amount" property="taxAmount" javaType="BigDecimal" jdbcType="DECIMAL" />
+        <result column="description" property="description" javaType="String" jdbcType="CLOB" />
+        <result column="attachment_path" property="attachmentPath" javaType="String" jdbcType="VARCHAR" />
+        <result column="manager_id" property="managerId" javaType="String" jdbcType="VARCHAR" />
+        <result column="manager_name" property="managerName" javaType="String" jdbcType="VARCHAR" />
+        <result column="remarks" property="remarks" javaType="String" jdbcType="CLOB" />
+        <result column="create_by" property="createBy" javaType="String" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" javaType="Date" jdbcType="TIMESTAMP" />
+        <result column="update_by" property="updateBy" javaType="String" jdbcType="VARCHAR" />
+        <result column="update_time" property="updateTime" javaType="Date" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="Base_Column_List">
+        id, project_id, transaction_no, transaction_type, transaction_category, amount,
+        transaction_date, account_subject, counterpart_account, payment_method, bank_name,
+        account_number, transaction_status, approval_status, approver_id, approver_name,
+        approval_date, approval_comments, invoice_no, invoice_amount, tax_amount, description,
+        attachment_path, manager_id, manager_name, remarks, create_by, create_time, update_by, update_time
+    </sql>
+
+    <!-- 分页查询收支记录 -->
+    <select id="selectFinanceTransactionPage" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM finance_transaction
+        WHERE 1=1
+        <if test="param.projectId != null">
+            AND project_id = #{param.projectId}
+        </if>
+        <if test="param.transactionNo != null and param.transactionNo != ''">
+            AND transaction_no LIKE CONCAT('%', #{param.transactionNo}, '%')
+        </if>
+        <if test="param.transactionType != null">
+            AND transaction_type = #{param.transactionType}
+        </if>
+        <if test="param.transactionCategory != null">
+            AND transaction_category = #{param.transactionCategory}
+        </if>
+        <if test="param.transactionStatus != null">
+            AND transaction_status = #{param.transactionStatus}
+        </if>
+        <if test="param.approvalStatus != null">
+            AND approval_status = #{param.approvalStatus}
+        </if>
+        <if test="param.paymentMethod != null">
+            AND payment_method = #{param.paymentMethod}
+        </if>
+        <if test="param.bankName != null and param.bankName != ''">
+            AND bank_name LIKE CONCAT('%', #{param.bankName}, '%')
+        </if>
+        <if test="param.accountSubject != null and param.accountSubject != ''">
+            AND account_subject LIKE CONCAT('%', #{param.accountSubject}, '%')
+        </if>
+        <if test="param.managerId != null">
+            AND manager_id = #{param.managerId}
+        </if>
+        <if test="param.managerName != null and param.managerName != ''">
+            AND manager_name LIKE CONCAT('%', #{param.managerName}, '%')
+        </if>
+        <if test="param.approverId != null">
+            AND approver_id = #{param.approverId}
+        </if>
+        <if test="param.approverName != null and param.approverName != ''">
+            AND approver_name LIKE CONCAT('%', #{param.approverName}, '%')
+        </if>
+        <if test="param.minAmount != null">
+            AND amount >= #{param.minAmount}
+        </if>
+        <if test="param.maxAmount != null">
+            AND amount &lt;= #{param.maxAmount}
+        </if>
+        <if test="param.transactionStartDate != null">
+            AND transaction_date >= #{param.transactionStartDate}
+        </if>
+        <if test="param.transactionEndDate != null">
+            AND transaction_date &lt;= #{param.transactionEndDate}
+        </if>
+        <if test="param.approvalStartDate != null">
+            AND approval_date >= #{param.approvalStartDate}
+        </if>
+        <if test="param.approvalEndDate != null">
+            AND approval_date &lt;= #{param.approvalEndDate}
+        </if>
+        <if test="param.createStartTime != null">
+            AND create_time >= #{param.createStartTime}
+        </if>
+        <if test="param.createEndTime != null">
+            AND create_time &lt;= #{param.createEndTime}
+        </if>
+        <if test="param.createBy != null">
+            AND create_by = #{param.createBy}
+        </if>
+        <if test="param.keyword != null and param.keyword != ''">
+            AND (transaction_no LIKE CONCAT('%', #{param.keyword}, '%')
+                 OR description LIKE CONCAT('%', #{param.keyword}, '%')
+                 OR bank_name LIKE CONCAT('%', #{param.keyword}, '%')
+                 OR manager_name LIKE CONCAT('%', #{param.keyword}, '%')
+                 OR remarks LIKE CONCAT('%', #{param.keyword}, '%'))
+        </if>
+        ORDER BY create_time DESC, id DESC
+    </select>
+
+    <!-- 分页查询收支记录列表 -->
+    <select id="selectFinanceTransactionList" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM finance_transaction
+        WHERE 1=1
+        <if test="param.projectId != null">
+            AND project_id = #{param.projectId}
+        </if>
+        <if test="param.transactionNo != null and param.transactionNo != ''">
+            AND transaction_no LIKE CONCAT('%', #{param.transactionNo}, '%')
+        </if>
+        <if test="param.transactionType != null">
+            AND transaction_type = #{param.transactionType}
+        </if>
+        <if test="param.transactionCategory != null">
+            AND transaction_category = #{param.transactionCategory}
+        </if>
+        <if test="param.transactionStatus != null">
+            AND transaction_status = #{param.transactionStatus}
+        </if>
+        <if test="param.approvalStatus != null">
+            AND approval_status = #{param.approvalStatus}
+        </if>
+        <if test="param.paymentMethod != null">
+            AND payment_method = #{param.paymentMethod}
+        </if>
+        <if test="param.bankName != null and param.bankName != ''">
+            AND bank_name LIKE CONCAT('%', #{param.bankName}, '%')
+        </if>
+        <if test="param.accountSubject != null and param.accountSubject != ''">
+            AND account_subject LIKE CONCAT('%', #{param.accountSubject}, '%')
+        </if>
+        <if test="param.managerId != null">
+            AND manager_id = #{param.managerId}
+        </if>
+        <if test="param.managerName != null and param.managerName != ''">
+            AND manager_name LIKE CONCAT('%', #{param.managerName}, '%')
+        </if>
+        <if test="param.approverId != null">
+            AND approver_id = #{param.approverId}
+        </if>
+        <if test="param.approverName != null and param.approverName != ''">
+            AND approver_name LIKE CONCAT('%', #{param.approverName}, '%')
+        </if>
+        <if test="param.minAmount != null">
+            AND amount >= #{param.minAmount}
+        </if>
+        <if test="param.maxAmount != null">
+            AND amount &lt;= #{param.maxAmount}
+        </if>
+        <if test="param.transactionStartDate != null">
+            AND transaction_date >= #{param.transactionStartDate}
+        </if>
+        <if test="param.transactionEndDate != null">
+            AND transaction_date &lt;= #{param.transactionEndDate}
+        </if>
+        <if test="param.approvalStartDate != null">
+            AND approval_date >= #{param.approvalStartDate}
+        </if>
+        <if test="param.approvalEndDate != null">
+            AND approval_date &lt;= #{param.approvalEndDate}
+        </if>
+        <if test="param.createStartTime != null">
+            AND create_time >= #{param.createStartTime}
+        </if>
+        <if test="param.createEndTime != null">
+            AND create_time &lt;= #{param.createEndTime}
+        </if>
+        <if test="param.createBy != null">
+            AND create_by = #{param.createBy}
+        </if>
+        <if test="param.keyword != null and param.keyword != ''">
+            AND (transaction_no LIKE CONCAT('%', #{param.keyword}, '%')
+                 OR description LIKE CONCAT('%', #{param.keyword}, '%')
+                 OR bank_name LIKE CONCAT('%', #{param.keyword}, '%')
+                 OR manager_name LIKE CONCAT('%', #{param.keyword}, '%')
+                 OR remarks LIKE CONCAT('%', #{param.keyword}, '%'))
+        </if>
+        ORDER BY create_time DESC, id DESC
+    </select>
+
+    <!-- 根据项目ID查询收支记录列表 -->
+    <select id="selectByProjectId" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM finance_transaction
+        WHERE project_id = #{projectId}
+        ORDER BY transaction_date DESC, create_time DESC
+    </select>
+
+    <!-- 根据交易编号查询收支记录 -->
+    <select id="selectByTransactionNo" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM finance_transaction
+        WHERE transaction_no = #{transactionNo}
+        LIMIT 1
+    </select>
+
+    <!-- 根据交易类型查询收支记录列表 -->
+    <select id="selectByTransactionType" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM finance_transaction
+        WHERE transaction_type = #{transactionType}
+        ORDER BY transaction_date DESC
+    </select>
+
+    <!-- 根据交易状态查询收支记录列表 -->
+    <select id="selectByTransactionStatus" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM finance_transaction
+        WHERE transaction_status = #{transactionStatus}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据审批状态查询收支记录列表 -->
+    <select id="selectByApprovalStatus" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM finance_transaction
+        WHERE approval_status = #{approvalStatus}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 查询负责人的收支记录列表 -->
+    <select id="selectByManagerId" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM finance_transaction
+        WHERE manager_id = #{managerId}
+        ORDER BY transaction_date DESC
+    </select>
+
+    <!-- 根据项目ID统计收入总额 -->
+    <select id="sumIncomeByProjectId" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(amount), 0)
+        FROM finance_transaction
+        WHERE project_id = #{projectId}
+        AND transaction_type = 1
+        AND transaction_status = 3
+    </select>
+
+    <!-- 根据项目ID统计支出总额 -->
+    <select id="sumExpenseByProjectId" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(amount), 0)
+        FROM finance_transaction
+        WHERE project_id = #{projectId}
+        AND transaction_type = 2
+        AND transaction_status = 3
+    </select>
+
+    <!-- 根据交易类型统计金额 -->
+    <select id="sumAmountByTransactionType" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(amount), 0)
+        FROM finance_transaction
+        WHERE transaction_type = #{transactionType}
+        AND transaction_status = 3
+    </select>
+
+    <!-- 根据交易状态统计数量 -->
+    <select id="countByTransactionStatus" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM finance_transaction
+        WHERE transaction_status = #{transactionStatus}
+    </select>
+
+    <!-- 根据审批状态统计数量 -->
+    <select id="countByApprovalStatus" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM finance_transaction
+        WHERE approval_status = #{approvalStatus}
+    </select>
+
+    <!-- 检查交易编号是否存在 -->
+    <select id="existsTransactionNo" resultType="boolean">
+        SELECT COUNT(1) > 0
+        FROM finance_transaction
+        WHERE transaction_no = #{transactionNo}
+        <if test="excludeId != null">
+            AND id != #{excludeId}
+        </if>
+    </select>
+
+    <!-- 查询待审批的收支记录列表 -->
+    <select id="selectPendingApproval" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM finance_transaction
+        WHERE approval_status = 1
+        ORDER BY create_time ASC
+    </select>
+
+    <!-- 查询大额交易列表 -->
+    <select id="selectLargeTransactions" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM finance_transaction
+        WHERE amount >= #{minAmount}
+        ORDER BY amount DESC
+    </select>
+
+    <!-- 查询异常交易列表 -->
+    <select id="selectAbnormalTransactions" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM finance_transaction
+        WHERE transaction_status = 4
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 查询已完成的收支记录列表 -->
+    <select id="selectCompleted" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM finance_transaction
+        WHERE transaction_status = 3
+        ORDER BY transaction_date DESC
+    </select>
+
+    <!-- 批量更新交易状态 -->
+    <update id="batchUpdateTransactionStatus">
+        UPDATE finance_transaction
+        SET transaction_status = #{transactionStatus},
+            update_time = SYSDATE
+        <if test="updateBy != null">
+            , update_by = #{updateBy}
+        </if>
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 批量更新审批状态 -->
+    <update id="batchUpdateApprovalStatus">
+        UPDATE finance_transaction
+        SET approval_status = #{approvalStatus},
+            approval_date = SYSDATE,
+            update_time = SYSDATE
+        <if test="approverId != null">
+            , approver_id = #{approverId}
+        </if>
+        <if test="approvalComments != null">
+            , approval_comments = #{approvalComments}
+        </if>
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+</mapper>

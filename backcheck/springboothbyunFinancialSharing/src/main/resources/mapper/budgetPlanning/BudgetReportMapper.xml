@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.budgetPlanning.mapper.BudgetReportMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.financial.sharing.budgetPlanning.entity.TblBudgetReport">
+        <id column="REPORT_ID" property="reportId"/>
+        <result column="REPORT_CODE" property="reportCode"/>
+        <result column="REPORT_NAME" property="reportName"/>
+        <result column="REPORT_TYPE" property="reportType"/>
+        <result column="MODEL_ID" property="modelId"/>
+        <result column="QUERY_CONDITION" property="queryCondition"/>
+        <result column="DISPLAY_COLUMNS" property="displayColumns"/>
+        <result column="SORT_CONFIG" property="sortConfig"/>
+        <result column="FILTER_CONFIG" property="filterConfig"/>
+        <result column="IS_TEMPLATE" property="isTemplate"/>
+        <result column="IS_PUBLIC" property="isPublic"/>
+        <result column="DESCRIPTION" property="description"/>
+        <result column="ORG_ID" property="orgId"/>
+        <result column="CREATE_USER" property="createUser"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_USER" property="updateUser"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="MODEL_NAME" property="modelName"/>
+    </resultMap>
+
+    <!-- 查询报表配置列表 -->
+    <select id="selectReportList" resultMap="BaseResultMap">
+        SELECT
+            r.REPORT_ID, r.REPORT_CODE, r.REPORT_NAME, r.REPORT_TYPE, r.MODEL_ID,
+            r.QUERY_CONDITION, r.DISPLAY_COLUMNS, r.SORT_CONFIG, r.FILTER_CONFIG,
+            r.IS_TEMPLATE, r.IS_PUBLIC, r.DESCRIPTION,
+            r.ORG_ID, r.CREATE_USER, r.CREATE_TIME, r.UPDATE_USER, r.UPDATE_TIME,
+            m.MODEL_NAME
+        FROM TBL_BUDGET_REPORT r
+        LEFT JOIN TBL_BUDGET_MODEL m ON r.MODEL_ID = m.MODEL_ID
+        <where>
+            <if test="param.orgId != null and param.orgId != ''">
+                AND r.ORG_ID = #{param.orgId}
+            </if>
+            <if test="param.reportType != null and param.reportType != ''">
+                AND r.REPORT_TYPE = #{param.reportType}
+            </if>
+            <if test="param.modelId != null and param.modelId != ''">
+                AND r.MODEL_ID = #{param.modelId}
+            </if>
+        </where>
+        ORDER BY r.CREATE_TIME DESC
+    </select>
+
+    <!--
+        查询预算明细数据
+        【数据源说明】
+        历史版本错误地从 TBL_BUDGET_DATA 取金额(那张表金额在 DATA_VALUES JSON 里, 没有 BUDGET_AMOUNT 等规范字段);
+        现切换到 TBL_BUDGET_EXECUTION —— 该表是 refreshExecutionData() 把 BUDGET_DATA 解析后写入的
+        规范化执行数据, 所有金额/差异/执行率字段齐全, 且就是"预算执行"的数据源, 与报表语义一致.
+        【达梦兼容】所有 alias 用双引号包裹保留小驼峰, 避免 JDBC 返回大写 key 导致前端取不到.
+        【字段兜底】科目名/组织名/维度名 用 COALESCE 退化, 避免字典缺失时前端表格空白.
+    -->
+    <select id="selectBudgetDetailData" resultType="java.util.Map">
+        SELECT
+            be.EXECUTION_ID                                          AS "executionId",
+            be.MODEL_ID                                              AS "modelId",
+            COALESCE(m.MODEL_NAME, be.MODEL_ID)                      AS "modelName",
+            be.ORG_ID                                                AS "orgId",
+            be.BIZ_ORG_ID                                            AS "bizOrgId",
+            be.ORG_CODE                                              AS "orgCode",
+            COALESCE(be.ORG_NAME, be.ORG_CODE, be.BIZ_ORG_ID, '-')   AS "orgName",
+            be.SUBJECT_CODE                                          AS "subjectCode",
+            COALESCE(be.SUBJECT_NAME, be.SUBJECT_CODE, '-')          AS "subjectName",
+            be.PERIOD                                                AS "period",
+            be.BUDGET_YEAR                                           AS "budgetYear",
+            be.VERSION_NO                                            AS "versionNo",
+            be.DIMENSION1_CODE                                       AS "dimension1Code",
+            COALESCE(be.DIMENSION1_NAME, be.DIMENSION1_CODE)         AS "dimension1Name",
+            be.DIMENSION2_CODE                                       AS "dimension2Code",
+            COALESCE(be.DIMENSION2_NAME, be.DIMENSION2_CODE)         AS "dimension2Name",
+            NVL(be.BUDGET_AMOUNT,    0)                              AS "budgetAmount",
+            NVL(be.ADJUSTED_AMOUNT,  0)                              AS "adjustedAmount",
+            NVL(be.ACTUAL_AMOUNT,    0)                              AS "actualAmount",
+            NVL(be.COMMITTED_AMOUNT, 0)                              AS "committedAmount",
+            NVL(be.OCCUPIED_AMOUNT,  0)                              AS "occupiedAmount",
+            NVL(be.AVAILABLE_AMOUNT, 0)                              AS "availableAmount",
+            NVL(be.VARIANCE_AMOUNT,  0)                              AS "varianceAmount",
+            NVL(be.VARIANCE_RATE,    0)                              AS "varianceRate",
+            NVL(be.EXECUTION_RATE,   0)                              AS "executionRate",
+            be.STATUS                                                AS "status",
+            be.WARNING_LEVEL                                         AS "warningLevel",
+            'EXECUTION'                                              AS "dataSource"
+        FROM TBL_BUDGET_EXECUTION be
+        LEFT JOIN TBL_BUDGET_MODEL m ON be.MODEL_ID = m.MODEL_ID
+        <where>
+            <if test="param.orgId != null and param.orgId != ''">
+                AND be.ORG_ID = #{param.orgId}
+            </if>
+            <if test="param.modelId != null and param.modelId != ''">
+                AND be.MODEL_ID = #{param.modelId}
+            </if>
+            <if test="param.orgIds != null and param.orgIds.length > 0">
+                AND be.BIZ_ORG_ID IN
+                <foreach collection="param.orgIds" item="oid" open="(" separator="," close=")">
+                    #{oid}
+                </foreach>
+            </if>
+            <if test="param.subjectCodes != null and param.subjectCodes.length > 0">
+                AND be.SUBJECT_CODE IN
+                <foreach collection="param.subjectCodes" item="code" open="(" separator="," close=")">
+                    #{code}
+                </foreach>
+            </if>
+            <if test="param.periods != null and param.periods.length > 0">
+                AND be.PERIOD IN
+                <foreach collection="param.periods" item="period" open="(" separator="," close=")">
+                    #{period}
+                </foreach>
+            </if>
+            <if test="param.startPeriod != null and param.startPeriod != ''">
+                AND be.PERIOD &gt;= #{param.startPeriod}
+            </if>
+            <if test="param.endPeriod != null and param.endPeriod != ''">
+                AND be.PERIOD &lt;= #{param.endPeriod}
+            </if>
+            <if test="param.budgetYear != null and param.budgetYear != ''">
+                AND be.BUDGET_YEAR = #{param.budgetYear}
+            </if>
+            <if test="param.versionNo != null and param.versionNo != ''">
+                AND be.VERSION_NO = #{param.versionNo}
+            </if>
+        </where>
+        ORDER BY be.PERIOD, be.SUBJECT_CODE
+    </select>
+
+    <!-- 查询预算汇总数据 (按组织/科目/期间维度合计) -->
+    <select id="selectBudgetSummaryData" resultType="java.util.Map">
+        SELECT
+            <choose>
+                <when test="param.summaryDimension == 'ORG'">
+                    be.BIZ_ORG_ID                 AS "dimensionValue",
+                    MAX(be.ORG_NAME)              AS "dimensionName",
+                </when>
+                <when test="param.summaryDimension == 'SUBJECT'">
+                    be.SUBJECT_CODE               AS "dimensionValue",
+                    MAX(be.SUBJECT_NAME)          AS "dimensionName",
+                </when>
+                <when test="param.summaryDimension == 'PERIOD'">
+                    be.PERIOD                     AS "dimensionValue",
+                    MAX(be.PERIOD)                AS "dimensionName",
+                </when>
+                <otherwise>
+                    be.BIZ_ORG_ID                 AS "dimensionValue",
+                    MAX(be.ORG_NAME)              AS "dimensionName",
+                </otherwise>
+            </choose>
+            SUM(NVL(be.BUDGET_AMOUNT,   0)) AS "totalBudgetAmount",
+            SUM(NVL(be.ADJUSTED_AMOUNT, 0)) AS "totalAdjustedAmount",
+            SUM(NVL(be.ACTUAL_AMOUNT,   0)) AS "totalActualAmount",
+            SUM(NVL(be.VARIANCE_AMOUNT, 0)) AS "totalVarianceAmount",
+            CASE
+                WHEN SUM(NVL(be.ADJUSTED_AMOUNT, 0)) = 0 THEN 0
+                ELSE ROUND(SUM(NVL(be.ACTUAL_AMOUNT, 0)) / SUM(be.ADJUSTED_AMOUNT) * 100, 2)
+            END                              AS "executionRate"
+        FROM TBL_BUDGET_EXECUTION be
+        <where>
+            <if test="param.orgId != null and param.orgId != ''">
+                AND be.ORG_ID = #{param.orgId}
+            </if>
+            <if test="param.modelId != null and param.modelId != ''">
+                AND be.MODEL_ID = #{param.modelId}
+            </if>
+            <if test="param.orgIds != null and param.orgIds.length > 0">
+                AND be.BIZ_ORG_ID IN
+                <foreach collection="param.orgIds" item="oid" open="(" separator="," close=")">
+                    #{oid}
+                </foreach>
+            </if>
+            <if test="param.subjectCodes != null and param.subjectCodes.length > 0">
+                AND be.SUBJECT_CODE IN
+                <foreach collection="param.subjectCodes" item="code" open="(" separator="," close=")">
+                    #{code}
+                </foreach>
+            </if>
+            <if test="param.startPeriod != null and param.startPeriod != ''">
+                AND be.PERIOD &gt;= #{param.startPeriod}
+            </if>
+            <if test="param.endPeriod != null and param.endPeriod != ''">
+                AND be.PERIOD &lt;= #{param.endPeriod}
+            </if>
+            <if test="param.budgetYear != null and param.budgetYear != ''">
+                AND be.BUDGET_YEAR = #{param.budgetYear}
+            </if>
+        </where>
+        GROUP BY
+        <choose>
+            <when test="param.summaryDimension == 'ORG'">
+                be.BIZ_ORG_ID
+            </when>
+            <when test="param.summaryDimension == 'SUBJECT'">
+                be.SUBJECT_CODE
+            </when>
+            <when test="param.summaryDimension == 'PERIOD'">
+                be.PERIOD
+            </when>
+            <otherwise>
+                be.BIZ_ORG_ID
+            </otherwise>
+        </choose>
+        ORDER BY "dimensionValue"
+    </select>
+
+    <!-- 查询预算对比数据 (按 BUDGET vs ACTUAL / 期间对比 / 年度对比) -->
+    <select id="selectBudgetCompareData" resultType="java.util.Map">
+        <choose>
+            <when test="param.compareType == 'BUDGET_VS_ACTUAL'">
+                SELECT
+                    be.SUBJECT_CODE                  AS "subjectCode",
+                    MAX(be.SUBJECT_NAME)             AS "subjectName",
+                    be.PERIOD                        AS "period",
+                    SUM(NVL(be.BUDGET_AMOUNT,   0))  AS "budgetAmount",
+                    SUM(NVL(be.ADJUSTED_AMOUNT, 0))  AS "adjustedAmount",
+                    SUM(NVL(be.ACTUAL_AMOUNT,   0))  AS "actualAmount",
+                    SUM(NVL(be.VARIANCE_AMOUNT, 0))  AS "varianceAmount",
+                    CASE
+                        WHEN SUM(NVL(be.ADJUSTED_AMOUNT, 0)) = 0 THEN 0
+                        ELSE ROUND(SUM(NVL(be.ACTUAL_AMOUNT, 0)) / SUM(be.ADJUSTED_AMOUNT) * 100, 2)
+                    END                              AS "executionRate"
+                FROM TBL_BUDGET_EXECUTION be
+                <where>
+                    <if test="param.orgId != null and param.orgId != ''">
+                        AND be.ORG_ID = #{param.orgId}
+                    </if>
+                    <if test="param.modelId != null and param.modelId != ''">
+                        AND be.MODEL_ID = #{param.modelId}
+                    </if>
+                    <if test="param.orgIds != null and param.orgIds.length > 0">
+                        AND be.BIZ_ORG_ID IN
+                        <foreach collection="param.orgIds" item="oid" open="(" separator="," close=")">
+                            #{oid}
+                        </foreach>
+                    </if>
+                    <if test="param.subjectCodes != null and param.subjectCodes.length > 0">
+                        AND be.SUBJECT_CODE IN
+                        <foreach collection="param.subjectCodes" item="code" open="(" separator="," close=")">
+                            #{code}
+                        </foreach>
+                    </if>
+                    <if test="param.startPeriod != null and param.startPeriod != ''">
+                        AND be.PERIOD &gt;= #{param.startPeriod}
+                    </if>
+                    <if test="param.endPeriod != null and param.endPeriod != ''">
+                        AND be.PERIOD &lt;= #{param.endPeriod}
+                    </if>
+                    <if test="param.budgetYear != null and param.budgetYear != ''">
+                        AND be.BUDGET_YEAR = #{param.budgetYear}
+                    </if>
+                </where>
+                GROUP BY be.SUBJECT_CODE, be.PERIOD
+                ORDER BY be.PERIOD, be.SUBJECT_CODE
+            </when>
+            <otherwise>
+                SELECT
+                    be.SUBJECT_CODE                  AS "subjectCode",
+                    MAX(be.SUBJECT_NAME)             AS "subjectName",
+                    be.PERIOD                        AS "period",
+                    SUM(NVL(be.BUDGET_AMOUNT, 0))    AS "budgetAmount",
+                    SUM(NVL(be.ACTUAL_AMOUNT, 0))    AS "actualAmount"
+                FROM TBL_BUDGET_EXECUTION be
+                <where>
+                    <if test="param.orgId != null and param.orgId != ''">
+                        AND be.ORG_ID = #{param.orgId}
+                    </if>
+                    <if test="param.modelId != null and param.modelId != ''">
+                        AND be.MODEL_ID = #{param.modelId}
+                    </if>
+                    <if test="param.orgIds != null and param.orgIds.length > 0">
+                        AND be.BIZ_ORG_ID IN
+                        <foreach collection="param.orgIds" item="oid" open="(" separator="," close=")">
+                            #{oid}
+                        </foreach>
+                    </if>
+                    <if test="param.budgetYear != null and param.budgetYear != ''">
+                        AND be.BUDGET_YEAR = #{param.budgetYear}
+                    </if>
+                </where>
+                GROUP BY be.SUBJECT_CODE, be.PERIOD
+                ORDER BY be.PERIOD, be.SUBJECT_CODE
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 查询预算趋势数据 (按期间合计) -->
+    <select id="selectBudgetTrendData" resultType="java.util.Map">
+        SELECT
+            be.PERIOD                        AS "period",
+            SUM(NVL(be.BUDGET_AMOUNT,   0))  AS "budgetAmount",
+            SUM(NVL(be.ADJUSTED_AMOUNT, 0))  AS "adjustedAmount",
+            SUM(NVL(be.ACTUAL_AMOUNT,   0))  AS "actualAmount",
+            SUM(NVL(be.VARIANCE_AMOUNT, 0))  AS "varianceAmount",
+            CASE
+                WHEN SUM(NVL(be.ADJUSTED_AMOUNT, 0)) = 0 THEN 0
+                ELSE ROUND(SUM(NVL(be.ACTUAL_AMOUNT, 0)) / SUM(be.ADJUSTED_AMOUNT) * 100, 2)
+            END                              AS "executionRate"
+        FROM TBL_BUDGET_EXECUTION be
+        <where>
+            <if test="param.orgId != null and param.orgId != ''">
+                AND be.ORG_ID = #{param.orgId}
+            </if>
+            <if test="param.modelId != null and param.modelId != ''">
+                AND be.MODEL_ID = #{param.modelId}
+            </if>
+            <if test="param.orgIds != null and param.orgIds.length > 0">
+                AND be.BIZ_ORG_ID IN
+                <foreach collection="param.orgIds" item="oid" open="(" separator="," close=")">
+                    #{oid}
+                </foreach>
+            </if>
+            <if test="param.subjectCodes != null and param.subjectCodes.length > 0">
+                AND be.SUBJECT_CODE IN
+                <foreach collection="param.subjectCodes" item="code" open="(" separator="," close=")">
+                    #{code}
+                </foreach>
+            </if>
+            <if test="param.startPeriod != null and param.startPeriod != ''">
+                AND be.PERIOD &gt;= #{param.startPeriod}
+            </if>
+            <if test="param.endPeriod != null and param.endPeriod != ''">
+                AND be.PERIOD &lt;= #{param.endPeriod}
+            </if>
+            <if test="param.budgetYear != null and param.budgetYear != ''">
+                AND be.BUDGET_YEAR = #{param.budgetYear}
+            </if>
+        </where>
+        GROUP BY be.PERIOD
+        ORDER BY be.PERIOD
+    </select>
+
+</mapper>
+

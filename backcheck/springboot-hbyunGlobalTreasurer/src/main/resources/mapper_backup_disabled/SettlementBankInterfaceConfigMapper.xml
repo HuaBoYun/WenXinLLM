@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.SettlementBankInterfaceConfigMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.SettlementBankInterfaceConfig">
+        <id column="config_id" property="configId" />
+        <result column="bank_code" property="bankCode" />
+        <result column="bank_name" property="bankName" />
+        <result column="interface_type" property="interfaceType" />
+        <result column="interface_name" property="interfaceName" />
+        <result column="protocol_type" property="protocolType" />
+        <result column="endpoint_url" property="endpointUrl" />
+        <result column="connection_timeout" property="connectionTimeout" />
+        <result column="read_timeout" property="readTimeout" />
+        <result column="max_retry_count" property="maxRetryCount" />
+        <result column="auth_type" property="authType" />
+        <result column="auth_config" property="authConfig" />
+        <result column="ssl_config" property="sslConfig" />
+        <result column="is_enabled" property="isEnabled" />
+        <result column="priority" property="priority" />
+        <result column="load_balance_weight" property="loadBalanceWeight" />
+        <result column="health_check_url" property="healthCheckUrl" />
+        <result column="health_check_interval" property="healthCheckInterval" />
+        <result column="last_health_check_time" property="lastHealthCheckTime" />
+        <result column="health_status" property="healthStatus" />
+        <result column="org_id" property="orgId" />
+        <result column="create_user" property="createUser" />
+        <result column="create_time" property="createTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 分页查询银企联配置 -->
+    <select id="selectConfigPage" resultMap="BaseResultMap">
+        SELECT * FROM settlement_bank_interface_config
+        <where>
+            <if test="bankCode != null and bankCode != ''">
+                AND bank_code = #{bankCode}
+            </if>
+            <if test="interfaceType != null and interfaceType != ''">
+                AND interface_type = #{interfaceType}
+            </if>
+            <if test="isEnabled != null">
+                AND is_enabled = #{isEnabled}
+            </if>
+            <if test="orgId != null">
+                AND org_id = #{orgId}
+            </if>
+        </where>
+        ORDER BY priority DESC, create_time DESC
+    </select>
+
+    <!-- 根据银行代码查询配置 -->
+    <select id="selectByBankCode" resultMap="BaseResultMap">
+        SELECT * FROM settlement_bank_interface_config
+        WHERE bank_code = #{bankCode} AND org_id = #{orgId}
+        ORDER BY priority DESC
+    </select>
+
+    <!-- 根据接口类型查询配置 -->
+    <select id="selectByInterfaceType" resultMap="BaseResultMap">
+        SELECT * FROM settlement_bank_interface_config
+        WHERE interface_type = #{interfaceType} AND org_id = #{orgId}
+        ORDER BY priority DESC
+    </select>
+
+    <!-- 更新配置状态 -->
+    <update id="updateConfigStatus">
+        UPDATE settlement_bank_interface_config
+        SET is_enabled = #{isEnabled},
+            update_user = #{updateUser},
+            update_time = NOW()
+        WHERE config_id = #{configId}
+    </update>
+
+    <!-- 更新健康检查信息 -->
+    <update id="updateHealthCheckInfo">
+        UPDATE settlement_bank_interface_config
+        SET last_health_check_time = #{lastHealthCheckTime},
+            health_status = #{healthStatus},
+            update_user = #{updateUser},
+            update_time = NOW()
+        WHERE config_id = #{configId}
+    </update>
+
+    <!-- 批量启用配置 -->
+    <update id="batchEnableConfigs">
+        UPDATE settlement_bank_interface_config
+        SET is_enabled = 1,
+            update_user = #{updateUser},
+            update_time = NOW()
+        WHERE config_id IN
+        <foreach collection="configIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 批量禁用配置 -->
+    <update id="batchDisableConfigs">
+        UPDATE settlement_bank_interface_config
+        SET is_enabled = 0,
+            update_user = #{updateUser},
+            update_time = NOW()
+        WHERE config_id IN
+        <foreach collection="configIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 查询启用的配置 -->
+    <select id="selectEnabledConfigs" resultMap="BaseResultMap">
+        SELECT * FROM settlement_bank_interface_config
+        WHERE is_enabled = 1 AND org_id = #{orgId}
+        ORDER BY priority DESC, create_time DESC
+    </select>
+
+    <!-- 查询可用的配置 -->
+    <select id="selectAvailableConfigs" resultMap="BaseResultMap">
+        SELECT * FROM settlement_bank_interface_config
+        WHERE is_enabled = 1 
+        AND interface_type = #{interfaceType}
+        AND (health_status IS NULL OR health_status = 'HEALTHY')
+        AND org_id = #{orgId}
+        ORDER BY priority DESC, load_balance_weight DESC
+    </select>
+
+    <!-- 查询需要健康检查的配置 -->
+    <select id="selectConfigsForHealthCheck" resultMap="BaseResultMap">
+        SELECT * FROM settlement_bank_interface_config
+        WHERE is_enabled = 1
+        AND health_check_url IS NOT NULL
+        AND (
+            last_health_check_time IS NULL 
+            OR last_health_check_time &lt; DATE_SUB(NOW(), INTERVAL health_check_interval MINUTE)
+        )
+        AND org_id = #{orgId}
+        ORDER BY last_health_check_time ASC
+    </select>
+
+    <!-- 查询不健康的配置 -->
+    <select id="selectUnhealthyConfigs" resultMap="BaseResultMap">
+        SELECT * FROM settlement_bank_interface_config
+        WHERE health_status = 'UNHEALTHY'
+        AND org_id = #{orgId}
+        ORDER BY last_health_check_time ASC
+    </select>
+
+    <!-- 统计配置概要 -->
+    <select id="selectConfigSummary" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as totalCount,
+            SUM(CASE WHEN is_enabled = 1 THEN 1 ELSE 0 END) as enabledCount,
+            SUM(CASE WHEN is_enabled = 0 THEN 1 ELSE 0 END) as disabledCount,
+            SUM(CASE WHEN health_status = 'HEALTHY' THEN 1 ELSE 0 END) as healthyCount,
+            SUM(CASE WHEN health_status = 'UNHEALTHY' THEN 1 ELSE 0 END) as unhealthyCount,
+            SUM(CASE WHEN health_status IS NULL THEN 1 ELSE 0 END) as unknownCount
+        FROM settlement_bank_interface_config
+        WHERE org_id = #{orgId}
+    </select>
+
+    <!-- 按银行统计 -->
+    <select id="selectStatsByBank" resultType="java.util.Map">
+        SELECT 
+            bank_code,
+            bank_name,
+            COUNT(*) as count,
+            SUM(CASE WHEN is_enabled = 1 THEN 1 ELSE 0 END) as enabledCount,
+            SUM(CASE WHEN health_status = 'HEALTHY' THEN 1 ELSE 0 END) as healthyCount
+        FROM settlement_bank_interface_config
+        WHERE org_id = #{orgId}
+        GROUP BY bank_code, bank_name
+        ORDER BY count DESC
+    </select>
+
+    <!-- 按接口类型统计 -->
+    <select id="selectStatsByInterfaceType" resultType="java.util.Map">
+        SELECT 
+            interface_type,
+            COUNT(*) as count,
+            SUM(CASE WHEN is_enabled = 1 THEN 1 ELSE 0 END) as enabledCount,
+            SUM(CASE WHEN health_status = 'HEALTHY' THEN 1 ELSE 0 END) as healthyCount
+        FROM settlement_bank_interface_config
+        WHERE org_id = #{orgId}
+        GROUP BY interface_type
+        ORDER BY count DESC
+    </select>
+
+    <!-- 按协议类型统计 -->
+    <select id="selectStatsByProtocolType" resultType="java.util.Map">
+        SELECT 
+            protocol_type,
+            COUNT(*) as count,
+            SUM(CASE WHEN is_enabled = 1 THEN 1 ELSE 0 END) as enabledCount,
+            SUM(CASE WHEN health_status = 'HEALTHY' THEN 1 ELSE 0 END) as healthyCount
+        FROM settlement_bank_interface_config
+        WHERE org_id = #{orgId}
+        GROUP BY protocol_type
+        ORDER BY count DESC
+    </select>
+
+    <!-- 查询负载均衡配置 -->
+    <select id="selectLoadBalanceConfigs" resultMap="BaseResultMap">
+        SELECT * FROM settlement_bank_interface_config
+        WHERE is_enabled = 1
+        AND interface_type = #{interfaceType}
+        AND (health_status IS NULL OR health_status = 'HEALTHY')
+        AND load_balance_weight > 0
+        AND org_id = #{orgId}
+        ORDER BY load_balance_weight DESC, priority DESC
+    </select>
+
+    <!-- 查询最佳配置 -->
+    <select id="selectBestConfig" resultMap="BaseResultMap">
+        SELECT * FROM settlement_bank_interface_config
+        WHERE is_enabled = 1
+        AND interface_type = #{interfaceType}
+        AND (health_status IS NULL OR health_status = 'HEALTHY')
+        AND org_id = #{orgId}
+        ORDER BY 
+            CASE health_status 
+                WHEN 'HEALTHY' THEN 1 
+                ELSE 2 
+            END,
+            priority DESC,
+            load_balance_weight DESC
+        LIMIT 1
+    </select>
+
+    <!-- 查询备用配置 -->
+    <select id="selectBackupConfigs" resultMap="BaseResultMap">
+        SELECT * FROM settlement_bank_interface_config
+        WHERE is_enabled = 1
+        AND interface_type = #{interfaceType}
+        AND config_id != #{primaryConfigId}
+        AND org_id = #{orgId}
+        ORDER BY 
+            CASE health_status 
+                WHEN 'HEALTHY' THEN 1 
+                WHEN 'UNKNOWN' THEN 2
+                ELSE 3 
+            END,
+            priority DESC,
+            load_balance_weight DESC
+    </select>
+
+    <!-- 更新使用统计 -->
+    <update id="updateUsageStats">
+        UPDATE settlement_bank_interface_config
+        SET usage_count = COALESCE(usage_count, 0) + 1,
+            last_used_time = NOW(),
+            update_time = NOW()
+        WHERE config_id = #{configId}
+    </update>
+
+    <!-- 查询使用统计 -->
+    <select id="selectUsageStats" resultType="java.util.Map">
+        SELECT 
+            config_id,
+            bank_code,
+            bank_name,
+            interface_type,
+            usage_count,
+            last_used_time,
+            CASE 
+                WHEN last_used_time >= DATE_SUB(NOW(), INTERVAL 1 DAY) THEN 'ACTIVE'
+                WHEN last_used_time >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN 'RECENT'
+                WHEN last_used_time >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 'INACTIVE'
+                ELSE 'UNUSED'
+            END as usage_status
+        FROM settlement_bank_interface_config
+        WHERE org_id = #{orgId}
+        ORDER BY usage_count DESC, last_used_time DESC
+    </select>
+
+</mapper>

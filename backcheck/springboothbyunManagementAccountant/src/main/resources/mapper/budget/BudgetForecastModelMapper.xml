@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.management.accountant.oracle.mapper.budget.BudgetForecastModelMapper">
+
+    <resultMap id="BaseResultMap" type="com.management.accountant.oracle.entity.budget.BudgetForecastModel">
+        <id   column="ID"                   property="id"/>
+        <result column="MODEL_CODE"         property="modelCode"/>
+        <result column="MODEL_NAME"         property="modelName"/>
+        <result column="MODEL_TYPE"         property="modelType"/>
+        <result column="DESCRIPTION"        property="description"/>
+        <result column="TRAINING_DATA_DESC" property="trainingDataDesc"/>
+        <result column="ACCURACY"           property="accuracy"/>
+        <result column="R_SQUARED"          property="rSquared"/>
+        <result column="RMSE"               property="rmse"/>
+        <result column="MAE"                property="mae"/>
+        <result column="MAPE"               property="mape"/>
+        <result column="IS_ACTIVE"          property="isActive"/>
+        <result column="LAST_TRAIN_TIME"    property="lastTrainTime"/>
+        <result column="CREATE_BY"          property="createBy"/>
+        <result column="CREATE_TIME"        property="createTime"/>
+        <result column="UPDATE_BY"          property="updateBy"/>
+        <result column="UPDATE_TIME"        property="updateTime"/>
+        <result column="DEL_FLAG"           property="delFlag"/>
+    </resultMap>
+
+    <!-- 查询所有激活模型 -->
+    <select id="selectActiveModels" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BUDGET_FORECAST_MODEL
+        WHERE DEL_FLAG = 0 AND IS_ACTIVE = 1
+        ORDER BY ACCURACY DESC
+    </select>
+
+    <!-- 按模型类型查询 -->
+    <select id="selectByModelType" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BUDGET_FORECAST_MODEL
+        WHERE DEL_FLAG = 0 AND MODEL_TYPE = #{modelType}
+        ORDER BY ACCURACY DESC
+    </select>
+
+    <!-- 模型汇总信息 -->
+    <select id="selectModelSummary" resultType="java.util.Map">
+        SELECT
+            MODEL_TYPE                              AS MODEL_TYPE,
+            COUNT(*)                                AS MODEL_COUNT,
+            NVL(ROUND(AVG(ACCURACY), 2), 0)         AS AVG_ACCURACY,
+            NVL(ROUND(AVG(R_SQUARED), 4), 0)        AS AVG_R_SQUARED,
+            NVL(ROUND(AVG(RMSE), 4), 0)             AS AVG_RMSE,
+            NVL(ROUND(AVG(MAE), 4), 0)              AS AVG_MAE,
+            NVL(ROUND(AVG(MAPE), 4), 0)             AS AVG_MAPE
+        FROM TBL_BUDGET_FORECAST_MODEL
+        WHERE DEL_FLAG = 0
+        GROUP BY MODEL_TYPE
+        ORDER BY AVG_ACCURACY DESC
+    </select>
+
+</mapper>

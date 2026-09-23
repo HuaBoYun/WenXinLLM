@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.huabo.monitor.mapper.TblAssesstempleMapper">
+
+	<select id="selectPageList"
+		resultType="com.huabo.monitor.entity.TblAssesstemple">
+		select * from TBL_ASSESSTEMPLE where 1=1
+		<if test="queryParam.orgid!=null and queryParam.orgid!=''">
+			and orgid=#{queryParam.orgid}
+		</if>
+
+		<if
+			test="queryParam.templename!=null and queryParam.templename!=''">
+			and templename LIKE concat(concat('%',#{queryParam.templename}),'%')
+		</if>
+		<if
+			test="queryParam.templenumber!=null and queryParam.templenumber!=''">
+			and templenumber LIKE concat(concat('%',#{queryParam.templenumber}),'%')
+		</if>
+		<if test="sql!=null and sql!=''">
+			${sql}
+		</if>
+		order by asstemid desc
+	</select>
+
+</mapper>

@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.BankLoanMapper">
+
+    <!--
+        实际数据库表结构 (2026-02-09 扩展后):
+        LOAN_ID, LOAN_NO, LOAN_NAME, COMPANY_ID, COMPANY_NAME, BANK_ID, BANK_NAME,
+        LOAN_TYPE, LOAN_AMOUNT, OUTSTANDING_AMOUNT, CURRENCY_CODE, INTEREST_RATE,
+        RATE_TYPE, START_DATE, END_DATE, LOAN_STATUS, DELETE_FLAG,
+        CREATED_BY, CREATED_TIME, UPDATED_BY, UPDATED_TIME,
+        LOAN_PERIOD, PERIOD_UNIT, PAYMENT_METHOD, GUARANTEE_TYPE, GUARANTEE_AMOUNT, REMARK
+    -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TblBankLoan">
+        <id column="LOAN_ID" property="loanId"/>
+        <result column="LOAN_NO" property="applicationNo"/>
+        <result column="LOAN_NAME" property="loanPurpose"/>
+        <result column="LOAN_TYPE" property="loanType"/>
+        <result column="BANK_ID" property="bankId"/>
+        <result column="BANK_NAME" property="bankName"/>
+        <result column="LOAN_AMOUNT" property="loanAmount"/>
+        <result column="OUTSTANDING_AMOUNT" property="outstandingAmount"/>
+        <result column="CURRENCY_CODE" property="currencyCode"/>
+        <result column="INTEREST_RATE" property="interestRate"/>
+        <result column="RATE_TYPE" property="rateType"/>
+        <result column="START_DATE" property="applicationDate"/>
+        <result column="END_DATE" property="maturityDate"/>
+        <result column="LOAN_STATUS" property="applicationStatus"/>
+        <result column="COMPANY_ID" property="companyId"/>
+        <result column="COMPANY_NAME" property="companyName"/>
+        <result column="DELETE_FLAG" property="deleteFlag"/>
+        <result column="CREATED_BY" property="createdBy"/>
+        <result column="CREATED_TIME" property="createdTime"/>
+        <result column="UPDATED_BY" property="updatedBy"/>
+        <result column="UPDATED_TIME" property="updatedTime"/>
+        <!-- 新增字段 -->
+        <result column="LOAN_PERIOD" property="loanTerm"/>
+        <result column="PERIOD_UNIT" property="termUnit"/>
+        <result column="PAYMENT_METHOD" property="repaymentMethod"/>
+        <result column="GUARANTEE_TYPE" property="guaranteeType"/>
+        <result column="GUARANTEE_AMOUNT" property="guaranteeValue"/>
+        <result column="REMARK" property="remark"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        LOAN_ID, LOAN_NO, LOAN_NAME, COMPANY_ID, COMPANY_NAME, BANK_ID, BANK_NAME,
+        LOAN_TYPE, LOAN_AMOUNT, OUTSTANDING_AMOUNT, CURRENCY_CODE, INTEREST_RATE,
+        RATE_TYPE, START_DATE, END_DATE, LOAN_STATUS, DELETE_FLAG,
+        CREATED_BY, CREATED_TIME, UPDATED_BY, UPDATED_TIME,
+        LOAN_PERIOD, PERIOD_UNIT, PAYMENT_METHOD, GUARANTEE_TYPE, GUARANTEE_AMOUNT, REMARK
+    </sql>
+
+    <select id="selectLoanList" resultMap="BaseResultMap" parameterType="map">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_BANK_LOAN
+        WHERE DELETE_FLAG = 0
+        <if test="applicationNo != null and applicationNo != ''">
+            AND LOAN_NO LIKE '%' || #{applicationNo} || '%'
+        </if>
+        <if test="loanType != null and loanType != ''">
+            AND LOAN_TYPE = #{loanType}
+        </if>
+        <if test="bankCode != null and bankCode != ''">
+            AND BANK_ID = #{bankCode}
+        </if>
+        <if test="applicationStatus != null and applicationStatus != ''">
+            AND LOAN_STATUS = #{applicationStatus}
+        </if>
+        <if test="companyId != null">
+            AND COMPANY_ID = #{companyId}
+        </if>
+        <if test="currencyCode != null and currencyCode != ''">
+            AND CURRENCY_CODE = #{currencyCode}
+        </if>
+        ORDER BY CREATED_TIME DESC
+    </select>
+
+    <select id="selectLoanById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_BANK_LOAN
+        WHERE LOAN_ID = #{loanId} AND DELETE_FLAG = 0
+    </select>
+
+    <select id="selectByApplicationNo" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_BANK_LOAN
+        WHERE LOAN_NO = #{applicationNo} AND DELETE_FLAG = 0
+    </select>
+
+    <select id="countLoanList" resultType="int" parameterType="map">
+        SELECT COUNT(*)
+        FROM TBL_BANK_LOAN
+        WHERE DELETE_FLAG = 0
+        <if test="loanType != null and loanType != ''">
+            AND LOAN_TYPE = #{loanType}
+        </if>
+        <if test="bankCode != null and bankCode != ''">
+            AND BANK_ID = #{bankCode}
+        </if>
+        <if test="applicationStatus != null and applicationStatus != ''">
+            AND LOAN_STATUS = #{applicationStatus}
+        </if>
+        <if test="companyId != null">
+            AND COMPANY_ID = #{companyId}
+        </if>
+        <if test="currencyCode != null and currencyCode != ''">
+            AND CURRENCY_CODE = #{currencyCode}
+        </if>
+    </select>
+
+    <update id="updateLoanStatus">
+        UPDATE TBL_BANK_LOAN
+        SET LOAN_STATUS = #{status}, UPDATED_TIME = SYSDATE
+        WHERE LOAN_ID = #{loanId}
+    </update>
+
+    <update id="batchDeleteByIds">
+        UPDATE TBL_BANK_LOAN
+        SET DELETE_FLAG = 1, UPDATED_TIME = SYSDATE
+        WHERE LOAN_ID IN
+        <foreach collection="loanIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <select id="selectLoanSummary" resultType="map">
+        SELECT
+            COUNT(*) AS "totalCount",
+            NVL(SUM(LOAN_AMOUNT), 0) AS "totalAmount",
+            NVL(SUM(LOAN_AMOUNT), 0) AS "totalDrawdownAmount",
+            NVL(SUM(OUTSTANDING_AMOUNT), 0) AS "totalOutstandingAmount",
+            0 AS "totalInterestExpense",
+            NVL(SUM(CASE WHEN LOAN_STATUS = 'ACTIVE' THEN LOAN_AMOUNT ELSE 0 END), 0) AS "activeAmount",
+            NVL(SUM(CASE WHEN LOAN_STATUS = 'PENDING' THEN LOAN_AMOUNT ELSE 0 END), 0) AS "pendingAmount",
+            ROUND(NVL(AVG(INTEREST_RATE), 0), 2) AS "averageRate",
+            CASE WHEN COUNT(*) > 0
+                THEN ROUND(SUM(CASE WHEN LOAN_STATUS IN ('APPROVED', 'ACTIVE', 'COMPLETED') THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2)
+                ELSE 0
+            END AS "approvalRate"
+        FROM TBL_BANK_LOAN
+        WHERE DELETE_FLAG = 0
+        <if test="companyId != null">
+            AND COMPANY_ID = #{companyId}
+        </if>
+    </select>
+
+    <select id="selectExpiringLoans" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_BANK_LOAN
+        WHERE DELETE_FLAG = 0
+        AND LOAN_STATUS = 'ACTIVE'
+        AND END_DATE BETWEEN SYSDATE AND (SYSDATE + #{days})
+        ORDER BY END_DATE ASC
+    </select>
+
+    <select id="selectLoanTypeDistribution" resultType="map">
+        SELECT
+            LOAN_TYPE AS "loanType",
+            COUNT(*) AS "count"
+        FROM TBL_BANK_LOAN
+        WHERE DELETE_FLAG = 0
+        <if test="companyId != null">
+            AND COMPANY_ID = #{companyId}
+        </if>
+        GROUP BY LOAN_TYPE
+        ORDER BY COUNT(*) DESC
+    </select>
+
+    <select id="selectLoanTrend" resultType="map">
+        SELECT
+            TO_CHAR(CREATED_TIME, 'MM') AS "month",
+            COUNT(*) AS "applicationCount",
+            NVL(SUM(LOAN_AMOUNT), 0) AS "applicationAmount"
+        FROM TBL_BANK_LOAN
+        WHERE DELETE_FLAG = 0
+        AND CREATED_TIME >= ADD_MONTHS(SYSDATE, -#{months})
+        <if test="companyId != null">
+            AND COMPANY_ID = #{companyId}
+        </if>
+        GROUP BY TO_CHAR(CREATED_TIME, 'MM')
+        ORDER BY TO_CHAR(CREATED_TIME, 'MM')
+    </select>
+
+</mapper>

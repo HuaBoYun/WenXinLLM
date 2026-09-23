@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.contract.mapper.TblProjectInfoRegisterMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.huabo.contract.entity.TblProjectInfoRegister">
+        <id column="PROJECT_ID" property="projectId" />
+        <result column="REGISTER_NO" property="registerNo" />
+        <result column="PROJECT_NAME" property="projectName" />
+        <result column="CONTRACTOR_FULL_NAME" property="contractorFullName" />
+        <result column="CONTRACTOR_CREDIT_CODE" property="contractorCreditCode" />
+        <result column="FUNDING_SOURCE" property="fundingSource" />
+        <result column="PROJECT_AMOUNT" property="projectAmount" />
+        <result column="BUDGET_INCOME" property="budgetIncome" />
+        <result column="BUDGET_EXPENSE" property="budgetExpense" />
+        <result column="SERVICE_CONTENT" property="serviceContent" />
+        <result column="IS_FIRST_TALK_REPORT" property="isFirstTalkReport" />
+        <result column="REPORT_STATUS" property="reportStatus" />
+        <result column="PROJECT_STATUS" property="projectStatus" />
+        <result column="REMARK" property="remark" />
+        <result column="REGISTER_USER_ID" property="registerUserId" />
+        <result column="REGISTER_USER_NAME" property="registerUserName" />
+        <result column="REGISTER_TIME" property="registerTime" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_TIME" property="updateTime" />
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="Base_Column_List">
+        PROJECT_ID, REGISTER_NO, PROJECT_NAME, CONTRACTOR_FULL_NAME, CONTRACTOR_CREDIT_CODE,
+        FUNDING_SOURCE, PROJECT_AMOUNT, BUDGET_INCOME, BUDGET_EXPENSE, SERVICE_CONTENT,
+        IS_FIRST_TALK_REPORT, REPORT_STATUS, PROJECT_STATUS, REMARK,
+        REGISTER_USER_ID, REGISTER_USER_NAME, REGISTER_TIME, CREATE_TIME, UPDATE_TIME
+    </sql>
+
+    <!-- 分页查询项目信息登记列表 -->
+    <select id="selectProjectInfoRegisterList" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TBL_PROJECT_INFO_REGISTER
+        <where>
+            <if test="param.registerNo != null and param.registerNo != ''">
+                AND REGISTER_NO LIKE CONCAT('%', #{param.registerNo}, '%')
+            </if>
+            <if test="param.projectName != null and param.projectName != ''">
+                AND PROJECT_NAME LIKE CONCAT('%', #{param.projectName}, '%')
+            </if>
+            <if test="param.contractorFullName != null and param.contractorFullName != ''">
+                AND CONTRACTOR_FULL_NAME LIKE CONCAT('%', #{param.contractorFullName}, '%')
+            </if>
+            <if test="param.contractorCreditCode != null and param.contractorCreditCode != ''">
+                AND CONTRACTOR_CREDIT_CODE = #{param.contractorCreditCode}
+            </if>
+            <if test="param.fundingSource != null and param.fundingSource != ''">
+                AND FUNDING_SOURCE LIKE CONCAT('%', #{param.fundingSource}, '%')
+            </if>
+            <if test="param.projectAmountMin != null">
+                AND PROJECT_AMOUNT >= #{param.projectAmountMin}
+            </if>
+            <if test="param.projectAmountMax != null">
+                AND PROJECT_AMOUNT &lt;= #{param.projectAmountMax}
+            </if>
+            <if test="param.isFirstTalkReport != null">
+                AND IS_FIRST_TALK_REPORT = #{param.isFirstTalkReport}
+            </if>
+            <if test="param.reportStatus != null">
+                AND REPORT_STATUS = #{param.reportStatus}
+            </if>
+            <if test="param.projectStatus != null">
+                AND PROJECT_STATUS = #{param.projectStatus}
+            </if>
+            <if test="param.registerUserName != null and param.registerUserName != ''">
+                AND REGISTER_USER_NAME LIKE CONCAT('%', #{param.registerUserName}, '%')
+            </if>
+            <if test="param.registerTimeStart != null">
+                AND REGISTER_TIME >= #{param.registerTimeStart}
+            </if>
+            <if test="param.registerTimeEnd != null">
+                AND REGISTER_TIME &lt;= #{param.registerTimeEnd}
+            </if>
+            <if test="param.createTimeStart != null">
+                AND CREATE_TIME >= #{param.createTimeStart}
+            </if>
+            <if test="param.createTimeEnd != null">
+                AND CREATE_TIME &lt;= #{param.createTimeEnd}
+            </if>
+        </where>
+        <choose>
+            <when test="param.orderBy != null and param.orderBy != ''">
+                ORDER BY ${param.orderBy}
+                <if test="param.orderDirection != null and param.orderDirection != ''">
+                    ${param.orderDirection}
+                </if>
+            </when>
+            <otherwise>
+                ORDER BY CREATE_TIME DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 查询项目信息登记总数 -->
+    <select id="selectProjectInfoRegisterCount" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM TBL_PROJECT_INFO_REGISTER
+        <where>
+            <if test="param.registerNo != null and param.registerNo != ''">
+                AND REGISTER_NO LIKE CONCAT('%', #{param.registerNo}, '%')
+            </if>
+            <if test="param.projectName != null and param.projectName != ''">
+                AND PROJECT_NAME LIKE CONCAT('%', #{param.projectName}, '%')
+            </if>
+            <if test="param.contractorFullName != null and param.contractorFullName != ''">
+                AND CONTRACTOR_FULL_NAME LIKE CONCAT('%', #{param.contractorFullName}, '%')
+            </if>
+            <if test="param.contractorCreditCode != null and param.contractorCreditCode != ''">
+                AND CONTRACTOR_CREDIT_CODE = #{param.contractorCreditCode}
+            </if>
+            <if test="param.fundingSource != null and param.fundingSource != ''">
+                AND FUNDING_SOURCE LIKE CONCAT('%', #{param.fundingSource}, '%')
+            </if>
+            <if test="param.projectAmountMin != null">
+                AND PROJECT_AMOUNT >= #{param.projectAmountMin}
+            </if>
+            <if test="param.projectAmountMax != null">
+                AND PROJECT_AMOUNT &lt;= #{param.projectAmountMax}
+            </if>
+            <if test="param.isFirstTalkReport != null">
+                AND IS_FIRST_TALK_REPORT = #{param.isFirstTalkReport}
+            </if>
+            <if test="param.reportStatus != null">
+                AND REPORT_STATUS = #{param.reportStatus}
+            </if>
+            <if test="param.projectStatus != null">
+                AND PROJECT_STATUS = #{param.projectStatus}
+            </if>
+            <if test="param.registerUserName != null and param.registerUserName != ''">
+                AND REGISTER_USER_NAME LIKE CONCAT('%', #{param.registerUserName}, '%')
+            </if>
+            <if test="param.registerTimeStart != null">
+                AND REGISTER_TIME >= #{param.registerTimeStart}
+            </if>
+            <if test="param.registerTimeEnd != null">
+                AND REGISTER_TIME &lt;= #{param.registerTimeEnd}
+            </if>
+            <if test="param.createTimeStart != null">
+                AND CREATE_TIME >= #{param.createTimeStart}
+            </if>
+            <if test="param.createTimeEnd != null">
+                AND CREATE_TIME &lt;= #{param.createTimeEnd}
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据登记编号查询项目信息 -->
+    <select id="selectByRegisterNo" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TBL_PROJECT_INFO_REGISTER
+        WHERE REGISTER_NO = #{registerNo}
+    </select>
+
+    <!-- 检查登记编号是否存在 -->
+    <select id="existsRegisterNo" resultType="boolean">
+        SELECT CASE WHEN COUNT(1) > 0 THEN 1 ELSE 0 END
+        FROM TBL_PROJECT_INFO_REGISTER
+        WHERE REGISTER_NO = #{registerNo}
+        <if test="excludeProjectId != null and excludeProjectId != ''">
+            AND PROJECT_ID != #{excludeProjectId}
+        </if>
+    </select>
+
+    <!-- 获取需要首谈报备的项目列表 -->
+    <select id="selectFirstTalkReportProjects" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TBL_PROJECT_INFO_REGISTER
+        WHERE IS_FIRST_TALK_REPORT = 1
+        AND REPORT_STATUS = 0
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 批量更新项目状态 -->
+    <update id="batchUpdateProjectStatus">
+        UPDATE TBL_PROJECT_INFO_REGISTER
+        SET PROJECT_STATUS = #{projectStatus},
+            UPDATE_TIME = SYSDATE
+        WHERE PROJECT_ID IN
+        <foreach collection="projectIds" item="projectId" open="(" separator="," close=")">
+            #{projectId}
+        </foreach>
+    </update>
+
+    <!-- 批量更新报备状态 -->
+    <update id="batchUpdateReportStatus">
+        UPDATE TBL_PROJECT_INFO_REGISTER
+        SET REPORT_STATUS = #{reportStatus},
+            UPDATE_TIME = SYSDATE
+        WHERE PROJECT_ID IN
+        <foreach collection="projectIds" item="projectId" open="(" separator="," close=")">
+            #{projectId}
+        </foreach>
+    </update>
+
+    <!-- 根据项目名称和发包方查询重复项目 -->
+    <select id="selectDuplicateProjects" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TBL_PROJECT_INFO_REGISTER
+        WHERE PROJECT_NAME = #{projectName}
+        AND CONTRACTOR_FULL_NAME = #{contractorFullName}
+        <if test="excludeProjectId != null and excludeProjectId != ''">
+            AND PROJECT_ID != #{excludeProjectId}
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 获取最新的登记编号（用于生成新编号） -->
+    <select id="selectLatestRegisterNo" resultType="string">
+        SELECT REGISTER_NO
+        FROM TBL_PROJECT_INFO_REGISTER
+        WHERE REGISTER_NO LIKE CONCAT(#{prefix}, '%')
+        ORDER BY REGISTER_NO DESC
+        FETCH FIRST 1 ROWS ONLY
+    </select>
+
+</mapper>

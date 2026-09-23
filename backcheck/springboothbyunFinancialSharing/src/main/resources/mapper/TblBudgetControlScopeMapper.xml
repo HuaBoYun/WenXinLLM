@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.mapper.TblBudgetControlScopeMapper">
+
+    <select id="selectByRuleId" resultType="com.financial.sharing.entity.TblBudgetControlScope">
+        SELECT * FROM TBL_BUDGET_CONTROL_SCOPE WHERE RULE_ID = #{ruleId} ORDER BY CREATE_TIME DESC
+    </select>
+
+    <select id="selectByRuleIdAndType" resultType="com.financial.sharing.entity.TblBudgetControlScope">
+        SELECT * FROM TBL_BUDGET_CONTROL_SCOPE
+        WHERE RULE_ID = #{ruleId} AND SCOPE_TYPE = #{scopeType}
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <select id="selectByTypeAndValue" resultType="com.financial.sharing.entity.TblBudgetControlScope">
+        SELECT * FROM TBL_BUDGET_CONTROL_SCOPE
+        WHERE SCOPE_TYPE = #{scopeType} AND SCOPE_VALUE = #{scopeValue}
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <delete id="deleteByRuleId">
+        DELETE FROM TBL_BUDGET_CONTROL_SCOPE WHERE RULE_ID = #{ruleId}
+    </delete>
+
+    <insert id="batchInsert">
+        INSERT INTO TBL_BUDGET_CONTROL_SCOPE (SCOPE_ID, RULE_ID, SCOPE_TYPE, SCOPE_VALUE, CREATE_TIME, CREATE_USER, REMARK)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.scopeId}, #{item.ruleId}, #{item.scopeType}, #{item.scopeValue}, #{item.createTime}, #{item.createUser}, #{item.remark})
+        </foreach>
+    </insert>
+
+</mapper>

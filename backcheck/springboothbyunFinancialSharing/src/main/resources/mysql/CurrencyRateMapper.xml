@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.mysql.mapper.CurrencyRateMapper">
+
+    <!-- 分页查询币种汇率 -->
+    <select id="selectCurrencyRatePage" resultType="com.financial.sharing.vo.result.CurrencyRateVO">
+        SELECT
+            RATE_ID as rateId,
+            CURRENCY_CODE as currencyCode,
+            CURRENCY_NAME as currencyName,
+            RATE_TYPE as rateType,
+            EXCHANGE_RATE as exchangeRate,
+            RATE_DATE as rateDate,
+            IS_BASE_CURRENCY as isBaseCurrency,
+            IS_ENABLED as isEnabled,
+            BOOK_ID as bookId,
+            TENANT_ID as tenantId,
+            VERSION as version,
+            CREATE_TIME as createTime,
+            UPDATE_TIME as updateTime,
+            CREATOR as creator,
+            UPDATER as updater
+        FROM T_CURRENCY_RATE
+        WHERE IS_DELETED = 0
+        <if test="bookId != null">
+            AND BOOK_ID = #{bookId,jdbcType=BIGINT}
+        </if>
+        <if test="tenantId != null">
+            AND TENANT_ID = #{tenantId,jdbcType=BIGINT}
+        </if>
+        <if test="currencyCode != null and currencyCode != ''">
+            AND CURRENCY_CODE LIKE CONCAT('%', #{currencyCode,jdbcType=VARCHAR}, '%')
+        </if>
+        <if test="currencyName != null and currencyName != ''">
+            AND CURRENCY_NAME LIKE CONCAT('%', #{currencyName,jdbcType=VARCHAR}, '%')
+        </if>
+        <if test="rateType != null">
+            AND RATE_TYPE = #{rateType,jdbcType=INTEGER}
+        </if>
+        <if test="rateDateStart != null">
+            AND RATE_DATE >= #{rateDateStart,jdbcType=DATE}
+        </if>
+        <if test="rateDateEnd != null">
+            AND RATE_DATE &lt;= #{rateDateEnd,jdbcType=DATE}
+        </if>
+        <if test="isBaseCurrency != null">
+            AND IS_BASE_CURRENCY = #{isBaseCurrency,jdbcType=INTEGER}
+        </if>
+        <if test="isEnabled != null">
+            AND IS_ENABLED = #{isEnabled,jdbcType=INTEGER}
+        </if>
+        ORDER BY RATE_DATE DESC, CURRENCY_CODE ASC
+    </select>
+
+    <!-- 根据币种编码和日期查询汇率 -->
+    <select id="selectByCurrencyAndDate" resultType="com.financial.sharing.mysql.entity.CurrencyRateEntity">
+        SELECT * FROM T_CURRENCY_RATE 
+        WHERE IS_DELETED = 0 
+        AND CURRENCY_CODE = #{currencyCode}
+        AND RATE_DATE = #{rateDate}
+        AND BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+        <if test="excludeId != null">
+            AND RATE_ID != #{excludeId}
+        </if>
+        LIMIT 1
+    </select>
+
+    <!-- 获取最新汇率 -->
+    <select id="selectLatestRate" resultType="com.financial.sharing.vo.result.CurrencyRateVO">
+        SELECT 
+            RATE_ID as rateId,
+            CURRENCY_CODE as currencyCode,
+            CURRENCY_NAME as currencyName,
+            RATE_TYPE as rateType,
+            EXCHANGE_RATE as exchangeRate,
+            RATE_DATE as rateDate,
+            IS_BASE_CURRENCY as isBaseCurrency,
+            IS_ENABLED as isEnabled,
+            BOOK_ID as bookId,
+            TENANT_ID as tenantId,
+            VERSION as version,
+            CREATE_TIME as createTime,
+            UPDATE_TIME as updateTime,
+            CREATOR as creator,
+            UPDATER as updater
+        FROM T_CURRENCY_RATE 
+        WHERE IS_DELETED = 0 
+        AND CURRENCY_CODE = #{currencyCode}
+        AND BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+        AND IS_ENABLED = 1
+        ORDER BY RATE_DATE DESC
+        LIMIT 1
+    </select>
+
+    <!-- 根据日期范围查询汇率 -->
+    <select id="selectByDateRange" resultType="com.financial.sharing.vo.result.CurrencyRateVO">
+        SELECT 
+            RATE_ID as rateId,
+            CURRENCY_CODE as currencyCode,
+            CURRENCY_NAME as currencyName,
+            RATE_TYPE as rateType,
+            EXCHANGE_RATE as exchangeRate,
+            RATE_DATE as rateDate,
+            IS_BASE_CURRENCY as isBaseCurrency,
+            IS_ENABLED as isEnabled,
+            BOOK_ID as bookId,
+            TENANT_ID as tenantId,
+            VERSION as version,
+            CREATE_TIME as createTime,
+            UPDATE_TIME as updateTime,
+            CREATOR as creator,
+            UPDATER as updater
+        FROM T_CURRENCY_RATE 
+        WHERE IS_DELETED = 0 
+        AND CURRENCY_CODE = #{currencyCode}
+        AND RATE_DATE BETWEEN #{startDate} AND #{endDate}
+        AND BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+        AND IS_ENABLED = 1
+        ORDER BY RATE_DATE DESC
+    </select>
+
+    <!-- 获取所有启用的币种列表 -->
+    <select id="selectEnabledCurrencies" resultType="com.financial.sharing.vo.result.CurrencyRateVO">
+        SELECT DISTINCT
+            CURRENCY_CODE as currencyCode,
+            CURRENCY_NAME as currencyName,
+            IS_BASE_CURRENCY as isBaseCurrency
+        FROM T_CURRENCY_RATE 
+        WHERE IS_DELETED = 0 
+        AND BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+        AND IS_ENABLED = 1
+        ORDER BY IS_BASE_CURRENCY DESC, CURRENCY_CODE ASC
+    </select>
+
+    <!-- 获取本位币信息 -->
+    <select id="selectBaseCurrency" resultType="com.financial.sharing.vo.result.CurrencyRateVO">
+        SELECT 
+            RATE_ID as rateId,
+            CURRENCY_CODE as currencyCode,
+            CURRENCY_NAME as currencyName,
+            RATE_TYPE as rateType,
+            EXCHANGE_RATE as exchangeRate,
+            RATE_DATE as rateDate,
+            IS_BASE_CURRENCY as isBaseCurrency,
+            IS_ENABLED as isEnabled,
+            BOOK_ID as bookId,
+            TENANT_ID as tenantId,
+            VERSION as version,
+            CREATE_TIME as createTime,
+            UPDATE_TIME as updateTime,
+            CREATOR as creator,
+            UPDATER as updater
+        FROM T_CURRENCY_RATE 
+        WHERE IS_DELETED = 0 
+        AND IS_BASE_CURRENCY = 1
+        AND BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+        ORDER BY RATE_DATE DESC
+        LIMIT 1
+    </select>
+
+    <!-- 批量启用/禁用币种汇率 -->
+    <update id="batchUpdateStatus">
+        UPDATE T_CURRENCY_RATE 
+        SET IS_ENABLED = #{isEnabled}, 
+            UPDATE_TIME = NOW()
+            <if test="updater != null">
+                , UPDATER = #{updater}
+            </if>
+        WHERE RATE_ID IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND IS_DELETED = 0
+    </update>
+
+    <!-- 批量删除币种汇率 -->
+    <update id="batchDelete">
+        UPDATE T_CURRENCY_RATE 
+        SET IS_DELETED = 1, 
+            UPDATE_TIME = NOW()
+            <if test="updater != null">
+                , UPDATER = #{updater}
+            </if>
+        WHERE RATE_ID IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND IS_DELETED = 0
+    </update>
+
+    <!-- 设置本位币 -->
+    <update id="setBaseCurrency">
+        UPDATE T_CURRENCY_RATE 
+        SET IS_BASE_CURRENCY = 1, 
+            UPDATE_TIME = NOW()
+            <if test="updater != null">
+                , UPDATER = #{updater}
+            </if>
+        WHERE RATE_ID = #{rateId}
+        AND BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+        AND IS_DELETED = 0
+    </update>
+
+    <!-- 清除本位币标识 -->
+    <update id="clearBaseCurrency">
+        UPDATE T_CURRENCY_RATE 
+        SET IS_BASE_CURRENCY = 0, 
+            UPDATE_TIME = NOW()
+            <if test="updater != null">
+                , UPDATER = #{updater}
+            </if>
+        WHERE BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+        AND IS_DELETED = 0
+    </update>
+
+    <!-- 获取币种编码列表 -->
+    <select id="selectCurrencyCodes" resultType="string">
+        SELECT DISTINCT CURRENCY_CODE 
+        FROM T_CURRENCY_RATE 
+        WHERE IS_DELETED = 0 
+        AND BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+        AND IS_ENABLED = 1
+        ORDER BY CURRENCY_CODE ASC
+    </select>
+
+</mapper>

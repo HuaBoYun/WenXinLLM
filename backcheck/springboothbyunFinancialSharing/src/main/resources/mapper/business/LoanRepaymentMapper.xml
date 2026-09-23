@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.business.mapper.LoanRepaymentMapper">
+
+    <!-- 根据借款单ID查询还款记录 -->
+    <select id="selectByLoanId" resultType="com.financial.sharing.business.entity.TblLoanRepayment">
+        SELECT *
+        FROM TBL_LOAN_REPAYMENT
+        WHERE LOAN_ID = #{loanId}
+        ORDER BY REPAYMENT_DATE DESC
+    </select>
+
+    <!-- 统计已还金额 -->
+    <select id="sumRepaidAmount" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(REPAYMENT_AMOUNT), 0)
+        FROM TBL_LOAN_REPAYMENT
+        WHERE LOAN_ID = #{loanId}
+    </select>
+
+</mapper>

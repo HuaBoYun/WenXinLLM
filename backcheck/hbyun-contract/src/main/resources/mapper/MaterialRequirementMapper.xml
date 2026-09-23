@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.contract.mapper.MaterialRequirementMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.huabo.contract.entity.MaterialRequirement">
+        <id column="id" property="id" />
+        <result column="planning_id" property="planningId" />
+        <result column="material_name" property="materialName" />
+        <result column="material_category" property="materialCategory" />
+        <result column="material_specification" property="materialSpecification" />
+        <result column="required_quantity" property="requiredQuantity" />
+        <result column="unit" property="unit" />
+        <result column="quality_grade" property="qualityGrade" />
+        <result column="technical_standards" property="technicalStandards" />
+        <result column="planned_usage_date" property="plannedUsageDate" />
+        <result column="procurement_method" property="procurementMethod" />
+        <result column="estimated_unit_price" property="estimatedUnitPrice" />
+        <result column="estimated_total_cost" property="estimatedTotalCost" />
+        <result column="supplier_requirements" property="supplierRequirements" />
+        <result column="delivery_location" property="deliveryLocation" />
+        <result column="storage_requirements" property="storageRequirements" />
+        <result column="usage_requirements" property="usageRequirements" />
+        <result column="procurement_status" property="procurementStatus" />
+        <result column="actual_quantity" property="actualQuantity" />
+        <result column="actual_unit_price" property="actualUnitPrice" />
+        <result column="actual_total_cost" property="actualTotalCost" />
+        <result column="responsible_person_id" property="responsiblePersonId" />
+        <result column="remarks" property="remarks" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="Base_Column_List">
+        id, planning_id, material_name, material_category, material_specification,
+        required_quantity, unit, quality_grade, technical_standards, planned_usage_date,
+        procurement_method, estimated_unit_price, estimated_total_cost, supplier_requirements,
+        delivery_location, storage_requirements, usage_requirements, procurement_status,
+        actual_quantity, actual_unit_price, actual_total_cost, responsible_person_id,
+        remarks, create_time, update_time
+    </sql>
+
+    <!-- 分页查询材料需求列表 -->
+    <select id="selectMaterialRequirementPage" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM material_requirement
+        WHERE 1=1
+        <if test="param.planningId != null">
+            AND planning_id = #{param.planningId}
+        </if>
+
+        <if test="param.materialName != null and param.materialName != ''">
+            AND material_name LIKE CONCAT('%', #{param.materialName}, '%')
+        </if>
+        <if test="param.materialCategory != null">
+            AND material_category = #{param.materialCategory}
+        </if>
+        <if test="param.materialSpecification != null and param.materialSpecification != ''">
+            AND material_specification LIKE CONCAT('%', #{param.materialSpecification}, '%')
+        </if>
+        <if test="param.requirementStatus != null">
+            AND requirement_status = #{param.requirementStatus}
+        </if>
+        <if test="param.procurementStatus != null">
+            AND procurement_status = #{param.procurementStatus}
+        </if>
+        <if test="param.supplierName != null and param.supplierName != ''">
+            AND supplier_name LIKE CONCAT('%', #{param.supplierName}, '%')
+        </if>
+        <if test="param.managerId != null">
+            AND manager_id = #{param.managerId}
+        </if>
+        <if test="param.managerName != null and param.managerName != ''">
+            AND manager_name LIKE CONCAT('%', #{param.managerName}, '%')
+        </if>
+        <if test="param.minBudgetedCost != null">
+            AND budgeted_cost >= #{param.minBudgetedCost}
+        </if>
+        <if test="param.maxBudgetedCost != null">
+            AND budgeted_cost &lt;= #{param.maxBudgetedCost}
+        </if>
+        <if test="param.minActualCost != null">
+            AND actual_cost >= #{param.minActualCost}
+        </if>
+        <if test="param.maxActualCost != null">
+            AND actual_cost &lt;= #{param.maxActualCost}
+        </if>
+        <if test="param.requiredStartDate != null">
+            AND required_date >= #{param.requiredStartDate}
+        </if>
+        <if test="param.requiredEndDate != null">
+            AND required_date &lt;= #{param.requiredEndDate}
+        </if>
+        <if test="param.purchaseStartDate != null">
+            AND purchase_date >= #{param.purchaseStartDate}
+        </if>
+        <if test="param.purchaseEndDate != null">
+            AND purchase_date &lt;= #{param.purchaseEndDate}
+        </if>
+        <if test="param.deliveryStartDate != null">
+            AND delivery_date >= #{param.deliveryStartDate}
+        </if>
+        <if test="param.deliveryEndDate != null">
+            AND delivery_date &lt;= #{param.deliveryEndDate}
+        </if>
+        <if test="param.createStartTime != null">
+            AND create_time >= #{param.createStartTime}
+        </if>
+        <if test="param.createEndTime != null">
+            AND create_time &lt;= #{param.createEndTime}
+        </if>
+        <if test="param.createBy != null">
+            AND create_by = #{param.createBy}
+        </if>
+        <if test="param.keyword != null and param.keyword != ''">
+            AND (material_name LIKE CONCAT('%', #{param.keyword}, '%')
+                 OR material_specification LIKE CONCAT('%', #{param.keyword}, '%')
+                 OR supplier_requirements LIKE CONCAT('%', #{param.keyword}, '%')
+                 OR remarks LIKE CONCAT('%', #{param.keyword}, '%'))
+        </if>
+        ORDER BY create_time DESC, id DESC
+    </select>
+
+    <!-- 根据项目策划ID查询材料需求列表 -->
+    <select id="selectByPlanningId" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM material_requirement
+        WHERE planning_id = #{planningId}
+        ORDER BY create_time DESC
+    </select>
+
+
+
+    <!-- 根据材料类别查询材料需求列表 -->
+    <select id="selectByMaterialCategory" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM material_requirement
+        WHERE material_category = #{materialCategory}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据需求状态查询材料需求列表 -->
+    <select id="selectByRequirementStatus" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM material_requirement
+        WHERE requirement_status = #{requirementStatus}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据采购状态查询材料需求列表 -->
+    <select id="selectByProcurementStatus" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM material_requirement
+        WHERE procurement_status = #{procurementStatus}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据供应商名称查询材料需求列表 -->
+    <select id="selectBySupplierName" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM material_requirement
+        WHERE supplier_name LIKE CONCAT('%', #{supplierName}, '%')
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 查询负责人的材料需求列表 -->
+    <select id="selectByManagerId" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM material_requirement
+        WHERE manager_id = #{managerId}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据项目策划ID统计预算成本总额 -->
+    <select id="sumBudgetedCostByPlanning" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(budgeted_cost), 0)
+        FROM material_requirement
+        WHERE planning_id = #{planningId}
+    </select>
+
+    <!-- 根据项目策划ID统计实际成本总额 -->
+    <select id="sumActualCostByPlanning" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(actual_cost), 0)
+        FROM material_requirement
+        WHERE planning_id = #{planningId}
+    </select>
+
+    <!-- 根据材料类别统计需求数量 -->
+    <select id="sumRequiredQuantityByCategory" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(required_quantity), 0)
+        FROM material_requirement
+        WHERE material_category = #{materialCategory}
+    </select>
+
+    <!-- 根据材料类别统计已采购数量 -->
+    <select id="sumPurchasedQuantityByCategory" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(purchased_quantity), 0)
+        FROM material_requirement
+        WHERE material_category = #{materialCategory}
+    </select>
+
+    <!-- 根据需求状态统计数量 -->
+    <select id="countByRequirementStatus" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM material_requirement
+        WHERE requirement_status = #{requirementStatus}
+    </select>
+
+    <!-- 根据采购状态统计数量 -->
+    <select id="countByProcurementStatus" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM material_requirement
+        WHERE procurement_status = #{procurementStatus}
+    </select>
+
+    <!-- 查询超预算的材料需求列表 -->
+    <select id="selectOverBudget" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM material_requirement
+        WHERE actual_cost > budgeted_cost
+        ORDER BY (actual_cost - budgeted_cost) DESC
+    </select>
+
+    <!-- 查询紧急需求的材料需求列表 -->
+    <select id="selectUrgentRequirements" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM material_requirement
+        WHERE requirement_status = 1
+        AND required_date BETWEEN SYSDATE AND SYSDATE + 7
+        ORDER BY required_date ASC
+    </select>
+
+    <!-- 查询采购延期的材料需求列表 -->
+    <select id="selectProcurementDelayed" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM material_requirement
+        WHERE procurement_status IN (1, 2)
+        AND required_date &lt; SYSDATE
+        ORDER BY required_date ASC
+    </select>
+
+    <!-- 查询验收完成的材料需求列表 -->
+    <select id="selectAcceptanceCompleted" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM material_requirement
+        WHERE procurement_status = 4
+        ORDER BY acceptance_date DESC
+    </select>
+
+    <!-- 批量更新需求状态 -->
+    <update id="batchUpdateRequirementStatus">
+        UPDATE material_requirement
+        SET requirement_status = #{requirementStatus},
+            update_time = SYSDATE
+        <if test="updateBy != null">
+            , update_by = #{updateBy}
+        </if>
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 批量更新采购状态 -->
+    <update id="batchUpdateProcurementStatus">
+        UPDATE material_requirement
+        SET procurement_status = #{procurementStatus},
+            update_time = SYSDATE
+        <if test="updateBy != null">
+            , update_by = #{updateBy}
+        </if>
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+</mapper>

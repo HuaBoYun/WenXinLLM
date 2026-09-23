@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.fxgl.mapper.ReminderMapper">
+
+    <!-- 查询风险完成情况统计 -->
+    <select id="selectRiskCompletion" resultType="com.huabo.fxgl.dto.RiskCompletionDTO">
+        select a.GB, count(0) as count
+        from (
+            SELECT DISTINCT
+                R.RISKID,
+                CASE WHEN R.RISKSTATUS = 0 THEN 0 else 1 END gb
+            FROM TBL_RISK_ASSPLAN_RISK s
+            LEFT JOIN TBL_RISK r ON s.riskid = r.riskid
+            LEFT JOIN TBL_RISK_RISKMARKING a ON a.assriskid = s.assriskid
+            LEFT JOIN TBL_ORGANIZATION o ON R.UNIT = o.ORGID
+            LEFT JOIN (
+                SELECT r.RISKID, COUNT(x.riskcopingid) AS coping_num
+                FROM TBL_RISK r
+                LEFT JOIN TBL_RISK_COPING c ON r.RISKID = c.RISKID
+                LEFT JOIN TBL_CONTROLMATRIX x ON c.RISKCOPINGID = x.RISKCOPINGID
+                GROUP BY r.RISKID
+            ) coping_count ON R.RISKID = coping_count.RISKID
+            WHERE a.asssatus = 2
+        ) a
+        GROUP BY a.GB
+    </select>
+
+</mapper>

@@ -1,0 +1,213 @@
+package com.huabo.audit.oracle.mapper;
+
+import java.math.BigDecimal;
+
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Result;
+import org.apache.ibatis.annotations.Results;
+import org.apache.ibatis.annotations.Select;
+
+import com.huabo.audit.oracle.entity.ImplementPlanEntity;
+import com.huabo.audit.oracle.vo.CommandPlanData;
+import com.huabo.audit.vo.result.QualityParam;
+import com.spire.ms.System.Collections.Generic.List;
+
+public interface AuditControlAnalysisMapper {
+
+	/**
+	 * 查找年初计划计划执行率
+	 * @param queryYear -查询年度
+	 * @return 计算后的年初计划执行比率
+	 */
+	@Select("SELECT SSZ/ZS FROM ( SELECT " + 
+			"(SELECT COUNT(0) FROM TBL_YQNS_JHGL_JH WHERE XMND = #{queryYear} AND JHID IN (" + 
+			"SELECT TEAP.PLANID FROM TBL_YQNS_ENGIN_AUDIT_PROJECT TEAP RIGHT JOIN TBL_YQNS_IMPLEMENT_PLAN TYIP ON TEAP.ID = TYIP.XMAPBID WHERE TYIP.SPZT = 6 AND TYIP.STATUS > 0 AND TEAP.PLANID IS NOT NULL " + 
+			"UNION SELECT TFAP.PLANID FROM TBL_YQNS_FUND_AUDIT_PROJECT TFAP RIGHT JOIN TBL_YQNS_IMPLEMENT_PLAN TYIP ON TFAP.ID = TYIP.XMAPBID WHERE TYIP.SPZT = 6 AND TYIP.STATUS > 0 AND TFAP.PLANID IS NOT NULL " + 
+			")) AS SSZ ,(SELECT CASE COUNT(0) WHEN 0 THEN 1 ELSE COUNT(0) END FROM TBL_YQNS_JHGL_JH WHERE XMND = #{queryYear} AND JHLX = '1') AS ZS FROM DUAL) T1")
+	BigDecimal selectBeginYearPlanRate(@Param("queryYear")Integer queryYear) throws Exception;
+
+	/**
+	 * 	查找审计计划执行率
+	 * @param queryYear -查询年度
+	 * @return 计算后的本年计划执行比率
+	 */
+	@Select("SELECT SSZ/ZS FROM ( SELECT " + 
+			"(SELECT COUNT(0) FROM TBL_YQNS_JHGL_JH WHERE XMND = #{queryYear} AND JHID IN (" + 
+			"SELECT TEAP.PLANID FROM TBL_YQNS_ENGIN_AUDIT_PROJECT TEAP RIGHT JOIN TBL_YQNS_IMPLEMENT_PLAN TYIP ON TEAP.ID = TYIP.XMAPBID WHERE TYIP.SPZT = 6 AND TYIP.STATUS > 0 AND TEAP.PLANID IS NOT NULL " + 
+			"UNION SELECT TFAP.PLANID FROM TBL_YQNS_FUND_AUDIT_PROJECT TFAP RIGHT JOIN TBL_YQNS_IMPLEMENT_PLAN TYIP ON TFAP.ID = TYIP.XMAPBID WHERE TYIP.SPZT = 6 AND TYIP.STATUS > 0 AND TFAP.PLANID IS NOT NULL " + 
+			")) AS SSZ ,(SELECT CASE COUNT(0) WHEN 0 THEN 1 ELSE COUNT(0) END FROM TBL_YQNS_JHGL_JH WHERE XMND = #{queryYear} ) AS ZS FROM DUAL) T1")
+	BigDecimal selectAuditYearPlanRate(@Param("queryYear")Integer queryYear) throws Exception;
+
+	/**
+	 * 查询本年度计划项目完成率
+	 * @param queryYear
+	 * @return
+	 * @throws Exception
+	 */
+	@Select("SELECT WCS/ZS FROM (SELECT " + 
+			"(SELECT COUNT(0) FROM (SELECT (SELECT COUNT(0) FROM TBL_YQNS_JHGL_JH_GL WHERE JHID = JH.JHID) AS SSXM ," + 
+			"(SELECT COUNT(0) FROM TBL_YQNS_ENGIN_AUDIT_PROJECT TEAP RIGHT JOIN TBL_YQNS_IMPLEMENT_PLAN TYIP ON TEAP.ID = TYIP.XMAPBID WHERE TYIP.SPZT = 6 AND TYIP.STATUS = 4 AND TEAP.PLANID IS NOT NULL AND TEAP.PLANID = JH.JHID) AS GCSSZ, " + 
+			"(SELECT COUNT(0) FROM TBL_YQNS_FUND_AUDIT_PROJECT TFAP RIGHT JOIN TBL_YQNS_IMPLEMENT_PLAN TYIP ON TFAP.ID = TYIP.XMAPBID WHERE TYIP.SPZT = 6 AND TYIP.STATUS = 4 AND TFAP.PLANID IS NOT NULL AND TFAP.PLANID = JH.JHID ) AS CWSSZ " + 
+			"FROM TBL_YQNS_JHGL_JH JH WHERE JH.XMND = #{queryYear} ) T1 WHERE SSXM = GCSSZ+CWSSZ ) AS WCS, (SELECT CASE COUNT(0) WHEN 0 THEN 1 ELSE COUNT(0) END FROM TBL_YQNS_JHGL_JH WHERE XMND = #{queryYear}) AS ZS FROM DUAL ) T1")
+	BigDecimal selectPlanCompletionRate(@Param("queryYear")Integer queryYear) throws Exception;
+
+	/**
+	 * 审计发现问题金额整改率 审计发现问题整改金额÷审计发现问题金额×100%
+	 * @param queryYear-查询年度 
+	 * @return 计算后的本年问题金额整改率 
+	 */
+	@Select("SELECT ZGM/ALLM FROM ( SELECT " + 
+			" (SELECT CASE SUM(MONEY+REVIEWMONEY) WHEN 0 THEN 1 ELSE SUM(MONEY+REVIEWMONEY) END  FROM TBL_YQNS_ISSUE_LIST WHERE PROBLEMYEAR = #{queryYear}) AS ALLM," + 
+			" (SELECT SUM(TYSW.DQZGJE) FROM TBL_YQNS_ISSUESRECORD TYIR JOIN ( SELECT ISSUESID,MAX(VERSION) AS VERSION FROM TBL_YQNS_ISSUESRECORD WHERE ISSUESID IN (SELECT ID FROM TBL_YQNS_ISSUE_LIST WHERE PROBLEMYEAR = #{queryYear})  GROUP BY ISSUESID ) TYIRV ON TYIR.ISSUESID = TYIRV.ISSUESID AND TYIR.VERSION = TYIRV.VERSION  LEFT JOIN TBL_YQNS_SJZG_WTZG TYSW ON TYIR.WTZGID = TYSW.WTZGID  WHERE TYIR.ISSUESID IN (SELECT ID FROM TBL_YQNS_ISSUE_LIST WHERE PROBLEMYEAR = #{queryYear}) AND ((TYSW.ZGZT IN ('2','3') AND TYSW.STATUS >= 6 ) OR (TYSW.DQZGZT IN ('3','2') AND TYSW.HXSPSTATUS >=6 ) )) AS ZGM" + 
+			" FROM DUAL ) T1")
+	BigDecimal selectRectificationAmount(@Param("queryYear")Integer queryYear);
+
+	/**
+	 * 审计发现问题个数整改率：审计发现问题整改个数÷审计发现问题个数×100%
+	 * @param queryYear --查询年度
+	 * @return
+	 * @throws Exception
+	 */
+	@Select("SELECT ZGM/ALLM FROM ( SELECT " + 
+			" (SELECT CASE COUNT(0) WHEN 0 THEN 1 ELSE COUNT(0) END  FROM TBL_YQNS_ISSUE_LIST WHERE PROBLEMYEAR = #{queryYear}) AS ALLM," + 
+			" (SELECT COUNT(0) FROM TBL_YQNS_ISSUESRECORD TYIR JOIN ( SELECT ISSUESID,MAX(VERSION) AS VERSION FROM TBL_YQNS_ISSUESRECORD WHERE ISSUESID IN (SELECT ID FROM TBL_YQNS_ISSUE_LIST WHERE PROBLEMYEAR = #{queryYear})  GROUP BY ISSUESID ) TYIRV ON TYIR.ISSUESID = TYIRV.ISSUESID AND TYIR.VERSION = TYIRV.VERSION  LEFT JOIN TBL_YQNS_SJZG_WTZG TYSW ON TYIR.WTZGID = TYSW.WTZGID  WHERE TYIR.ISSUESID IN (SELECT ID FROM TBL_YQNS_ISSUE_LIST WHERE PROBLEMYEAR = #{queryYear}) AND ((TYSW.ZGZT IN ('2','3') AND TYSW.STATUS >= 6 ) OR (TYSW.DQZGZT IN ('3','2') AND TYSW.HXSPSTATUS >=6 ) )) AS ZGM" + 
+			" FROM DUAL ) T1")
+	BigDecimal selectRectificationRate(@Param("queryYear")Integer queryYear) throws Exception;
+
+	@Select("SELECT ISAN/TOTN FROM (SELECT " + 
+			" (SELECT CASE COUNT(DISTINCT TYP.ID) WHEN 0 THEN 1 ELSE COUNT(DISTINCT TYP.ID) END FROM TBL_YQNS_PROPOSE TYP LEFT JOIN TBL_YQNS_ISSUE_LIST TYIL ON TYP.SJBGDGID = TYIL.SJBGDGID WHERE TYIL.PROBLEMYEAR = #{queryYear} ) AS TOTN," + 
+			" (SELECT COUNT(DISTINCT TYPA.ID) FROM TBL_YQNS_PROPOSE_ADOPT TYPA LEFT JOIN TBL_YQNS_PROPOSE TYP ON TYPA.ID = TYP.ID LEFT JOIN TBL_YQNS_ISSUE_LIST TYIL ON TYP.SJBGDGID = TYIL.SJBGDGID " + 
+			" WHERE TYPA.ISADOPT = 1 AND TYIL.PROBLEMYEAR = #{queryYear}) AS ISAN FROM DUAL) T1")
+	BigDecimal selectaAditAdoptionRate(@Param("queryYear")Integer queryYear) throws Exception;
+	
+	
+	
+	
+	/**
+	 * 查询本年度计划项目数
+	 * @param queryYear
+	 * @return
+	 * @throws Exception
+	 */
+	@Select("SELECT AA.bsjdw,count(0) ZS,sum(AA.WCS) WCS,count(0)-sum(AA.WCS) WWCS  from ( "
+			+ " select DISTINCT jh.JHID,jh.BZ,jh.LXDWMC, CASE WHEN TEAP.auditUnit is not null then TEAP.auditUnit ELSE TFAP.auditUnit  END bsjdw,"
+			+ " (SELECT COUNT(0) FROM TBL_YQNS_JHGL_JH_GL WHERE JHID = JH.JHID) AS SSXM , (SELECT COUNT(0) FROM TBL_YQNS_ENGIN_AUDIT_PROJECT TEAP RIGHT JOIN TBL_YQNS_IMPLEMENT_PLAN TYIP ON TEAP.ID = TYIP.XMAPBID WHERE TYIP.SPZT = 6 AND TYIP.STATUS = 4 AND TEAP.PLANID IS NOT NULL AND TEAP.PLANID = JH.JHID) +"
+			+ " (SELECT COUNT(0) FROM TBL_YQNS_FUND_AUDIT_PROJECT TFAP RIGHT JOIN TBL_YQNS_IMPLEMENT_PLAN TYIP ON TFAP.ID = TYIP.XMAPBID WHERE TYIP.SPZT = 6 AND TYIP.STATUS = 4 AND TFAP.PLANID IS NOT NULL AND TFAP.PLANID = JH.JHID ) AS WCS  "
+			+ " from TBL_YQNS_JHGL_JH JH  LEFT JOIN TBL_YQNS_FUND_AUDIT_PROJECT TFAP on TFAP.PLANID = JH.JHID  LEFT JOIN TBL_YQNS_ENGIN_AUDIT_PROJECT TEAP on TEAP.PLANID = JH.JHID"
+			+ " WHERE JH.XMND = #{queryYear} ) aa where AA.bsjdw is not NULL GROUP BY AA.bsjdw")
+	List<QualityParam> selectPlancount(@Param("queryYear")Integer queryYear) throws Exception;
+	
+	
+	@Select("SELECT pl.*,(SELECT sum(MONEY) from TBL_YQNS_ISSUE_LIST WHERE pl.ID=PROJECTID ) wtje  FROM TBL_YQNS_IMPLEMENT_PLAN pl  WHERE 1=1  and  SPZT=6"
+			+ " AND PLAN_YEAR=#{queryYear} order by ID desc")
+	List<ImplementPlanEntity> selectBytjEntity(Integer queryYear) ;
+	 
+	 
+	 
+		/**
+		 * 查询本年每月项目数量
+		 * @param queryYear
+		 * @return
+		 * @throws Exception
+		 */
+		@Select("SELECT to_number(aa.yf) yf,count(0) sl from ( "
+				+ " SELECT  TEAP.id,to_char(TEAP.CREATETIME,'mm') yf FROM TBL_YQNS_ENGIN_AUDIT_PROJECT TEAP  LEFT JOIN TBL_YQNS_JHGL_JH jh on TEAP.PLANID = JH.JHID WHERE JH.XMND =  #{queryYear} AND TEAP.PLANID IS NOT NULL "
+				+ " UNION ALL SELECT  TFAP.id,to_char(TFAP.CREATETIME,'mm') yf FROM TBL_YQNS_FUND_AUDIT_PROJECT TFAP LEFT JOIN TBL_YQNS_JHGL_JH jh on TFAP.PLANID = JH.JHID  WHERE JH.XMND =  #{queryYear} AND TFAP.PLANID IS NOT NULL "
+				+ " ) aa GROUP BY aa.yf ")
+		List<QualityParam> selectPlanyfcount(@Param("queryYear")Integer queryYear) throws Exception;
+		
+		/**
+		 * 查询本年项目状态数量
+		 * @param queryYear
+		 * @return
+		 * @throws Exception
+		 */
+		@Select(" SELECT AA.status,count(*) sl from ( SELECT pl.id, CASE WHEN PL.STATUS='1' THEN '已启动'  WHEN PL.STATUS='2' THEN '实施中' WHEN PL.STATUS='4' OR PL.STATUS='3'  THEN '已完成' "
+				+ " else '未启动' END status FROM TBL_YQNS_IMPLEMENT_PLAN  pl WHERE 1=1   AND PLAN_YEAR= #{queryYear} ) aa GROUP BY AA.status ")
+		List<QualityParam> selectPlanZtcount(@Param("queryYear")Integer queryYear) throws Exception;
+
+		
+		@Select("SELECT PLANSSZ,PLANZS,SJFXWTJE,SJFXWTZGJE,SJFXWTSL,SJFXWTZGM,SJJYTCSL,SJJYCNSL FROM ( SELECT" + 
+				"(SELECT COUNT(0) FROM TBL_YQNS_JHGL_JH WHERE XMND = #{queryYear} AND JHID IN (" + 
+				"SELECT TEAP.PLANID FROM TBL_YQNS_ENGIN_AUDIT_PROJECT TEAP RIGHT JOIN TBL_YQNS_IMPLEMENT_PLAN TYIP ON TEAP.ID = TYIP.XMAPBID WHERE TYIP.SPZT = 6 AND TYIP.STATUS > 0 AND TEAP.PLANID IS NOT NULL " + 
+				"UNION SELECT TFAP.PLANID FROM TBL_YQNS_FUND_AUDIT_PROJECT TFAP RIGHT JOIN TBL_YQNS_IMPLEMENT_PLAN TYIP ON TFAP.ID = TYIP.XMAPBID WHERE TYIP.SPZT = 6 AND TYIP.STATUS > 0 AND TFAP.PLANID IS NOT NULL " + 
+				")) AS PLANSSZ ,"
+				+ "(SELECT COUNT(0) FROM TBL_YQNS_JHGL_JH WHERE XMND = #{queryYear} AND JHLX = '1') AS PLANZS, "
+				+ "(SELECT SUM(MONEY+REVIEWMONEY) FROM TBL_YQNS_ISSUE_LIST WHERE PROBLEMYEAR = #{queryYear}) AS SJFXWTJE,"
+				+ "(SELECT SUM(TYSW.DQZGJE) FROM TBL_YQNS_ISSUESRECORD TYIR JOIN ( SELECT ISSUESID,MAX(VERSION) AS VERSION FROM TBL_YQNS_ISSUESRECORD WHERE ISSUESID IN (SELECT ID FROM TBL_YQNS_ISSUE_LIST WHERE PROBLEMYEAR = #{queryYear})  GROUP BY ISSUESID ) TYIRV ON TYIR.ISSUESID = TYIRV.ISSUESID AND TYIR.VERSION = TYIRV.VERSION  LEFT JOIN TBL_YQNS_SJZG_WTZG TYSW ON TYIR.WTZGID = TYSW.WTZGID  WHERE TYIR.ISSUESID IN (SELECT ID FROM TBL_YQNS_ISSUE_LIST WHERE PROBLEMYEAR = #{queryYear}) AND ((TYSW.ZGZT IN ('2','3') AND TYSW.STATUS >= 6 ) OR (TYSW.DQZGZT IN ('3','2') AND TYSW.HXSPSTATUS >=6 ) )) AS SJFXWTZGJE,"
+				+ "(SELECT COUNT(0) FROM TBL_YQNS_ISSUE_LIST WHERE PROBLEMYEAR = #{queryYear}) AS SJFXWTSL,"
+				+ "(SELECT COUNT(0) FROM TBL_YQNS_ISSUESRECORD TYIR JOIN ( SELECT ISSUESID,MAX(VERSION) AS VERSION FROM TBL_YQNS_ISSUESRECORD WHERE ISSUESID IN (SELECT ID FROM TBL_YQNS_ISSUE_LIST WHERE PROBLEMYEAR = #{queryYear})  GROUP BY ISSUESID ) TYIRV ON TYIR.ISSUESID = TYIRV.ISSUESID AND TYIR.VERSION = TYIRV.VERSION  LEFT JOIN TBL_YQNS_SJZG_WTZG TYSW ON TYIR.WTZGID = TYSW.WTZGID  WHERE TYIR.ISSUESID IN (SELECT ID FROM TBL_YQNS_ISSUE_LIST WHERE PROBLEMYEAR = #{queryYear}) AND ((TYSW.ZGZT IN ('2','3') AND TYSW.STATUS >= 6 ) OR (TYSW.DQZGZT IN ('3','2') AND TYSW.HXSPSTATUS >=6 ) )) AS SJFXWTZGM,"
+				+ "(SELECT CASE COUNT(DISTINCT TYP.ID) WHEN 0 THEN 1 ELSE COUNT(DISTINCT TYP.ID) END FROM TBL_YQNS_PROPOSE TYP LEFT JOIN TBL_YQNS_ISSUE_LIST TYIL ON TYP.SJBGDGID = TYIL.SJBGDGID WHERE TYIL.PROBLEMYEAR = #{queryYear} ) AS SJJYTCSL,"
+				+ "(SELECT COUNT(DISTINCT TYPA.ID) FROM TBL_YQNS_PROPOSE_ADOPT TYPA LEFT JOIN TBL_YQNS_PROPOSE TYP ON TYPA.ID = TYP.ID LEFT JOIN TBL_YQNS_ISSUE_LIST TYIL ON TYP.SJBGDGID = TYIL.SJBGDGID WHERE TYPA.ISADOPT = 1 AND TYIL.PROBLEMYEAR = #{queryYear}) AS SJJYCNSL"
+				+ " FROM DUAL) T1")
+		@Results({
+			 @Result(column="PLANSSZ",property="yearBeginPlanExcuteNum"),
+			 @Result(column="PLANZS",property="yearBeginPlanNum"),
+			 @Result(column="SJFXWTJE",property="auditFindMoneyNum"),
+			 @Result(column="SJFXWTZGJE",property="auditQuesMoneyNum"),
+			 @Result(column="SJFXWTSL",property="auditFindQuesNum"),
+			 @Result(column="SJFXWTZGM",property="auditRectQuesNum"),
+			 @Result(column="SJJYTCSL",property="auditadoptionTotalNum"),
+			 @Result(column="SJJYCNSL",property="auditadoptionNum"),
+		})
+		CommandPlanData selectCommandPlanData(@Param("queryYear")Integer queryYear) throws Exception;	
+	
+	/**
+	 * 项目运行情况-审前准备-数量
+	 */
+	@Select("SELECT count(*) FROM TBL_YQNS_OPERATE WHERE STATUS=0 AND TO_CHAR(CREATEDATE, 'YYYY') = #{queryYear} "
+			+ "AND SSMKID IN (1511,661,792905,1519,1520,1521,1465,1466,1497,1363,1362,60095,1356,662,1498,22222,1400,1351,1399,1402,1353,1342,1343,1490,1491,1492) ")
+	Integer selectProjectYxSjzbCount(@Param("queryYear")Integer queryYear);
+	
+	/**
+	 * 项目运行情况-现场实施-数量
+	 */
+	@Select("SELECT count(*) FROM TBL_YQNS_OPERATE WHERE STATUS=0 AND TO_CHAR(CREATEDATE, 'YYYY') = #{queryYear} "
+			+ "AND SSMKID IN (1359,1498,22222,1353,1351,1349,1400,1499,1399,1525,1401,1402,1500,1338,1337) ")
+	Integer selectProjectYxXcssCount(@Param("queryYear")Integer queryYear);
+	
+	/**
+	 * 项目运行情况-审计报告-数量
+	 */
+	@Select("SELECT count(*) FROM TBL_YQNS_OPERATE WHERE STATUS=0 AND TO_CHAR(CREATEDATE, 'YYYY') = #{queryYear} "
+			+ "AND SSMKID IN (1342,1343) ")
+	Integer selectProjectYxSjbgCount(@Param("queryYear")Integer queryYear);
+	
+	/**
+	 * 项目运行情况-审计整改-数量
+	 */
+	@Select("SELECT count(*) FROM TBL_YQNS_OPERATE WHERE STATUS=0 AND TO_CHAR(CREATEDATE, 'YYYY') = #{queryYear} "
+			+ "AND SSMKID IN (1490,1491,1492,1493,1494) ")
+	Integer selectProjectYxSjzgCount(@Param("queryYear")Integer queryYear);
+	
+	/**
+	 * 项目运行情况-已完成-数量
+	 */
+	@Select("SELECT count(*) FROM TBL_YQNS_IMPLEMENT_PLAN TNA WHERE 1=1 and (STATUS=4 or STATUS=5)  AND TO_CHAR(CREATEDATE, 'YYYY') = #{queryYear} ")
+	Integer selectProjectYxYwcCount(@Param("queryYear")Integer queryYear);
+	
+	/**
+	 * 请假人员数量
+	 */
+	@Select("select count(*) from TBL_STAFF where ONDUTYSTATUS=3 AND STATUS=1  ")
+	Integer selectStaffQjCount();
+	
+	/**
+	 * 在岗闲置人员数量
+	 */
+	@Select("select count(*) from TBL_STAFF where ONDUTYSTATUS=1 AND STATUS=1  ")
+	Integer selectStaffZgxzCount();
+	
+	/**
+	 * 在岗项目内人员数量
+	 */
+	@Select("select count(*) from TBL_STAFF where ONDUTYSTATUS=2 AND STATUS=1  ")
+	Integer selectStaffZgxmnCount();
+	
+	/**
+	 * 外派任务人员数量
+	 */
+	@Select("select count(*) from TBL_STAFF where ONDUTYSTATUS=4 AND STATUS=1  ")
+	Integer selectStaffWprwCount();
+	
+}

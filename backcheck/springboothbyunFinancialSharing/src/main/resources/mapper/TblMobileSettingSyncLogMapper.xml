@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.mapper.TblMobileSettingSyncLogMapper">
+
+    <select id="selectBySettingId" resultType="com.financial.sharing.entity.TblMobileSettingSyncLog">
+        SELECT * FROM TBL_MOBILE_SETTING_SYNC_LOG WHERE SETTING_ID = #{settingId} ORDER BY SYNC_TIME DESC
+    </select>
+
+    <select id="selectBySyncStatus" resultType="com.financial.sharing.entity.TblMobileSettingSyncLog">
+        SELECT * FROM TBL_MOBILE_SETTING_SYNC_LOG WHERE SYNC_STATUS = #{syncStatus} ORDER BY SYNC_TIME DESC
+    </select>
+
+    <select id="selectByPlatform" resultType="com.financial.sharing.entity.TblMobileSettingSyncLog">
+        SELECT * FROM TBL_MOBILE_SETTING_SYNC_LOG WHERE PLATFORM = #{platform} ORDER BY SYNC_TIME DESC
+    </select>
+
+    <select id="selectBySyncUser" resultType="com.financial.sharing.entity.TblMobileSettingSyncLog">
+        SELECT * FROM TBL_MOBILE_SETTING_SYNC_LOG WHERE SYNC_USER = #{syncUser} ORDER BY SYNC_TIME DESC
+    </select>
+
+</mapper>

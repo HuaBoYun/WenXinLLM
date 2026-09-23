@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.fxgl.mapper.TblTableStructureMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.huabo.fxgl.entity.TblTableStructure">
+        <id column="STRUCTURE_ID" property="structureId" />
+        <result column="DATA_SOURCE_ID" property="dataSourceId" />
+        <result column="TABLE_NAME" property="tableName" />
+        <result column="TABLE_COMMENT" property="tableComment" />
+        <result column="COLUMN_NAME" property="columnName" />
+        <result column="COLUMN_TYPE" property="columnType" />
+        <result column="COLUMN_LENGTH" property="columnLength" />
+        <result column="COLUMN_PRECISION" property="columnPrecision" />
+        <result column="COLUMN_SCALE" property="columnScale" />
+        <result column="IS_NULLABLE" property="isNullable" />
+        <result column="IS_PRIMARY_KEY" property="isPrimaryKey" />
+        <result column="COLUMN_COMMENT" property="columnComment" />
+        <result column="COLUMN_DEFAULT" property="columnDefault" />
+        <result column="COLUMN_ORDER" property="columnOrder" />
+        <result column="SYNC_TIME" property="syncTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        STRUCTURE_ID, DATA_SOURCE_ID, TABLE_NAME, TABLE_COMMENT, COLUMN_NAME, 
+        COLUMN_TYPE, COLUMN_LENGTH, COLUMN_PRECISION, COLUMN_SCALE, IS_NULLABLE, 
+        IS_PRIMARY_KEY, COLUMN_COMMENT, COLUMN_DEFAULT, COLUMN_ORDER, SYNC_TIME
+    </sql>
+
+    <!-- 根据数据源ID和表名查询表结构 -->
+    <select id="selectByDataSourceIdAndTableName" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_TABLE_STRUCTURE
+        WHERE DATA_SOURCE_ID = #{dataSourceId}
+        AND TABLE_NAME = #{tableName}
+        ORDER BY COLUMN_ORDER
+    </select>
+
+    <!-- 根据数据源ID查询所有表结构 -->
+    <select id="selectByDataSourceId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_TABLE_STRUCTURE
+        WHERE DATA_SOURCE_ID = #{dataSourceId}
+        ORDER BY TABLE_NAME, COLUMN_ORDER
+    </select>
+
+    <!-- 获取表统计信息 -->
+    <select id="getTableStatisticsByDataSourceId" resultType="java.util.Map">
+        SELECT 
+            COUNT(DISTINCT TABLE_NAME) as totalTables,
+            COUNT(*) as totalColumns,
+            MAX(SYNC_TIME) as lastSyncTime
+        FROM TBL_TABLE_STRUCTURE
+        WHERE DATA_SOURCE_ID = #{dataSourceId}
+    </select>
+
+    <!-- 批量插入表结构 -->
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO TBL_TABLE_STRUCTURE (
+            STRUCTURE_ID, DATA_SOURCE_ID, TABLE_NAME, TABLE_COMMENT, COLUMN_NAME,
+            COLUMN_TYPE, COLUMN_LENGTH, COLUMN_PRECISION, COLUMN_SCALE, IS_NULLABLE,
+            IS_PRIMARY_KEY, COLUMN_COMMENT, COLUMN_DEFAULT, COLUMN_ORDER, SYNC_TIME
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.structureId}, #{item.dataSourceId}, #{item.tableName}, #{item.tableComment}, #{item.columnName},
+                #{item.columnType}, #{item.columnLength}, #{item.columnPrecision}, #{item.columnScale}, #{item.isNullable},
+                #{item.isPrimaryKey}, #{item.columnComment}, #{item.columnDefault}, #{item.columnOrder}, #{item.syncTime}
+            )
+        </foreach>
+    </insert>
+
+    <!-- 删除数据源的所有表结构 -->
+    <delete id="deleteByDataSourceId">
+        DELETE FROM TBL_TABLE_STRUCTURE WHERE DATA_SOURCE_ID = #{dataSourceId}
+    </delete>
+
+</mapper>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.huabo.monitor.mapper.TblTestTemplateMapper">
+
+
+	<resultMap type="com.huabo.monitor.entity.TblTestTemplate"
+		id="testTempResult" autoMapping="true">
+		<result column="TESTTEMID" property="testtemid" />
+		<result column="TEMPLENUMBER" property="templeNumber" />
+		<result column="TEMPLENAME" property="templename" />
+		<result column="MEMO" property="memo" />
+		<result column="STAFFID" property="staffId" />
+		<result column="CREATETIME" property="createtime" />
+		<result column="TEMPLEDESC" property="templeDesc" />
+		<result column="SOURCE" property="source" />
+		<result column="TBLCOMANY" property="tblComany" />
+		<result column="ISSUED" property="issued" />
+		<association property="staff"
+			javaType="com.huabo.monitor.entity.TblStaff"
+			resultMap="com.huabo.monitor.mapper.TblStaffMapper.staffResult"></association>
+	</resultMap>
+
+	<select id="findList" resultMap="testTempResult">
+		SELECT
+		TT.TESTTEMID,TT.TEMPLENUMBER,TT.TEMPLENAME,TT.MEMO,TT.STAFFID,TT.CREATETIME,TT.TEMPLESTATUS,TT.TEMPLEDESC,TT.SOURCE,TT.TBLCOMANY,staff.REALNAME,TT.ISSUED,TT.SECRECTLEVELID,TT.STAFFSCOPEIDS,TT.STAFFSCOPENAMES,TT.LINKDEPTID
+		FROM TBL_TESTTEMPLE TT LEFT JOIN TBL_STAFF staff ON TT.STAFFID =
+		staff.STAFFID WHERE 1=1
+		<if test="queryParam.tblComany!= null">
+			and TT.tblComany = #{queryParam.tblComany}
+		</if>
+		<if
+			test="queryParam.templeNumber != null and queryParam.templeNumber != ''">
+			AND TT.TEMPLENUMBER LIKE
+			concat(concat('%',#{queryParam.templeNumber}),'%')
+		</if>
+		<if
+			test="queryParam.templename!= null and queryParam.templename != ''">
+			AND TT.TEMPLENAME LIKE concat(concat('%',#{queryParam.templename}),'%')
+		</if>
+		<if test="sql!=null and sql!=''">
+			${sql}
+		</if>
+		ORDER BY TT.TESTTEMID DESC
+	</select>
+
+</mapper>

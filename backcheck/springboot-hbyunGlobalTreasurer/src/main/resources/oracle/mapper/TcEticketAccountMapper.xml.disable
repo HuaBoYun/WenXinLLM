@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.TcEticketAccountMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TcEticketAccount">
+        <id column="ID" property="id" />
+        <result column="BANK_ACCOUNT_ID" property="bankAccountId" />
+        <result column="BANK_CODE" property="bankCode" />
+        <result column="BANK_NAME" property="bankName" />
+        <result column="ACCOUNT_NO" property="accountNo" />
+        <result column="CUSTOMER_NO" property="customerNo" />
+        <result column="ETICKET_STATUS" property="eticketStatus" />
+        <result column="BUSINESS_SCOPE" property="businessScope" />
+        <result column="CURRENCY_CODES" property="currencyCodes" />
+        <result column="DAILY_LIMIT" property="dailyLimit" />
+        <result column="MONTHLY_LIMIT" property="monthlyLimit" />
+        <result column="INTERFACE_URL" property="interfaceUrl" />
+        <result column="INTERFACE_PORT" property="interfacePort" />
+        <result column="CERT_PATH" property="certPath" />
+        <result column="CERT_PASSWORD" property="certPassword" />
+        <result column="OPERATOR_INFO" property="operatorInfo" />
+        <result column="TIMEOUT_SETTING" property="timeoutSetting" />
+        <result column="RETRY_COUNT" property="retryCount" />
+        <result column="LAST_CONNECT_TIME" property="lastConnectTime" />
+        <result column="CONNECTION_STATUS" property="connectionStatus" />
+        <result column="STATUS" property="status" />
+        <result column="REMARK" property="remark" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="CREATE_USER" property="createUser" />
+        <result column="UPDATE_USER" property="updateUser" />
+        <result column="VERSION_NO" property="versionNo" />
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        ID, BANK_ACCOUNT_ID, BANK_CODE, BANK_NAME, ACCOUNT_NO, CUSTOMER_NO, ETICKET_STATUS,
+        BUSINESS_SCOPE, CURRENCY_CODES, DAILY_LIMIT, MONTHLY_LIMIT, INTERFACE_URL, INTERFACE_PORT,
+        CERT_PATH, CERT_PASSWORD, OPERATOR_INFO, TIMEOUT_SETTING, RETRY_COUNT, LAST_CONNECT_TIME,
+        CONNECTION_STATUS, STATUS, REMARK, CREATE_TIME, UPDATE_TIME, CREATE_USER, UPDATE_USER, VERSION_NO
+    </sql>
+
+    <!-- 根据条件查询电票账户列表 -->
+    <select id="selectByCondition" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TC_ETICKET_ACCOUNT
+        WHERE 1=1
+        <if test="bankCode != null and bankCode != ''">
+            AND BANK_CODE = #{bankCode}
+        </if>
+        <if test="bankName != null and bankName != ''">
+            AND BANK_NAME LIKE '%' || #{bankName} || '%'
+        </if>
+        <if test="accountNo != null and accountNo != ''">
+            AND ACCOUNT_NO LIKE '%' || #{accountNo} || '%'
+        </if>
+        <if test="customerNo != null and customerNo != ''">
+            AND CUSTOMER_NO = #{customerNo}
+        </if>
+        <if test="eticketStatus != null and eticketStatus != ''">
+            AND ETICKET_STATUS = #{eticketStatus}
+        </if>
+        <if test="connectionStatus != null and connectionStatus != ''">
+            AND CONNECTION_STATUS = #{connectionStatus}
+        </if>
+        <if test="status != null and status != ''">
+            AND STATUS = #{status}
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据银行代码查询 -->
+    <select id="selectByBankCode" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TC_ETICKET_ACCOUNT
+        WHERE BANK_CODE = #{bankCode}
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据银行账户ID查询 -->
+    <select id="selectByBankAccountId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TC_ETICKET_ACCOUNT
+        WHERE BANK_ACCOUNT_ID = #{bankAccountId}
+    </select>
+
+    <!-- 根据客户号查询 -->
+    <select id="selectByCustomerNo" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TC_ETICKET_ACCOUNT
+        WHERE CUSTOMER_NO = #{customerNo}
+    </select>
+
+    <!-- 根据电票状态查询 -->
+    <select id="selectByEticketStatus" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TC_ETICKET_ACCOUNT
+        WHERE ETICKET_STATUS = #{eticketStatus}
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据连接状态查询 -->
+    <select id="selectByConnectionStatus" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TC_ETICKET_ACCOUNT
+        WHERE CONNECTION_STATUS = #{connectionStatus}
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 查询活跃的电票账户 -->
+    <select id="selectActiveAccounts" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TC_ETICKET_ACCOUNT
+        WHERE STATUS = '1'
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据业务范围查询 -->
+    <select id="selectByBusinessScope" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TC_ETICKET_ACCOUNT
+        WHERE BUSINESS_SCOPE LIKE '%' || #{businessScope} || '%'
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 更新连接状态 -->
+    <update id="updateConnectionStatus">
+        UPDATE TC_ETICKET_ACCOUNT
+        SET CONNECTION_STATUS = #{connectionStatus},
+            LAST_CONNECT_TIME = #{lastConnectTime},
+            UPDATE_TIME = SYSDATE
+        WHERE ID = #{id}
+    </update>
+
+    <!-- 更新电票状态 -->
+    <update id="updateEticketStatus">
+        UPDATE TC_ETICKET_ACCOUNT
+        SET ETICKET_STATUS = #{eticketStatus},
+            UPDATE_USER = #{updateUser},
+            UPDATE_TIME = SYSDATE
+        WHERE ID = #{id}
+    </update>
+
+    <!-- 统计各银行电票账户数量 -->
+    <select id="countByBankCode" resultType="java.util.Map">
+        SELECT BANK_CODE as bankCode, BANK_NAME as bankName, COUNT(*) as count
+        FROM TC_ETICKET_ACCOUNT
+        WHERE STATUS = '1'
+        GROUP BY BANK_CODE, BANK_NAME
+        ORDER BY count DESC
+    </select>
+
+    <!-- 统计各电票状态数量 -->
+    <select id="countByEticketStatus" resultType="java.util.Map">
+        SELECT ETICKET_STATUS as eticketStatus, COUNT(*) as count
+        FROM TC_ETICKET_ACCOUNT
+        WHERE STATUS = '1'
+        GROUP BY ETICKET_STATUS
+        ORDER BY count DESC
+    </select>
+
+    <!-- 统计各连接状态数量 -->
+    <select id="countByConnectionStatus" resultType="java.util.Map">
+        SELECT CONNECTION_STATUS as connectionStatus, COUNT(*) as count
+        FROM TC_ETICKET_ACCOUNT
+        WHERE STATUS = '1'
+        GROUP BY CONNECTION_STATUS
+        ORDER BY count DESC
+    </select>
+
+</mapper>
+

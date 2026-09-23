@@ -1,0 +1,958 @@
+package com.financial.sharing.controller;
+
+import com.hbfk.util.JsonBean;
+import com.hbfk.util.user.UserProvider;
+import com.hbfk.entity.TblStaffUtil;
+import com.vip.vjtools.vjkit.mapper.JsonMapper;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.math.BigDecimal;
+import java.util.*;
+
+/**
+ * 通用配置控制器
+ *
+ * @author Financial Sharing System
+ * @since 2024-12-08
+ */
+@Slf4j
+@Api(tags = "通用配置管理")
+@RestController
+@RequestMapping("/financial/common")
+@CrossOrigin
+public class CommonConfigController {
+
+    @Resource
+    private UserProvider userProvider;
+
+    // ==================== 会计科目管理 ====================
+
+    @ApiOperation("分页查询会计科目")
+    @PostMapping("/account-subject/getList")
+    public String getAccountSubjectPage(HttpServletRequest request,
+                                        HttpServletResponse response,
+                                        @RequestBody Map<String, Object> param) {
+        try {
+            TblStaffUtil loginStaff = validateUser(request, response);
+            if (loginStaff == null) return null;
+
+            log.info("用户 {} 查询会计科目", loginStaff.getStaffid());
+
+            List<Map<String, Object>> subjects = new ArrayList<>();
+            for (int i = 1; i <= 10; i++) {
+                Map<String, Object> subject = new HashMap<>();
+                subject.put("subjectId", "SUB" + String.format("%03d", i));
+                subject.put("subjectCode", String.valueOf(1000 + i));
+                subject.put("subjectName", "科目" + i);
+                subject.put("subjectType", i % 2 == 0 ? "资产" : "负债");
+                subject.put("parentCode", i > 5 ? "1001" : null);
+                subject.put("level", i > 5 ? 2 : 1);
+                subject.put("balanceDirection", i % 2 == 0 ? "借方" : "贷方");
+                subject.put("status", 1);
+                subject.put("createdBy", "系统管理员");
+                subject.put("createTime", "2024-01-01T00:00:00.000Z");
+                subjects.add(subject);
+            }
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("tlist", subjects);
+            data.put("totalRecord", 100);
+            data.put("pageNo", param.get("pageNo") != null ? (Integer) param.get("pageNo") : 1);
+            data.put("pageSize", param.get("pageSize") != null ? (Integer) param.get("pageSize") : 10);
+
+            return createSuccessResponse("查询成功", data);
+        } catch (Exception e) {
+            log.error("查询会计科目失败", e);
+            return createErrorResponse("查询失败: " + e.getMessage());
+        }
+    }
+
+    @ApiOperation("获取会计科目树")
+    @GetMapping("/account-subject/tree")
+    public String getAccountSubjectTree(HttpServletRequest request,
+                                       HttpServletResponse response,
+                                       @ApiParam(value = "科目类型", required = false) @RequestParam(required = false) String subjectType) {
+        try {
+            TblStaffUtil loginStaff = validateUser(request, response);
+            if (loginStaff == null) return null;
+
+            log.info("用户 {} 获取会计科目树", loginStaff.getStaffid());
+
+            List<Map<String, Object>> tree = new ArrayList<>();
+
+            // 资产类科目
+            Map<String, Object> assetNode = new HashMap<>();
+            assetNode.put("id", "1");
+            assetNode.put("code", "1");
+            assetNode.put("name", "资产");
+            assetNode.put("type", "资产");
+            assetNode.put("level", 1);
+            assetNode.put("parentId", null);
+
+            List<Map<String, Object>> assetChildren = new ArrayList<>();
+            for (int i = 1; i <= 5; i++) {
+                Map<String, Object> child = new HashMap<>();
+                child.put("id", "1" + i);
+                child.put("code", "100" + i);
+                child.put("name", "资产科目" + i);
+                child.put("type", "资产");
+                child.put("level", 2);
+                child.put("parentId", "1");
+                assetChildren.add(child);
+            }
+            assetNode.put("children", assetChildren);
+            tree.add(assetNode);
+
+            // 负债类科目
+            Map<String, Object> liabilityNode = new HashMap<>();
+            liabilityNode.put("id", "2");
+            liabilityNode.put("code", "2");
+            liabilityNode.put("name", "负债");
+            liabilityNode.put("type", "负债");
+            liabilityNode.put("level", 1);
+            liabilityNode.put("parentId", null);
+
+            List<Map<String, Object>> liabilityChildren = new ArrayList<>();
+            for (int i = 1; i <= 3; i++) {
+                Map<String, Object> child = new HashMap<>();
+                child.put("id", "2" + i);
+                child.put("code", "200" + i);
+                child.put("name", "负债科目" + i);
+                child.put("type", "负债");
+                child.put("level", 2);
+                child.put("parentId", "2");
+                liabilityChildren.add(child);
+            }
+            liabilityNode.put("children", liabilityChildren);
+            tree.add(liabilityNode);
+
+            return createSuccessResponse("查询成功", tree);
+        } catch (Exception e) {
+            log.error("获取会计科目树失败", e);
+            return createErrorResponse("查询失败: " + e.getMessage());
+        }
+    }
+
+    @ApiOperation("保存或更新会计科目")
+    @PostMapping("/account-subject/saveOrUpdate")
+    public String saveOrUpdateAccountSubject(HttpServletRequest request,
+                                             HttpServletResponse response,
+                                             @RequestBody Map<String, Object> param) {
+        try {
+            TblStaffUtil loginStaff = validateUser(request, response);
+            if (loginStaff == null) return null;
+
+            log.info("用户 {} 保存会计科目", loginStaff.getStaffid());
+
+            String subjectId = (String) param.get("subjectId");
+            boolean isNew = subjectId == null || subjectId.isEmpty();
+
+            Map<String, Object> result = new HashMap<>();
+            if (isNew) {
+                result.put("subjectId", "SUB" + System.currentTimeMillis());
+                result.put("message", "会计科目创建成功");
+            } else {
+                result.put("subjectId", subjectId);
+                result.put("message", "会计科目更新成功");
+            }
+            result.put("subjectCode", param.get("subjectCode"));
+            result.put("subjectName", param.get("subjectName"));
+
+            return createSuccessResponse("保存成功", result);
+        } catch (Exception e) {
+            log.error("保存会计科目失败", e);
+            return createErrorResponse("保存失败: " + e.getMessage());
+        }
+    }
+
+    @ApiOperation("删除会计科目")
+    @DeleteMapping("/account-subject/{id}")
+    public String deleteAccountSubject(HttpServletRequest request,
+                                       HttpServletResponse response,
+                                       @PathVariable String id) {
+        try {
+            TblStaffUtil loginStaff = validateUser(request, response);
+            if (loginStaff == null) return null;
+
+            log.info("用户 {} 删除会计科目，ID：{}", loginStaff.getStaffid(), id);
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("subjectId", id);
+            result.put("message", "会计科目删除成功");
+
+            return createSuccessResponse("删除成功", result);
+        } catch (Exception e) {
+            log.error("删除会计科目失败", e);
+            return createErrorResponse("删除失败: " + e.getMessage());
+        }
+    }
+
+    @ApiOperation("启用/禁用会计科目")
+    @PostMapping("/account-subject/{id}/toggle")
+    public String toggleAccountSubject(HttpServletRequest request,
+                                       HttpServletResponse response,
+                                       @PathVariable String id,
+                                       @RequestBody Map<String, Object> param) {
+        try {
+            TblStaffUtil loginStaff = validateUser(request, response);
+            if (loginStaff == null) return null;
+
+            Boolean status = (Boolean) param.get("status");
+            log.info("用户 {} 切换会计科目状态，ID：{}，状态：{}", loginStaff.getStaffid(), id, status);
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("subjectId", id);
+            result.put("status", status);
+            result.put("statusName", status ? "启用" : "禁用");
+            result.put("message", "科目状态更新成功");
+
+            return createSuccessResponse("操作成功", result);
+        } catch (Exception e) {
+            log.error("切换会计科目状态失败", e);
+            return createErrorResponse("操作失败: " + e.getMessage());
+        }
+    }
+
+    @ApiOperation("按类型获取会计科目")
+    @GetMapping("/subject/type/{subjectType}")
+    public String getAccountSubjectsByType(HttpServletRequest request,
+                                          HttpServletResponse response,
+                                          @PathVariable String subjectType) {
+        try {
+            TblStaffUtil loginStaff = validateUser(request, response);
+            if (loginStaff == null) return null;
+
+            log.info("用户 {} 按类型获取会计科目，类型：{}", loginStaff.getStaffid(), subjectType);
+
+            List<Map<String, Object>> subjects = new ArrayList<>();
+
+            // 根据科目类型返回不同的科目
+            String[] subjectNames;
+            String[] subjectCodes;
+
+            switch (subjectType) {
+                case "资产":
+                    subjectNames = new String[]{"现金", "银行存款", "应收账款", "存货", "固定资产", "无形资产"};
+                    subjectCodes = new String[]{"1001", "1002", "1122", "1405", "1601", "1701"};
+                    break;
+                case "负债":
+                    subjectNames = new String[]{"应付账款", "短期借款", "应付职工薪酬", "应交税费", "长期借款"};
+                    subjectCodes = new String[]{"2202", "2001", "2211", "2221", "2501"};
+                    break;
+                case "所有者权益":
+                    subjectNames = new String[]{"实收资本", "资本公积", "盈余公积", "未分配利润"};
+                    subjectCodes = new String[]{"4001", "4101", "4103", "4104"};
+                    break;
+                case "收入":
+                    subjectNames = new String[]{"主营业务收入", "其他业务收入", "投资收益", "营业外收入"};
+                    subjectCodes = new String[]{"6001", "6051", "6111", "6301"};
+                    break;
+                case "费用":
+                    subjectNames = new String[]{"主营业务成本", "销售费用", "管理费用", "财务费用", "所得税费用"};
+                    subjectCodes = new String[]{"6401", "6601", "6602", "6603", "6801"};
+                    break;
+                default:
+                    return createErrorResponse("不支持的科目类型: " + subjectType);
+            }
+
+            for (int i = 0; i < subjectNames.length; i++) {
+                Map<String, Object> subject = new HashMap<>();
+                subject.put("subjectId", "SUB" + String.format("%03d", i + 1));
+                subject.put("subjectCode", subjectCodes[i]);
+                subject.put("subjectName", subjectNames[i]);
+                subject.put("subjectType", subjectType);
+                subject.put("balanceDirection", getBalanceDirection(subjectType));
+                subject.put("status", 1);
+                subject.put("isLeaf", true);
+                subjects.add(subject);
+            }
+
+            return createSuccessResponse("查询成功", subjects);
+        } catch (Exception e) {
+            log.error("按类型获取会计科目失败", e);
+            return createErrorResponse("查询失败: " + e.getMessage());
+        }
+    }
+
+    // ==================== 辅助核算项管理 ====================
+
+    @ApiOperation("分页查询辅助核算项")
+    @PostMapping("/auxiliary-item/getList")
+    public String getAuxiliaryItemPage(HttpServletRequest request,
+                                       HttpServletResponse response,
+                                       @RequestBody Map<String, Object> param) {
+        try {
+            TblStaffUtil loginStaff = validateUser(request, response);
+            if (loginStaff == null) return null;
+
+            log.info("用户 {} 查询辅助核算项", loginStaff.getStaffid());
+
+            List<Map<String, Object>> items = new ArrayList<>();
+            for (int i = 1; i <= 10; i++) {
+                Map<String, Object> item = new HashMap<>();
+                item.put("itemId", "AUX" + String.format("%03d", i));
+                item.put("itemCode", "AUX" + String.format("%03d", i));
+                item.put("itemName", "辅助项目" + i);
+                item.put("itemType", i % 2 == 0 ? "部门" : "项目");
+                item.put("parentCode", i > 5 ? "AUX001" : null);
+                item.put("level", i > 5 ? 2 : 1);
+                item.put("status", 1);
+                item.put("createdBy", "系统管理员");
+                items.add(item);
+            }
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("tlist", items);
+            data.put("totalRecord", 50);
+            data.put("pageNo", param.get("pageNo") != null ? (Integer) param.get("pageNo") : 1);
+            data.put("pageSize", param.get("pageSize") != null ? (Integer) param.get("pageSize") : 10);
+
+            return createSuccessResponse("查询成功", data);
+        } catch (Exception e) {
+            log.error("查询辅助核算项失败", e);
+            return createErrorResponse("查询失败: " + e.getMessage());
+        }
+    }
+
+    @ApiOperation("保存或更新辅助核算项")
+    @PostMapping("/auxiliary-item/saveOrUpdate")
+    public String saveOrUpdateAuxiliaryItem(HttpServletRequest request,
+                                            HttpServletResponse response,
+                                            @RequestBody Map<String, Object> param) {
+        try {
+            TblStaffUtil loginStaff = validateUser(request, response);
+            if (loginStaff == null) return null;
+
+            log.info("用户 {} 保存辅助核算项", loginStaff.getStaffid());
+
+            String itemId = (String) param.get("itemId");
+            boolean isNew = itemId == null || itemId.isEmpty();
+
+            Map<String, Object> result = new HashMap<>();
+            if (isNew) {
+                result.put("itemId", "AUX" + System.currentTimeMillis());
+                result.put("message", "辅助核算项创建成功");
+            } else {
+                result.put("itemId", itemId);
+                result.put("message", "辅助核算项更新成功");
+            }
+            result.put("itemCode", param.get("itemCode"));
+            result.put("itemName", param.get("itemName"));
+
+            return createSuccessResponse("保存成功", result);
+        } catch (Exception e) {
+            log.error("保存辅助核算项失败", e);
+            return createErrorResponse("保存失败: " + e.getMessage());
+        }
+    }
+
+    @ApiOperation("删除辅助核算项")
+    @DeleteMapping("/auxiliary-item/{id}")
+    public String deleteAuxiliaryItem(HttpServletRequest request,
+                                      HttpServletResponse response,
+                                      @PathVariable String id) {
+        try {
+            TblStaffUtil loginStaff = validateUser(request, response);
+            if (loginStaff == null) return null;
+
+            log.info("用户 {} 删除辅助核算项，ID：{}", loginStaff.getStaffid(), id);
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("itemId", id);
+            result.put("message", "辅助核算项删除成功");
+
+            return createSuccessResponse("删除成功", result);
+        } catch (Exception e) {
+            log.error("删除辅助核算项失败", e);
+            return createErrorResponse("删除失败: " + e.getMessage());
+        }
+    }
+
+    @ApiOperation("获取辅助核算项详情")
+    @GetMapping("/auxiliary-item/{id}")
+    public String getAuxiliaryItemById(HttpServletRequest request,
+                                       HttpServletResponse response,
+                                       @PathVariable String id) {
+        try {
+            TblStaffUtil loginStaff = validateUser(request, response);
+            if (loginStaff == null) return null;
+
+            log.info("用户 {} 获取辅助核算项详情，ID：{}", loginStaff.getStaffid(), id);
+
+            Map<String, Object> item = new HashMap<>();
+            item.put("itemId", id);
+            item.put("itemCode", "AUX001");
+            item.put("itemName", "部门1");
+            item.put("itemType", "部门");
+            item.put("description", "主要业务部门");
+            item.put("status", 1);
+            item.put("createdBy", "系统管理员");
+            item.put("createTime", "2024-01-01T00:00:00.000Z");
+
+            return createSuccessResponse("查询成功", item);
+        } catch (Exception e) {
+            log.error("获取辅助核算项详情失败", e);
+            return createErrorResponse("查询失败: " + e.getMessage());
+        }
+    }
+
+    @ApiOperation("按类型获取辅助核算项")
+    @GetMapping("/auxiliary-item/by-type")
+    public String getAuxiliaryItemsByType(HttpServletRequest request,
+                                         HttpServletResponse response,
+                                         @ApiParam(value = "辅助核算类型", required = true) @RequestParam String itemType) {
+        try {
+            TblStaffUtil loginStaff = validateUser(request, response);
+            if (loginStaff == null) return null;
+
+            log.info("用户 {} 按类型获取辅助核算项，类型：{}", loginStaff.getStaffid(), itemType);
+
+            List<Map<String, Object>> items = new ArrayList<>();
+            for (int i = 1; i <= 5; i++) {
+                Map<String, Object> item = new HashMap<>();
+                item.put("itemId", "AUX" + String.format("%03d", i));
+                item.put("itemCode", itemType + String.format("%03d", i));
+                item.put("itemName", itemType + i);
+                item.put("itemType", itemType);
+                item.put("status", 1);
+                items.add(item);
+            }
+
+            return createSuccessResponse("查询成功", items);
+        } catch (Exception e) {
+            log.error("按类型获取辅助核算项失败", e);
+            return createErrorResponse("查询失败: " + e.getMessage());
+        }
+    }
+
+    // ==================== 币种管理 ====================
+
+    @ApiOperation("分页查询币种")
+    @PostMapping("/currency/getList")
+    public String getCurrencyPage(HttpServletRequest request,
+                                  HttpServletResponse response,
+                                  @RequestBody Map<String, Object> param) {
+        try {
+            TblStaffUtil loginStaff = validateUser(request, response);
+            if (loginStaff == null) return null;
+
+            log.info("用户 {} 查询币种", loginStaff.getStaffid());
+
+            List<Map<String, Object>> currencies = new ArrayList<>();
+            String[] currencyCodes = {"CNY", "USD", "EUR", "JPY", "HKD"};
+            String[] currencyNames = {"人民币", "美元", "欧元", "日元", "港币"};
+
+            for (int i = 0; i < currencyCodes.length; i++) {
+                Map<String, Object> currency = new HashMap<>();
+                currency.put("currencyId", "CUR" + String.format("%03d", i + 1));
+                currency.put("currencyCode", currencyCodes[i]);
+                currency.put("currencyName", currencyNames[i]);
+                currency.put("currencySymbol", getCurrencySymbol(currencyCodes[i]));
+                currency.put("exchangeRate", new BigDecimal(getExchangeRate(currencyCodes[i])));
+                currency.put("isBase", i == 0);
+                currency.put("status", 1);
+                currencies.add(currency);
+            }
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("tlist", currencies);
+            data.put("totalRecord", currencies.size());
+            data.put("pageNo", 1);
+            data.put("pageSize", 10);
+
+            return createSuccessResponse("查询成功", data);
+        } catch (Exception e) {
+            log.error("查询币种失败", e);
+            return createErrorResponse("查询失败: " + e.getMessage());
+        }
+    }
+
+    @ApiOperation("保存或更新币种")
+    @PostMapping("/currency/saveOrUpdate")
+    public String saveOrUpdateCurrency(HttpServletRequest request,
+                                       HttpServletResponse response,
+                                       @RequestBody Map<String, Object> param) {
+        try {
+            TblStaffUtil loginStaff = validateUser(request, response);
+            if (loginStaff == null) return null;
+
+            log.info("用户 {} 保存币种", loginStaff.getStaffid());
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("currencyId", param.get("currencyId") != null ? param.get("currencyId") : "CUR" + System.currentTimeMillis());
+            result.put("currencyCode", param.get("currencyCode"));
+            result.put("currencyName", param.get("currencyName"));
+            result.put("message", "币种保存成功");
+
+            return createSuccessResponse("保存成功", result);
+        } catch (Exception e) {
+            log.error("保存币种失败", e);
+            return createErrorResponse("保存失败: " + e.getMessage());
+        }
+    }
+
+    @ApiOperation("删除币种")
+    @DeleteMapping("/currency/{id}")
+    public String deleteCurrency(HttpServletRequest request,
+                                HttpServletResponse response,
+                                @PathVariable String id) {
+        try {
+            TblStaffUtil loginStaff = validateUser(request, response);
+            if (loginStaff == null) return null;
+
+            log.info("用户 {} 删除币种，ID：{}", loginStaff.getStaffid(), id);
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("currencyId", id);
+            result.put("message", "币种删除成功");
+
+            return createSuccessResponse("删除成功", result);
+        } catch (Exception e) {
+            log.error("删除币种失败", e);
+            return createErrorResponse("删除失败: " + e.getMessage());
+        }
+    }
+
+    @ApiOperation("获取活跃币种列表")
+    @GetMapping("/currency/active")
+    public String getActiveCurrencyList(HttpServletRequest request,
+                                       HttpServletResponse response) {
+        try {
+            TblStaffUtil loginStaff = validateUser(request, response);
+            if (loginStaff == null) return null;
+
+            log.info("用户 {} 获取活跃币种列表", loginStaff.getStaffid());
+
+            List<Map<String, Object>> currencies = new ArrayList<>();
+            String[] currencyCodes = {"CNY", "USD", "EUR", "JPY", "HKD"};
+            String[] currencyNames = {"人民币", "美元", "欧元", "日元", "港币"};
+
+            for (int i = 0; i < currencyCodes.length; i++) {
+                Map<String, Object> currency = new HashMap<>();
+                currency.put("currencyCode", currencyCodes[i]);
+                currency.put("currencyName", currencyNames[i]);
+                currency.put("currencySymbol", getCurrencySymbol(currencyCodes[i]));
+                currency.put("isBase", i == 0);
+                currencies.add(currency);
+            }
+
+            return createSuccessResponse("查询成功", currencies);
+        } catch (Exception e) {
+            log.error("获取活跃币种列表失败", e);
+            return createErrorResponse("查询失败: " + e.getMessage());
+        }
+    }
+
+    // ==================== 汇率管理 ====================
+
+    @ApiOperation("分页查询汇率")
+    @PostMapping("/currency-rate/getList")
+    public String getCurrencyRatePage(HttpServletRequest request,
+                                      HttpServletResponse response,
+                                      @RequestBody Map<String, Object> param) {
+        try {
+            TblStaffUtil loginStaff = validateUser(request, response);
+            if (loginStaff == null) return null;
+
+            log.info("用户 {} 查询汇率", loginStaff.getStaffid());
+
+            List<Map<String, Object>> rates = new ArrayList<>();
+            String[] currencyCodes = {"USD", "EUR", "JPY", "HKD"};
+            String[] currencyNames = {"美元", "欧元", "日元", "港币"};
+
+            for (int i = 0; i < currencyCodes.length; i++) {
+                Map<String, Object> rate = new HashMap<>();
+                rate.put("rateId", "RATE" + String.format("%03d", i + 1));
+                rate.put("fromCurrency", "CNY");
+                rate.put("toCurrency", currencyCodes[i]);
+                rate.put("fromCurrencyName", "人民币");
+                rate.put("toCurrencyName", currencyNames[i]);
+                rate.put("exchangeRate", new BigDecimal(getExchangeRate(currencyCodes[i])));
+                rate.put("effectiveDate", "2024-12-01");
+                rate.put("status", 1);
+                rates.add(rate);
+            }
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("tlist", rates);
+            data.put("totalRecord", rates.size());
+            data.put("pageNo", 1);
+            data.put("pageSize", 10);
+
+            return createSuccessResponse("查询成功", data);
+        } catch (Exception e) {
+            log.error("查询汇率失败", e);
+            return createErrorResponse("查询失败: " + e.getMessage());
+        }
+    }
+
+    @ApiOperation("保存或更新汇率")
+    @PostMapping("/currency-rate/saveOrUpdate")
+    public String saveOrUpdateCurrencyRate(HttpServletRequest request,
+                                          HttpServletResponse response,
+                                          @RequestBody Map<String, Object> param) {
+        try {
+            TblStaffUtil loginStaff = validateUser(request, response);
+            if (loginStaff == null) return null;
+
+            log.info("用户 {} 保存汇率", loginStaff.getStaffid());
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("rateId", param.get("rateId") != null ? param.get("rateId") : "RATE" + System.currentTimeMillis());
+            result.put("fromCurrency", param.get("fromCurrency"));
+            result.put("toCurrency", param.get("toCurrency"));
+            result.put("exchangeRate", param.get("exchangeRate"));
+            result.put("message", "汇率保存成功");
+
+            return createSuccessResponse("保存成功", result);
+        } catch (Exception e) {
+            log.error("保存汇率失败", e);
+            return createErrorResponse("保存失败: " + e.getMessage());
+        }
+    }
+
+    @ApiOperation("获取汇率")
+    @GetMapping("/currency-rate/get")
+    public String getCurrencyRate(HttpServletRequest request,
+                                 HttpServletResponse response,
+                                 @ApiParam(value = "原币种", required = true) @RequestParam String fromCurrency,
+                                 @ApiParam(value = "目标币种", required = true) @RequestParam String toCurrency,
+                                 @ApiParam(value = "汇率日期", required = false) @RequestParam(required = false) String rateDate) {
+        try {
+            TblStaffUtil loginStaff = validateUser(request, response);
+            if (loginStaff == null) return null;
+
+            log.info("用户 {} 获取汇率，{} -> {}", loginStaff.getStaffid(), fromCurrency, toCurrency);
+
+            Map<String, Object> rate = new HashMap<>();
+            rate.put("fromCurrency", fromCurrency);
+            rate.put("toCurrency", toCurrency);
+            rate.put("exchangeRate", new BigDecimal(getExchangeRate(toCurrency)));
+            rate.put("effectiveDate", rateDate != null ? rateDate : "2024-12-01");
+            rate.put("inverseRate", new BigDecimal(getInverseExchangeRate(toCurrency)));
+
+            return createSuccessResponse("查询成功", rate);
+        } catch (Exception e) {
+            log.error("获取汇率失败", e);
+            return createErrorResponse("查询失败: " + e.getMessage());
+        }
+    }
+
+    // ==================== 会计期间管理 ====================
+
+    @ApiOperation("分页查询会计期间")
+    @PostMapping("/accounting-period/getList")
+    public String getAccountingPeriodPage(HttpServletRequest request,
+                                         HttpServletResponse response,
+                                         @RequestBody Map<String, Object> param) {
+        try {
+            TblStaffUtil loginStaff = validateUser(request, response);
+            if (loginStaff == null) return null;
+
+            log.info("用户 {} 查询会计期间", loginStaff.getStaffid());
+
+            List<Map<String, Object>> periods = new ArrayList<>();
+            for (int i = 1; i <= 12; i++) {
+                Map<String, Object> period = new HashMap<>();
+                period.put("periodId", "PER" + String.format("%03d", i));
+                period.put("periodCode", "2024" + String.format("%02d", i));
+                period.put("periodName", "2024年第" + i + "期");
+                period.put("startDate", "2024-" + String.format("%02d", i) + "-01");
+                period.put("endDate", i == 12 ? "2024-12-31" : "2024-" + String.format("%02d", i) + "-" + getLastDayOfMonth(i));
+                period.put("status", i < 12 ? "OPEN" : "CLOSED");
+                period.put("statusName", i < 12 ? "开启" : "关闭");
+                periods.add(period);
+            }
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("tlist", periods);
+            data.put("totalRecord", periods.size());
+            data.put("pageNo", 1);
+            data.put("pageSize", 12);
+
+            return createSuccessResponse("查询成功", data);
+        } catch (Exception e) {
+            log.error("查询会计期间失败", e);
+            return createErrorResponse("查询失败: " + e.getMessage());
+        }
+    }
+
+    @ApiOperation("保存或更新会计期间")
+    @PostMapping("/accounting-period/saveOrUpdate")
+    public String saveOrUpdateAccountingPeriod(HttpServletRequest request,
+                                              HttpServletResponse response,
+                                              @RequestBody Map<String, Object> param) {
+        try {
+            TblStaffUtil loginStaff = validateUser(request, response);
+            if (loginStaff == null) return null;
+
+            log.info("用户 {} 保存会计期间", loginStaff.getStaffid());
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("periodId", param.get("periodId") != null ? param.get("periodId") : "PER" + System.currentTimeMillis());
+            result.put("periodCode", param.get("periodCode"));
+            result.put("periodName", param.get("periodName"));
+            result.put("message", "会计期间保存成功");
+
+            return createSuccessResponse("保存成功", result);
+        } catch (Exception e) {
+            log.error("保存会计期间失败", e);
+            return createErrorResponse("保存失败: " + e.getMessage());
+        }
+    }
+
+    @ApiOperation("获取当前会计期间")
+    @GetMapping("/accounting-period/current")
+    public String getCurrentAccountingPeriod(HttpServletRequest request,
+                                           HttpServletResponse response,
+                                           @ApiParam(value = "账簿ID", required = false) @RequestParam(required = false) Long bookId) {
+        try {
+            TblStaffUtil loginStaff = validateUser(request, response);
+            if (loginStaff == null) return null;
+
+            log.info("用户 {} 获取当前会计期间", loginStaff.getStaffid());
+
+            Map<String, Object> period = new HashMap<>();
+            period.put("periodId", "PER012");
+            period.put("periodCode", "202412");
+            period.put("periodName", "2024年第12期");
+            period.put("startDate", "2024-12-01");
+            period.put("endDate", "2024-12-31");
+            period.put("status", "OPEN");
+            period.put("statusName", "开启");
+
+            return createSuccessResponse("查询成功", period);
+        } catch (Exception e) {
+            log.error("获取当前会计期间失败", e);
+            return createErrorResponse("查询失败: " + e.getMessage());
+        }
+    }
+
+    // ==================== 档案管理 ====================
+
+    @ApiOperation("获取档案配置")
+    @GetMapping("/archive/config")
+    public String getArchiveConfig(HttpServletRequest request,
+                                   HttpServletResponse response,
+                                   @ApiParam(value = "配置类型", required = false) @RequestParam(required = false) String configType) {
+        try {
+            TblStaffUtil loginStaff = validateUser(request, response);
+            if (loginStaff == null) return null;
+
+            log.info("用户 {} 获取档案配置，类型：{}", loginStaff.getStaffid(), configType);
+
+            Map<String, Object> config = new HashMap<>();
+
+            // 档案基础配置
+            config.put("archiveId", "ARCH001");
+            config.put("archiveName", "财务档案管理系统");
+            config.put("version", "1.0.0");
+            config.put("isEnabled", true);
+            config.put("autoArchive", true);
+            config.put("retentionYears", 10);
+
+            // 档案路径配置
+            Map<String, Object> pathConfig = new HashMap<>();
+            pathConfig.put("basePath", "/data/archives");
+            pathConfig.put("voucherPath", "/data/archives/vouchers");
+            pathConfig.put("reportPath", "/data/archives/reports");
+            pathConfig.put("attachmentPath", "/data/archives/attachments");
+            config.put("pathConfig", pathConfig);
+
+            // 归档规则配置
+            Map<String, Object> rules = new HashMap<>();
+            rules.put("voucherRule", "按月归档");
+            rules.put("reportRule", "按年归档");
+            rules.put("attachmentRule", "按凭证归档");
+            rules.put("compressionEnabled", true);
+            rules.put("encryptionEnabled", false);
+            config.put("archiveRules", rules);
+
+            // 自动归档配置
+            Map<String, Object> autoConfig = new HashMap<>();
+            autoConfig.put("enabled", true);
+            autoConfig.put("schedule", "0 0 2 1 * ?"); // 每月1号凌晨2点
+            autoConfig.put("periodEndArchive", true);
+            autoConfig.put("includeAttachments", true);
+            config.put("autoArchiveConfig", autoConfig);
+
+            return createSuccessResponse("查询成功", config);
+        } catch (Exception e) {
+            log.error("获取档案配置失败", e);
+            return createErrorResponse("查询失败: " + e.getMessage());
+        }
+    }
+
+    @ApiOperation("保存档案配置")
+    @PostMapping("/archive/config")
+    public String saveArchiveConfig(HttpServletRequest request,
+                                   HttpServletResponse response,
+                                   @RequestBody Map<String, Object> param) {
+        try {
+            TblStaffUtil loginStaff = validateUser(request, response);
+            if (loginStaff == null) return null;
+
+            log.info("用户 {} 保存档案配置", loginStaff.getStaffid());
+
+            String configId = (String) param.get("configId");
+            boolean isNew = configId == null || configId.isEmpty();
+
+            Map<String, Object> result = new HashMap<>();
+            if (isNew) {
+                result.put("configId", "ARCH" + System.currentTimeMillis());
+                result.put("message", "档案配置创建成功");
+            } else {
+                result.put("configId", configId);
+                result.put("message", "档案配置更新成功");
+            }
+
+            result.put("archiveName", param.get("archiveName"));
+            result.put("isEnabled", param.get("isEnabled"));
+            result.put("autoArchive", param.get("autoArchive"));
+            result.put("retentionYears", param.get("retentionYears"));
+            result.put("updatedBy", loginStaff.getUsername());
+            result.put("updateTime", new Date());
+
+            return createSuccessResponse("保存成功", result);
+        } catch (Exception e) {
+            log.error("保存档案配置失败", e);
+            return createErrorResponse("保存失败: " + e.getMessage());
+        }
+    }
+
+    @ApiOperation("同步档案数据")
+    @PostMapping("/archive/sync")
+    public String syncArchiveData(HttpServletRequest request,
+                                  HttpServletResponse response,
+                                  @RequestBody Map<String, Object> param) {
+        try {
+            TblStaffUtil loginStaff = validateUser(request, response);
+            if (loginStaff == null) return null;
+
+            String syncType = (String) param.get("syncType");
+            String period = (String) param.get("period");
+            Boolean includeAttachments = (Boolean) param.get("includeAttachments");
+
+            log.info("用户 {} 同步档案数据，类型：{}，期间：{}", loginStaff.getStaffid(), syncType, period);
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("taskId", "SYNC" + System.currentTimeMillis());
+            result.put("syncType", syncType);
+            result.put("period", period);
+            result.put("status", "PROCESSING");
+            result.put("startTime", new Date());
+
+            // 统计信息
+            Map<String, Object> statistics = new HashMap<>();
+            statistics.put("totalVouchers", 1000);
+            statistics.put("totalReports", 50);
+            statistics.put("totalAttachments", includeAttachments ? 2000 : 0);
+            result.put("statistics", statistics);
+
+            // 进度信息
+            result.put("progress", 0);
+            result.put("estimatedTime", "15分钟");
+            result.put("processedCount", 0);
+
+            result.put("message", "档案同步任务已启动");
+
+            return createSuccessResponse("同步任务已启动", result);
+        } catch (Exception e) {
+            log.error("同步档案数据失败", e);
+            return createErrorResponse("同步失败: " + e.getMessage());
+        }
+    }
+
+    // ==================== 辅助方法 ====================
+
+    private TblStaffUtil validateUser(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        TblStaffUtil loginStaff = userProvider.get();
+        if (loginStaff == null || loginStaff.getLinkDetp() == null || loginStaff.getCurrentOrg() == null) {
+            JsonBean json = new JsonBean();
+            json.setCode(401);
+            json.setMsg("用户已失效");
+            response.setCharacterEncoding("UTF-8");
+            response.setHeader("Content-Type", "application/json;charset=UTF-8");
+            response.getWriter().write(JsonMapper.nonNullMapper().toJson(json));
+            return null;
+        }
+        return loginStaff;
+    }
+
+    private String createSuccessResponse(String message, Object data) {
+        JsonBean json = new JsonBean();
+        json.setCode(1);
+        json.setMsg(message);
+        json.setData(data);
+        return JsonMapper.nonNullMapper().toJson(json);
+    }
+
+    private String createErrorResponse(String message) {
+        JsonBean json = new JsonBean();
+        json.setCode(0);
+        json.setMsg(message);
+        return JsonMapper.nonNullMapper().toJson(json);
+    }
+
+    private String getCurrencySymbol(String currencyCode) {
+        switch (currencyCode) {
+            case "CNY": return "¥";
+            case "USD": return "$";
+            case "EUR": return "€";
+            case "JPY": return "¥";
+            case "HKD": return "HK$";
+            default: return currencyCode;
+        }
+    }
+
+    private String getExchangeRate(String currencyCode) {
+        switch (currencyCode) {
+            case "CNY": return "1.0000";
+            case "USD": return "7.2500";
+            case "EUR": return "7.8500";
+            case "JPY": return "0.0485";
+            case "HKD": return "0.9312";
+            default: return "1.0000";
+        }
+    }
+
+    private String getInverseExchangeRate(String currencyCode) {
+        switch (currencyCode) {
+            case "CNY": return "1.0000";
+            case "USD": return "0.1379";
+            case "EUR": return "0.1274";
+            case "JPY": return "20.6186";
+            case "HKD": return "1.0740";
+            default: return "1.0000";
+        }
+    }
+
+    private String getLastDayOfMonth(int month) {
+        switch (month) {
+            case 2: return "28";
+            case 4: case 6: case 9: case 11: return "30";
+            default: return "31";
+        }
+    }
+
+    private String getBalanceDirection(String subjectType) {
+        switch (subjectType) {
+            case "资产":
+            case "费用":
+                return "借方";
+            case "负债":
+            case "所有者权益":
+            case "收入":
+                return "贷方";
+            default:
+                return "借方";
+        }
+    }
+}

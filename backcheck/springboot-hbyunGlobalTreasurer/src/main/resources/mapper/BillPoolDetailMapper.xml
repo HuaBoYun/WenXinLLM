@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.BillPoolDetailMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BillInPoolVOResult" type="com.global.treasurer.vo.BillInPoolVO">
+        <id property="detailId" column="DETAIL_ID"/>
+        <result property="poolId" column="POOL_ID"/>
+        <result property="poolName" column="POOL_NAME"/>
+        <result property="billId" column="BILL_ID"/>
+        <result property="billNumber" column="BILL_NUMBER"/>
+        <result property="billType" column="BILL_TYPE"/>
+        <result property="billAmount" column="BILL_AMOUNT"/>
+        <result property="joinDate" column="JOIN_DATE"/>
+        <result property="exitDate" column="EXIT_DATE"/>
+        <result property="detailStatus" column="DETAIL_STATUS"/>
+    </resultMap>
+
+    <!-- 查询票据池内的票据列表 -->
+    <select id="selectBillsByPoolId" parameterType="Long" resultMap="BillInPoolVOResult">
+        SELECT 
+            dp.DETAIL_ID,
+            dp.POOL_ID,
+            p.POOL_NAME,
+            dp.BILL_ID,
+            br.BILL_NUMBER,
+            br.BILL_TYPE,
+            br.BILL_AMOUNT,
+            dp.JOIN_DATE,
+            dp.EXIT_DATE,
+            dp.DETAIL_STATUS
+        FROM TBL_BILL_POOL_DETAIL dp
+        LEFT JOIN TBL_BILL_POOL p ON dp.POOL_ID = p.POOL_ID
+        LEFT JOIN TBL_BILL_REGISTRATION br ON dp.BILL_ID = br.BILL_ID
+        WHERE dp.POOL_ID = #{poolId}
+        ORDER BY dp.JOIN_DATE DESC
+    </select>
+
+    <!-- 批量添加票据到池 -->
+    <insert id="batchInsertBillPoolDetails">
+        INSERT INTO TBL_BILL_POOL_DETAIL (
+            DETAIL_ID,
+            POOL_ID,
+            BILL_ID,
+            BILL_NUMBER,
+            BILL_TYPE,
+            BILL_AMOUNT,
+            JOIN_DATE,
+            DETAIL_STATUS,
+            CREATE_TIME,
+            UPDATE_TIME,
+            CREATE_USER,
+            UPDATE_USER
+        ) VALUES
+        <foreach collection="details" item="detail" separator=",">
+            (
+                #{detail.detailId},
+                #{detail.poolId},
+                #{detail.billId},
+                #{detail.billNumber},
+                #{detail.billType},
+                #{detail.billAmount},
+                #{detail.joinDate},
+                #{detail.detailStatus},
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP,
+                'system',
+                'system'
+            )
+        </foreach>
+    </insert>
+
+    <!-- 批量从池中移除票据(逻辑删除) -->
+    <update id="batchRemoveBills">
+        UPDATE TBL_BILL_POOL_DETAIL
+        SET DETAIL_STATUS = 'EXITED',
+            EXIT_DATE = CURRENT_TIMESTAMP,
+            UPDATE_TIME = CURRENT_TIMESTAMP
+        WHERE DETAIL_ID IN
+        <foreach collection="detailIds" item="detailId" open="(" separator="," close=")">
+            #{detailId}
+        </foreach>
+    </update>
+
+    <!-- 查询票据所在池 -->
+    <select id="selectPoolIdByBillId" parameterType="Long" resultType="Long">
+        SELECT POOL_ID FROM TBL_BILL_POOL_DETAIL
+        WHERE BILL_ID = #{billId} AND DETAIL_STATUS = 'ACTIVE'
+        LIMIT 1
+    </select>
+
+</mapper>
+

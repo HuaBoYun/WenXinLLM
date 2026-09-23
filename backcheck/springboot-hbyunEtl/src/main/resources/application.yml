@@ -1,0 +1,121 @@
+server:
+  port: 8017
+sqltype: mysql
+# spring
+spring:
+  #应用名称
+  application:
+    name: hbyunEtl
+  # 数据源
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      #Oracle数据库配置
+      oracle:
+        url: jdbc:oracle:thin:@127.0.0.1:1521:orcl
+        username: SYSDBA
+        password: REDACTED
+        driverClassName: oracle.jdbc.driver.OracleDriver
+      #Mysql数据库配置
+      mysql:
+        url: jdbc:mysql://127.0.0.1:3306/SYSDBA?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&serverTimezone=GMT%2B8
+        username: SYSDBA
+        password: REDACTED
+        driverClassName: com.mysql.cj.jdbc.Driver
+      initialSize: 5
+      minIdle: 10
+      maxActive: 20
+      maxWait: 60000
+      timeBetweenEvictionRunsMillis: 60000
+      minEvictableIdleTimeMillis: 300000
+      maxEvictableIdleTimeMillis: 900000
+      validationQuery: SELECT 1 FROM DUAL
+      testWhileIdle: true
+      testOnBorrow: false
+      testOnReturn: false
+
+# MyBatisPlus配置
+mybatis-plus:
+  # 不支持多包, 如有需要可在注解配置 或 提升扫包等级
+  mapperPackage: com.huabo.etl.**.mapper
+  # 对应的 XML 文件位置
+  mapperLocations: classpath*:mapper/**/*Mapper.xml
+  # 实体扫描，多个package用逗号或者分号分隔
+  typeAliasesPackage: com.huabo.etl.**.domain
+  configuration:
+    # 自动驼峰命名规则（camel case）映射
+    mapUnderscoreToCamelCase: true
+    # MyBatis 自动映射策略
+    # NONE：不启用 PARTIAL：只对非嵌套 resultMap 自动映射 FULL：对所有 resultMap 自动映射
+    autoMappingBehavior: PARTIAL
+    # MyBatis 自动映射时未知列或未知属性处理策
+    # NONE：不做处理 WARNING：打印相关警告 FAILING：抛出异常和详细信息
+    autoMappingUnknownColumnBehavior: NONE
+    # 更详细的日志输出 会有性能损耗 org.apache.ibatis.logging.stdout.StdOutImpl
+    # 关闭日志记录 (可单纯使用 p6spy 分析) org.apache.ibatis.logging.nologging.NoLoggingImpl
+    # 默认日志输出 org.apache.ibatis.logging.slf4j.Slf4jImpl
+    logImpl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+  global-config:
+    dbConfig:
+      # 主键类型
+      # AUTO 自增 NONE 空 INPUT 用户输入 ASSIGN_ID 雪花 ASSIGN_UUID 唯一 UUID
+      idType: ASSIGN_ID
+      # 字段验证策略之 insert,在 insert 的时候的字段验证策略
+      # IGNORED 忽略 NOT_NULL 非NULL NOT_EMPTY 非空 DEFAULT 默认 NEVER 不加入 SQL
+      insertStrategy: NOT_NULL
+      # 字段验证策略之 update,在 update 的时候的字段验证策略
+      updateStrategy: NOT_NULL
+      # 字段验证策略之 select,在 select 的时候的字段验证策略既 wrapper 根据内部 entity 生成的 where 条件
+      where-strategy: NOT_NULL
+
+# PageHelper分页插件
+pagehelper:
+  helperDialect: ${sqltype}
+  supportMethodsArguments: true
+  params: count=countSql
+
+# kettle 配置
+kettle:
+  sqltype: mysql
+  dbip: 127.0.0.1
+  db: etlhb
+  dbport: 3306
+  dbuser: SYSDBA
+  dbpassword: SYSDBA
+  dbparam: ?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&serverTimezone=GMT%2B8
+  plugin: D://Java//git//kettle//data-integration//plugins
+  weburl: http://127.0.0.1:8080/spoon/spoon
+#kettle:
+#  sqltype: oracle
+#  dbip: 127.0.0.1
+#  db: orcl
+#  dbport: 1521
+#  dbuser: SYSDBA
+#  dbpassword: SYSDBA
+#  dbparam:
+#  plugin: D://Java//git//kettle//data-integration//plugins
+#  weburl: http://127.0.0.1:8080/spoon/spoon
+
+#eureka服务注册中心配置
+eureka:
+  instance:
+    ip-address: 127.0.0.1
+    instance-id: hbyunContractModule-8064
+    prefer-ip-address: true
+    hostname: hbyun-contract-service
+  client:
+    serviceUrl:
+      defaultZone: http://hbyunadmin:REDACTED@127.0.0.1:8761/eureka
+
+swagger:
+  enabled: true
+  pathMapping:
+
+#日志
+logging:
+  level:
+    com:
+      huabo:
+        etl:
+          mapper: debug
+

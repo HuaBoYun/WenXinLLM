@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.huabo.system.mapper.DataGrowthTrendMapper">
+
+    <!-- 1. 数据增长趋势 -->
+    <select id="queryDataGrowthTrend" resultType="com.huabo.system.dto.DataGrowthTrendDTO">
+        WITH all_months AS (
+            SELECT
+                TO_CHAR(ADD_MONTHS(TRUNC(SYSDATE, 'MONTH'), -LEVEL + 1), 'YYYY-MM') AS year_month
+            FROM DUAL
+            CONNECT BY LEVEL &lt;= 12
+        )
+        SELECT
+            am.year_month AS yearMonth,
+            NVL(COUNT(CASE WHEN t.REQUESTCLASSMETHOD LIKE '%monitor%' THEN 1 END), 0) AS nk,
+            NVL(COUNT(CASE WHEN t.REQUESTCLASSMETHOD LIKE '%fxgl%' THEN 1 END), 0) AS fx,
+            NVL(COUNT(CASE WHEN t.REQUESTCLASSMETHOD LIKE '%audit%' THEN 1 END), 0) AS ck,
+            NVL(COUNT(CASE WHEN t.REQUESTCLASSMETHOD LIKE '%OperateController%'
+                            OR t.REQUESTCLASSMETHOD LIKE '%AnalysisReportController%'
+                            OR t.REQUESTCLASSMETHOD LIKE '%NbsjZgController%'
+                            OR t.REQUESTCLASSMETHOD LIKE '%CsrwController%'
+                            OR t.REQUESTCLASSMETHOD LIKE '%NsbjZgzzController%'
+                            OR t.REQUESTCLASSMETHOD LIKE '%TblWgzzController%'
+                            OR t.REQUESTCLASSMETHOD LIKE '%TblWghsController%'
+                            OR t.REQUESTCLASSMETHOD LIKE '%TblWgjyYsController%'
+                       THEN 1 END), 0) AS zg
+        FROM all_months am
+        LEFT JOIN TBL_USER_REQUEST_LOG t
+            ON TO_CHAR(t.REQUESTTIME, 'YYYY-MM') = am.year_month
+            AND t.REQUESTTIME >= ADD_MONTHS(SYSDATE, -12)
+            AND t.REQUESTTIME &lt; TRUNC(SYSDATE) + 1
+        GROUP BY am.year_month
+        ORDER BY am.year_month
+    </select>
+
+    <!-- 2. 数据总量 -->
+    <select id="queryDataTotal" resultType="com.huabo.system.dto.DataTotalDTO">
+        SELECT
+            COUNT(CASE WHEN REQUESTCLASSMETHOD LIKE '%fxgl%' THEN 1 END) AS fx,
+            COUNT(CASE WHEN REQUESTCLASSMETHOD LIKE '%audit%' THEN 1 END) AS ck,
+            COUNT(CASE WHEN REQUESTCLASSMETHOD LIKE '%monitor%' THEN 1 END) AS nk,
+            COUNT(CASE WHEN REQUESTCLASSMETHOD LIKE '%OperateController%'
+                    OR REQUESTCLASSMETHOD LIKE '%AnalysisReportController%'
+                    OR REQUESTCLASSMETHOD LIKE '%NbsjZgController%'
+                    OR REQUESTCLASSMETHOD LIKE '%CsrwController%'
+                    OR REQUESTCLASSMETHOD LIKE '%NsbjZgzzController%'
+                    OR REQUESTCLASSMETHOD LIKE '%TblWgzzController%'
+                    OR REQUESTCLASSMETHOD LIKE '%TblWghsController%'
+                    OR REQUESTCLASSMETHOD LIKE '%TblWgjyYsController%'
+               THEN 1 END) AS zg
+        FROM TBL_USER_REQUEST_LOG
+    </select>
+
+    <!-- 3. 核心功能使用率 -->
+    <select id="queryCoreFunctionUsage" resultType="com.huabo.system.dto.CoreFunctionUsageDTO">
+        SELECT
+            COUNT(CASE WHEN REQUESTCLASSMETHOD LIKE '%fxgl%' THEN 1 END) AS riskCount,
+            COUNT(CASE WHEN REQUESTCLASSMETHOD LIKE '%monitor%' THEN 1 END) AS controlCount,
+            COUNT(CASE WHEN REQUESTCLASSMETHOD LIKE '%audit%' THEN 1 END) AS auditCount,
+            COUNT(CASE WHEN REQUESTCLASSMETHOD LIKE '%OperateController%'
+                    OR REQUESTCLASSMETHOD LIKE '%AnalysisReportController%'
+                    OR REQUESTCLASSMETHOD LIKE '%NbsjZgController%'
+                    OR REQUESTCLASSMETHOD LIKE '%CsrwController%'
+                    OR REQUESTCLASSMETHOD LIKE '%NsbjZgzzController%'
+                    OR REQUESTCLASSMETHOD LIKE '%TblWgzzController%'
+                    OR REQUESTCLASSMETHOD LIKE '%TblWghsController%'
+                    OR REQUESTCLASSMETHOD LIKE '%TblWgjyYsController%'
+               THEN 1 END) AS rectifyCount
+        FROM TBL_USER_REQUEST_LOG
+        WHERE REQUESTTIME >= SYSDATE - 30
+    </select>
+
+    <!-- 4. 业务活跃度排名 (达梦数据库使用TOP而不是LIMIT) -->
+    <select id="queryBusinessActivityRanking" resultType="com.huabo.system.dto.BusinessActivityRankingDTO">
+        SELECT COUNT(1) AS c, BUSINESSMODULE AS b
+        FROM TBL_USER_REQUEST_LOG
+        GROUP BY BUSINESSMODULE
+        ORDER BY c DESC
+    </select>
+
+    <!-- 5. 新增用户数 -->
+    <select id="queryNewUserCount" resultType="com.huabo.system.dto.NewUserCountDTO">
+        WITH all_months AS (
+            SELECT
+                TO_CHAR(ADD_MONTHS(TRUNC(SYSDATE, 'MONTH'), -LEVEL + 1), 'YYYY-MM') AS m
+            FROM DUAL
+            CONNECT BY LEVEL &lt;= 12
+        )
+        SELECT
+            am.m,
+            NVL(COUNT(t.CREATETIME), 0) AS c
+        FROM all_months am
+        LEFT JOIN TBL_STAFF t
+            ON TO_CHAR(t.CREATETIME, 'YYYY-MM') = am.m
+            AND t.CREATETIME >= ADD_MONTHS(TRUNC(SYSDATE, 'MONTH'), -11)
+            AND t.CREATETIME &lt; ADD_MONTHS(TRUNC(SYSDATE, 'MONTH'), 1)
+        GROUP BY am.m
+        ORDER BY am.m
+    </select>
+
+    <!-- 6. 用户活跃度 -->
+    <select id="queryUserActivity" resultType="com.huabo.system.dto.UserActivityDTO">
+        WITH all_months AS (
+            SELECT
+                TO_CHAR(ADD_MONTHS(SYSDATE, -LEVEL + 1), 'YYYY-MM') AS year_month
+            FROM DUAL
+            CONNECT BY LEVEL &lt;= 12
+        )
+        SELECT
+            am.year_month AS yearMonth,
+            NVL(COUNT(t.LOGIN_TIME), 0) AS c
+        FROM all_months am
+        LEFT JOIN TBL_USER_LOGIN_LOG t
+            ON TO_CHAR(t.LOGIN_TIME, 'YYYY-MM') = am.year_month
+            AND t.LOGIN_TIME >= ADD_MONTHS(TRUNC(SYSDATE, 'MONTH'), -11)
+            AND t.LOGIN_TIME &lt; ADD_MONTHS(TRUNC(SYSDATE, 'MONTH'), 1)
+        GROUP BY am.year_month
+        ORDER BY am.year_month
+    </select>
+
+    <!-- 7. 风险内控审计维度 -->
+    <select id="queryRiskAuditDimension" resultType="java.util.Map">
+        WITH months AS (
+            SELECT
+                TO_CHAR(TRUNC(ADD_MONTHS(SYSDATE, -LEVEL + 1), 'MONTH'), 'YYYY-MM') AS year_month
+            FROM DUAL
+            CONNECT BY LEVEL &lt;= 12
+        )
+        SELECT
+            m.year_month,
+            NVL(COUNT(DISTINCT r.OCCUREDDATE), 0) AS fx,
+            NVL(COUNT(DISTINCT b.CREATETIME), 0) AS nk,
+            NVL(COUNT(DISTINCT p.CREATETIME), 0) AS sj
+        FROM months m
+        LEFT JOIN TBL_RISKEVENT r
+            ON TO_CHAR(TRUNC(r.OCCUREDDATE, 'MONTH'), 'YYYY-MM') = m.year_month
+        LEFT JOIN TBL_NBSJ_BUG b
+            ON TO_CHAR(TRUNC(b.CREATETIME, 'MONTH'), 'YYYY-MM') = m.year_month
+        LEFT JOIN TBL_NBSJ_PROJECT p
+            ON TO_CHAR(TRUNC(p.CREATETIME, 'MONTH'), 'YYYY-MM') = m.year_month
+        GROUP BY m.year_month
+        ORDER BY m.year_month
+    </select>
+
+    <!-- 8. 内控测试缺陷程度 -->
+    <select id="queryInternalControlDefect" resultType="com.huabo.system.dto.InternalControlDefectDTO">
+        SELECT
+            COUNT(1) AS c,
+            b.BUGPROPERTY AS b
+        FROM TBL_NBSJ_BUG b
+        LEFT JOIN TBL_NBSJ_BUG_CRITERION c
+            ON b.BUGID = c.BUGID
+        GROUP BY b.BUGPROPERTY
+        ORDER BY c DESC
+    </select>
+
+    <!-- 9. 风险事件处理 -->
+    <select id="queryRiskEventHandling" resultType="java.util.Map">
+        SELECT
+            COUNT(CASE WHEN LOSSEVENTCATEGORY = 1 THEN 1 END) AS CATEGORY1,
+            COUNT(CASE WHEN LOSSEVENTCATEGORY = 2 THEN 1 END) AS CATEGORY2
+        FROM TBL_RISKEVENT
+    </select>
+
+    <!-- 10. 审计问题数量 -->
+    <select id="queryAuditIssueCount" resultType="com.huabo.system.dto.AuditIssueCountDTO">
+        SELECT
+            COUNT(1) AS c,
+            CONCAT(YEAR(STARTDATE), '-', LPAD(MONTH(STARTDATE), 2, '0')) AS d
+        FROM TBL_NBSJ_PROJECT
+        WHERE STARTDATE >= ADD_MONTHS(CURRENT_DATE, -12)
+            AND STARTDATE &lt; ADD_MONTHS(CURRENT_DATE, 0)
+        GROUP BY YEAR(STARTDATE), MONTH(STARTDATE)
+        ORDER BY YEAR(STARTDATE), MONTH(STARTDATE)
+    </select>
+
+    <!-- 11. 内控缺陷整改跟进 -->
+    <select id="queryInternalControlRectification" resultType="com.huabo.system.dto.InternalControlRectificationDTO">
+        SELECT
+            PLANSTATUS AS s,
+            COUNT(1) AS c
+        FROM TBL_TESTPLAN
+        GROUP BY PLANSTATUS
+    </select>
+
+    <!-- 12. 审计问题整改验证完成率 -->
+    <select id="queryAuditIssueVerificationRate" resultType="java.util.Map">
+        SELECT
+            STATUS AS s,
+            COUNT(1) AS c
+        FROM TBL_ZGZZ_ISSUESILIST
+        WHERE ISSUESTYPE = 1
+        GROUP BY STATUS
+        ORDER BY c DESC
+    </select>
+
+    <!-- 13. 风险预警响应率 -->
+    <select id="queryRiskWarningResponse" resultType="java.util.Map">
+        SELECT
+            STATUS AS s,
+            COUNT(1) AS c
+        FROM TBL_RISKEVENT
+        GROUP BY STATUS
+        ORDER BY c DESC
+    </select>
+
+    <!-- 14. 基础用户信息 -->
+    <select id="queryBasicUserInfo" resultType="java.util.Map">
+        SELECT
+            s.REALNAME AS type1,
+            o.ORGNAME AS type2,
+            j.RNAME AS type3,
+            TO_CHAR(s.CREATETIME, 'YYYY-MM-DD') AS type4,
+            ROUND(MONTHS_BETWEEN(SYSDATE, s.CREATETIME) / 12, 2) AS gl
+        FROM
+            TBL_STAFF s
+            LEFT JOIN TBL_ORGANIZATION o ON s.ORGID = o.ORGID
+            LEFT JOIN (
+                SELECT
+                    s.USERNAME,
+                    REGEXP_SUBSTR(s.ROLEIDSTRS, '[^,]+', 1, LEVEL) AS rid
+                FROM TBL_STAFF s
+                WHERE s.ROLEIDSTRS IS NOT NULL
+                CONNECT BY
+                    LEVEL &lt;= REGEXP_COUNT(s.ROLEIDSTRS, ',') + 1
+                    AND s.USERNAME = PRIOR s.USERNAME
+                    AND PRIOR DBMS_RANDOM.VALUE IS NOT NULL
+            ) split_roles ON s.USERNAME = split_roles.USERNAME
+            LEFT JOIN TBL_ROLE j ON split_roles.rid = j.RID
+        WHERE
+            s.CREATETIME IS NOT NULL
+    </select>
+
+</mapper>

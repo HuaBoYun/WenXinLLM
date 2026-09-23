@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.oracle.mapper.GeneralLedgerMapper">
+
+    <!-- 总账结果映射 - 适配达梦数据库 T_GENERAL_LEDGER 表 -->
+    <resultMap id="BaseResultMap" type="com.financial.sharing.oracle.entity.GeneralLedgerEntity">
+        <id column="LEDGER_ID" jdbcType="BIGINT" property="ledgerId"/>
+        <result column="SUBJECT_ID" jdbcType="BIGINT" property="voucherId"/>
+        <result column="SUBJECT_CODE" jdbcType="VARCHAR" property="accountCode"/>
+        <result column="PERIOD" jdbcType="VARCHAR" property="accountingPeriod"/>
+        <result column="OPENING_BALANCE" jdbcType="DECIMAL" property="debitAmount"/>
+        <result column="DEBIT_AMOUNT" jdbcType="DECIMAL" property="debitAmount"/>
+        <result column="CREDIT_AMOUNT" jdbcType="DECIMAL" property="creditAmount"/>
+        <result column="CLOSING_BALANCE" jdbcType="DECIMAL" property="balance"/>
+        <result column="BOOK_ID" jdbcType="BIGINT" property="bookId"/>
+        <result column="TENANT_ID" jdbcType="BIGINT" property="tenantId"/>
+        <result column="CREATE_TIME" jdbcType="TIMESTAMP" property="createdTime"/>
+    </resultMap>
+
+    <!-- 基础列 - 适配达梦数据库 T_GENERAL_LEDGER 表 -->
+    <sql id="Base_Column_List">
+        LEDGER_ID, SUBJECT_ID, SUBJECT_CODE, PERIOD, OPENING_BALANCE,
+        DEBIT_AMOUNT, CREDIT_AMOUNT, CLOSING_BALANCE, BOOK_ID, TENANT_ID, CREATE_TIME
+    </sql>
+
+    <!-- 分页查询总账数据 - 适配达梦数据库 -->
+    <!-- 注意：分页由 PageHelper 自动处理，不要手动添加 OFFSET/FETCH 语法 -->
+    <select id="selectLedgerPage" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM T_GENERAL_LEDGER
+        <where>
+            IS_DELETED = 0
+            <if test="param.bookId != null">
+                AND BOOK_ID = #{param.bookId}
+            </if>
+            <if test="param.tenantId != null">
+                AND TENANT_ID = #{param.tenantId}
+            </if>
+            <if test="param.subjectCode != null and param.subjectCode != ''">
+                AND SUBJECT_CODE = #{param.subjectCode}
+            </if>
+            <if test="param.accountingPeriod != null and param.accountingPeriod != ''">
+                AND PERIOD = #{param.accountingPeriod}
+            </if>
+            <if test="param.beginDate != null and param.beginDate != ''">
+                AND PERIOD >= #{param.beginDate}
+            </if>
+            <if test="param.endDate != null and param.endDate != ''">
+                AND PERIOD &lt;= #{param.endDate}
+            </if>
+        </where>
+        ORDER BY PERIOD, SUBJECT_CODE
+    </select>
+
+    <!-- 查询总账数据总数 - 适配达梦数据库 -->
+    <select id="selectLedgerCount" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM T_GENERAL_LEDGER
+        <where>
+            IS_DELETED = 0
+            <if test="param.bookId != null">
+                AND BOOK_ID = #{param.bookId}
+            </if>
+            <if test="param.tenantId != null">
+                AND TENANT_ID = #{param.tenantId}
+            </if>
+            <if test="param.subjectCode != null and param.subjectCode != ''">
+                AND SUBJECT_CODE = #{param.subjectCode}
+            </if>
+            <if test="param.accountingPeriod != null and param.accountingPeriod != ''">
+                AND PERIOD = #{param.accountingPeriod}
+            </if>
+            <if test="param.beginDate != null and param.beginDate != ''">
+                AND PERIOD >= #{param.beginDate}
+            </if>
+            <if test="param.endDate != null and param.endDate != ''">
+                AND PERIOD &lt;= #{param.endDate}
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据科目编码查询明细账 - 适配达梦数据库 -->
+    <select id="selectSubjectDetailLedger" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM T_GENERAL_LEDGER
+        WHERE SUBJECT_CODE = #{subjectCode}
+        AND IS_DELETED = 0
+        <if test="period != null and period != ''">
+            AND PERIOD = #{period}
+        </if>
+        AND BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+        ORDER BY PERIOD, SUBJECT_CODE
+    </select>
+
+    <!-- 查询科目总账汇总 - 适配达梦数据库 -->
+    <select id="selectSubjectLedgerSummary" resultType="java.util.Map">
+        SELECT
+            SUBJECT_CODE as subjectCode,
+            PERIOD as period,
+            SUM(DEBIT_AMOUNT) as totalDebit,
+            SUM(CREDIT_AMOUNT) as totalCredit,
+            MIN(OPENING_BALANCE) as openingBalance,
+            MAX(CLOSING_BALANCE) as closingBalance
+        FROM T_GENERAL_LEDGER
+        WHERE SUBJECT_CODE = #{subjectCode}
+        AND PERIOD = #{period}
+        AND BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+        AND IS_DELETED = 0
+        GROUP BY SUBJECT_CODE, PERIOD
+    </select>
+
+    <!-- 查询总账统计数据 - 适配达梦数据库 -->
+    <select id="selectLedgerStatistics" resultType="java.util.Map">
+        SELECT
+            COUNT(DISTINCT SUBJECT_CODE) as subjectCount,
+            SUM(DEBIT_AMOUNT) as debitTotal,
+            SUM(CREDIT_AMOUNT) as creditTotal,
+            SUM(OPENING_BALANCE) as openingTotal,
+            SUM(CLOSING_BALANCE) as closingTotal
+        FROM T_GENERAL_LEDGER
+        WHERE PERIOD = #{period}
+        AND BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+        AND IS_DELETED = 0
+    </select>
+
+    <!-- 查询多栏式总账 - 适配达梦数据库 -->
+    <select id="selectMultiColumnLedger" resultType="java.util.Map">
+        SELECT
+            SUBJECT_CODE as columnCode,
+            SUBJECT_CODE as columnName,
+            SUM(DEBIT_AMOUNT) as amount
+        FROM T_GENERAL_LEDGER
+        WHERE PERIOD LIKE CONCAT(#{periodRange}, '%')
+        AND BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+        AND SUBJECT_CODE != #{subjectCode}
+        AND IS_DELETED = 0
+        GROUP BY SUBJECT_CODE
+        ORDER BY SUM(DEBIT_AMOUNT + CREDIT_AMOUNT) DESC
+        FETCH FIRST 10 ROWS ONLY
+    </select>
+
+    <!-- 查询辅助核算总账 - 适配达梦数据库 -->
+    <select id="selectAuxiliaryLedger" resultType="java.util.Map">
+        SELECT
+            #{auxiliaryType} as auxiliaryType,
+            SUBJECT_CODE as auxiliaryValue,
+            SUBJECT_CODE as subjectCode,
+            SUM(DEBIT_AMOUNT + CREDIT_AMOUNT) as amount,
+            COUNT(1) as count
+        FROM T_GENERAL_LEDGER
+        WHERE SUBJECT_CODE = #{subjectCode}
+        AND IS_DELETED = 0
+        <if test="period != null and period != ''">
+            AND PERIOD = #{period}
+        </if>
+        AND BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+        GROUP BY SUBJECT_CODE
+        ORDER BY amount DESC
+        FETCH FIRST 10 ROWS ONLY
+    </select>
+
+    <!-- 查询自定义总账报表 - 适配达梦数据库 -->
+    <select id="selectCustomLedgerReport" resultType="java.util.Map">
+        SELECT
+            SUBJECT_CODE,
+            PERIOD,
+            OPENING_BALANCE,
+            DEBIT_AMOUNT,
+            CREDIT_AMOUNT,
+            CLOSING_BALANCE,
+            CREATE_TIME
+        FROM T_GENERAL_LEDGER
+        <where>
+            IS_DELETED = 0
+            <if test="param.bookId != null">
+                AND BOOK_ID = #{param.bookId}
+            </if>
+            <if test="param.tenantId != null">
+                AND TENANT_ID = #{param.tenantId}
+            </if>
+            <if test="param.subjectCode != null and param.subjectCode != ''">
+                AND SUBJECT_CODE LIKE CONCAT(#{param.subjectCode}, '%')
+            </if>
+            <if test="param.accountingPeriod != null and param.accountingPeriod != ''">
+                AND PERIOD = #{param.accountingPeriod}
+            </if>
+            <if test="param.beginDate != null and param.beginDate != ''">
+                AND PERIOD >= #{param.beginDate}
+            </if>
+            <if test="param.endDate != null and param.endDate != ''">
+                AND PERIOD &lt;= #{param.endDate}
+            </if>
+        </where>
+        ORDER BY PERIOD, SUBJECT_CODE
+    </select>
+
+    <!-- 查询总账汇总 - 适配达梦数据库 -->
+    <select id="selectLedgerSummary" resultType="java.util.Map">
+        SELECT
+            COUNT(DISTINCT SUBJECT_CODE) as subjectCount,
+            SUM(DEBIT_AMOUNT) as totalDebit,
+            SUM(CREDIT_AMOUNT) as totalCredit,
+            SUM(DEBIT_AMOUNT) - SUM(CREDIT_AMOUNT) as netAmount,
+            COUNT(1) as entryCount
+        FROM T_GENERAL_LEDGER
+        <where>
+            IS_DELETED = 0
+            <if test="bookId != null">
+                AND BOOK_ID = #{bookId}
+            </if>
+            <if test="tenantId != null">
+                AND TENANT_ID = #{tenantId}
+            </if>
+            <if test="period != null and period != ''">
+                AND PERIOD = #{period}
+            </if>
+            <if test="subjectLevel != null and subjectLevel != ''">
+                AND LENGTH(SUBJECT_CODE) = #{subjectLevel}
+            </if>
+            <if test="subjectType != null and subjectType != ''">
+                AND SUBSTR(SUBJECT_CODE, 1, 1) = #{subjectType}
+            </if>
+        </where>
+    </select>
+
+</mapper>

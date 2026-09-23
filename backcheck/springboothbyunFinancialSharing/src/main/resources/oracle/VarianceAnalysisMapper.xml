@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.oracle.mapper.VarianceAnalysisMapper">
+
+    <resultMap id="BaseResultMap" type="com.financial.sharing.oracle.entity.VarianceAnalysisEntity">
+        <id column="ANALYSIS_ID" property="analysisId" />
+        <result column="ANALYSIS_NO" property="analysisNo" />
+        <result column="ANALYSIS_NAME" property="analysisName" />
+        <result column="ANALYSIS_PERIOD" property="analysisPeriod" />
+        <result column="BUDGET_ID" property="budgetId" />
+        <result column="BUDGET_AMOUNT" property="budgetAmount" />
+        <result column="ACTUAL_AMOUNT" property="actualAmount" />
+        <result column="VARIANCE_AMOUNT" property="varianceAmount" />
+        <result column="VARIANCE_RATE" property="varianceRate" />
+        <result column="VARIANCE_TYPE" property="varianceType" />
+        <result column="VARIANCE_REASON" property="varianceReason" />
+        <result column="IMPROVEMENT_MEASURES" property="improvementMeasures" />
+        <result column="ANALYST_ID" property="analystId" />
+        <result column="ANALYST_NAME" property="analystName" />
+        <result column="ANALYSIS_DATE" property="analysisDate" />
+        <result column="BOOK_ID" property="bookId" />
+        <result column="TENANT_ID" property="tenantId" />
+        <result column="CREATE_BY" property="createBy" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_BY" property="updateBy" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="REMARK" property="remark" />
+    </resultMap>
+
+    <!-- 分页查询差异分析列表 -->
+    <select id="selectAnalysisListWithPagination" resultType="map">
+        SELECT
+            ANALYSIS_ID AS "analysisId",
+            ANALYSIS_NO AS "analysisNo",
+            ANALYSIS_NAME AS "analysisName",
+            ANALYSIS_PERIOD AS "analysisPeriod",
+            BUDGET_ID AS "budgetId",
+            BUDGET_AMOUNT AS "budgetAmount",
+            ACTUAL_AMOUNT AS "actualAmount",
+            VARIANCE_AMOUNT AS "varianceAmount",
+            VARIANCE_RATE AS "varianceRate",
+            VARIANCE_TYPE AS "varianceType",
+            ANALYST_NAME AS "analystName",
+            ANALYSIS_DATE AS "analysisDate",
+            CREATE_TIME AS "createTime"
+        FROM TBL_VARIANCE_ANALYSIS
+        WHERE BOOK_ID = #{bookId}
+          AND TENANT_ID = #{tenantId}
+          <if test="analysisPeriod != null and analysisPeriod != ''">
+              AND ANALYSIS_PERIOD = #{analysisPeriod}
+          </if>
+          <if test="budgetId != null and budgetId != ''">
+              AND BUDGET_ID = #{budgetId}
+          </if>
+          <if test="varianceType != null and varianceType != ''">
+              AND VARIANCE_TYPE = #{varianceType}
+          </if>
+        ORDER BY ANALYSIS_DATE DESC, CREATE_TIME DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
+    </select>
+
+    <!-- 查询总记录数 -->
+    <select id="countAnalysisList" resultType="int">
+        SELECT COUNT(1)
+        FROM TBL_VARIANCE_ANALYSIS
+        WHERE BOOK_ID = #{bookId}
+          AND TENANT_ID = #{tenantId}
+          <if test="analysisPeriod != null and analysisPeriod != ''">
+              AND ANALYSIS_PERIOD = #{analysisPeriod}
+          </if>
+          <if test="budgetId != null and budgetId != ''">
+              AND BUDGET_ID = #{budgetId}
+          </if>
+          <if test="varianceType != null and varianceType != ''">
+              AND VARIANCE_TYPE = #{varianceType}
+          </if>
+    </select>
+
+    <!-- 根据分析编号查询分析 -->
+    <select id="selectByAnalysisNo" resultType="map">
+        SELECT
+            ANALYSIS_ID AS "analysisId",
+            ANALYSIS_NO AS "analysisNo",
+            ANALYSIS_NAME AS "analysisName",
+            ANALYSIS_PERIOD AS "analysisPeriod",
+            BUDGET_ID AS "budgetId",
+            BUDGET_AMOUNT AS "budgetAmount",
+            ACTUAL_AMOUNT AS "actualAmount",
+            VARIANCE_AMOUNT AS "varianceAmount",
+            VARIANCE_RATE AS "varianceRate",
+            VARIANCE_TYPE AS "varianceType",
+            VARIANCE_REASON AS "varianceReason",
+            IMPROVEMENT_MEASURES AS "improvementMeasures",
+            ANALYST_ID AS "analystId",
+            ANALYST_NAME AS "analystName",
+            ANALYSIS_DATE AS "analysisDate",
+            REMARK AS "remark"
+        FROM TBL_VARIANCE_ANALYSIS
+        WHERE ANALYSIS_NO = #{analysisNo}
+          AND BOOK_ID = #{bookId}
+          AND TENANT_ID = #{tenantId}
+    </select>
+
+    <!-- 获取差异分析统计 -->
+    <select id="selectVarianceStatistics" resultType="map">
+        SELECT
+            COUNT(1) AS "totalCount",
+            SUM(VARIANCE_AMOUNT) AS "totalVariance",
+            SUM(CASE WHEN VARIANCE_TYPE = 'FAVORABLE' THEN VARIANCE_AMOUNT ELSE 0 END) AS "favorableVariance",
+            SUM(CASE WHEN VARIANCE_TYPE = 'UNFAVORABLE' THEN VARIANCE_AMOUNT ELSE 0 END) AS "unfavorableVariance",
+            AVG(VARIANCE_RATE) AS "avgVarianceRate"
+        FROM TBL_VARIANCE_ANALYSIS
+        WHERE ANALYSIS_PERIOD = #{analysisPeriod}
+          AND BOOK_ID = #{bookId}
+          AND TENANT_ID = #{tenantId}
+    </select>
+
+    <!-- 获取差异趋势数据 -->
+    <select id="selectVarianceTrend" resultType="map">
+        SELECT
+            ANALYSIS_PERIOD AS "period",
+            SUM(VARIANCE_AMOUNT) AS "totalVariance",
+            AVG(VARIANCE_RATE) AS "avgVarianceRate",
+            COUNT(1) AS "analysisCount"
+        FROM TBL_VARIANCE_ANALYSIS
+        WHERE ANALYSIS_PERIOD BETWEEN #{startPeriod} AND #{endPeriod}
+          AND BOOK_ID = #{bookId}
+          AND TENANT_ID = #{tenantId}
+        GROUP BY ANALYSIS_PERIOD
+        ORDER BY ANALYSIS_PERIOD
+    </select>
+
+    <!--
+        差异分析专用：从 T_PRODUCT_COST 拉取明细，
+        一行 = 一个产品在某期间在某成本中心的成本核算记录。
+        过滤条件：期间范围、成本中心 ID 列表、产品类型枚举列表。
+        别名加双引号防止达梦/Oracle 默认转大写导致前端取不到。
+    -->
+    <select id="selectProductCostForVariance" resultType="java.util.Map">
+        SELECT
+            pc.COSTING_PERIOD     AS "period",
+            pc.COST_CENTER_ID     AS "costCenterId",
+            pc.COST_CENTER_NAME   AS "costCenterName",
+            pc.PRODUCT_ID         AS "productId",
+            pc.PRODUCT_CODE       AS "productCode",
+            pc.PRODUCT_NAME       AS "productName",
+            pc.PRODUCT_TYPE       AS "productType",
+            pc.BUDGET_COST        AS "budgetCost",
+            pc.STANDARD_COST      AS "standardCost",
+            pc.TOTAL_COST         AS "actualCost",
+            pc.DIRECT_MATERIAL    AS "actualMaterial",
+            pc.DIRECT_LABOR       AS "actualLabor",
+            pc.MANUFACTURING_OVERHEAD AS "actualOverhead",
+            pc.PRODUCTION_QUANTITY AS "productionQuantity"
+        FROM T_PRODUCT_COST pc
+        WHERE COALESCE(pc.IS_DELETED, 0) = 0
+          AND pc.TOTAL_COST IS NOT NULL
+        <if test="startPeriod != null and startPeriod != ''">
+            AND pc.COSTING_PERIOD &gt;= #{startPeriod}
+        </if>
+        <if test="endPeriod != null and endPeriod != ''">
+            AND pc.COSTING_PERIOD &lt;= #{endPeriod}
+        </if>
+        <if test="costCenterIds != null and costCenterIds.size() &gt; 0">
+            AND pc.COST_CENTER_ID IN
+            <foreach collection="costCenterIds" item="cid" open="(" separator="," close=")">
+                #{cid}
+            </foreach>
+        </if>
+        <!--
+            productTypes 是字符串枚举（RAW_MATERIAL / SEMI_PRODUCT / FINISHED_PRODUCT / SERVICE / OTHER）
+            T_PRODUCT_COST.PRODUCT_TYPE 是 Integer。这里用 CASE 把枚举映射到数值再过滤。
+            约定：1=原材料 2=半成品 3=产成品 4=服务 5=其他
+        -->
+        <if test="productTypes != null and productTypes.size() &gt; 0">
+            AND pc.PRODUCT_TYPE IN
+            <foreach collection="productTypes" item="ptype" open="(" separator="," close=")">
+                <choose>
+                    <when test="ptype == 'RAW_MATERIAL'">1</when>
+                    <when test="ptype == 'SEMI_PRODUCT'">2</when>
+                    <when test="ptype == 'FINISHED_PRODUCT'">3</when>
+                    <when test="ptype == 'SERVICE'">4</when>
+                    <when test="ptype == 'OTHER'">5</when>
+                    <otherwise>-1</otherwise>
+                </choose>
+            </foreach>
+        </if>
+        ORDER BY pc.COSTING_PERIOD, pc.COST_CENTER_ID, pc.PRODUCT_ID
+    </select>
+
+</mapper>
+

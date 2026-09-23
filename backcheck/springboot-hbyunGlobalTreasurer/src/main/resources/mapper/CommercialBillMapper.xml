@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.CommercialBillMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="CommercialBillVOResult" type="com.global.treasurer.vo.CommercialBillVO">
+        <id property="billId" column="BILL_ID"/>
+        <result property="billNo" column="BILL_NO"/>
+        <result property="billType" column="BILL_TYPE"/>
+        <result property="billAmount" column="BILL_AMOUNT"/>
+        <result property="currency" column="CURRENCY"/>
+        <result property="issueDate" column="ISSUE_DATE"/>
+        <result property="maturityDate" column="MATURITY_DATE"/>
+        <result property="drawerName" column="DRAWER_NAME"/>
+        <result property="drawerAccount" column="DRAWER_ACCOUNT"/>
+        <result property="drawerBank" column="DRAWER_BANK"/>
+        <result property="payeeName" column="PAYEE_NAME"/>
+        <result property="payeeAccount" column="PAYEE_ACCOUNT"/>
+        <result property="payeeBank" column="PAYEE_BANK"/>
+        <result property="acceptorName" column="ACCEPTOR_NAME"/>
+        <result property="acceptorAccount" column="ACCEPTOR_ACCOUNT"/>
+        <result property="acceptorBank" column="ACCEPTOR_BANK"/>
+        <result property="billStatus" column="BILL_STATUS"/>
+        <result property="transferable" column="TRANSFERABLE"/>
+        <result property="interestRate" column="INTEREST_RATE"/>
+        <result property="discountRate" column="DISCOUNT_RATE"/>
+        <result property="remark" column="REMARK"/>
+        <result property="createTime" column="CREATE_TIME"/>
+        <result property="updateTime" column="UPDATE_TIME"/>
+    </resultMap>
+
+    <!-- 查询商业汇票列表 -->
+    <select id="selectCommercialBillList" parameterType="com.global.treasurer.dto.CommercialBillQueryDTO"
+            resultMap="CommercialBillVOResult">
+        SELECT
+            BILL_ID,
+            BILL_NO,
+            BILL_TYPE,
+            BILL_AMOUNT,
+            CURRENCY,
+            ISSUE_DATE,
+            MATURITY_DATE,
+            DRAWER_NAME,
+            DRAWER_ACCOUNT,
+            DRAWER_BANK,
+            PAYEE_NAME,
+            PAYEE_ACCOUNT,
+            PAYEE_BANK,
+            ACCEPTOR_NAME,
+            ACCEPTOR_ACCOUNT,
+            ACCEPTOR_BANK,
+            BILL_STATUS,
+            TRANSFERABLE,
+            INTEREST_RATE,
+            DISCOUNT_RATE,
+            REMARK,
+            CREATE_TIME,
+            UPDATE_TIME
+        FROM TBL_COMMERCIAL_BILL
+        WHERE DELETE_FLAG = 0
+        <if test="query.billNo != null and query.billNo != ''">
+            AND BILL_NO LIKE CONCAT('%', #{query.billNo}, '%')
+        </if>
+        <if test="query.billType != null and query.billType != ''">
+            AND BILL_TYPE = #{query.billType}
+        </if>
+        <if test="query.billStatus != null and query.billStatus != ''">
+            AND BILL_STATUS = #{query.billStatus}
+        </if>
+        <if test="query.drawerName != null and query.drawerName != ''">
+            AND DRAWER_NAME LIKE CONCAT('%', #{query.drawerName}, '%')
+        </if>
+        <if test="query.acceptorName != null and query.acceptorName != ''">
+            AND ACCEPTOR_NAME LIKE CONCAT('%', #{query.acceptorName}, '%')
+        </if>
+        <if test="query.issueDateStart != null">
+            AND ISSUE_DATE >= #{query.issueDateStart}
+        </if>
+        <if test="query.issueDateEnd != null">
+            AND ISSUE_DATE &lt;= #{query.issueDateEnd}
+        </if>
+        <if test="query.maturityDateStart != null">
+            AND MATURITY_DATE >= #{query.maturityDateStart}
+        </if>
+        <if test="query.maturityDateEnd != null">
+            AND MATURITY_DATE &lt;= #{query.maturityDateEnd}
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据ID查询商业汇票详情 -->
+    <select id="selectCommercialBillById" parameterType="Long" resultMap="CommercialBillVOResult">
+        SELECT
+            BILL_ID,
+            BILL_NO,
+            BILL_TYPE,
+            BILL_AMOUNT,
+            CURRENCY,
+            ISSUE_DATE,
+            MATURITY_DATE,
+            DRAWER_NAME,
+            DRAWER_ACCOUNT,
+            DRAWER_BANK,
+            PAYEE_NAME,
+            PAYEE_ACCOUNT,
+            PAYEE_BANK,
+            ACCEPTOR_NAME,
+            ACCEPTOR_ACCOUNT,
+            ACCEPTOR_BANK,
+            BILL_STATUS,
+            TRANSFERABLE,
+            INTEREST_RATE,
+            DISCOUNT_RATE,
+            REMARK,
+            CREATE_TIME,
+            UPDATE_TIME
+        FROM TBL_COMMERCIAL_BILL
+        WHERE BILL_ID = #{billId} AND DELETE_FLAG = 0
+    </select>
+
+    <!-- 根据汇票号码查询 -->
+    <select id="selectByBillNo" parameterType="String" resultType="com.global.treasurer.entity.TblCommercialBill">
+        SELECT * FROM TBL_COMMERCIAL_BILL
+        WHERE BILL_NO = #{billNo} AND DELETE_FLAG = 0
+    </select>
+
+    <!-- 批量删除商业汇票(逻辑删除) -->
+    <update id="deleteCommercialBillByIds">
+        UPDATE TBL_COMMERCIAL_BILL
+        SET DELETE_FLAG = 1,
+            UPDATE_TIME = CURRENT_TIMESTAMP
+        WHERE BILL_ID IN
+        <foreach collection="billIds" item="billId" open="(" separator="," close=")">
+            #{billId}
+        </foreach>
+    </update>
+
+    <!-- 更新汇票状态 -->
+    <update id="updateBillStatus">
+        UPDATE TBL_COMMERCIAL_BILL
+        SET BILL_STATUS = #{billStatus},
+            UPDATE_TIME = CURRENT_TIMESTAMP
+        WHERE BILL_ID = #{billId}
+    </update>
+
+    <!-- 统计汇票数量 -->
+    <select id="countByStatus" parameterType="String" resultType="Integer">
+        SELECT COUNT(*)
+        FROM TBL_COMMERCIAL_BILL
+        WHERE BILL_STATUS = #{billStatus} AND DELETE_FLAG = 0
+    </select>
+
+</mapper>

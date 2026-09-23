@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.FundPlanExecutionMapper">
+
+    <!-- 基础结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.FundPlanExecution">
+        <id column="execution_id" property="executionId" jdbcType="BIGINT"/>
+        <result column="plan_id" property="planId" jdbcType="BIGINT"/>
+        <result column="detail_id" property="detailId" jdbcType="BIGINT"/>
+        <result column="execution_no" property="executionNo" jdbcType="VARCHAR"/>
+        <result column="execution_type" property="executionType" jdbcType="VARCHAR"/>
+        <result column="execution_status" property="executionStatus" jdbcType="VARCHAR"/>
+        <result column="planned_amount" property="plannedAmount" jdbcType="DECIMAL"/>
+        <result column="executed_amount" property="executedAmount" jdbcType="DECIMAL"/>
+        <result column="execution_rate" property="executionRate" jdbcType="DECIMAL"/>
+        <result column="planned_date" property="plannedDate" jdbcType="DATE"/>
+        <result column="actual_date" property="actualDate" jdbcType="DATE"/>
+        <result column="delay_days" property="delayDays" jdbcType="INTEGER"/>
+        <result column="execution_efficiency" property="executionEfficiency" jdbcType="DECIMAL"/>
+        <result column="risk_level" property="riskLevel" jdbcType="VARCHAR"/>
+        <result column="execution_notes" property="executionNotes" jdbcType="VARCHAR"/>
+        <result column="org_id" property="orgId" jdbcType="BIGINT"/>
+        <result column="create_user" property="createUser" jdbcType="BIGINT"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_user" property="updateUser" jdbcType="BIGINT"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="is_deleted" property="isDeleted" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        execution_id, plan_id, detail_id, execution_no, execution_type, execution_status,
+        planned_amount, executed_amount, execution_rate, planned_date, actual_date, delay_days,
+        execution_efficiency, risk_level, execution_notes, org_id, create_user, create_time,
+        update_user, update_time, is_deleted
+    </sql>
+
+    <!-- 根据执行编号查询 -->
+    <select id="selectByExecutionNo" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM fund_plan_execution
+        WHERE execution_no = #{executionNo} AND is_deleted = 0
+    </select>
+
+    <!-- 根据计划ID查询执行列表 -->
+    <select id="selectByPlanId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM fund_plan_execution
+        WHERE plan_id = #{planId} AND is_deleted = 0
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据明细ID查询执行列表 -->
+    <select id="selectByDetailId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM fund_plan_execution
+        WHERE detail_id = #{detailId} AND is_deleted = 0
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据执行状态查询 -->
+    <select id="selectByExecutionStatus" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM fund_plan_execution
+        WHERE execution_status = #{executionStatus} AND org_id = #{orgId} AND is_deleted = 0
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 查询进行中的执行 -->
+    <select id="selectInProgressExecutions" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM fund_plan_execution
+        WHERE execution_status = 'IN_PROGRESS' AND org_id = #{orgId} AND is_deleted = 0
+        ORDER BY planned_date ASC
+    </select>
+
+    <!-- 查询已完成的执行 -->
+    <select id="selectCompletedExecutions" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM fund_plan_execution
+        WHERE execution_status = 'COMPLETED' AND org_id = #{orgId} AND is_deleted = 0
+        <if test="startDate != null">
+            AND actual_date >= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND actual_date &lt;= #{endDate}
+        </if>
+        ORDER BY actual_date DESC
+    </select>
+
+    <!-- 查询延期执行 -->
+    <select id="selectDelayedExecutions" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM fund_plan_execution
+        WHERE delay_days > 0 AND org_id = #{orgId} AND is_deleted = 0
+        ORDER BY delay_days DESC
+    </select>
+
+    <!-- 查询高风险执行 -->
+    <select id="selectHighRiskExecutions" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM fund_plan_execution
+        WHERE risk_level = #{riskLevel} AND org_id = #{orgId} AND is_deleted = 0
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 查询低效率执行 -->
+    <select id="selectLowEfficiencyExecutions" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM fund_plan_execution
+        WHERE execution_efficiency &lt; #{efficiencyThreshold} AND org_id = #{orgId} AND is_deleted = 0
+        ORDER BY execution_efficiency ASC
+    </select>
+
+    <!-- 统计各执行状态数量 -->
+    <select id="countByExecutionStatus" parameterType="java.lang.Long" resultType="java.util.Map">
+        SELECT execution_status, COUNT(*) as count
+        FROM fund_plan_execution
+        WHERE org_id = #{orgId} AND is_deleted = 0
+        GROUP BY execution_status
+    </select>
+
+    <!-- 统计各执行类型数量 -->
+    <select id="countByExecutionType" parameterType="java.lang.Long" resultType="java.util.Map">
+        SELECT execution_type, COUNT(*) as count
+        FROM fund_plan_execution
+        WHERE org_id = #{orgId} AND is_deleted = 0
+        GROUP BY execution_type
+    </select>
+
+    <!-- 统计各风险等级数量 -->
+    <select id="countByRiskLevel" parameterType="java.lang.Long" resultType="java.util.Map">
+        SELECT risk_level, COUNT(*) as count
+        FROM fund_plan_execution
+        WHERE org_id = #{orgId} AND is_deleted = 0
+        GROUP BY risk_level
+    </select>
+
+    <!-- 查询执行汇总信息 -->
+    <select id="selectSummaryInfo" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as totalCount,
+            COUNT(CASE WHEN execution_status = 'COMPLETED' THEN 1 END) as completedCount,
+            COUNT(CASE WHEN execution_status = 'IN_PROGRESS' THEN 1 END) as inProgressCount,
+            COUNT(CASE WHEN delay_days > 0 THEN 1 END) as delayedCount,
+            COALESCE(SUM(planned_amount), 0) as totalPlannedAmount,
+            COALESCE(SUM(executed_amount), 0) as totalExecutedAmount,
+            COALESCE(AVG(execution_rate), 0) as avgExecutionRate,
+            COALESCE(AVG(execution_efficiency), 0) as avgExecutionEfficiency,
+            COALESCE(AVG(delay_days), 0) as avgDelayDays
+        FROM fund_plan_execution
+        WHERE is_deleted = 0
+        <if test="orgId != null">
+            AND org_id = #{orgId}
+        </if>
+        <if test="planId != null">
+            AND plan_id = #{planId}
+        </if>
+        <if test="executionType != null and executionType != ''">
+            AND execution_type = #{executionType}
+        </if>
+        <if test="executionStatus != null and executionStatus != ''">
+            AND execution_status = #{executionStatus}
+        </if>
+    </select>
+
+    <!-- 查询执行效率分析 -->
+    <select id="selectEfficiencyAnalysis" parameterType="java.lang.Long" resultType="java.util.Map">
+        SELECT 
+            execution_type,
+            COUNT(*) as executionCount,
+            COALESCE(AVG(execution_efficiency), 0) as avgEfficiency,
+            COALESCE(MIN(execution_efficiency), 0) as minEfficiency,
+            COALESCE(MAX(execution_efficiency), 0) as maxEfficiency,
+            COALESCE(AVG(delay_days), 0) as avgDelayDays
+        FROM fund_plan_execution
+        WHERE org_id = #{orgId} AND is_deleted = 0
+        GROUP BY execution_type
+        ORDER BY avgEfficiency DESC
+    </select>
+
+    <!-- 查询延期分析 -->
+    <select id="selectDelayAnalysis" parameterType="java.lang.Long" resultType="java.util.Map">
+        SELECT 
+            execution_type,
+            COUNT(*) as totalCount,
+            COUNT(CASE WHEN delay_days > 0 THEN 1 END) as delayedCount,
+            COALESCE(AVG(delay_days), 0) as avgDelayDays,
+            COALESCE(MAX(delay_days), 0) as maxDelayDays,
+            ROUND(COUNT(CASE WHEN delay_days > 0 THEN 1 END) * 100.0 / COUNT(*), 2) as delayRate
+        FROM fund_plan_execution
+        WHERE org_id = #{orgId} AND is_deleted = 0
+        GROUP BY execution_type
+        ORDER BY delayRate DESC
+    </select>
+
+    <!-- 查询风险分析 -->
+    <select id="selectRiskAnalysis" parameterType="java.lang.Long" resultType="java.util.Map">
+        SELECT 
+            risk_level,
+            COUNT(*) as count,
+            COALESCE(SUM(planned_amount), 0) as totalPlannedAmount,
+            COALESCE(SUM(executed_amount), 0) as totalExecutedAmount,
+            COALESCE(AVG(execution_rate), 0) as avgExecutionRate,
+            COALESCE(AVG(delay_days), 0) as avgDelayDays
+        FROM fund_plan_execution
+        WHERE org_id = #{orgId} AND is_deleted = 0
+        GROUP BY risk_level
+        ORDER BY 
+            CASE risk_level 
+                WHEN 'HIGH' THEN 1 
+                WHEN 'MEDIUM' THEN 2 
+                WHEN 'LOW' THEN 3 
+                ELSE 4 
+            END
+    </select>
+
+    <!-- 查询趋势分析 -->
+    <select id="selectTrendAnalysis" resultType="java.util.Map">
+        SELECT 
+            DATE_FORMAT(create_time, '%Y-%m') as month,
+            COUNT(*) as executionCount,
+            COUNT(CASE WHEN execution_status = 'COMPLETED' THEN 1 END) as completedCount,
+            COALESCE(SUM(planned_amount), 0) as totalPlannedAmount,
+            COALESCE(SUM(executed_amount), 0) as totalExecutedAmount,
+            COALESCE(AVG(execution_rate), 0) as avgExecutionRate,
+            COALESCE(AVG(execution_efficiency), 0) as avgEfficiency
+        FROM fund_plan_execution
+        WHERE org_id = #{orgId} AND is_deleted = 0
+        <if test="executionType != null and executionType != ''">
+            AND execution_type = #{executionType}
+        </if>
+        AND create_time >= DATE_SUB(CURDATE(), INTERVAL #{months} MONTH)
+        GROUP BY DATE_FORMAT(create_time, '%Y-%m')
+        ORDER BY month DESC
+    </select>
+
+    <!-- 更新执行状态 -->
+    <update id="updateExecutionStatus">
+        UPDATE fund_plan_execution
+        SET execution_status = #{executionStatus},
+            update_user = #{updateUser},
+            update_time = NOW()
+        WHERE execution_id = #{executionId} AND is_deleted = 0
+    </update>
+
+    <!-- 更新执行金额 -->
+    <update id="updateExecutedAmount">
+        UPDATE fund_plan_execution
+        SET executed_amount = #{executedAmount},
+            execution_rate = CASE 
+                WHEN planned_amount > 0 THEN ROUND(#{executedAmount} * 100 / planned_amount, 2)
+                ELSE 0 
+            END,
+            update_user = #{updateUser},
+            update_time = NOW()
+        WHERE execution_id = #{executionId} AND is_deleted = 0
+    </update>
+
+    <!-- 更新实际日期 -->
+    <update id="updateActualDate">
+        UPDATE fund_plan_execution
+        SET actual_date = #{actualDate},
+            delay_days = CASE 
+                WHEN #{actualDate} > planned_date THEN DATEDIFF(#{actualDate}, planned_date)
+                ELSE 0 
+            END,
+            update_user = #{updateUser},
+            update_time = NOW()
+        WHERE execution_id = #{executionId} AND is_deleted = 0
+    </update>
+
+    <!-- 更新执行效率 -->
+    <update id="updateExecutionEfficiency">
+        UPDATE fund_plan_execution
+        SET execution_efficiency = #{executionEfficiency},
+            update_user = #{updateUser},
+            update_time = NOW()
+        WHERE execution_id = #{executionId} AND is_deleted = 0
+    </update>
+
+    <!-- 更新风险等级 -->
+    <update id="updateRiskLevel">
+        UPDATE fund_plan_execution
+        SET risk_level = #{riskLevel},
+            update_user = #{updateUser},
+            update_time = NOW()
+        WHERE execution_id = #{executionId} AND is_deleted = 0
+    </update>
+
+    <!-- 批量更新执行状态 -->
+    <update id="batchUpdateExecutionStatus">
+        UPDATE fund_plan_execution
+        SET execution_status = #{executionStatus},
+            update_user = #{updateUser},
+            update_time = NOW()
+        WHERE execution_id IN
+        <foreach collection="executionIds" item="executionId" open="(" separator="," close=")">
+            #{executionId}
+        </foreach>
+        AND is_deleted = 0
+    </update>
+
+    <!-- 自动计算延期天数 -->
+    <update id="calculateDelayDays" parameterType="java.lang.Long">
+        UPDATE fund_plan_execution
+        SET delay_days = CASE 
+            WHEN actual_date IS NOT NULL AND actual_date > planned_date THEN DATEDIFF(actual_date, planned_date)
+            WHEN actual_date IS NULL AND CURDATE() > planned_date THEN DATEDIFF(CURDATE(), planned_date)
+            ELSE 0 
+        END,
+        update_time = NOW()
+        WHERE org_id = #{orgId} AND is_deleted = 0
+    </update>
+
+    <!-- 自动计算执行效率 -->
+    <update id="calculateExecutionEfficiency" parameterType="java.lang.Long">
+        UPDATE fund_plan_execution
+        SET execution_efficiency = CASE 
+            WHEN delay_days = 0 AND execution_rate >= 100 THEN 100
+            WHEN delay_days = 0 AND execution_rate >= 90 THEN 95
+            WHEN delay_days = 0 AND execution_rate >= 80 THEN 90
+            WHEN delay_days > 0 AND execution_rate >= 100 THEN GREATEST(80 - delay_days * 2, 0)
+            WHEN delay_days > 0 AND execution_rate >= 90 THEN GREATEST(75 - delay_days * 2, 0)
+            ELSE GREATEST(70 - delay_days * 3, 0)
+        END,
+        update_time = NOW()
+        WHERE org_id = #{orgId} AND is_deleted = 0
+    </update>
+
+    <!-- 自动更新风险等级 -->
+    <update id="autoUpdateRiskLevel" parameterType="java.lang.Long">
+        UPDATE fund_plan_execution
+        SET risk_level = CASE 
+            WHEN delay_days > 7 OR execution_efficiency &lt; 60 THEN 'HIGH'
+            WHEN delay_days > 3 OR execution_efficiency &lt; 80 THEN 'MEDIUM'
+            ELSE 'LOW'
+        END,
+        update_time = NOW()
+        WHERE org_id = #{orgId} AND is_deleted = 0
+    </update>
+
+</mapper>

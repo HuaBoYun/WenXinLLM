@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.legal.mysql.mapper.TblFwglAnnualPlanMySqlMapper">
+  <resultMap id="BaseResultMap" type="com.huabo.legal.mysql.entity.TblFwglAnnualPlanMySql">
+    <!--@mbg.generated generated on Sun Sep 18 22:54:29 CST 2022.-->
+    <!--@Table hbgrctest.tbl_fwgl_annual_plan-->
+    <id column="ANNUALPLANID" jdbcType="INTEGER" property="annualPlanId" />
+    <result column="ANNUALPLANNAME" jdbcType="VARCHAR" property="annualPlanName" />
+    <result column="ANNUALPLANCREATOR" jdbcType="VARCHAR" property="annualPlanCreator" />
+    <result column="ANNUALPLANCREATEDTIME" jdbcType="VARCHAR" property="annualPlanCreatedTime" />
+    <result column="FILEIDS" jdbcType="VARCHAR" property="fileIds" />
+    <result column="STATE" jdbcType="INTEGER" property="state" />
+    <result column="CREATOR" jdbcType="VARCHAR" property="creator" />
+    <result column="WORKUNIT" jdbcType="VARCHAR" property="workUnit" />
+    <result column="BELONGGROUP" jdbcType="VARCHAR" property="belongGroup" />
+    <result column="CREATEDTIME" jdbcType="TIMESTAMP" property="createdTime" />
+    <result column="UPDATEDTIME" jdbcType="TIMESTAMP" property="updatedTime" />
+  </resultMap>
+</mapper>

@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.fxgl.mapper.TblDataSourceMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.huabo.fxgl.entity.TblDataSource">
+        <id column="SOURCE_ID" property="sourceId" />
+        <result column="SOURCE_NAME" property="sourceName" />
+        <result column="SOURCE_TYPE" property="sourceType" />
+        <result column="HOST_IP" property="hostIp" />
+        <result column="PORT" property="port" />
+        <result column="DATABASE_NAME" property="databaseName" />
+        <result column="USERNAME" property="username" />
+        <result column="PASSWORD" property="password" />
+        <result column="CONNECTION_URL" property="connectionUrl" />
+        <result column="STATUS" property="status" />
+        <result column="DESCRIPTION" property="description" />
+        <result column="LAST_SYNC_TIME" property="lastSyncTime" />
+        <result column="TABLE_COUNT" property="tableCount" />
+        <result column="CONNECTION_TEST_RESULT" property="connectionTestResult" />
+        <result column="CREATE_USER" property="createUser" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_USER" property="updateUser" />
+        <result column="UPDATE_TIME" property="updateTime" />
+    </resultMap>
+
+    <!-- 数据源VO映射结果 -->
+    <resultMap id="DataSourceVOResultMap" type="com.huabo.fxgl.vo.DataSourceVO">
+        <id column="SOURCE_ID" property="sourceId" />
+        <result column="SOURCE_NAME" property="sourceName" />
+        <result column="SOURCE_TYPE" property="sourceType" />
+        <result column="SOURCE_TYPE_NAME" property="sourceTypeName" />
+        <result column="HOST_IP" property="hostIp" />
+        <result column="PORT" property="port" />
+        <result column="DATABASE_NAME" property="databaseName" />
+        <result column="USERNAME" property="username" />
+        <result column="CONNECTION_URL" property="connectionUrl" />
+        <result column="STATUS" property="status" />
+        <result column="STATUS_NAME" property="statusName" />
+        <result column="DESCRIPTION" property="description" />
+        <result column="LAST_SYNC_TIME" property="lastSyncTime" />
+        <result column="TABLE_COUNT" property="tableCount" />
+        <result column="CONNECTION_TEST_RESULT" property="connectionTestResult" />
+        <result column="CONNECTION_TEST_RESULT_NAME" property="connectionTestResultName" />
+        <result column="CREATE_USER" property="createUser" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_USER" property="updateUser" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="CAN_EDIT" property="canEdit" />
+        <result column="CAN_DELETE" property="canDelete" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        SOURCE_ID, SOURCE_NAME, SOURCE_TYPE, HOST_IP, PORT, DATABASE_NAME, USERNAME, PASSWORD, 
+        CONNECTION_URL, STATUS, DESCRIPTION, LAST_SYNC_TIME, TABLE_COUNT, CONNECTION_TEST_RESULT, 
+        CREATE_USER, CREATE_TIME, UPDATE_USER, UPDATE_TIME
+    </sql>
+
+    <!-- 分页查询数据源列表 -->
+    <select id="selectDataSourcePage" resultMap="DataSourceVOResultMap">
+        SELECT 
+            ds.SOURCE_ID,
+            ds.SOURCE_NAME,
+            ds.SOURCE_TYPE,
+            CASE ds.SOURCE_TYPE 
+                WHEN 'DM' THEN '达梦数据库'
+                WHEN 'ORACLE' THEN 'Oracle数据库'
+                WHEN 'MYSQL' THEN 'MySQL数据库'
+                ELSE ds.SOURCE_TYPE
+            END AS SOURCE_TYPE_NAME,
+            ds.HOST_IP,
+            ds.PORT,
+            ds.DATABASE_NAME,
+            ds.USERNAME,
+            ds.CONNECTION_URL,
+            ds.STATUS,
+            CASE ds.STATUS 
+                WHEN 'ACTIVE' THEN '启用'
+                WHEN 'INACTIVE' THEN '禁用'
+                ELSE ds.STATUS
+            END AS STATUS_NAME,
+            ds.DESCRIPTION,
+            ds.LAST_SYNC_TIME,
+            ds.TABLE_COUNT,
+            ds.CONNECTION_TEST_RESULT,
+            CASE ds.CONNECTION_TEST_RESULT 
+                WHEN 'SUCCESS' THEN '连接成功'
+                WHEN 'FAILED' THEN '连接失败'
+                ELSE '未测试'
+            END AS CONNECTION_TEST_RESULT_NAME,
+            ds.CREATE_USER,
+            ds.CREATE_TIME,
+            ds.UPDATE_USER,
+            ds.UPDATE_TIME,
+            1 AS CAN_EDIT,
+            1 AS CAN_DELETE
+        FROM TBL_DATA_SOURCE ds
+        <where>
+            <if test="query.sourceName != null and query.sourceName != ''">
+                AND ds.SOURCE_NAME LIKE CONCAT('%', #{query.sourceName}, '%')
+            </if>
+            <if test="query.sourceType != null and query.sourceType != ''">
+                AND ds.SOURCE_TYPE = #{query.sourceType}
+            </if>
+            <if test="query.status != null and query.status != ''">
+                AND ds.STATUS = #{query.status}
+            </if>
+            <if test="query.hostIp != null and query.hostIp != ''">
+                AND ds.HOST_IP LIKE CONCAT('%', #{query.hostIp}, '%')
+            </if>
+            <if test="query.createUser != null and query.createUser != ''">
+                AND ds.CREATE_USER LIKE CONCAT('%', #{query.createUser}, '%')
+            </if>
+            <if test="query.startTime != null and query.startTime != ''">
+                AND ds.CREATE_TIME >= TO_DATE(#{query.startTime}, 'YYYY-MM-DD HH24:MI:SS')
+            </if>
+            <if test="query.endTime != null and query.endTime != ''">
+                AND ds.CREATE_TIME &lt;= TO_DATE(#{query.endTime}, 'YYYY-MM-DD HH24:MI:SS')
+            </if>
+        </where>
+        <choose>
+            <when test="query.sortField != null and query.sortField != ''">
+                ORDER BY ${query.sortField} 
+                <if test="query.sortOrder != null and query.sortOrder != ''">
+                    ${query.sortOrder}
+                </if>
+            </when>
+            <otherwise>
+                ORDER BY ds.CREATE_TIME DESC
+            </otherwise>
+        </choose>
+    </select>
+
+</mapper>

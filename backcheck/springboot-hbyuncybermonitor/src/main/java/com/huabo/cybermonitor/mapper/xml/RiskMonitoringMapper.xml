@@ -1,0 +1,412 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.cybermonitor.mapper.RiskMonitoringMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.huabo.cybermonitor.entity.RiskMonitoring">
+        <id column="RISK_MONITORING_ID" property="riskMonitoringId" />
+        <result column="ENTERPRISE_ID" property="enterpriseId" />
+        <result column="ENTERPRISE_NAME" property="enterpriseName" />
+        <result column="MONITORING_NAME" property="monitoringName" />
+        <result column="MONITORING_TYPE" property="monitoringType" />
+        <result column="MONITORING_INDICATOR" property="monitoringIndicator" />
+        <result column="DATA_SOURCE_TYPE" property="dataSourceType" />
+        <result column="DATA_SOURCE_CONFIG" property="dataSourceConfig" />
+        <result column="MONITORING_FREQUENCY" property="monitoringFrequency" />
+        <result column="WARNING_THRESHOLD" property="warningThreshold" />
+        <result column="DANGER_THRESHOLD" property="dangerThreshold" />
+        <result column="THRESHOLD_UNIT" property="thresholdUnit" />
+        <result column="COMPARISON_METHOD" property="comparisonMethod" />
+        <result column="CURRENT_VALUE" property="currentValue" />
+        <result column="LAST_UPDATE_TIME" property="lastUpdateTime" />
+        <result column="MONITORING_STATUS" property="monitoringStatus" />
+        <result column="ALERT_STATUS" property="alertStatus" />
+        <result column="ALERT_METHOD" property="alertMethod" />
+        <result column="ALERT_RECIPIENTS" property="alertRecipients" />
+        <result column="ALERT_MESSAGE_TEMPLATE" property="alertMessageTemplate" />
+        <result column="ENABLE_ANOMALY_DETECTION" property="enableAnomalyDetection" />
+        <result column="ANOMALY_ALGORITHM" property="anomalyAlgorithm" />
+        <result column="HISTORICAL_DATA_WINDOW" property="historicalDataWindow" />
+        <result column="SENSITIVITY_LEVEL" property="sensitivityLevel" />
+        <result column="START_BY" property="startBy" />
+        <result column="START_TIME" property="startTime" />
+        <result column="STOP_BY" property="stopBy" />
+        <result column="STOP_TIME" property="stopTime" />
+        <result column="STOP_REASON" property="stopReason" />
+        <result column="CREATE_BY" property="createBy" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_BY" property="updateBy" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="DELETED" property="deleted" />
+        <result column="VERSION" property="version" />
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="Base_Column_List">
+        RISK_MONITORING_ID, ENTERPRISE_ID, ENTERPRISE_NAME, MONITORING_NAME, MONITORING_TYPE,
+        MONITORING_INDICATOR, DATA_SOURCE_TYPE, DATA_SOURCE_CONFIG, MONITORING_FREQUENCY,
+        WARNING_THRESHOLD, DANGER_THRESHOLD, THRESHOLD_UNIT, COMPARISON_METHOD, CURRENT_VALUE,
+        LAST_UPDATE_TIME, MONITORING_STATUS, ALERT_STATUS, ALERT_METHOD, ALERT_RECIPIENTS,
+        ALERT_MESSAGE_TEMPLATE, ENABLE_ANOMALY_DETECTION, ANOMALY_ALGORITHM, HISTORICAL_DATA_WINDOW,
+        SENSITIVITY_LEVEL, START_BY, START_TIME, STOP_BY, STOP_TIME, STOP_REASON,
+        CREATE_BY, CREATE_TIME, UPDATE_BY, UPDATE_TIME, DELETED, VERSION
+    </sql>
+
+    <!-- 查询条件 -->
+    <sql id="Query_Where_Clause">
+        <where>
+            DELETED = 0
+            <if test="enterpriseId != null and enterpriseId != ''">
+                AND ENTERPRISE_ID = #{enterpriseId}
+            </if>
+            <if test="enterpriseName != null and enterpriseName != ''">
+                AND ENTERPRISE_NAME LIKE CONCAT('%', #{enterpriseName}, '%')
+            </if>
+            <if test="monitoringType != null and monitoringType != ''">
+                AND MONITORING_TYPE = #{monitoringType}
+            </if>
+            <if test="monitoringStatus != null and monitoringStatus != ''">
+                AND MONITORING_STATUS = #{monitoringStatus}
+            </if>
+            <if test="alertStatus != null and alertStatus != ''">
+                AND ALERT_STATUS = #{alertStatus}
+            </if>
+            <if test="monitoringName != null and monitoringName != ''">
+                AND MONITORING_NAME LIKE CONCAT('%', #{monitoringName}, '%')
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND START_TIME >= #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND START_TIME &lt;= #{endDate}
+            </if>
+        </where>
+    </sql>
+
+    <!-- 分页查询风险监控列表 -->
+    <select id="selectRiskMonitoringList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_RISK_MONITORING
+        <include refid="Query_Where_Clause" />
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据ID查询(旧表-已废弃) -->
+    <select id="selectByIdOldTable" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_RISK_MONITORING
+        WHERE RISK_MONITORING_ID = #{id} AND DELETED = 0
+    </select>
+
+    <!-- 新增风险监控 -->
+    <insert id="insertToOldTable">
+        INSERT INTO TBL_RISK_MONITORING (
+            RISK_MONITORING_ID, ENTERPRISE_ID, ENTERPRISE_NAME, MONITORING_NAME, MONITORING_TYPE,
+            MONITORING_INDICATOR, DATA_SOURCE_TYPE, DATA_SOURCE_CONFIG, MONITORING_FREQUENCY,
+            WARNING_THRESHOLD, DANGER_THRESHOLD, THRESHOLD_UNIT, COMPARISON_METHOD,
+            MONITORING_STATUS, ALERT_STATUS, ALERT_METHOD, ALERT_RECIPIENTS, ALERT_MESSAGE_TEMPLATE,
+            ENABLE_ANOMALY_DETECTION, ANOMALY_ALGORITHM, HISTORICAL_DATA_WINDOW, SENSITIVITY_LEVEL,
+            CREATE_BY, CREATE_TIME, DELETED, VERSION
+        ) VALUES (
+            #{riskMonitoringId}, #{enterpriseId}, #{enterpriseName}, #{monitoringName}, #{monitoringType},
+            #{monitoringIndicator}, #{dataSourceType}, #{dataSourceConfig}, #{monitoringFrequency},
+            #{warningThreshold}, #{dangerThreshold}, #{thresholdUnit}, #{comparisonMethod},
+            #{monitoringStatus}, #{alertStatus}, #{alertMethod}, #{alertRecipients}, #{alertMessageTemplate},
+            #{enableAnomalyDetection}, #{anomalyAlgorithm}, #{historicalDataWindow}, #{sensitivityLevel},
+            #{createBy}, 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>, 
+            0, 1
+        )
+    </insert>
+
+    <!-- 更新风险监控 -->
+    <update id="updateByIdOldTable">
+        UPDATE TBL_RISK_MONITORING
+        SET ENTERPRISE_ID = #{enterpriseId},
+            ENTERPRISE_NAME = #{enterpriseName},
+            MONITORING_NAME = #{monitoringName},
+            MONITORING_TYPE = #{monitoringType},
+            MONITORING_INDICATOR = #{monitoringIndicator},
+            DATA_SOURCE_TYPE = #{dataSourceType},
+            DATA_SOURCE_CONFIG = #{dataSourceConfig},
+            MONITORING_FREQUENCY = #{monitoringFrequency},
+            WARNING_THRESHOLD = #{warningThreshold},
+            DANGER_THRESHOLD = #{dangerThreshold},
+            THRESHOLD_UNIT = #{thresholdUnit},
+            COMPARISON_METHOD = #{comparisonMethod},
+            ALERT_METHOD = #{alertMethod},
+            ALERT_RECIPIENTS = #{alertRecipients},
+            ALERT_MESSAGE_TEMPLATE = #{alertMessageTemplate},
+            ENABLE_ANOMALY_DETECTION = #{enableAnomalyDetection},
+            ANOMALY_ALGORITHM = #{anomalyAlgorithm},
+            HISTORICAL_DATA_WINDOW = #{historicalDataWindow},
+            SENSITIVITY_LEVEL = #{sensitivityLevel},
+            UPDATE_BY = #{updateBy},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            VERSION = VERSION + 1
+        WHERE RISK_MONITORING_ID = #{riskMonitoringId} AND DELETED = 0
+    </update>
+
+    <!-- 逻辑删除 -->
+    <update id="deleteByIdOldTable">
+        UPDATE TBL_RISK_MONITORING
+        SET DELETED = 1,
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>
+        WHERE RISK_MONITORING_ID = #{id} AND DELETED = 0
+    </update>
+
+    <!-- 启动监控 -->
+    <update id="startMonitoring">
+        UPDATE TBL_RISK_MONITORING
+        SET MONITORING_STATUS = 'ACTIVE',
+            START_BY = #{startBy},
+            START_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            UPDATE_BY = #{startBy},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            VERSION = VERSION + 1
+        WHERE RISK_MONITORING_ID = #{riskMonitoringId} AND DELETED = 0
+    </update>
+
+    <!-- 停止监控 -->
+    <update id="stopMonitoring">
+        UPDATE TBL_RISK_MONITORING
+        SET MONITORING_STATUS = 'STOPPED',
+            STOP_BY = #{stopBy},
+            STOP_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            STOP_REASON = #{stopReason},
+            UPDATE_BY = #{stopBy},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            VERSION = VERSION + 1
+        WHERE RISK_MONITORING_ID = #{riskMonitoringId} AND DELETED = 0
+    </update>
+
+    <!-- 更新监控数据 -->
+    <update id="updateMonitoringData">
+        UPDATE TBL_RISK_MONITORING
+        SET CURRENT_VALUE = #{currentValue},
+            LAST_UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            ALERT_STATUS = #{alertStatus},
+            UPDATE_BY = #{updateBy},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            VERSION = VERSION + 1
+        WHERE RISK_MONITORING_ID = #{riskMonitoringId} AND DELETED = 0
+    </update>
+
+    <!-- 配置阈值 -->
+    <update id="configureThreshold">
+        UPDATE TBL_RISK_MONITORING
+        SET WARNING_THRESHOLD = #{warningThreshold},
+            DANGER_THRESHOLD = #{dangerThreshold},
+            COMPARISON_METHOD = #{comparisonMethod},
+            UPDATE_BY = #{configBy},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            VERSION = VERSION + 1
+        WHERE RISK_MONITORING_ID = #{riskMonitoringId} AND DELETED = 0
+    </update>
+
+    <!-- 批量启动监控 -->
+    <update id="batchStartMonitoring">
+        UPDATE TBL_RISK_MONITORING
+        SET MONITORING_STATUS = 'ACTIVE',
+            START_BY = #{startBy},
+            START_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            UPDATE_BY = #{startBy},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            VERSION = VERSION + 1
+        WHERE RISK_MONITORING_ID IN
+        <foreach collection="riskMonitoringIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND DELETED = 0
+    </update>
+
+    <!-- 批量停止监控 -->
+    <update id="batchStopMonitoring">
+        UPDATE TBL_RISK_MONITORING
+        SET MONITORING_STATUS = 'STOPPED',
+            STOP_BY = #{stopBy},
+            STOP_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            STOP_REASON = #{stopReason},
+            UPDATE_BY = #{stopBy},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            VERSION = VERSION + 1
+        WHERE RISK_MONITORING_ID IN
+        <foreach collection="riskMonitoringIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND DELETED = 0
+    </update>
+
+    <!-- 批量逻辑删除 -->
+    <update id="batchDelete">
+        UPDATE TBL_RISK_MONITORING
+        SET DELETED = 1,
+            UPDATE_BY = #{deleteBy},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>
+        WHERE RISK_MONITORING_ID IN
+        <foreach collection="riskMonitoringIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND DELETED = 0
+    </update>
+
+    <!-- 获取综合统计数据 -->
+    <select id="getComprehensiveStatistics" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as totalMonitoring,
+            COUNT(CASE WHEN MONITORING_STATUS = 'ACTIVE' THEN 1 END) as activeCount,
+            COUNT(CASE WHEN ALERT_STATUS = 'WARNING' THEN 1 END) as warningAlerts,
+            COUNT(CASE WHEN ALERT_STATUS = 'DANGER' THEN 1 END) as dangerAlerts,
+            COUNT(CASE WHEN ENABLE_ANOMALY_DETECTION = 1 THEN 1 END) as anomalyDetectionCount,
+            COUNT(CASE WHEN MONITORING_STATUS = 'STOPPED' THEN 1 END) as stoppedCount
+        FROM TBL_RISK_MONITORING
+        WHERE DELETED = 0
+        <if test="enterpriseId != null and enterpriseId != ''">
+            AND ENTERPRISE_ID = #{enterpriseId}
+        </if>
+    </select>
+
+    <!-- 获取趋势分析数据 -->
+    <select id="getTrendAnalysis" resultType="java.util.Map">
+        SELECT 
+            <choose>
+                <when test="granularity == 'HOURLY'">
+                    <choose>
+                        <when test="_databaseId == 'mysql'">
+                            DATE_FORMAT(LAST_UPDATE_TIME, '%Y-%m-%d %H:00:00') as period
+                        </when>
+                        <otherwise>
+                            TO_CHAR(LAST_UPDATE_TIME, 'YYYY-MM-DD HH24:00:00') as period
+                        </otherwise>
+                    </choose>
+                </when>
+                <when test="granularity == 'DAILY'">
+                    <choose>
+                        <when test="_databaseId == 'mysql'">
+                            DATE_FORMAT(LAST_UPDATE_TIME, '%Y-%m-%d') as period
+                        </when>
+                        <otherwise>
+                            TO_CHAR(LAST_UPDATE_TIME, 'YYYY-MM-DD') as period
+                        </otherwise>
+                    </choose>
+                </when>
+                <otherwise>
+                    <choose>
+                        <when test="_databaseId == 'mysql'">
+                            DATE_FORMAT(LAST_UPDATE_TIME, '%Y-%m') as period
+                        </when>
+                        <otherwise>
+                            TO_CHAR(LAST_UPDATE_TIME, 'YYYY-MM') as period
+                        </otherwise>
+                    </choose>
+                </otherwise>
+            </choose>,
+            AVG(CAST(CURRENT_VALUE AS DECIMAL(10,2))) as avgValue,
+            MAX(CAST(CURRENT_VALUE AS DECIMAL(10,2))) as maxValue,
+            MIN(CAST(CURRENT_VALUE AS DECIMAL(10,2))) as minValue,
+            COUNT(CASE WHEN ALERT_STATUS = 'WARNING' THEN 1 END) as warningCount,
+            COUNT(CASE WHEN ALERT_STATUS = 'DANGER' THEN 1 END) as dangerCount
+        FROM TBL_RISK_MONITORING
+        WHERE RISK_MONITORING_ID = #{riskMonitoringId} 
+        AND DELETED = 0
+        <if test="startDate != null and startDate != ''">
+            AND LAST_UPDATE_TIME >= #{startDate}
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND LAST_UPDATE_TIME &lt;= #{endDate}
+        </if>
+        GROUP BY period
+        ORDER BY period
+    </select>
+
+    <!-- 获取异常检测数据 -->
+    <select id="getAnomalyDetectionData" resultType="java.util.Map">
+        SELECT 
+            LAST_UPDATE_TIME as updateTime,
+            CURRENT_VALUE as value,
+            ALERT_STATUS as alertStatus,
+            CASE 
+                WHEN ALERT_STATUS = 'DANGER' THEN 1
+                WHEN ALERT_STATUS = 'WARNING' THEN 0.5
+                ELSE 0
+            END as anomalyScore
+        FROM TBL_RISK_MONITORING
+        WHERE RISK_MONITORING_ID = #{riskMonitoringId} 
+        AND DELETED = 0
+        <if test="startDate != null and startDate != ''">
+            AND LAST_UPDATE_TIME >= #{startDate}
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND LAST_UPDATE_TIME &lt;= #{endDate}
+        </if>
+        ORDER BY LAST_UPDATE_TIME DESC
+        <choose>
+            <when test="_databaseId == 'mysql'">
+                LIMIT 1000
+            </when>
+            <otherwise>
+                OFFSET 0 ROWS FETCH NEXT 1000 ROWS ONLY
+            </otherwise>
+        </choose>
+    </select>
+
+</mapper>

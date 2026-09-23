@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.TcPartnerTypeMapper">
+    
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TcPartnerType">
+        <result column="PARTNER_TYPE_ID" property="partnerTypeId"/>
+        <result column="TYPE_CODE" property="typeCode"/>
+        <result column="TYPE_NAME" property="typeName"/>
+        <result column="DESCRIPTION" property="description"/>
+        <result column="PARENT_TYPE_ID" property="parentTypeId"/>
+        <result column="LEVEL" property="level"/>
+        <result column="SORT_ORDER" property="sortOrder"/>
+        <result column="IS_ENABLED" property="isEnabled"/>
+        <result column="ALLOW_BANK_DIRECT_CONNECTION" property="allowBankDirectConnection"/>
+        <result column="ALLOW_PAYMENT" property="allowPayment"/>
+        <result column="ALLOW_RECEIPT" property="allowReceipt"/>
+        <result column="ALLOW_FINANCING" property="allowFinancing"/>
+        <result column="ALLOW_INVESTMENT" property="allowInvestment"/>
+        <result column="RISK_LEVEL_LIMIT" property="riskLevelLimit"/>
+        <result column="CREDIT_RATING_LIMIT" property="creditRatingLimit"/>
+        <result column="REQUIRED_DOCUMENTS" property="requiredDocuments"/>
+        <result column="BUSINESS_SCOPE" property="businessScope"/>
+        <result column="CATEGORY" property="category"/>
+        <result column="REMARKS" property="remarks"/>
+        <result column="ORG_ID" property="orgId"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="CREATE_USER" property="createUser"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="UPDATE_USER" property="updateUser"/>
+        <result column="IS_ENABLED_GLOBAL" property="isEnabledGlobal"/>
+    </resultMap>
+    
+    <sql id="Base_Column_List">
+        PARTNER_TYPE_ID, TYPE_CODE, TYPE_NAME, DESCRIPTION, PARENT_TYPE_ID, LEVEL, SORT_ORDER,
+        IS_ENABLED, ALLOW_BANK_DIRECT_CONNECTION, ALLOW_PAYMENT, ALLOW_RECEIPT, ALLOW_FINANCING,
+        ALLOW_INVESTMENT, RISK_LEVEL_LIMIT, CREDIT_RATING_LIMIT, REQUIRED_DOCUMENTS, BUSINESS_SCOPE,
+        CATEGORY, REMARKS, ORG_ID, CREATE_TIME, CREATE_USER, UPDATE_TIME, UPDATE_USER, IS_ENABLED_GLOBAL
+    </sql>
+    
+    <select id="listPartnerType" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_TREASURY_PARTNER_TYPE
+        <where>
+            <if test="params.typeCode != null and params.typeCode != ''">
+                AND TYPE_CODE LIKE CONCAT('%', #{params.typeCode}, '%')
+            </if>
+            <if test="params.typeName != null and params.typeName != ''">
+                AND TYPE_NAME LIKE CONCAT('%', #{params.typeName}, '%')
+            </if>
+            <if test="params.isEnabled != null and params.isEnabled != ''">
+                AND IS_ENABLED = #{params.isEnabled}
+            </if>
+            <if test="params.category != null and params.category != ''">
+                AND CATEGORY = #{params.category}
+            </if>
+            <if test="params.orgId != null">
+                AND ORG_ID = #{params.orgId}
+            </if>
+        </where>
+        ORDER BY SORT_ORDER ASC, CREATE_TIME DESC
+    </select>
+    
+    <select id="countPartnerType" resultType="int">
+        SELECT COUNT(*) FROM TBL_TREASURY_PARTNER_TYPE
+        <where>
+            <if test="params.typeCode != null and params.typeCode != ''">
+                AND TYPE_CODE LIKE CONCAT('%', #{params.typeCode}, '%')
+            </if>
+            <if test="params.typeName != null and params.typeName != ''">
+                AND TYPE_NAME LIKE CONCAT('%', #{params.typeName}, '%')
+            </if>
+            <if test="params.isEnabled != null and params.isEnabled != ''">
+                AND IS_ENABLED = #{params.isEnabled}
+            </if>
+        </where>
+    </select>
+    
+    <select id="getById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_TREASURY_PARTNER_TYPE
+        WHERE PARTNER_TYPE_ID = #{partnerTypeId}
+    </select>
+    
+    <select id="getByCode" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_TREASURY_PARTNER_TYPE
+        WHERE TYPE_CODE = #{typeCode}
+    </select>
+    
+    <insert id="insert" parameterType="com.global.treasurer.entity.TcPartnerType" useGeneratedKeys="true" keyProperty="partnerTypeId">
+        INSERT INTO TBL_TREASURY_PARTNER_TYPE (
+            TYPE_CODE, TYPE_NAME, DESCRIPTION, PARENT_TYPE_ID, LEVEL, SORT_ORDER,
+            IS_ENABLED, ALLOW_BANK_DIRECT_CONNECTION, ALLOW_PAYMENT, ALLOW_RECEIPT,
+            ALLOW_FINANCING, ALLOW_INVESTMENT, RISK_LEVEL_LIMIT, CREDIT_RATING_LIMIT,
+            REQUIRED_DOCUMENTS, BUSINESS_SCOPE, CATEGORY, REMARKS, ORG_ID,
+            CREATE_USER, UPDATE_USER, IS_ENABLED_GLOBAL
+        ) VALUES (
+            #{typeCode}, #{typeName}, #{description}, #{parentTypeId}, #{level}, #{sortOrder},
+            #{isEnabled}, #{allowBankDirectConnection}, #{allowPayment}, #{allowReceipt},
+            #{allowFinancing}, #{allowInvestment}, #{riskLevelLimit}, #{creditRatingLimit},
+            #{requiredDocuments}, #{businessScope}, #{category}, #{remarks}, #{orgId},
+            #{createUser}, #{updateUser}, #{isEnabledGlobal}
+        )
+    </insert>
+    
+    <update id="update" parameterType="com.global.treasurer.entity.TcPartnerType">
+        UPDATE TBL_TREASURY_PARTNER_TYPE
+        <set>
+            <if test="typeName != null">TYPE_NAME = #{typeName},</if>
+            <if test="description != null">DESCRIPTION = #{description},</if>
+            <if test="parentTypeId != null">PARENT_TYPE_ID = #{parentTypeId},</if>
+            <if test="level != null">LEVEL = #{level},</if>
+            <if test="sortOrder != null">SORT_ORDER = #{sortOrder},</if>
+            <if test="isEnabled != null">IS_ENABLED = #{isEnabled},</if>
+            <if test="allowBankDirectConnection != null">ALLOW_BANK_DIRECT_CONNECTION = #{allowBankDirectConnection},</if>
+            <if test="allowPayment != null">ALLOW_PAYMENT = #{allowPayment},</if>
+            <if test="allowReceipt != null">ALLOW_RECEIPT = #{allowReceipt},</if>
+            <if test="allowFinancing != null">ALLOW_FINANCING = #{allowFinancing},</if>
+            <if test="allowInvestment != null">ALLOW_INVESTMENT = #{allowInvestment},</if>
+            <if test="riskLevelLimit != null">RISK_LEVEL_LIMIT = #{riskLevelLimit},</if>
+            <if test="creditRatingLimit != null">CREDIT_RATING_LIMIT = #{creditRatingLimit},</if>
+            <if test="requiredDocuments != null">REQUIRED_DOCUMENTS = #{requiredDocuments},</if>
+            <if test="businessScope != null">BUSINESS_SCOPE = #{businessScope},</if>
+            <if test="category != null">CATEGORY = #{category},</if>
+            <if test="remarks != null">REMARKS = #{remarks},</if>
+            UPDATE_TIME = CURRENT_TIMESTAMP,
+            UPDATE_USER = #{updateUser}
+        </set>
+        WHERE PARTNER_TYPE_ID = #{partnerTypeId}
+    </update>
+    
+    <delete id="delete">
+        DELETE FROM TBL_TREASURY_PARTNER_TYPE WHERE PARTNER_TYPE_ID = #{partnerTypeId}
+    </delete>
+    
+    <delete id="batchDelete">
+        DELETE FROM TBL_TREASURY_PARTNER_TYPE WHERE PARTNER_TYPE_ID IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    
+    <update id="updateSortOrder">
+        <foreach collection="sortList" item="item" separator=";">
+            UPDATE TBL_TREASURY_PARTNER_TYPE
+            SET SORT_ORDER = #{item.sortOrder}, UPDATE_TIME = CURRENT_TIMESTAMP
+            WHERE PARTNER_TYPE_ID = #{item.partnerTypeId}
+        </foreach>
+    </update>
+    
+    <update id="toggleStatus">
+        UPDATE TBL_TREASURY_PARTNER_TYPE
+        SET IS_ENABLED = #{isEnabled}, UPDATE_TIME = CURRENT_TIMESTAMP
+        WHERE PARTNER_TYPE_ID = #{partnerTypeId}
+    </update>
+    
+    <select id="getAllEnabled" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_TREASURY_PARTNER_TYPE
+        WHERE IS_ENABLED = 1
+        ORDER BY SORT_ORDER ASC
+    </select>
+    
+    <select id="exportPartnerType" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_TREASURY_PARTNER_TYPE
+        <where>
+            <if test="params.typeCode != null and params.typeCode != ''">
+                AND TYPE_CODE LIKE CONCAT('%', #{params.typeCode}, '%')
+            </if>
+            <if test="params.typeName != null and params.typeName != ''">
+                AND TYPE_NAME LIKE CONCAT('%', #{params.typeName}, '%')
+            </if>
+            <if test="params.isEnabled != null and params.isEnabled != ''">
+                AND IS_ENABLED = #{params.isEnabled}
+            </if>
+        </where>
+        ORDER BY SORT_ORDER ASC
+    </select>
+    
+</mapper>

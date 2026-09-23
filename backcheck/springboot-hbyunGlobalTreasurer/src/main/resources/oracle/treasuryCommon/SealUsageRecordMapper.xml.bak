@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.treasuryCommon.SealUsageRecordMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.treasuryCommon.SealUsageRecord">
+        <id column="ID" property="id" jdbcType="BIGINT"/>
+        <result column="ORG_ID" property="orgId" jdbcType="BIGINT"/>
+        <result column="RECORD_CODE" property="recordCode" jdbcType="VARCHAR"/>
+        <result column="SEAL_ID" property="sealId" jdbcType="BIGINT"/>
+        <result column="SEAL_NAME" property="sealName" jdbcType="VARCHAR"/>
+        <result column="USAGE_TYPE" property="usageType" jdbcType="VARCHAR"/>
+        <result column="BUSINESS_TYPE" property="businessType" jdbcType="VARCHAR"/>
+        <result column="BUSINESS_CODE" property="businessCode" jdbcType="VARCHAR"/>
+        <result column="BUSINESS_DESC" property="businessDesc" jdbcType="VARCHAR"/>
+        <result column="APPLICANT" property="applicant" jdbcType="VARCHAR"/>
+        <result column="APPLICANT_DEPT" property="applicantDept" jdbcType="VARCHAR"/>
+        <result column="APPROVER" property="approver" jdbcType="VARCHAR"/>
+        <result column="APPROVAL_TIME" property="approvalTime" jdbcType="TIMESTAMP"/>
+        <result column="USAGE_TIME" property="usageTime" jdbcType="TIMESTAMP"/>
+        <result column="USAGE_COUNT" property="usageCount" jdbcType="INTEGER"/>
+        <result column="FILE_PATH" property="filePath" jdbcType="VARCHAR"/>
+        <result column="REMARK" property="remark" jdbcType="VARCHAR"/>
+        <result column="STATUS" property="status" jdbcType="INTEGER"/>
+        <result column="IS_ENABLED" property="isEnabled" jdbcType="INTEGER"/>
+        <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="CREATE_USER" property="createUser" jdbcType="VARCHAR"/>
+        <result column="UPDATE_USER" property="updateUser" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        ID, ORG_ID, RECORD_CODE, SEAL_ID, SEAL_NAME, USAGE_TYPE, BUSINESS_TYPE,
+        BUSINESS_CODE, BUSINESS_DESC, APPLICANT, APPLICANT_DEPT, APPROVER, APPROVAL_TIME,
+        USAGE_TIME, USAGE_COUNT, FILE_PATH, REMARK, STATUS, IS_ENABLED,
+        CREATE_TIME, UPDATE_TIME, CREATE_USER, UPDATE_USER
+    </sql>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_SEAL_USAGE_RECORD
+        WHERE ID = #{id,jdbcType=BIGINT}
+        AND STATUS = 1
+    </select>
+
+    <!-- 根据编码查询 -->
+    <select id="selectByCode" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_SEAL_USAGE_RECORD
+        WHERE RECORD_CODE = #{recordCode,jdbcType=VARCHAR}
+        AND STATUS = 1
+    </select>
+
+    <!-- 查询列表 -->
+    <select id="selectUsageRecordList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_SEAL_USAGE_RECORD
+        <where>
+            STATUS = 1
+            <if test="orgId != null and orgId != ''">
+                AND ORG_ID = #{orgId,jdbcType=BIGINT}
+            </if>
+            <if test="recordCode != null and recordCode != ''">
+                AND RECORD_CODE LIKE CONCAT('%', #{recordCode,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="sealName != null and sealName != ''">
+                AND SEAL_NAME LIKE CONCAT('%', #{sealName,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="usageType != null and usageType != ''">
+                AND USAGE_TYPE = #{usageType,jdbcType=VARCHAR}
+            </if>
+            <if test="businessType != null and businessType != ''">
+                AND BUSINESS_TYPE = #{businessType,jdbcType=VARCHAR}
+            </if>
+            <if test="applicant != null and applicant != ''">
+                AND APPLICANT LIKE CONCAT('%', #{applicant,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND USAGE_TIME >= #{startDate,jdbcType=VARCHAR}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND USAGE_TIME &lt;= #{endDate,jdbcType=VARCHAR}
+            </if>
+        </where>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 插入 -->
+    <insert id="insert" parameterType="com.global.treasurer.entity.treasuryCommon.SealUsageRecord" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO TBL_SEAL_USAGE_RECORD (
+            ORG_ID, RECORD_CODE, SEAL_ID, SEAL_NAME, USAGE_TYPE, BUSINESS_TYPE,
+            BUSINESS_CODE, BUSINESS_DESC, APPLICANT, APPLICANT_DEPT, APPROVER,
+            APPROVAL_TIME, USAGE_TIME, USAGE_COUNT, FILE_PATH, REMARK,
+            STATUS, IS_ENABLED, CREATE_TIME, UPDATE_TIME, CREATE_USER, UPDATE_USER
+        ) VALUES (
+            #{orgId,jdbcType=BIGINT}, #{recordCode,jdbcType=VARCHAR}, #{sealId,jdbcType=BIGINT},
+            #{sealName,jdbcType=VARCHAR}, #{usageType,jdbcType=VARCHAR}, #{businessType,jdbcType=VARCHAR},
+            #{businessCode,jdbcType=VARCHAR}, #{businessDesc,jdbcType=VARCHAR}, #{applicant,jdbcType=VARCHAR},
+            #{applicantDept,jdbcType=VARCHAR}, #{approver,jdbcType=VARCHAR}, #{approvalTime,jdbcType=TIMESTAMP},
+            #{usageTime,jdbcType=TIMESTAMP}, #{usageCount,jdbcType=INTEGER}, #{filePath,jdbcType=VARCHAR},
+            #{remark,jdbcType=VARCHAR}, #{status,jdbcType=INTEGER}, #{isEnabled,jdbcType=INTEGER},
+            #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, #{createUser,jdbcType=VARCHAR},
+            #{updateUser,jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <!-- 更新 -->
+    <update id="updateById" parameterType="com.global.treasurer.entity.treasuryCommon.SealUsageRecord">
+        UPDATE TBL_SEAL_USAGE_RECORD
+        SET SEAL_ID = #{sealId,jdbcType=BIGINT},
+            SEAL_NAME = #{sealName,jdbcType=VARCHAR},
+            USAGE_TYPE = #{usageType,jdbcType=VARCHAR},
+            BUSINESS_TYPE = #{businessType,jdbcType=VARCHAR},
+            BUSINESS_CODE = #{businessCode,jdbcType=VARCHAR},
+            BUSINESS_DESC = #{businessDesc,jdbcType=VARCHAR},
+            APPLICANT = #{applicant,jdbcType=VARCHAR},
+            APPLICANT_DEPT = #{applicantDept,jdbcType=VARCHAR},
+            APPROVER = #{approver,jdbcType=VARCHAR},
+            APPROVAL_TIME = #{approvalTime,jdbcType=TIMESTAMP},
+            USAGE_TIME = #{usageTime,jdbcType=TIMESTAMP},
+            USAGE_COUNT = #{usageCount,jdbcType=INTEGER},
+            FILE_PATH = #{filePath,jdbcType=VARCHAR},
+            REMARK = #{remark,jdbcType=VARCHAR},
+            STATUS = #{status,jdbcType=INTEGER},
+            IS_ENABLED = #{isEnabled,jdbcType=INTEGER},
+            UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP},
+            UPDATE_USER = #{updateUser,jdbcType=VARCHAR}
+        WHERE ID = #{id,jdbcType=BIGINT}
+    </update>
+
+    <!-- 删除（逻辑删除） -->
+    <update id="deleteById" parameterType="java.lang.String">
+        UPDATE TBL_SEAL_USAGE_RECORD
+        SET STATUS = 0, IS_ENABLED = 0, UPDATE_TIME = CURRENT_TIMESTAMP
+        WHERE ID = #{id,jdbcType=BIGINT}
+    </update>
+
+    <!-- 根据组织ID查询 -->
+    <select id="selectByOrgId" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_SEAL_USAGE_RECORD
+        WHERE ORG_ID = #{orgId,jdbcType=BIGINT}
+        AND STATUS = 1 AND IS_ENABLED = 1
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据印章ID查询 -->
+    <select id="selectBySealId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_SEAL_USAGE_RECORD
+        WHERE SEAL_ID = #{sealId,jdbcType=BIGINT}
+        AND STATUS = 1 AND IS_ENABLED = 1
+        ORDER BY USAGE_TIME DESC
+    </select>
+
+    <!-- 根据申请人查询 -->
+    <select id="selectByApplicant" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_SEAL_USAGE_RECORD
+        WHERE APPLICANT = #{applicant,jdbcType=VARCHAR}
+        AND ORG_ID = #{orgId,jdbcType=BIGINT}
+        AND STATUS = 1 AND IS_ENABLED = 1
+        ORDER BY USAGE_TIME DESC
+    </select>
+
+</mapper>

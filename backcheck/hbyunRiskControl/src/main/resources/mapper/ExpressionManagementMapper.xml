@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.fxgl.mapper.ExpressionManagementMapper">
+
+    <!-- 表达式VO结果映射 -->
+    <resultMap id="ExpressionVOMap" type="com.huabo.fxgl.vo.ExpressionVO">
+        <id column="EXPRESSION_ID" property="expressionId"/>
+        <result column="EXPRESSION_CODE" property="expressionCode"/>
+        <result column="EXPRESSION_NAME" property="expressionName"/>
+        <result column="EXPRESSION_TYPE" property="expressionType"/>
+        <result column="EXPRESSION_TYPE_NAME" property="expressionTypeName"/>
+        <result column="EXPRESSION_CATEGORY" property="expressionCategory"/>
+        <result column="EXPRESSION_CATEGORY_NAME" property="expressionCategoryName"/>
+        <result column="OUTPUT_TYPE" property="outputType"/>
+        <result column="DESCRIPTION" property="description"/>
+        <result column="EXPRESSION_CONTENT" property="expressionContent"/>
+        <result column="IS_ENABLED" property="isEnabled"/>
+        <result column="IS_ENABLED_NAME" property="isEnabledName"/>
+        <result column="IS_TEMPLATE" property="isTemplate"/>
+        <result column="IS_TEMPLATE_NAME" property="isTemplateName"/>
+        <result column="COMPLEXITY_LEVEL" property="complexityLevel"/>
+        <result column="COMPLEXITY_LEVEL_NAME" property="complexityLevelName"/>
+        <result column="TAGS" property="tags"/>
+        <result column="SOURCE_DATA_CONFIG" property="sourceDataConfig"/>
+        <result column="TARGET_DATA_CONFIG" property="targetDataConfig"/>
+        <result column="COMPARISON_RULES" property="comparisonRules"/>
+        <result column="EXECUTION_COUNT" property="executionCount"/>
+        <result column="SUCCESS_COUNT" property="successCount"/>
+        <result column="SUCCESS_RATE" property="successRate"/>
+        <result column="LAST_EXECUTION_TIME" property="lastExecutionTime"/>
+        <result column="LAST_EXECUTION_RESULT" property="lastExecutionResult"/>
+        <result column="LAST_EXECUTION_RESULT_NAME" property="lastExecutionResultName"/>
+        <result column="CREATE_USER" property="createUser"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_USER" property="updateUser"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+    </resultMap>
+
+    <!-- 分页查询表达式列表 -->
+    <select id="selectExpressionPage" resultMap="ExpressionVOMap">
+        SELECT 
+            e.EXPRESSION_ID,
+            e.EXPRESSION_CODE,
+            e.EXPRESSION_NAME,
+            e.EXPRESSION_TYPE,
+            CASE e.EXPRESSION_TYPE
+                WHEN 'LOGICAL' THEN '逻辑表达式'
+                WHEN 'ARITHMETIC' THEN '算术表达式'
+                WHEN 'COMPARISON' THEN '比较表达式'
+                WHEN 'FUNCTION' THEN '函数表达式'
+                ELSE e.EXPRESSION_TYPE
+            END AS EXPRESSION_TYPE_NAME,
+            e.EXPRESSION_CATEGORY,
+            CASE e.EXPRESSION_CATEGORY
+                WHEN 'FINANCIAL_AUDIT' THEN '财务审计'
+                WHEN 'RISK_CONTROL' THEN '风险控制'
+                WHEN 'COMPLIANCE_CHECK' THEN '合规检查'
+                WHEN 'DATA_VALIDATION' THEN '数据验证'
+                ELSE e.EXPRESSION_CATEGORY
+            END AS EXPRESSION_CATEGORY_NAME,
+            e.OUTPUT_TYPE,
+            e.DESCRIPTION,
+            e.EXPRESSION_CONTENT,
+            e.IS_ENABLED,
+            CASE e.IS_ENABLED WHEN 'Y' THEN '启用' ELSE '禁用' END AS IS_ENABLED_NAME,
+            e.IS_TEMPLATE,
+            CASE e.IS_TEMPLATE WHEN 'Y' THEN '是' ELSE '否' END AS IS_TEMPLATE_NAME,
+            e.COMPLEXITY_LEVEL,
+            CASE e.COMPLEXITY_LEVEL
+                WHEN 1 THEN '简单'
+                WHEN 2 THEN '一般'
+                WHEN 3 THEN '中等'
+                WHEN 4 THEN '复杂'
+                WHEN 5 THEN '很复杂'
+                ELSE '未知'
+            END AS COMPLEXITY_LEVEL_NAME,
+            e.TAGS,
+            e.SOURCE_DATA_CONFIG,
+            e.TARGET_DATA_CONFIG,
+            e.COMPARISON_RULES,
+            e.EXECUTION_COUNT,
+            e.SUCCESS_COUNT,
+            CASE 
+                WHEN e.EXECUTION_COUNT > 0 THEN 
+                    ROUND(e.SUCCESS_COUNT * 100.0 / e.EXECUTION_COUNT, 2) || '%'
+                ELSE '0%'
+            END AS SUCCESS_RATE,
+            e.LAST_EXECUTION_TIME,
+            e.LAST_EXECUTION_RESULT,
+            CASE e.LAST_EXECUTION_RESULT 
+                WHEN 'SUCCESS' THEN '成功' 
+                WHEN 'FAILED' THEN '失败' 
+                ELSE '未执行' 
+            END AS LAST_EXECUTION_RESULT_NAME,
+            e.CREATE_USER,
+            e.CREATE_TIME,
+            e.UPDATE_USER,
+            e.UPDATE_TIME
+        FROM TBL_EXPRESSION_MANAGEMENT e
+        <where>
+            <if test="query.expressionName != null and query.expressionName != ''">
+                AND e.EXPRESSION_NAME LIKE '%' || #{query.expressionName} || '%'
+            </if>
+            <if test="query.expressionType != null and query.expressionType != ''">
+                AND e.EXPRESSION_TYPE = #{query.expressionType}
+            </if>
+            <if test="query.expressionCategory != null and query.expressionCategory != ''">
+                AND e.EXPRESSION_CATEGORY = #{query.expressionCategory}
+            </if>
+            <if test="query.isEnabled != null and query.isEnabled != ''">
+                AND e.IS_ENABLED = #{query.isEnabled}
+            </if>
+            <if test="query.isTemplate != null and query.isTemplate != ''">
+                AND e.IS_TEMPLATE = #{query.isTemplate}
+            </if>
+            <if test="query.createUser != null and query.createUser != ''">
+                AND e.CREATE_USER LIKE '%' || #{query.createUser} || '%'
+            </if>
+            <if test="query.startTime != null and query.startTime != ''">
+                AND e.CREATE_TIME >= TO_DATE(#{query.startTime}, 'YYYY-MM-DD HH24:MI:SS')
+            </if>
+            <if test="query.endTime != null and query.endTime != ''">
+                AND e.CREATE_TIME &lt;= TO_DATE(#{query.endTime}, 'YYYY-MM-DD HH24:MI:SS')
+            </if>
+        </where>
+        ORDER BY e.CREATE_TIME DESC
+    </select>
+
+    <!-- 根据ID查询表达式详情 -->
+    <select id="selectExpressionById" resultMap="ExpressionVOMap">
+        SELECT 
+            e.EXPRESSION_ID,
+            e.EXPRESSION_CODE,
+            e.EXPRESSION_NAME,
+            e.EXPRESSION_TYPE,
+            CASE e.EXPRESSION_TYPE
+                WHEN 'LOGICAL' THEN '逻辑表达式'
+                WHEN 'ARITHMETIC' THEN '算术表达式'
+                WHEN 'COMPARISON' THEN '比较表达式'
+                WHEN 'FUNCTION' THEN '函数表达式'
+                ELSE e.EXPRESSION_TYPE
+            END AS EXPRESSION_TYPE_NAME,
+            e.EXPRESSION_CATEGORY,
+            CASE e.EXPRESSION_CATEGORY
+                WHEN 'FINANCIAL_AUDIT' THEN '财务审计'
+                WHEN 'RISK_CONTROL' THEN '风险控制'
+                WHEN 'COMPLIANCE_CHECK' THEN '合规检查'
+                WHEN 'DATA_VALIDATION' THEN '数据验证'
+                ELSE e.EXPRESSION_CATEGORY
+            END AS EXPRESSION_CATEGORY_NAME,
+            e.OUTPUT_TYPE,
+            e.DESCRIPTION,
+            e.EXPRESSION_CONTENT,
+            e.IS_ENABLED,
+            CASE e.IS_ENABLED WHEN 'Y' THEN '启用' ELSE '禁用' END AS IS_ENABLED_NAME,
+            e.IS_TEMPLATE,
+            CASE e.IS_TEMPLATE WHEN 'Y' THEN '是' ELSE '否' END AS IS_TEMPLATE_NAME,
+            e.COMPLEXITY_LEVEL,
+            CASE e.COMPLEXITY_LEVEL
+                WHEN 1 THEN '简单'
+                WHEN 2 THEN '一般'
+                WHEN 3 THEN '中等'
+                WHEN 4 THEN '复杂'
+                WHEN 5 THEN '很复杂'
+                ELSE '未知'
+            END AS COMPLEXITY_LEVEL_NAME,
+            e.TAGS,
+            e.SOURCE_DATA_CONFIG,
+            e.TARGET_DATA_CONFIG,
+            e.COMPARISON_RULES,
+            e.EXECUTION_COUNT,
+            e.SUCCESS_COUNT,
+            CASE 
+                WHEN e.EXECUTION_COUNT > 0 THEN 
+                    ROUND(e.SUCCESS_COUNT * 100.0 / e.EXECUTION_COUNT, 2) || '%'
+                ELSE '0%'
+            END AS SUCCESS_RATE,
+            e.LAST_EXECUTION_TIME,
+            e.LAST_EXECUTION_RESULT,
+            CASE e.LAST_EXECUTION_RESULT 
+                WHEN 'SUCCESS' THEN '成功' 
+                WHEN 'FAILED' THEN '失败' 
+                ELSE '未执行' 
+            END AS LAST_EXECUTION_RESULT_NAME,
+            e.CREATE_USER,
+            e.CREATE_TIME,
+            e.UPDATE_USER,
+            e.UPDATE_TIME
+        FROM TBL_EXPRESSION_MANAGEMENT e
+        WHERE e.EXPRESSION_ID = #{expressionId}
+    </select>
+
+    <!-- 更新表达式执行统计 -->
+    <update id="updateExecutionStats">
+        UPDATE TBL_EXPRESSION_MANAGEMENT 
+        SET EXECUTION_COUNT = EXECUTION_COUNT + 1,
+            <if test="isSuccess">
+                SUCCESS_COUNT = SUCCESS_COUNT + 1,
+                LAST_EXECUTION_RESULT = 'SUCCESS',
+            </if>
+            <if test="!isSuccess">
+                LAST_EXECUTION_RESULT = 'FAILED',
+            </if>
+            LAST_EXECUTION_TIME = SYSDATE
+        WHERE EXPRESSION_ID = #{expressionId}
+    </update>
+
+</mapper>

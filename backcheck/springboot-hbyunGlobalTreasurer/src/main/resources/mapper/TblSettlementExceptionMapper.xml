@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.TblSettlementExceptionMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TblSettlementException">
+        <id column="EXCEPTION_ID" property="exceptionId" />
+        <result column="EXCEPTION_NO" property="exceptionNo" />
+        <result column="EXCEPTION_LEVEL" property="exceptionLevel" />
+        <result column="ERROR_MESSAGE" property="errorMessage" />
+        <result column="EXCEPTION_STATUS" property="exceptionStatus" />
+        <result column="ASSIGNEE" property="assignee" />
+        <result column="RESOLVE_NOTES" property="resolveNotes" />
+        <result column="RESOLVED_TIME" property="resolvedTime" />
+        <result column="REMARK" property="remark" />
+        <result column="DELETE_FLAG" property="deleteFlag" />
+        <result column="CREATE_BY" property="createdBy" />
+        <result column="CREATE_BY_NAME" property="createdByName" />
+        <result column="CREATE_TIME" property="createdTime" />
+        <result column="UPDATE_BY" property="updatedBy" />
+        <result column="UPDATE_BY_NAME" property="updatedByName" />
+        <result column="UPDATE_TIME" property="updatedTime" />
+        <result column="ORG_ID" property="orgId" />
+        <result column="ORG_NAME" property="orgName" />
+    </resultMap>
+
+    <!-- 分页查询结算异常 -->
+    <select id="selectExceptionPage" parameterType="map" resultMap="BaseResultMap">
+        SELECT * FROM TBL_SETTLEMENT_EXCEPTION
+        <where>
+            DELETE_FLAG = 0
+            <if test="exceptionNo != null and exceptionNo != ''">
+                AND EXCEPTION_NO LIKE CONCAT('%', #{exceptionNo}, '%')
+            </if>
+            <if test="exceptionLevel != null and exceptionLevel != ''">
+                AND EXCEPTION_LEVEL = #{exceptionLevel}
+            </if>
+            <if test="exceptionStatus != null and exceptionStatus != ''">
+                AND EXCEPTION_STATUS = #{exceptionStatus}
+            </if>
+            <if test="assignee != null and assignee != ''">
+                AND ASSIGNEE = #{assignee}
+            </if>
+            <if test="orgId != null">
+                AND ORG_ID = #{orgId}
+            </if>
+            <if test="beginTime != null and beginTime != ''">
+                AND CREATE_TIME >= #{beginTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                AND CREATE_TIME &lt;= #{endTime}
+            </if>
+        </where>
+        ORDER BY CREATE_TIME DESC
+        <if test="offset != null and limit != null">
+            LIMIT #{limit} OFFSET #{offset}
+        </if>
+    </select>
+
+    <!-- 统计结算异常数量 -->
+    <select id="countExceptionList" parameterType="map" resultType="int">
+        SELECT COUNT(*) FROM TBL_SETTLEMENT_EXCEPTION
+        <where>
+            DELETE_FLAG = 0
+            <if test="exceptionNo != null and exceptionNo != ''">
+                AND EXCEPTION_NO LIKE CONCAT('%', #{exceptionNo}, '%')
+            </if>
+            <if test="exceptionLevel != null and exceptionLevel != ''">
+                AND EXCEPTION_LEVEL = #{exceptionLevel}
+            </if>
+            <if test="exceptionStatus != null and exceptionStatus != ''">
+                AND EXCEPTION_STATUS = #{exceptionStatus}
+            </if>
+            <if test="assignee != null and assignee != ''">
+                AND ASSIGNEE = #{assignee}
+            </if>
+            <if test="orgId != null">
+                AND ORG_ID = #{orgId}
+            </if>
+            <if test="beginTime != null and beginTime != ''">
+                AND CREATE_TIME >= #{beginTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                AND CREATE_TIME &lt;= #{endTime}
+            </if>
+        </where>
+    </select>
+
+    <!-- 查询未解决异常 -->
+    <select id="selectUnresolvedExceptions" resultMap="BaseResultMap">
+        SELECT * FROM TBL_SETTLEMENT_EXCEPTION
+        WHERE DELETE_FLAG = 0
+        AND ORG_ID = #{orgId}
+        AND EXCEPTION_STATUS IN ('OPEN', 'ASSIGNED')
+        ORDER BY
+            CASE EXCEPTION_LEVEL
+                WHEN 'CRITICAL' THEN 1
+                WHEN 'HIGH' THEN 2
+                WHEN 'MEDIUM' THEN 3
+                WHEN 'LOW' THEN 4
+                ELSE 5
+            END,
+            CREATE_TIME ASC
+        LIMIT 100
+    </select>
+
+    <!-- 查询严重异常 -->
+    <select id="selectCriticalExceptions" resultMap="BaseResultMap">
+        SELECT * FROM TBL_SETTLEMENT_EXCEPTION
+        WHERE DELETE_FLAG = 0
+        AND ORG_ID = #{orgId}
+        AND EXCEPTION_LEVEL = 'CRITICAL'
+        AND EXCEPTION_STATUS IN ('OPEN', 'ASSIGNED')
+        ORDER BY CREATE_TIME ASC
+        LIMIT 50
+    </select>
+
+    <!-- 统计异常概要 -->
+    <select id="selectExceptionSummary" parameterType="map" resultType="map">
+        SELECT
+            COUNT(CASE WHEN EXCEPTION_LEVEL = 'CRITICAL' THEN 1 END) AS criticalCount,
+            COUNT(CASE WHEN EXCEPTION_LEVEL = 'HIGH' THEN 1 END) AS highCount,
+            COUNT(CASE WHEN EXCEPTION_LEVEL = 'MEDIUM' THEN 1 END) AS mediumCount,
+            COUNT(CASE WHEN EXCEPTION_LEVEL = 'LOW' THEN 1 END) AS lowCount,
+            COUNT(CASE WHEN EXCEPTION_STATUS = 'OPEN' THEN 1 END) AS openCount,
+            COUNT(CASE WHEN EXCEPTION_STATUS = 'ASSIGNED' THEN 1 END) AS assignedCount,
+            COUNT(CASE WHEN EXCEPTION_STATUS = 'RESOLVED' THEN 1 END) AS resolvedCount,
+            COUNT(*) AS totalCount,
+            COALESCE(SUM(CASE WHEN EXCEPTION_STATUS = 'RESOLVED' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 0) AS resolutionRate
+        FROM TBL_SETTLEMENT_EXCEPTION
+        WHERE DELETE_FLAG = 0
+        <if test="orgId != null">
+            AND ORG_ID = #{orgId}
+        </if>
+        <if test="beginTime != null and beginTime != ''">
+            AND CREATE_TIME >= #{beginTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+            AND CREATE_TIME &lt;= #{endTime}
+        </if>
+    </select>
+
+    <!-- 异常趋势分析 -->
+    <select id="selectExceptionTrend" parameterType="map" resultType="map">
+        SELECT
+            DATE_FORMAT(CREATE_TIME, '%Y-%m-%d') AS datePoint,
+            COUNT(CASE WHEN EXCEPTION_LEVEL = 'CRITICAL' THEN 1 END) AS criticalCount,
+            COUNT(CASE WHEN EXCEPTION_LEVEL = 'HIGH' THEN 1 END) AS highCount,
+            COUNT(CASE WHEN EXCEPTION_LEVEL = 'MEDIUM' THEN 1 END) AS mediumCount,
+            COUNT(CASE WHEN EXCEPTION_LEVEL = 'LOW' THEN 1 END) AS lowCount,
+            COUNT(*) AS totalCount,
+            COUNT(CASE WHEN EXCEPTION_STATUS = 'RESOLVED' THEN 1 END) AS resolvedCount
+        FROM TBL_SETTLEMENT_EXCEPTION
+        WHERE DELETE_FLAG = 0
+        <if test="orgId != null">
+            AND ORG_ID = #{orgId}
+        </if>
+        <if test="beginTime != null and beginTime != ''">
+            AND CREATE_TIME >= #{beginTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+            AND CREATE_TIME &lt;= #{endTime}
+        </if>
+        GROUP BY DATE_FORMAT(CREATE_TIME, '%Y-%m-%d')
+        ORDER BY datePoint ASC
+    </select>
+
+</mapper>

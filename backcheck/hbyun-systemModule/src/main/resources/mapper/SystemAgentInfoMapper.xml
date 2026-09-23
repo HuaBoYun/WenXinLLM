@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.system.mapper.SystemAgentInfoMapper">
+
+    <update id="updateNull">
+        update SYSTEM_AGENT_INFO set MODULEROUTE = '' where id in
+        <foreach collection="ids" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </update>
+
+    <select id="findSystemAgentModuleList" resultType="com.huabo.system.entity.SystemAgentInfo">
+        select t1.* from SYSTEM_AGENT_INFO t1
+        inner join SYSTEM_AGENT_ISSUED t2 on t2.AGENTID = t1.ID
+        where t2.AUTHORITYTYPE = 1 and  t2.AUTHORITYID = #{param.belongGroup} and t1.MODULEROUTE like concat('%',concat(#{param.moduleRoute},'%'))
+        union all
+        <if test="roleIdsTrsList != null and roleIdsTrsList.size() > 0">
+        select t1.* from SYSTEM_AGENT_INFO t1
+        inner join SYSTEM_AGENT_ISSUED t2 on t2.AGENTID = t1.ID
+        where t2.AUTHORITYTYPE = 2 and t1.MODULEROUTE like concat('%',concat(#{param.moduleRoute},'%')) and  t2.AUTHORITYID in
+        <foreach collection="roleIdsTrsList" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+        union all
+        </if>
+        select t1.* from SYSTEM_AGENT_INFO t1
+        inner join SYSTEM_AGENT_ISSUED t2 on t2.AGENTID = t1.ID
+        where t2.AUTHORITYTYPE = 3 and  t2.AUTHORITYID = #{param.creator} and t1.MODULEROUTE like concat('%',concat(#{param.moduleRoute},'%'))
+    </select>
+
+</mapper>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.LeasePaymentMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TblLeasePayment">
+        <id property="paymentId" column="PAYMENT_ID"/>
+        <result property="leaseId" column="LEASE_ID"/>
+        <result property="period" column="PERIOD"/>
+        <result property="dueDate" column="DUE_DATE"/>
+        <result property="principal" column="PRINCIPAL"/>
+        <result property="interest" column="INTEREST"/>
+        <result property="amount" column="AMOUNT"/>
+        <result property="paidAmount" column="PAID_AMOUNT"/>
+        <result property="paidDate" column="PAID_DATE"/>
+        <result property="status" column="STATUS"/>
+        <result property="remark" column="REMARK"/>
+        <result property="createdBy" column="CREATED_BY"/>
+        <result property="createdTime" column="CREATED_TIME"/>
+        <result property="updatedBy" column="UPDATED_BY"/>
+        <result property="updatedTime" column="UPDATED_TIME"/>
+    </resultMap>
+
+    <!-- 根据租赁ID查询租金计划列表 -->
+    <select id="selectByLeaseId" parameterType="long" resultMap="BaseResultMap">
+        SELECT * FROM TBL_LEASE_PAYMENT
+        WHERE LEASE_ID = #{leaseId}
+        ORDER BY PERIOD ASC
+    </select>
+
+    <!-- 根据付款ID查询付款详情 -->
+    <select id="selectByPaymentId" parameterType="long" resultMap="BaseResultMap">
+        SELECT * FROM TBL_LEASE_PAYMENT
+        WHERE PAYMENT_ID = #{paymentId}
+    </select>
+
+    <!-- 更新付款状态 -->
+    <update id="updatePaymentStatus">
+        UPDATE TBL_LEASE_PAYMENT
+        SET STATUS = #{status},
+            PAID_AMOUNT = #{paidAmount},
+            PAID_DATE = #{paidDate},
+            UPDATED_TIME = SYSDATE
+        WHERE PAYMENT_ID = #{paymentId}
+    </update>
+
+    <!-- 批量更新付款状态 -->
+    <update id="batchUpdatePaymentStatus">
+        UPDATE TBL_LEASE_PAYMENT
+        SET STATUS = #{status},
+            PAID_DATE = #{paidDate},
+            PAID_AMOUNT = AMOUNT,
+            UPDATED_TIME = SYSDATE
+        WHERE PAYMENT_ID IN
+        <foreach collection="paymentIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 根据租赁ID删除所有租金计划 -->
+    <delete id="deleteByLeaseId" parameterType="long">
+        DELETE FROM TBL_LEASE_PAYMENT
+        WHERE LEASE_ID = #{leaseId}
+    </delete>
+
+    <!-- 统计租金汇总信息 -->
+    <select id="selectPaymentSummary" parameterType="long" resultType="map">
+        SELECT
+            COALESCE(SUM(AMOUNT), 0) AS "totalAmount",
+            COALESCE(SUM(CASE WHEN STATUS = 'PAID' THEN PAID_AMOUNT ELSE 0 END), 0) AS "paidAmount",
+            COALESCE(SUM(CASE WHEN STATUS != 'PAID' THEN AMOUNT ELSE 0 END), 0) AS "unpaidAmount",
+            COUNT(*) AS "totalPeriods",
+            SUM(CASE WHEN STATUS = 'PAID' THEN 1 ELSE 0 END) AS "paidPeriods"
+        FROM TBL_LEASE_PAYMENT
+        WHERE LEASE_ID = #{leaseId}
+    </select>
+
+    <!-- 查询逾期租金 -->
+    <select id="selectOverduePayments" parameterType="long" resultMap="BaseResultMap">
+        SELECT * FROM TBL_LEASE_PAYMENT
+        WHERE LEASE_ID = #{leaseId}
+          AND STATUS = 'OVERDUE'
+        ORDER BY PERIOD ASC
+    </select>
+
+    <!-- 批量插入租金计划 -->
+    <insert id="batchInsert" parameterType="list">
+        INSERT INTO TBL_LEASE_PAYMENT (PAYMENT_ID, LEASE_ID, PERIOD, DUE_DATE, PRINCIPAL, INTEREST, AMOUNT, STATUS, CREATED_TIME)
+        <foreach collection="payments" item="p" separator=" UNION ALL ">
+            SELECT #{p.paymentId}, #{p.leaseId}, #{p.period}, #{p.dueDate}, #{p.principal}, #{p.interest}, #{p.amount}, #{p.status}, SYSDATE FROM DUAL
+        </foreach>
+    </insert>
+
+</mapper>
+

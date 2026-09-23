@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.budgetPlanning.mapper.BudgetApprovalMapper">
+
+    <!-- 查询审批记录列表 -->
+    <select id="selectApprovalList" resultType="com.financial.sharing.budgetPlanning.entity.TblBudgetApproval">
+        SELECT 
+            a.APPROVAL_ID,
+            a.DATA_ID,
+            a.WORKFLOW_ID,
+            a.NODE_CODE,
+            a.NODE_NAME,
+            a.APPROVER_ID,
+            a.APPROVER_NAME,
+            a.APPROVAL_STATUS,
+            a.APPROVAL_COMMENT,
+            a.APPROVAL_TIME,
+            a.CREATE_USER,
+            a.CREATE_TIME,
+            d.PERIOD,
+            d.VERSION,
+            m.MODEL_NAME
+        FROM TBL_BUDGET_APPROVAL a
+        LEFT JOIN TBL_BUDGET_DATA d ON a.DATA_ID = d.DATA_ID
+        LEFT JOIN TBL_BUDGET_MODEL m ON d.MODEL_ID = m.MODEL_ID
+        WHERE a.ORG_ID = #{param.orgId}
+        <if test="param.dataId != null and param.dataId != ''">
+            AND a.DATA_ID = #{param.dataId}
+        </if>
+        <if test="param.approverId != null and param.approverId != ''">
+            AND a.APPROVER_ID = #{param.approverId}
+        </if>
+        <if test="param.approvalStatus != null and param.approvalStatus != ''">
+            AND a.APPROVAL_STATUS = #{param.approvalStatus}
+        </if>
+        <if test="param.period != null and param.period != ''">
+            AND d.PERIOD = #{param.period}
+        </if>
+        <if test="param.version != null and param.version != ''">
+            AND d.VERSION = #{param.version}
+        </if>
+        <if test="param.modelId != null and param.modelId != ''">
+            AND d.MODEL_ID = #{param.modelId}
+        </if>
+        <if test="param.startTime != null and param.startTime != ''">
+            AND a.CREATE_TIME &gt;= #{param.startTime}
+        </if>
+        <if test="param.endTime != null and param.endTime != ''">
+            AND a.CREATE_TIME &lt;= #{param.endTime}
+        </if>
+        ORDER BY a.CREATE_TIME DESC
+    </select>
+
+    <!-- 根据数据ID查询审批记录 -->
+    <select id="selectByDataId" resultType="com.financial.sharing.budgetPlanning.entity.TblBudgetApproval">
+        SELECT 
+            APPROVAL_ID,
+            DATA_ID,
+            WORKFLOW_ID,
+            NODE_CODE,
+            NODE_NAME,
+            APPROVER_ID,
+            APPROVER_NAME,
+            APPROVAL_STATUS,
+            APPROVAL_COMMENT,
+            APPROVAL_TIME,
+            CREATE_USER,
+            CREATE_TIME
+        FROM TBL_BUDGET_APPROVAL
+        WHERE DATA_ID = #{dataId}
+        ORDER BY NODE_CODE ASC
+    </select>
+
+    <!-- 根据数据ID查询当前待审批记录 -->
+    <select id="selectPendingByDataId" resultType="com.financial.sharing.budgetPlanning.entity.TblBudgetApproval">
+        SELECT 
+            APPROVAL_ID,
+            DATA_ID,
+            WORKFLOW_ID,
+            NODE_CODE,
+            NODE_NAME,
+            APPROVER_ID,
+            APPROVER_NAME,
+            APPROVAL_STATUS,
+            APPROVAL_COMMENT,
+            APPROVAL_TIME,
+            CREATE_USER,
+            CREATE_TIME
+        FROM TBL_BUDGET_APPROVAL
+        WHERE DATA_ID = #{dataId}
+        AND APPROVAL_STATUS = 'PENDING'
+        LIMIT 1
+    </select>
+
+    <!-- 查询我的待审批列表 -->
+    <select id="selectMyPendingList" resultType="com.financial.sharing.budgetPlanning.entity.TblBudgetApproval">
+        SELECT
+            a.APPROVAL_ID,
+            a.DATA_ID,
+            a.WORKFLOW_ID,
+            a.NODE_CODE,
+            a.NODE_NAME,
+            a.APPROVER_ID,
+            a.APPROVER_NAME,
+            a.APPROVAL_STATUS,
+            a.APPROVAL_COMMENT,
+            a.APPROVAL_TIME,
+            a.CREATE_USER,
+            a.CREATE_TIME,
+            d.PERIOD,
+            d.VERSION,
+            d.SUBMIT_USER,
+            su.REALNAME AS SUBMIT_USER_NAME,
+            m.MODEL_NAME
+        FROM TBL_BUDGET_APPROVAL a
+        LEFT JOIN TBL_BUDGET_DATA d ON a.DATA_ID = d.DATA_ID
+        LEFT JOIN TBL_BUDGET_MODEL m ON d.MODEL_ID = m.MODEL_ID
+        LEFT JOIN TBL_STAFF su ON d.SUBMIT_USER = TO_CHAR(su.STAFFID)
+        WHERE a.APPROVER_ID = #{param.approverId}
+        AND a.APPROVAL_STATUS = 'PENDING'
+        AND a.ORG_ID = #{param.orgId}
+        <if test="param.period != null and param.period != ''">
+            AND d.PERIOD LIKE CONCAT('%', #{param.period}, '%')
+        </if>
+        <if test="param.version != null and param.version != ''">
+            AND d.VERSION LIKE CONCAT('%', #{param.version}, '%')
+        </if>
+        <if test="param.modelId != null and param.modelId != ''">
+            AND d.MODEL_ID = #{param.modelId}
+        </if>
+        <if test="param.modelName != null and param.modelName != ''">
+            AND m.MODEL_NAME LIKE CONCAT('%', #{param.modelName}, '%')
+        </if>
+        ORDER BY a.CREATE_TIME DESC
+    </select>
+
+    <!-- 查询我的已审批列表 -->
+    <select id="selectMyApprovedList" resultType="com.financial.sharing.budgetPlanning.entity.TblBudgetApproval">
+        SELECT
+            a.APPROVAL_ID,
+            a.DATA_ID,
+            a.WORKFLOW_ID,
+            a.NODE_CODE,
+            a.NODE_NAME,
+            a.APPROVER_ID,
+            a.APPROVER_NAME,
+            a.APPROVAL_STATUS,
+            a.APPROVAL_COMMENT,
+            a.APPROVAL_TIME,
+            a.CREATE_USER,
+            a.CREATE_TIME,
+            d.PERIOD,
+            d.VERSION,
+            d.SUBMIT_USER,
+            su.REALNAME AS SUBMIT_USER_NAME,
+            m.MODEL_NAME
+        FROM TBL_BUDGET_APPROVAL a
+        LEFT JOIN TBL_BUDGET_DATA d ON a.DATA_ID = d.DATA_ID
+        LEFT JOIN TBL_BUDGET_MODEL m ON d.MODEL_ID = m.MODEL_ID
+        LEFT JOIN TBL_STAFF su ON d.SUBMIT_USER = TO_CHAR(su.STAFFID)
+        WHERE a.APPROVER_ID = #{param.approverId}
+        AND a.APPROVAL_STATUS IN ('APPROVED', 'REJECTED')
+        AND a.ORG_ID = #{param.orgId}
+        <if test="param.period != null and param.period != ''">
+            AND d.PERIOD LIKE CONCAT('%', #{param.period}, '%')
+        </if>
+        <if test="param.version != null and param.version != ''">
+            AND d.VERSION LIKE CONCAT('%', #{param.version}, '%')
+        </if>
+        <if test="param.modelId != null and param.modelId != ''">
+            AND d.MODEL_ID = #{param.modelId}
+        </if>
+        <if test="param.modelName != null and param.modelName != ''">
+            AND m.MODEL_NAME LIKE CONCAT('%', #{param.modelName}, '%')
+        </if>
+        <if test="param.startTime != null and param.startTime != ''">
+            AND a.APPROVAL_TIME &gt;= #{param.startTime}
+        </if>
+        <if test="param.endTime != null and param.endTime != ''">
+            AND a.APPROVAL_TIME &lt;= #{param.endTime}
+        </if>
+        ORDER BY a.APPROVAL_TIME DESC
+    </select>
+
+</mapper>
+

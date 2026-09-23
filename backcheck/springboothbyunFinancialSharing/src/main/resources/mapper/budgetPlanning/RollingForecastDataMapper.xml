@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.budgetPlanning.mapper.RollingForecastDataMapper">
+
+    <!-- 根据预测任务ID查询数据列表 -->
+    <select id="selectByForecastId" parameterType="string"
+            resultType="com.financial.sharing.budgetPlanning.entity.TblRollingForecastData">
+        SELECT
+            DATA_ID AS dataId,
+            FORECAST_ID AS forecastId,
+            PERIOD AS period,
+            SUBJECT_CODE AS subjectCode,
+            SUBJECT_NAME AS subjectName,
+            ORGANIZATION_CODE AS organizationCode,
+            ORGANIZATION_NAME AS organizationName,
+            DIMENSION1_CODE AS dimension1Code,
+            DIMENSION1_NAME AS dimension1Name,
+            DIMENSION2_CODE AS dimension2Code,
+            DIMENSION2_NAME AS dimension2Name,
+            FORECAST_VALUE AS forecastValue,
+            BASE_VALUE AS baseValue,
+            ACTUAL_VALUE AS actualValue,
+            VARIANCE_VALUE AS varianceValue,
+            VARIANCE_RATE AS varianceRate,
+            REMARK AS remark,
+            ORG_ID AS orgId,
+            CREATE_USER AS createUser,
+            CREATE_TIME AS createTime,
+            UPDATE_USER AS updateUser,
+            UPDATE_TIME AS updateTime
+        FROM TBL_ROLLING_FORECAST_DATA
+        WHERE FORECAST_ID = #{forecastId}
+        ORDER BY PERIOD, SUBJECT_CODE, ORGANIZATION_CODE
+    </select>
+
+    <!-- 批量插入预测数据 -->
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO TBL_ROLLING_FORECAST_DATA (
+            DATA_ID,
+            FORECAST_ID,
+            PERIOD,
+            SUBJECT_CODE,
+            SUBJECT_NAME,
+            ORGANIZATION_CODE,
+            ORGANIZATION_NAME,
+            DIMENSION1_CODE,
+            DIMENSION1_NAME,
+            DIMENSION2_CODE,
+            DIMENSION2_NAME,
+            FORECAST_VALUE,
+            BASE_VALUE,
+            ACTUAL_VALUE,
+            VARIANCE_VALUE,
+            VARIANCE_RATE,
+            REMARK,
+            ORG_ID,
+            CREATE_USER,
+            CREATE_TIME,
+            UPDATE_USER,
+            UPDATE_TIME
+        )
+        <foreach collection="dataList" item="item" separator=" UNION ALL ">
+            SELECT
+                #{item.dataId},
+                #{item.forecastId},
+                #{item.period},
+                #{item.subjectCode},
+                #{item.subjectName},
+                #{item.organizationCode},
+                #{item.organizationName},
+                #{item.dimension1Code},
+                #{item.dimension1Name},
+                #{item.dimension2Code},
+                #{item.dimension2Name},
+                #{item.forecastValue},
+                #{item.baseValue},
+                #{item.actualValue},
+                #{item.varianceValue},
+                #{item.varianceRate},
+                #{item.remark},
+                #{item.orgId},
+                #{item.createUser},
+                #{item.createTime},
+                #{item.updateUser},
+                #{item.updateTime}
+            FROM DUAL
+        </foreach>
+    </insert>
+
+    <!-- 根据预测任务ID删除数据 -->
+    <delete id="deleteByForecastId" parameterType="string">
+        DELETE FROM TBL_ROLLING_FORECAST_DATA
+        WHERE FORECAST_ID = #{forecastId}
+    </delete>
+
+</mapper>
+

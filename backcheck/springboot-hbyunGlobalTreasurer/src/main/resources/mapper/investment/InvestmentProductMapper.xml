@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.investment.mapper.InvestmentProductMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.investment.entity.TblInvestmentProduct">
+        <id column="PRODUCT_ID" property="productId" />
+        <result column="PRODUCT_CODE" property="productCode" />
+        <result column="PRODUCT_NAME" property="productName" />
+        <result column="PRODUCT_TYPE" property="productType" />
+        <result column="ISSUER" property="issuer" />
+        <result column="RISK_LEVEL" property="riskLevel" />
+        <result column="EXPECTED_RETURN_RATE" property="expectedReturnRate" />
+        <result column="MIN_INVESTMENT_AMOUNT" property="minInvestmentAmount" />
+        <result column="MAX_INVESTMENT_AMOUNT" property="maxInvestmentAmount" />
+        <result column="INVESTMENT_TERM" property="investmentTerm" />
+        <result column="NET_VALUE" property="netValue" />
+        <result column="LAUNCH_DATE" property="launchDate" />
+        <result column="MATURITY_DATE" property="maturityDate" />
+        <result column="SUBSCRIPTION_START_DATE" property="subscriptionStartDate" />
+        <result column="SUBSCRIPTION_END_DATE" property="subscriptionEndDate" />
+        <result column="REDEMPTION_ALLOWED" property="redemptionAllowed" />
+        <result column="PRODUCT_STATUS" property="productStatus" />
+        <result column="PRODUCT_DESCRIPTION" property="productDescription" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="CREATOR" property="creator" />
+        <result column="UPDATER" property="updater" />
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="Base_Column_List">
+        PRODUCT_ID, PRODUCT_CODE, PRODUCT_NAME, PRODUCT_TYPE, ISSUER, RISK_LEVEL,
+        EXPECTED_RETURN_RATE, MIN_INVESTMENT_AMOUNT, MAX_INVESTMENT_AMOUNT,
+        INVESTMENT_TERM, NET_VALUE, LAUNCH_DATE, MATURITY_DATE,
+        SUBSCRIPTION_START_DATE, SUBSCRIPTION_END_DATE, REDEMPTION_ALLOWED,
+        PRODUCT_STATUS, PRODUCT_DESCRIPTION, CREATE_TIME, UPDATE_TIME,
+        CREATOR, UPDATER
+    </sql>
+
+    <!-- 查询条件 -->
+    <sql id="Query_Where_Clause">
+        <where>
+            <if test="productCode != null and productCode != ''">
+                AND PRODUCT_CODE LIKE CONCAT('%', #{productCode}, '%')
+            </if>
+            <if test="productName != null and productName != ''">
+                AND PRODUCT_NAME LIKE CONCAT('%', #{productName}, '%')
+            </if>
+            <if test="productType != null and productType != ''">
+                AND PRODUCT_TYPE = #{productType}
+            </if>
+            <if test="issuer != null and issuer != ''">
+                AND ISSUER LIKE CONCAT('%', #{issuer}, '%')
+            </if>
+            <if test="productStatus != null and productStatus != ''">
+                AND PRODUCT_STATUS = #{productStatus}
+            </if>
+        </where>
+    </sql>
+
+    <!-- 分页查询产品列表 -->
+    <select id="selectProductList" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TBL_INVESTMENT_PRODUCT
+        <include refid="Query_Where_Clause" />
+        ORDER BY CREATE_TIME DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
+    </select>
+
+    <!-- 根据产品代码查询 -->
+    <select id="selectByProductCode" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TBL_INVESTMENT_PRODUCT
+        WHERE PRODUCT_CODE = #{productCode}
+    </select>
+
+    <!-- 统计产品数量 -->
+    <select id="countProducts" resultType="int">
+        SELECT COUNT(*)
+        FROM TBL_INVESTMENT_PRODUCT
+        <include refid="Query_Where_Clause" />
+    </select>
+
+</mapper>

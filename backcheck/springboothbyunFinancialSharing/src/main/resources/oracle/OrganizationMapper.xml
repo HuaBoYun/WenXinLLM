@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.oracle.mapper.OrganizationMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.financial.sharing.oracle.entity.OrganizationEntity">
+        <id column="ID" property="id"/>
+        <result column="ORG_CODE" property="orgCode"/>
+        <result column="ORG_NAME" property="orgName"/>
+        <result column="ORG_TYPE" property="orgType"/>
+        <result column="PARENT_ID" property="parentId"/>
+        <result column="ORG_LEVEL" property="orgLevel"/>
+        <result column="SORT_ORDER" property="sortOrder"/>
+        <result column="MANAGER_ID" property="managerId"/>
+        <result column="MANAGER_NAME" property="managerName"/>
+        <result column="PHONE" property="phone"/>
+        <result column="EMAIL" property="email"/>
+        <result column="ADDRESS" property="address"/>
+        <result column="IS_ENABLED" property="isEnabled"/>
+        <result column="DESCRIPTION" property="description"/>
+        <result column="TENANT_ID" property="tenantId"/>
+        <result column="BOOK_ID" property="bookId"/>
+        <result column="VERSION" property="version"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="CREATE_BY" property="createBy"/>
+        <result column="UPDATE_BY" property="updateBy"/>
+        <result column="IS_DELETED" property="isDeleted"/>
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="Base_Column_List">
+        ID, ORG_CODE, ORG_NAME, ORG_TYPE, PARENT_ID, ORG_LEVEL, SORT_ORDER,
+        MANAGER_ID, MANAGER_NAME, PHONE, EMAIL, ADDRESS, IS_ENABLED, DESCRIPTION,
+        TENANT_ID, BOOK_ID, VERSION, CREATE_TIME, UPDATE_TIME, CREATE_BY, UPDATE_BY, IS_DELETED
+    </sql>
+
+    <!-- 获取组织架构树 -->
+    <select id="getOrganizationTree" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_FINANCE_ORGANIZATION
+        WHERE IS_DELETED = 0
+        <if test="tenantId != null">
+            AND TENANT_ID = #{tenantId}
+        </if>
+        ORDER BY ORG_LEVEL ASC, SORT_ORDER ASC, CREATE_TIME ASC
+    </select>
+
+    <!-- 根据父级ID查询子组织 -->
+    <select id="getChildOrganizations" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_FINANCE_ORGANIZATION
+        WHERE IS_DELETED = 0
+        AND PARENT_ID = #{parentId}
+        <if test="tenantId != null">
+            AND TENANT_ID = #{tenantId}
+        </if>
+        ORDER BY SORT_ORDER ASC, CREATE_TIME ASC
+    </select>
+
+    <!-- 根据组织编码查询 -->
+    <select id="getByOrgCode" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_FINANCE_ORGANIZATION
+        WHERE IS_DELETED = 0
+        AND ORG_CODE = #{orgCode}
+        <if test="tenantId != null">
+            AND TENANT_ID = #{tenantId}
+        </if>
+        AND ROWNUM = 1
+    </select>
+
+    <!-- 检查组织编码是否存在 -->
+    <select id="checkOrgCodeExists" resultType="int">
+        SELECT COUNT(1)
+        FROM TBL_FINANCE_ORGANIZATION
+        WHERE IS_DELETED = 0
+        AND ORG_CODE = #{orgCode}
+        <if test="tenantId != null">
+            AND TENANT_ID = #{tenantId}
+        </if>
+        <if test="excludeId != null">
+            AND ID != #{excludeId}
+        </if>
+    </select>
+
+    <!-- 获取子组织数量 -->
+    <select id="getChildOrganizationsCount" resultType="int">
+        SELECT COUNT(1)
+        FROM TBL_FINANCE_ORGANIZATION
+        WHERE PARENT_ID = #{orgId} AND IS_DELETED = 0
+    </select>
+
+    <!-- 获取子部门数量 -->
+    <select id="getChildDepartmentsCount" resultType="int">
+        SELECT COUNT(1)
+        FROM TBL_FINANCE_ORGANIZATION
+        WHERE PARENT_ID = #{orgId} AND IS_DELETED = 0 AND ORG_TYPE = 2
+    </select>
+
+    <!-- 检查是否有子组织 -->
+    <select id="countChildOrganizations" resultType="int">
+        SELECT COUNT(1)
+        FROM TBL_FINANCE_ORGANIZATION
+        WHERE PARENT_ID = #{orgId}
+        AND IS_DELETED = 0
+        <if test="tenantId != null">
+            AND TENANT_ID = #{tenantId}
+        </if>
+    </select>
+
+    <!-- 批量更新状态 -->
+    <update id="batchUpdateStatus">
+        UPDATE TBL_ORGANIZATION
+        SET IS_ENABLED = #{isEnabled},
+            UPDATE_TIME = SYSDATE
+        WHERE IS_DELETED = 0
+        AND TENANT_ID = #{tenantId}
+        AND ID IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 获取最大组织层级 -->
+    <select id="getMaxOrgLevel" resultType="java.lang.Integer">
+        SELECT MAX(ORG_LEVEL)
+        FROM TBL_FINANCE_ORGANIZATION
+        WHERE IS_DELETED = 0
+        <if test="tenantId != null">
+            AND TENANT_ID = #{tenantId}
+        </if>
+    </select>
+
+    <!-- 根据组织类型查询 -->
+    <select id="getByOrgType" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_FINANCE_ORGANIZATION
+        WHERE IS_DELETED = 0
+        AND ORG_TYPE = #{orgType}
+        <if test="tenantId != null">
+            AND TENANT_ID = #{tenantId}
+        </if>
+        ORDER BY ORG_LEVEL ASC, SORT_ORDER ASC, CREATE_TIME ASC
+    </select>
+
+</mapper>

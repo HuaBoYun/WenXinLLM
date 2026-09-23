@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.etl.mapper.KettleJobMapper">
+
+    <resultMap type="KettleJob" id="KettleJobResult">
+        <result property="id"    column="id"    />
+        <result property="createdTime"    column="created_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="createdBy"    column="created_by"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="jobName"    column="job_name"    />
+        <result property="jobDescription"    column="job_description"    />
+        <result property="jobType"    column="job_type"    />
+        <result property="jobPath"    column="job_path"    />
+        <result property="jobRepositoryId"    column="job_repository_id"    />
+        <result property="jobLogLevel"    column="job_log_level"    />
+        <result property="jobStatus"    column="job_status"    />
+        <result property="isDel"    column="is_del"    />
+        <result property="isMonitorEnabled"    column="is_monitor_enabled"    />
+        <result property="roleKey"    column="role_key"    />
+        <result property="tplKey"    column="tpl_key"    />
+        <result property="lastSucceedTime"    column="last_succeed_time"    />
+        <result property="cron" column="cron"/>
+        <result property="cronStatus" column="cron_status"/>
+    </resultMap>
+
+    <sql id="selectKettleJobVo">
+        select id, created_time, update_time, created_by, update_by, job_name, job_description, job_type, job_path, job_repository_id, job_log_level, job_status, is_del, is_monitor_enabled, role_key, tpl_key,last_succeed_time,cron,cron_status from kettle_job
+    </sql>
+
+    <select id="selectKettleJobList" parameterType="KettleJob" resultMap="KettleJobResult">
+        <include refid="selectKettleJobVo"/>
+        <where>
+            <if test="kettleJob.createdTime != null "> and created_time = #{kettleJob.createdTime}</if>
+            <if test="kettleJob.updateTime != null "> and update_time = #{kettleJob.updateTime}</if>
+            <if test="kettleJob.createdBy != null  and kettleJob.createdBy != ''"> and created_by = #{kettleJob.createdBy}</if>
+            <if test="kettleJob.updateBy != null  and kettleJob.updateBy != ''"> and update_by = #{kettleJob.updateBy}</if>
+            <if test="kettleJob.jobName != null  and kettleJob.jobName != ''"> and job_name like concat(concat('%', #{kettleJob.jobName}), '%')</if>
+            <if test="kettleJob.jobDescription != null  and kettleJob.jobDescription != ''"> and job_description = #{kettleJob.jobDescription}</if>
+            <if test="kettleJob.jobType != null  and kettleJob.jobType != ''"> and job_type = #{kettleJob.jobType}</if>
+            <if test="kettleJob.jobPath != null  and kettleJob.jobPath != ''"> and job_path = #{kettleJob.jobPath}</if>
+            <if test="kettleJob.jobRepositoryId != null "> and job_repository_id = #{kettleJob.jobRepositoryId}</if>
+            <if test="kettleJob.jobLogLevel != null  and kettleJob.jobLogLevel != ''"> and job_log_level = #{kettleJob.jobLogLevel}</if>
+            <if test="kettleJob.jobStatus != null  and kettleJob.jobStatus != ''"> and job_status = #{kettleJob.jobStatus}</if>
+            <if test="kettleJob.isDel != null "> and is_del = #{isDel}</if>
+            <if test="kettleJob.isMonitorEnabled != null "> and is_monitor_enabled = #{kettleJob.isMonitorEnabled}</if>
+            <if test="kettleJob.cronStatus != null  and kettleJob.cronStatus != ''">and cron_status = #{kettleJob.cronStatus}</if>
+            and is_del = 0
+            and job_repository_id is not null
+        </where>
+    </select>
+    <select id="checkQuartzExist" parameterType="String" resultType="Long">
+        select job_id from sys_job  where invoke_target = #{checkStr} and job_group='KETTLE'
+    </select>
+    <select id="selectKettleJobById" parameterType="Long" resultMap="KettleJobResult">
+        <include refid="selectKettleJobVo"/>
+        where id = #{id}
+    </select>
+    <select id="selectKettleJobByName" parameterType="String" resultMap="KettleJobResult">
+        <include refid="selectKettleJobVo"/>
+        where job_name = #{jobName}
+    </select>
+    <select id="selectJobByNameAndRepoId" resultType="int">
+        select count(*) from kettle_job  where job_name = #{jobName} and job_repository_id=#{jobRepositoryId}
+    </select>
+    <select id="queryJobLog" parameterType="String" resultType="String">
+        select log_field from kettle_job_log where  jobname=#{jobName} order by id_job asc
+    </select>
+
+    <update id="updateKettleJob" parameterType="KettleJob">
+        update kettle_job
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="createdTime != null">created_time = #{createdTime},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="createdBy != null">created_by = #{createdBy},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="jobName != null and jobName != ''">job_name = #{jobName},</if>
+            <if test="jobDescription != null">job_description = #{jobDescription},</if>
+            <if test="jobType != null">job_type = #{jobType},</if>
+            <if test="jobPath != null">job_path = #{jobPath},</if>
+            <if test="jobRepositoryId != null">job_repository_id = #{jobRepositoryId},</if>
+            <if test="jobLogLevel != null">job_log_level = #{jobLogLevel},</if>
+            <if test="jobStatus != null">job_status = #{jobStatus},</if>
+            <if test="isDel != null">is_del = #{isDel},</if>
+            <if test="isMonitorEnabled != null">is_monitor_enabled = #{isMonitorEnabled},</if>
+            <if test="roleKey != null">role_key = #{roleKey},</if>
+            <if test="tplKey != null">tpl_key = #{tplKey},</if>
+            <if test="lastSucceedTime != null">last_succeed_time = #{lastSucceedTime},</if>
+            <if test="cron != null and cron != ''">cron = #{cron},</if>
+            <if test="cronStatus != null and cronStatus != ''">cron_status = #{cronStatus},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteKettleJobById" parameterType="Long">
+        delete from kettle_job where id = #{id}
+    </delete>
+
+    <delete id="deleteKettleJobByIds" parameterType="String">
+        delete from kettle_job where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

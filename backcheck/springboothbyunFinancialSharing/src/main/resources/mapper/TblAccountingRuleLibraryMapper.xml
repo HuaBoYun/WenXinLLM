@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.mapper.TblAccountingRuleLibraryMapper">
+
+    <select id="selectByLibraryCode" resultType="com.financial.sharing.entity.TblAccountingRuleLibrary">
+        SELECT * FROM TBL_ACCOUNTING_RULE_LIBRARY WHERE LIBRARY_CODE = #{libraryCode}
+    </select>
+
+    <select id="selectByLibraryName" resultType="com.financial.sharing.entity.TblAccountingRuleLibrary">
+        SELECT * FROM TBL_ACCOUNTING_RULE_LIBRARY WHERE LIBRARY_NAME LIKE CONCAT('%', #{libraryName}, '%') ORDER BY CREATE_TIME DESC
+    </select>
+
+    <select id="selectByLibraryType" resultType="com.financial.sharing.entity.TblAccountingRuleLibrary">
+        SELECT * FROM TBL_ACCOUNTING_RULE_LIBRARY WHERE LIBRARY_TYPE = #{libraryType} ORDER BY CREATE_TIME DESC
+    </select>
+
+    <select id="selectByIsEnabled" resultType="com.financial.sharing.entity.TblAccountingRuleLibrary">
+        SELECT * FROM TBL_ACCOUNTING_RULE_LIBRARY WHERE IS_ENABLED = #{isEnabled} ORDER BY CREATE_TIME DESC
+    </select>
+
+</mapper>

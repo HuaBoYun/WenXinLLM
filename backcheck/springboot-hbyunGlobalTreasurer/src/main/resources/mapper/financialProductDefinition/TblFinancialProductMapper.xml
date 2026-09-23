@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.financialProductDefinition.mapper.TblFinancialProductMapper">
+
+    <resultMap id="BaseResultMap" type="com.global.treasurer.financialProductDefinition.entity.TblFinancialProduct">
+        <id column="PRODUCT_ID" property="productId"/>
+        <result column="PRODUCT_CODE" property="productCode"/>
+        <result column="PRODUCT_NAME" property="productName"/>
+        <result column="PRODUCT_TYPE" property="productType"/>
+        <result column="CATEGORY_ID" property="categoryId"/>
+        <result column="ISSUER" property="issuer"/>
+        <result column="CURRENCY_CODE" property="currencyCode"/>
+        <result column="MIN_INVESTMENT_AMOUNT" property="minInvestmentAmount"/>
+        <result column="MAX_INVESTMENT_AMOUNT" property="maxInvestmentAmount"/>
+        <result column="EXPECTED_RETURN_RATE" property="expectedReturnRate"/>
+        <result column="RISK_LEVEL" property="riskLevel"/>
+        <result column="INVESTMENT_TERM" property="investmentTerm"/>
+        <result column="TERM_UNIT" property="termUnit"/>
+        <result column="SUBSCRIPTION_START_DATE" property="subscriptionStartDate"/>
+        <result column="SUBSCRIPTION_END_DATE" property="subscriptionEndDate"/>
+        <result column="EARLY_REDEMPTION" property="earlyRedemption"/>
+        <result column="PRODUCT_STATUS" property="productStatus"/>
+        <result column="SHELF_STATUS" property="shelfStatus"/>
+        <result column="DESCRIPTION" property="description"/>
+        <result column="REMARK" property="remark"/>
+        <result column="ORG_ID" property="orgId"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="CREATE_BY" property="createBy"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="UPDATE_BY" property="updateBy"/>
+        <result column="CATEGORY_NAME" property="categoryName"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        p.PRODUCT_ID, p.PRODUCT_CODE, p.PRODUCT_NAME, p.PRODUCT_TYPE, p.CATEGORY_ID,
+        p.ISSUER, p.CURRENCY_CODE, p.MIN_INVESTMENT_AMOUNT, p.MAX_INVESTMENT_AMOUNT,
+        p.EXPECTED_RETURN_RATE, p.RISK_LEVEL, p.INVESTMENT_TERM, p.TERM_UNIT,
+        p.SUBSCRIPTION_START_DATE, p.SUBSCRIPTION_END_DATE, p.EARLY_REDEMPTION,
+        p.PRODUCT_STATUS, p.SHELF_STATUS, p.DESCRIPTION, p.REMARK, p.ORG_ID,
+        p.CREATE_TIME, p.CREATE_BY, p.UPDATE_TIME, p.UPDATE_BY,
+        c.CATEGORY_NAME
+    </sql>
+
+    <!-- 分页查询金融产品列表(带分类名称) -->
+    <select id="selectPageWithCategory" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_FINANCIAL_PRODUCT p
+        LEFT JOIN TBL_FINANCIAL_CATEGORY c ON p.CATEGORY_ID = c.CATEGORY_ID
+        <where>
+            <if test="params.orgId != null">
+                AND p.ORG_ID = #{params.orgId}
+            </if>
+            <if test="params.productCode != null and params.productCode != ''">
+                AND p.PRODUCT_CODE LIKE CONCAT('%', #{params.productCode}, '%')
+            </if>
+            <if test="params.productName != null and params.productName != ''">
+                AND p.PRODUCT_NAME LIKE CONCAT('%', #{params.productName}, '%')
+            </if>
+            <if test="params.productType != null and params.productType != ''">
+                AND p.PRODUCT_TYPE = #{params.productType}
+            </if>
+            <if test="params.categoryId != null">
+                AND p.CATEGORY_ID = #{params.categoryId}
+            </if>
+            <if test="params.issuer != null and params.issuer != ''">
+                AND p.ISSUER LIKE CONCAT('%', #{params.issuer}, '%')
+            </if>
+            <if test="params.currencyCode != null and params.currencyCode != ''">
+                AND p.CURRENCY_CODE = #{params.currencyCode}
+            </if>
+            <if test="params.riskLevel != null and params.riskLevel != ''">
+                AND p.RISK_LEVEL = #{params.riskLevel}
+            </if>
+            <if test="params.productStatus != null and params.productStatus != ''">
+                AND p.PRODUCT_STATUS = #{params.productStatus}
+            </if>
+            <if test="params.shelfStatus != null and params.shelfStatus != ''">
+                AND p.SHELF_STATUS = #{params.shelfStatus}
+            </if>
+        </where>
+        ORDER BY p.CREATE_TIME DESC
+    </select>
+
+    <!-- 根据ID查询产品详情(带分类名称) -->
+    <select id="selectDetailById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_FINANCIAL_PRODUCT p
+        LEFT JOIN TBL_FINANCIAL_CATEGORY c ON p.CATEGORY_ID = c.CATEGORY_ID
+        WHERE p.PRODUCT_ID = #{productId}
+    </select>
+
+    <!-- 检查产品编码唯一性 -->
+    <select id="checkCodeUnique" resultType="int">
+        SELECT COUNT(1)
+        FROM TBL_FINANCIAL_PRODUCT
+        WHERE PRODUCT_CODE = #{productCode}
+        <if test="excludeId != null">
+            AND PRODUCT_ID != #{excludeId}
+        </if>
+    </select>
+
+    <!-- 批量更新产品状态 -->
+    <update id="batchUpdateStatus">
+        UPDATE TBL_FINANCIAL_PRODUCT
+        SET PRODUCT_STATUS = #{productStatus},
+            UPDATE_TIME = CURRENT_TIMESTAMP,
+            UPDATE_BY = #{updateBy}
+        WHERE PRODUCT_ID IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 批量更新上架状态 -->
+    <update id="batchUpdateShelfStatus">
+        UPDATE TBL_FINANCIAL_PRODUCT
+        SET SHELF_STATUS = #{shelfStatus},
+            UPDATE_TIME = CURRENT_TIMESTAMP,
+            UPDATE_BY = #{updateBy}
+        WHERE PRODUCT_ID IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 根据分类ID查询产品列表 -->
+    <select id="selectByCategoryId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_FINANCIAL_PRODUCT p
+        LEFT JOIN TBL_FINANCIAL_CATEGORY c ON p.CATEGORY_ID = c.CATEGORY_ID
+        WHERE p.CATEGORY_ID = #{categoryId}
+        ORDER BY p.CREATE_TIME DESC
+    </select>
+
+    <!-- 获取产品统计信息 -->
+    <select id="getStatistics" resultType="java.util.Map">
+        SELECT
+            COUNT(*) as total,
+            SUM(CASE WHEN PRODUCT_STATUS = 'ACTIVE' THEN 1 ELSE 0 END) as activeCount,
+            SUM(CASE WHEN SHELF_STATUS = 'ON' THEN 1 ELSE 0 END) as onShelfCount
+        FROM TBL_FINANCIAL_PRODUCT
+        <where>
+            <if test="orgId != null">
+                AND ORG_ID = #{orgId}
+            </if>
+        </where>
+    </select>
+
+</mapper>
+

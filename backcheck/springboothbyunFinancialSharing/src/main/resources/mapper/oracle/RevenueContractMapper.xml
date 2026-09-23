@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.oracle.mapper.RevenueContractMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.financial.sharing.oracle.entity.RevenueContractEntity">
+        <id column="CONTRACT_ID" property="contractId" />
+        <result column="CONTRACT_NO" property="contractNo" />
+        <result column="CONTRACT_NAME" property="contractName" />
+        <result column="CUSTOMER_ID" property="customerId" />
+        <result column="CONTRACT_AMOUNT" property="contractAmount" />
+        <result column="CONTRACT_STATUS" property="contractStatus" />
+        <result column="SIGN_DATE" property="signDate" />
+        <result column="EFFECTIVE_DATE" property="effectiveDate" />
+        <result column="EXPIRY_DATE" property="expiryDate" />
+        <result column="PERFORMANCE_OBLIGATIONS" property="performanceObligations" />
+        <result column="RECOGNITION_METHOD" property="recognitionMethod" />
+        <result column="CONTRACT_DESC" property="contractDesc" />
+        <result column="BOOK_ID" property="bookId" />
+        <result column="TENANT_ID" property="tenantId" />
+        <result column="VERSION" property="version" />
+        <result column="IS_DELETED" property="isDeleted" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="CREATOR" property="creator" />
+        <result column="UPDATER" property="updater" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        CONTRACT_ID, CONTRACT_NO, CONTRACT_NAME, CUSTOMER_ID, CONTRACT_AMOUNT,
+        CONTRACT_STATUS, SIGN_DATE, EFFECTIVE_DATE, EXPIRY_DATE, PERFORMANCE_OBLIGATIONS,
+        RECOGNITION_METHOD, CONTRACT_DESC, BOOK_ID, TENANT_ID, VERSION,
+        IS_DELETED, CREATE_TIME, UPDATE_TIME, CREATOR, UPDATER
+    </sql>
+
+    <!-- 新增收入合同 -->
+    <insert id="insert" parameterType="com.financial.sharing.oracle.entity.RevenueContractEntity">
+        <selectKey keyProperty="contractId" resultType="java.lang.Long" order="BEFORE">
+            SELECT TRUNC(DBMS_RANDOM.VALUE(1000000000000, 9999999999999)) FROM DUAL
+        </selectKey>
+        INSERT INTO T_REVENUE_CONTRACT (
+            CONTRACT_ID, CONTRACT_NO, CONTRACT_NAME, CUSTOMER_ID, CONTRACT_AMOUNT,
+            CONTRACT_STATUS, SIGN_DATE, EFFECTIVE_DATE, EXPIRY_DATE, PERFORMANCE_OBLIGATIONS,
+            RECOGNITION_METHOD, CONTRACT_DESC, BOOK_ID, TENANT_ID, VERSION,
+            IS_DELETED, CREATE_TIME, UPDATE_TIME, CREATOR, UPDATER
+        ) VALUES (
+            #{contractId}, #{contractNo}, #{contractName}, #{customerId}, #{contractAmount},
+            #{contractStatus}, #{signDate}, #{effectiveDate}, #{expiryDate}, #{performanceObligations},
+            #{recognitionMethod}, #{contractDesc}, #{bookId}, #{tenantId}, #{version},
+            #{isDeleted}, #{createTime}, #{updateTime}, #{creator}, #{updater}
+        )
+    </insert>
+
+    <!-- 查询收入合同列表 -->
+    <select id="selectRevenueContractList" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM T_REVENUE_CONTRACT
+        <where>
+            IS_DELETED = 0
+            <if test="param.contractNo != null and param.contractNo != ''">
+                AND CONTRACT_NO LIKE '%' || #{param.contractNo} || '%'
+            </if>
+            <if test="param.contractName != null and param.contractName != ''">
+                AND CONTRACT_NAME LIKE '%' || #{param.contractName} || '%'
+            </if>
+            <if test="param.contractStatus != null">
+                AND CONTRACT_STATUS = #{param.contractStatus}
+            </if>
+            <if test="param.customerId != null">
+                AND CUSTOMER_ID = #{param.customerId}
+            </if>
+            <if test="param.bookId != null">
+                AND BOOK_ID = #{param.bookId}
+            </if>
+            <if test="param.tenantId != null">
+                AND TENANT_ID = #{param.tenantId}
+            </if>
+        </where>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 查询收入结构分析数据 -->
+    <select id="selectRevenueStructureData" resultType="java.util.HashMap">
+        SELECT * FROM (
+            SELECT
+                CONTRACT_NAME as category,
+                SUM(CONTRACT_AMOUNT) as amount,
+                ROW_NUMBER() OVER (ORDER BY SUM(CONTRACT_AMOUNT) DESC) as rn
+            FROM T_REVENUE_CONTRACT
+            WHERE IS_DELETED = 0
+            <if test="dateRange != null and dateRange.length == 2">
+                AND SIGN_DATE BETWEEN #{dateRange[0]} AND #{dateRange[1]}
+            </if>
+            GROUP BY CONTRACT_NAME
+        ) t
+        WHERE t.rn &lt;= 10
+        ORDER BY t.amount DESC
+    </select>
+
+    <!-- 查询收入质量指标 -->
+    <select id="selectRevenueQualityMetrics" resultType="java.util.HashMap">
+        SELECT
+            NVL(COUNT(DISTINCT CUSTOMER_ID), 0) as diversityScore,
+            NVL(AVG(CASE WHEN CONTRACT_STATUS = 2 THEN 90 ELSE 70 END), 0) as timelinessScore,
+            NVL(AVG(CONTRACT_AMOUNT), 0) as sustainability,
+            NVL(COUNT(*), 0) as stability,
+            NVL(COUNT(*) * 10, 0) as predictability,
+            '中等' as riskLevel
+        FROM T_REVENUE_CONTRACT
+        WHERE IS_DELETED = 0
+    </select>
+
+    <!-- 查询历史收入数据 -->
+    <select id="selectHistoricalRevenueData" resultType="java.util.HashMap">
+        SELECT
+            TO_CHAR(SIGN_DATE, 'YYYY-MM') as period,
+            SUM(CONTRACT_AMOUNT) as amount
+        FROM T_REVENUE_CONTRACT
+        WHERE IS_DELETED = 0
+            AND SIGN_DATE >= ADD_MONTHS(CURRENT_DATE, -#{months})
+        GROUP BY TO_CHAR(SIGN_DATE, 'YYYY-MM')
+        ORDER BY period DESC
+    </select>
+
+</mapper>
+

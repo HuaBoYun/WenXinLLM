@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.TblThirdPartyAccountMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TblThirdPartyAccount">
+        <id column="ID" property="id" />
+        <result column="ACCOUNT_CODE" property="accountCode" />
+        <result column="ACCOUNT_NAME" property="accountName" />
+        <result column="THIRD_PARTY_SYSTEM" property="thirdPartySystem" />
+        <result column="ACCOUNT_TYPE" property="accountType" />
+        <result column="ACCOUNT_IDENTIFIER" property="accountIdentifier" />
+        <result column="AUTH_CONFIG" property="authConfig" />
+        <result column="CONNECTION_STATUS" property="connectionStatus" />
+        <result column="LAST_SYNC_TIME" property="lastSyncTime" />
+        <result column="API_URL" property="apiUrl" />
+        <result column="SYNC_FREQUENCY" property="syncFrequency" />
+        <result column="ACCOUNT_SECRET" property="accountSecret" />
+        <result column="DESCRIPTION" property="description" />
+        <result column="IS_ENABLED" property="isEnabled" />
+        <result column="CREATE_BY" property="createBy" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_BY" property="updateBy" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="REMARK" property="remark" />
+    </resultMap>
+
+    <!-- 基础列定义 -->
+    <sql id="Base_Column_List">
+        ID, ACCOUNT_CODE, ACCOUNT_NAME, THIRD_PARTY_SYSTEM, ACCOUNT_TYPE,
+        ACCOUNT_IDENTIFIER, AUTH_CONFIG, CONNECTION_STATUS, LAST_SYNC_TIME,
+        API_URL, SYNC_FREQUENCY, ACCOUNT_SECRET, DESCRIPTION, IS_ENABLED,
+        CREATE_BY, CREATE_TIME, UPDATE_BY, UPDATE_TIME, REMARK
+    </sql>
+
+    <!-- 查询列表 - 支持QueryWrapper动态条件 -->
+    <select id="selectList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_THIRD_PARTY_ACCOUNT
+        <if test="ew != null and ew.sqlSegment != null and ew.sqlSegment != ''">
+            WHERE ${ew.sqlSegment}
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 分页查询 - 手动实现selectPage方法 -->
+    <select id="selectPage" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_THIRD_PARTY_ACCOUNT
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据ID更新 - 手动实现以兼容达梦数据库，使用 et 作为参数名（MyBatis-Plus 约定） -->
+    <update id="updateById">
+        UPDATE TBL_THIRD_PARTY_ACCOUNT
+        <set>
+            <if test="et.accountCode != null">ACCOUNT_CODE = #{et.accountCode},</if>
+            <if test="et.accountName != null">ACCOUNT_NAME = #{et.accountName},</if>
+            <if test="et.thirdPartySystem != null">THIRD_PARTY_SYSTEM = #{et.thirdPartySystem},</if>
+            <if test="et.accountType != null">ACCOUNT_TYPE = #{et.accountType},</if>
+            <if test="et.accountIdentifier != null">ACCOUNT_IDENTIFIER = #{et.accountIdentifier},</if>
+            <if test="et.authConfig != null">AUTH_CONFIG = #{et.authConfig},</if>
+            <if test="et.connectionStatus != null">CONNECTION_STATUS = #{et.connectionStatus},</if>
+            <if test="et.lastSyncTime != null">LAST_SYNC_TIME = #{et.lastSyncTime},</if>
+            <if test="et.apiUrl != null">API_URL = #{et.apiUrl},</if>
+            <if test="et.syncFrequency != null">SYNC_FREQUENCY = #{et.syncFrequency},</if>
+            <if test="et.accountSecret != null">ACCOUNT_SECRET = #{et.accountSecret},</if>
+            <if test="et.description != null">DESCRIPTION = #{et.description},</if>
+            <if test="et.isEnabled != null">IS_ENABLED = #{et.isEnabled},</if>
+            <if test="et.createBy != null">CREATE_BY = #{et.createBy},</if>
+            <if test="et.createTime != null">CREATE_TIME = #{et.createTime},</if>
+            <if test="et.updateBy != null">UPDATE_BY = #{et.updateBy},</if>
+            <if test="et.updateTime != null">UPDATE_TIME = #{et.updateTime},</if>
+            <if test="et.remark != null">REMARK = #{et.remark},</if>
+        </set>
+        WHERE ID = #{et.id}
+    </update>
+
+    <!-- 根据ID查询 - 手动实现以兼容达梦数据库 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_THIRD_PARTY_ACCOUNT
+        WHERE ID = #{id}
+    </select>
+
+</mapper>

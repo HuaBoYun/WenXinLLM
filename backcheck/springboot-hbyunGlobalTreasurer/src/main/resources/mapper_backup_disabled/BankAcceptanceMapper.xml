@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.BankAcceptanceMapper">
+
+    <!-- 结果映射 - 完全匹配数据库表TBL_BANK_ACCEPTANCES结构 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.BankAcceptance">
+        <!-- 主键 -->
+        <id column="ACCEPTANCEID" property="acceptanceId" jdbcType="BIGINT"/>
+
+        <!-- 银行承兑汇票表字段 -->
+        <result column="INSTRUMENTID" property="instrumentId" jdbcType="BIGINT"/>
+        <result column="APPLICATIONNO" property="applicationNo" jdbcType="VARCHAR"/>
+        <result column="APPLICATIONDATE" property="applicationDate" jdbcType="DATE"/>
+        <result column="ACCEPTINGBANK" property="acceptingBank" jdbcType="VARCHAR"/>
+        <result column="CREDITLINE" property="creditLine" jdbcType="DECIMAL"/>
+        <result column="USEDCREDITLINE" property="usedCreditLine" jdbcType="DECIMAL"/>
+        <result column="MARGINREQUIRED" property="marginRequired" jdbcType="INTEGER"/>
+        <result column="MARGINRATIO" property="marginRatio" jdbcType="DECIMAL"/>
+        <result column="MARGINAMOUNT" property="marginAmount" jdbcType="DECIMAL"/>
+        <result column="MARGINACCOUNT" property="marginAccount" jdbcType="VARCHAR"/>
+        <result column="COMMISSIONRATE" property="commissionRate" jdbcType="DECIMAL"/>
+        <result column="COMMISSIONAMOUNT" property="commissionAmount" jdbcType="DECIMAL"/>
+        <result column="ACCEPTANCEFEE" property="acceptanceFee" jdbcType="DECIMAL"/>
+        <result column="APPLICATIONSTATUS" property="applicationStatus" jdbcType="VARCHAR"/>
+        <result column="APPROVALDATE" property="approvalDate" jdbcType="DATE"/>
+        <result column="APPROVALUSER" property="approvalUser" jdbcType="BIGINT"/>
+        <result column="ISSUANCEDATE" property="issuanceDate" jdbcType="DATE"/>
+        <result column="GUARANTEETYPE" property="guaranteeType" jdbcType="VARCHAR"/>
+        <result column="GUARANTEEDETAILS" property="guaranteeDetails" jdbcType="CLOB"/>
+        <result column="REMARK" property="remark" jdbcType="CLOB"/>
+        <result column="ORGID" property="orgId" jdbcType="BIGINT"/>
+        <result column="CREATETIME" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="CREATEUSER" property="createUser" jdbcType="BIGINT"/>
+        <result column="UPDATETIME" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="UPDATEUSER" property="updateUser" jdbcType="BIGINT"/>
+
+        <!-- 关联票据基础信息表字段 - 通过LEFT JOIN获取 -->
+        <result column="INSTRUMENTNO" property="instrumentNo" jdbcType="VARCHAR"/>
+        <result column="FACEAMOUNT" property="faceAmount" jdbcType="DECIMAL"/>
+        <result column="CURRENCYCODE" property="currencyCode" jdbcType="VARCHAR"/>
+        <result column="ISSUER" property="issuer" jdbcType="VARCHAR"/>
+        <result column="PAYEE" property="payee" jdbcType="VARCHAR"/>
+        <result column="ISSUEDATE" property="issueDate" jdbcType="DATE"/>
+        <result column="MATURITYDATE" property="maturityDate" jdbcType="DATE"/>
+        <result column="BUSINESSPURPOSE" property="businessPurpose" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 基础字段列表 - 包含银行承兑汇票表和关联的票据基础信息表字段 -->
+    <sql id="Base_Column_List">
+        ba.ACCEPTANCEID, ba.INSTRUMENTID, ba.APPLICATIONNO, ba.APPLICATIONDATE, ba.ACCEPTINGBANK,
+        ba.CREDITLINE, ba.USEDCREDITLINE, ba.MARGINREQUIRED, ba.MARGINRATIO, ba.MARGINAMOUNT,
+        ba.MARGINACCOUNT, ba.COMMISSIONRATE, ba.COMMISSIONAMOUNT, ba.ACCEPTANCEFEE,
+        ba.APPLICATIONSTATUS, ba.APPROVALDATE, ba.APPROVALUSER, ba.ISSUANCEDATE,
+        ba.GUARANTEETYPE, ba.GUARANTEEDETAILS, ba.REMARK, ba.ORGID,
+        ba.CREATETIME, ba.CREATEUSER, ba.UPDATETIME, ba.UPDATEUSER,
+        ib.INSTRUMENTNO, ib.FACEAMOUNT, ib.CURRENCYCODE, ib.ISSUER, ib.PAYEE,
+        ib.ISSUEDATE, ib.MATURITYDATE, ib.BUSINESSPURPOSE
+    </sql>
+
+    <!-- 根据条件查询银行承兑汇票列表 - 支持分页 -->
+    <select id="selectByCondition" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM TBL_BANK_ACCEPTANCES ba
+        LEFT JOIN TBL_INSTRUMENT_BASIC_INFO ib ON ba.INSTRUMENTID = ib.INSTRUMENTID
+        <where>
+            <if test="applicationNo != null and applicationNo != ''">
+                AND ba.APPLICATIONNO LIKE CONCAT('%', #{applicationNo}, '%')
+            </if>
+            <if test="acceptingBank != null and acceptingBank != ''">
+                AND ba.ACCEPTINGBANK LIKE CONCAT('%', #{acceptingBank}, '%')
+            </if>
+            <if test="applicationStatus != null and applicationStatus != ''">
+                AND ba.APPLICATIONSTATUS = #{applicationStatus}
+            </if>
+            <if test="applicationDateStart != null">
+                AND ba.APPLICATIONDATE &gt;= #{applicationDateStart}
+            </if>
+            <if test="applicationDateEnd != null">
+                AND ba.APPLICATIONDATE &lt;= #{applicationDateEnd}
+            </if>
+            <if test="orgId != null">
+                AND ba.ORGID = #{orgId}
+            </if>
+        </where>
+        ORDER BY ba.CREATETIME DESC
+    </select>
+
+</mapper>
+

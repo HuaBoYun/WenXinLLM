@@ -1,0 +1,476 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.oracle.mapper.BalanceMapper">
+
+    <!-- 科目余额结果映射 -->
+    <resultMap id="BalanceResultMap" type="map">
+        <id column="BOOK_ID" property="bookId" jdbcType="BIGINT"/>
+        <id column="ACCOUNT_CODE" property="accountCode" jdbcType="VARCHAR"/>
+        <id column="PERIOD" property="period" jdbcType="VARCHAR"/>
+        <id column="CURRENCY_CODE" property="currencyCode" jdbcType="VARCHAR"/>
+        <result column="ACCOUNT_NAME" property="accountName" jdbcType="VARCHAR"/>
+        <result column="BEGINNING_DEBIT" property="beginningDebit" jdbcType="DECIMAL"/>
+        <result column="BEGINNING_CREDIT" property="beginningCredit" jdbcType="DECIMAL"/>
+        <result column="PERIOD_DEBIT" property="periodDebit" jdbcType="DECIMAL"/>
+        <result column="PERIOD_CREDIT" property="periodCredit" jdbcType="DECIMAL"/>
+        <result column="ENDING_DEBIT" property="endingDebit" jdbcType="DECIMAL"/>
+        <result column="ENDING_CREDIT" property="endingCredit" jdbcType="DECIMAL"/>
+        <result column="ACCOUNT_LEVEL" property="accountLevel" jdbcType="INTEGER"/>
+        <result column="ACCOUNT_TYPE" property="accountType" jdbcType="VARCHAR"/>
+        <result column="IS_LEAF" property="isLeaf" jdbcType="VARCHAR"/>
+        <result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 余额调整结果映射 -->
+    <resultMap id="AdjustmentResultMap" type="map">
+        <id column="ADJUSTMENT_ID" property="adjustmentId" jdbcType="BIGINT"/>
+        <result column="BOOK_ID" property="bookId" jdbcType="BIGINT"/>
+        <result column="ACCOUNT_CODE" property="accountCode" jdbcType="VARCHAR"/>
+        <result column="ACCOUNT_NAME" property="accountName" jdbcType="VARCHAR"/>
+        <result column="PERIOD" property="period" jdbcType="VARCHAR"/>
+        <result column="CURRENCY_CODE" property="currencyCode" jdbcType="VARCHAR"/>
+        <result column="ADJUSTMENT_TYPE" property="adjustmentType" jdbcType="VARCHAR"/>
+        <result column="ADJUSTMENT_AMOUNT" property="adjustmentAmount" jdbcType="DECIMAL"/>
+        <result column="ORIGINAL_BEGINNING_DEBIT" property="originalBeginningDebit" jdbcType="DECIMAL"/>
+        <result column="ORIGINAL_BEGINNING_CREDIT" property="originalBeginningCredit" jdbcType="DECIMAL"/>
+        <result column="ORIGINAL_PERIOD_DEBIT" property="originalPeriodDebit" jdbcType="DECIMAL"/>
+        <result column="ORIGINAL_PERIOD_CREDIT" property="originalPeriodCredit" jdbcType="DECIMAL"/>
+        <result column="NEW_BEGINNING_DEBIT" property="newBeginningDebit" jdbcType="DECIMAL"/>
+        <result column="NEW_BEGINNING_CREDIT" property="newBeginningCredit" jdbcType="DECIMAL"/>
+        <result column="NEW_PERIOD_DEBIT" property="newPeriodDebit" jdbcType="DECIMAL"/>
+        <result column="NEW_PERIOD_CREDIT" property="newPeriodCredit" jdbcType="DECIMAL"/>
+        <result column="ADJUSTMENT_REASON" property="adjustmentReason" jdbcType="VARCHAR"/>
+        <result column="ATTACHMENT_PATH" property="attachmentPath" jdbcType="VARCHAR"/>
+        <result column="STATUS" property="status" jdbcType="VARCHAR"/>
+        <result column="APPLICANT_ID" property="applicantId" jdbcType="BIGINT"/>
+        <result column="APPLICANT_NAME" property="applicantName" jdbcType="VARCHAR"/>
+        <result column="APPLY_TIME" property="applyTime" jdbcType="TIMESTAMP"/>
+        <result column="APPROVER_ID" property="approverId" jdbcType="BIGINT"/>
+        <result column="APPROVER_NAME" property="approverName" jdbcType="VARCHAR"/>
+        <result column="APPROVAL_TIME" property="approvalTime" jdbcType="TIMESTAMP"/>
+        <result column="APPROVAL_COMMENT" property="approvalComment" jdbcType="VARCHAR"/>
+        <result column="EXECUTOR_ID" property="executorId" jdbcType="BIGINT"/>
+        <result column="EXECUTOR_NAME" property="executorName" jdbcType="VARCHAR"/>
+        <result column="EXECUTE_TIME" property="executeTime" jdbcType="TIMESTAMP"/>
+        <result column="REMARK" property="remark" jdbcType="VARCHAR"/>
+        <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 分页查询科目余额 -->
+    <select id="selectBalancePage" resultMap="BalanceResultMap">
+        SELECT
+            b.BOOK_ID,
+            b.ACCOUNT_CODE,
+            a.ACCOUNT_NAME,
+            b.PERIOD,
+            b.CURRENCY_CODE,
+            b.BEGINNING_DEBIT,
+            b.BEGINNING_CREDIT,
+            b.PERIOD_DEBIT,
+            b.PERIOD_CREDIT,
+            b.ENDING_DEBIT,
+            b.ENDING_CREDIT,
+            a.ACCOUNT_LEVEL,
+            a.ACCOUNT_TYPE,
+            a.IS_LEAF,
+            b.UPDATE_TIME
+        FROM TBL_ACCOUNT_BALANCE b
+        LEFT JOIN TBL_ACCOUNT_SUBJECT a ON b.ACCOUNT_CODE = a.ACCOUNT_CODE AND b.BOOK_ID = a.BOOK_ID
+        WHERE 1=1
+        <if test="param.bookId != null">
+            AND b.BOOK_ID = #{param.bookId}
+        </if>
+        <if test="param.accountCode != null and param.accountCode != ''">
+            AND b.ACCOUNT_CODE LIKE #{param.accountCode}||'%'
+            <if test="param.includeSubAccounts != true">
+                AND a.IS_LEAF = 'Y'
+            </if>
+        </if>
+        <if test="param.accountName != null and param.accountName != ''">
+            AND a.ACCOUNT_NAME LIKE '%'||#{param.accountName}||'%'
+        </if>
+        <if test="param.period != null and param.period != ''">
+            AND b.PERIOD = #{param.period}
+        </if>
+        <if test="param.currencyCode != null and param.currencyCode != ''">
+            AND b.CURRENCY_CODE = #{param.currencyCode}
+        </if>
+        <if test="param.accountType != null and param.accountType != ''">
+            AND a.ACCOUNT_TYPE = #{param.accountType}
+        </if>
+        <if test="param.accountLevel != null">
+            AND a.ACCOUNT_LEVEL = #{param.accountLevel}
+        </if>
+        ORDER BY b.ACCOUNT_CODE, b.CURRENCY_CODE
+        OFFSET #{param.offset} ROWS FETCH NEXT #{param.pageSize} ROWS ONLY
+    </select>
+
+    <!-- 查询科目余额总数 -->
+    <select id="selectBalanceCount" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM TBL_ACCOUNT_BALANCE b
+        LEFT JOIN TBL_ACCOUNT_SUBJECT a ON b.ACCOUNT_CODE = a.ACCOUNT_CODE AND b.BOOK_ID = a.BOOK_ID
+        WHERE 1=1
+        <if test="param.bookId != null">
+            AND b.BOOK_ID = #{param.bookId}
+        </if>
+        <if test="param.accountCode != null and param.accountCode != ''">
+            AND b.ACCOUNT_CODE LIKE #{param.accountCode}||'%'
+            <if test="param.includeSubAccounts != true">
+                AND a.IS_LEAF = 'Y'
+            </if>
+        </if>
+        <if test="param.accountName != null and param.accountName != ''">
+            AND a.ACCOUNT_NAME LIKE '%'||#{param.accountName}||'%'
+        </if>
+        <if test="param.period != null and param.period != ''">
+            AND b.PERIOD = #{param.period}
+        </if>
+        <if test="param.currencyCode != null and param.currencyCode != ''">
+            AND b.CURRENCY_CODE = #{param.currencyCode}
+        </if>
+        <if test="param.accountType != null and param.accountType != ''">
+            AND a.ACCOUNT_TYPE = #{param.accountType}
+        </if>
+        <if test="param.accountLevel != null">
+            AND a.ACCOUNT_LEVEL = #{param.accountLevel}
+        </if>
+    </select>
+
+    <!-- 根据条件查询科目余额 -->
+    <select id="selectBalanceByCondition" resultMap="BalanceResultMap">
+        SELECT
+            b.BOOK_ID,
+            b.ACCOUNT_CODE,
+            a.ACCOUNT_NAME,
+            b.PERIOD,
+            b.CURRENCY_CODE,
+            b.BEGINNING_DEBIT,
+            b.BEGINNING_CREDIT,
+            b.PERIOD_DEBIT,
+            b.PERIOD_CREDIT,
+            b.ENDING_DEBIT,
+            b.ENDING_CREDIT,
+            b.UPDATE_TIME
+        FROM TBL_ACCOUNT_BALANCE b
+        LEFT JOIN TBL_ACCOUNT_SUBJECT a ON b.ACCOUNT_CODE = a.ACCOUNT_CODE AND b.BOOK_ID = a.BOOK_ID
+        WHERE b.BOOK_ID = #{bookId}
+        AND b.ACCOUNT_CODE = #{accountCode}
+        AND b.PERIOD = #{period}
+        AND b.CURRENCY_CODE = #{currencyCode}
+    </select>
+
+    <!-- 插入科目余额 -->
+    <insert id="insertBalance" parameterType="map">
+        INSERT INTO TBL_ACCOUNT_BALANCE (
+            BOOK_ID,
+            ACCOUNT_CODE,
+            PERIOD,
+            CURRENCY_CODE,
+            BEGINNING_DEBIT,
+            BEGINNING_CREDIT,
+            PERIOD_DEBIT,
+            PERIOD_CREDIT,
+            ENDING_DEBIT,
+            ENDING_CREDIT,
+            CREATE_TIME,
+            UPDATE_TIME
+        ) VALUES (
+            #{balanceData.bookId, jdbcType=BIGINT},
+            #{balanceData.accountCode, jdbcType=VARCHAR},
+            #{balanceData.period, jdbcType=VARCHAR},
+            #{balanceData.currencyCode, jdbcType=VARCHAR},
+            #{balanceData.beginningDebit, jdbcType=DECIMAL},
+            #{balanceData.beginningCredit, jdbcType=DECIMAL},
+            #{balanceData.periodDebit, jdbcType=DECIMAL},
+            #{balanceData.periodCredit, jdbcType=DECIMAL},
+            #{balanceData.endingDebit, jdbcType=DECIMAL},
+            #{balanceData.endingCredit, jdbcType=DECIMAL},
+            SYSDATE,
+            SYSDATE
+        )
+    </insert>
+
+    <!-- 更新科目余额 -->
+    <update id="updateBalance" parameterType="map">
+        UPDATE TBL_ACCOUNT_BALANCE
+        SET
+            BEGINNING_DEBIT = #{balanceData.beginningDebit, jdbcType=DECIMAL},
+            BEGINNING_CREDIT = #{balanceData.beginningCredit, jdbcType=DECIMAL},
+            PERIOD_DEBIT = #{balanceData.periodDebit, jdbcType=DECIMAL},
+            PERIOD_CREDIT = #{balanceData.periodCredit, jdbcType=DECIMAL},
+            ENDING_DEBIT = #{balanceData.endingDebit, jdbcType=DECIMAL},
+            ENDING_CREDIT = #{balanceData.endingCredit, jdbcType=DECIMAL},
+            UPDATE_TIME = SYSDATE
+        WHERE BOOK_ID = #{balanceData.bookId, jdbcType=BIGINT}
+        AND ACCOUNT_CODE = #{balanceData.accountCode, jdbcType=VARCHAR}
+        AND PERIOD = #{balanceData.period, jdbcType=VARCHAR}
+        AND CURRENCY_CODE = #{balanceData.currencyCode, jdbcType=VARCHAR}
+    </update>
+
+    <!-- 删除科目余额 -->
+    <delete id="deleteBalance">
+        DELETE FROM TBL_ACCOUNT_BALANCE
+        WHERE BOOK_ID = #{bookId}
+        AND ACCOUNT_CODE = #{accountCode}
+        AND PERIOD = #{period}
+        AND CURRENCY_CODE = #{currencyCode}
+    </delete>
+
+    <!-- 计算科目余额 -->
+    <select id="calculateAccountBalance" resultType="map">
+        SELECT
+            #{bookId} as BOOK_ID,
+            #{accountCode} as ACCOUNT_CODE,
+            #{period} as PERIOD,
+            #{currencyCode} as CURRENCY_CODE,
+            NVL(SUM(CASE WHEN DIRECTION = 'DEBIT' AND VOUCHER_DATE &lt; TO_DATE(SUBSTR(#{period}, 1, 4)||'-'||SUBSTR(#{period}, 6)||'-01', 'YYYY-MM-DD') THEN AMOUNT ELSE 0 END), 0) as BEGINNING_DEBIT,
+            NVL(SUM(CASE WHEN DIRECTION = 'CREDIT' AND VOUCHER_DATE &lt; TO_DATE(SUBSTR(#{period}, 1, 4)||'-'||SUBSTR(#{period}, 6)||'-01', 'YYYY-MM-DD') THEN AMOUNT ELSE 0 END), 0) as BEGINNING_CREDIT,
+            NVL(SUM(CASE WHEN DIRECTION = 'DEBIT' AND VOUCHER_DATE >= TO_DATE(SUBSTR(#{period}, 1, 4)||'-'||SUBSTR(#{period}, 6)||'-01', 'YYYY-MM-DD') AND VOUCHER_DATE &lt; ADD_MONTHS(TO_DATE(SUBSTR(#{period}, 1, 4)||'-'||SUBSTR(#{period}, 6)||'-01', 'YYYY-MM-DD'), 1) THEN AMOUNT ELSE 0 END), 0) as PERIOD_DEBIT,
+            NVL(SUM(CASE WHEN DIRECTION = 'CREDIT' AND VOUCHER_DATE >= TO_DATE(SUBSTR(#{period}, 1, 4)||'-'||SUBSTR(#{period}, 6)||'-01', 'YYYY-MM-DD') AND VOUCHER_DATE &lt; ADD_MONTHS(TO_DATE(SUBSTR(#{period}, 1, 4)||'-'||SUBSTR(#{period}, 6)||'-01', 'YYYY-MM-DD'), 1) THEN AMOUNT ELSE 0 END), 0) as PERIOD_CREDIT,
+            SYSDATE as CALCULATE_TIME
+        FROM TBL_VOUCHER_ENTRY
+        WHERE BOOK_ID = #{bookId}
+        AND ACCOUNT_CODE = #{accountCode}
+        AND CURRENCY_CODE = #{currencyCode}
+        AND VOUCHER_DATE &lt; ADD_MONTHS(TO_DATE(SUBSTR(#{period}, 1, 4)||'-'||SUBSTR(#{period}, 6)||'-01', 'YYYY-MM-DD'), 1)
+    </select>
+
+    <!-- 分页查询余额调整申请 -->
+    <select id="selectBalanceAdjustmentPage" resultMap="AdjustmentResultMap">
+        SELECT
+            ADJUSTMENT_ID,
+            BOOK_ID,
+            ACCOUNT_CODE,
+            ACCOUNT_NAME,
+            PERIOD,
+            CURRENCY_CODE,
+            ADJUSTMENT_TYPE,
+            ADJUSTMENT_AMOUNT,
+            ORIGINAL_BEGINNING_DEBIT,
+            ORIGINAL_BEGINNING_CREDIT,
+            ORIGINAL_PERIOD_DEBIT,
+            ORIGINAL_PERIOD_CREDIT,
+            NEW_BEGINNING_DEBIT,
+            NEW_BEGINNING_CREDIT,
+            NEW_PERIOD_DEBIT,
+            NEW_PERIOD_CREDIT,
+            ADJUSTMENT_REASON,
+            ATTACHMENT_PATH,
+            STATUS,
+            APPLICANT_ID,
+            APPLICANT_NAME,
+            APPLY_TIME,
+            APPROVER_ID,
+            APPROVER_NAME,
+            APPROVAL_TIME,
+            APPROVAL_COMMENT,
+            REMARK,
+            CREATE_TIME,
+            UPDATE_TIME
+        FROM TBL_BALANCE_ADJUSTMENT
+        WHERE 1=1
+        <if test="param.bookId != null">
+            AND BOOK_ID = #{param.bookId}
+        </if>
+        <if test="param.accountCode != null and param.accountCode != ''">
+            AND ACCOUNT_CODE LIKE #{param.accountCode}||'%'
+        </if>
+        <if test="param.period != null and param.period != ''">
+            AND PERIOD = #{param.period}
+        </if>
+        <if test="param.adjustmentType != null and param.adjustmentType != ''">
+            AND ADJUSTMENT_TYPE = #{param.adjustmentType}
+        </if>
+        <if test="param.status != null and param.status != ''">
+            AND STATUS = #{param.status}
+        </if>
+        ORDER BY CREATE_TIME DESC
+        OFFSET #{param.offset} ROWS FETCH NEXT #{param.pageSize} ROWS ONLY
+    </select>
+
+    <!-- 查询余额调整申请总数 -->
+    <select id="selectBalanceAdjustmentCount" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM TBL_BALANCE_ADJUSTMENT
+        WHERE 1=1
+        <if test="param.bookId != null">
+            AND BOOK_ID = #{param.bookId}
+        </if>
+        <if test="param.accountCode != null and param.accountCode != ''">
+            AND ACCOUNT_CODE LIKE #{param.accountCode}||'%'
+        </if>
+        <if test="param.period != null and param.period != ''">
+            AND PERIOD = #{param.period}
+        </if>
+        <if test="param.adjustmentType != null and param.adjustmentType != ''">
+            AND ADJUSTMENT_TYPE = #{param.adjustmentType}
+        </if>
+        <if test="param.status != null and param.status != ''">
+            AND STATUS = #{param.status}
+        </if>
+    </select>
+
+    <!-- 根据ID查询余额调整详情 -->
+    <select id="selectBalanceAdjustmentById" resultMap="AdjustmentResultMap">
+        SELECT
+            ADJUSTMENT_ID,
+            BOOK_ID,
+            ACCOUNT_CODE,
+            ACCOUNT_NAME,
+            PERIOD,
+            CURRENCY_CODE,
+            ADJUSTMENT_TYPE,
+            ADJUSTMENT_AMOUNT,
+            ORIGINAL_BEGINNING_DEBIT,
+            ORIGINAL_BEGINNING_CREDIT,
+            ORIGINAL_PERIOD_DEBIT,
+            ORIGINAL_PERIOD_CREDIT,
+            NEW_BEGINNING_DEBIT,
+            NEW_BEGINNING_CREDIT,
+            NEW_PERIOD_DEBIT,
+            NEW_PERIOD_CREDIT,
+            ADJUSTMENT_REASON,
+            ATTACHMENT_PATH,
+            STATUS,
+            APPLICANT_ID,
+            APPLICANT_NAME,
+            APPLY_TIME,
+            APPROVER_ID,
+            APPROVER_NAME,
+            APPROVAL_TIME,
+            APPROVAL_COMMENT,
+            EXECUTOR_ID,
+            EXECUTOR_NAME,
+            EXECUTE_TIME,
+            REMARK,
+            CREATE_TIME,
+            UPDATE_TIME
+        FROM TBL_BALANCE_ADJUSTMENT
+        WHERE ADJUSTMENT_ID = #{adjustmentId}
+    </select>
+
+    <!-- 插入余额调整申请 -->
+    <insert id="insertBalanceAdjustment" parameterType="map">
+        INSERT INTO TBL_BALANCE_ADJUSTMENT (
+            ADJUSTMENT_ID,
+            BOOK_ID,
+            ACCOUNT_CODE,
+            ACCOUNT_NAME,
+            PERIOD,
+            CURRENCY_CODE,
+            ADJUSTMENT_TYPE,
+            ADJUSTMENT_AMOUNT,
+            ORIGINAL_BEGINNING_DEBIT,
+            ORIGINAL_BEGINNING_CREDIT,
+            ORIGINAL_PERIOD_DEBIT,
+            ORIGINAL_PERIOD_CREDIT,
+            NEW_BEGINNING_DEBIT,
+            NEW_BEGINNING_CREDIT,
+            NEW_PERIOD_DEBIT,
+            NEW_PERIOD_CREDIT,
+            ADJUSTMENT_REASON,
+            ATTACHMENT_PATH,
+            STATUS,
+            APPLICANT_ID,
+            APPLICANT_NAME,
+            APPLY_TIME,
+            REMARK,
+            CREATE_TIME
+        ) VALUES (
+            #{adjustmentData.adjustmentId, jdbcType=BIGINT},
+            #{adjustmentData.bookId, jdbcType=BIGINT},
+            #{adjustmentData.accountCode, jdbcType=VARCHAR},
+            #{adjustmentData.accountName, jdbcType=VARCHAR},
+            #{adjustmentData.period, jdbcType=VARCHAR},
+            #{adjustmentData.currencyCode, jdbcType=VARCHAR},
+            #{adjustmentData.adjustmentType, jdbcType=VARCHAR},
+            #{adjustmentData.adjustmentAmount, jdbcType=DECIMAL},
+            #{adjustmentData.originalBeginningDebit, jdbcType=DECIMAL},
+            #{adjustmentData.originalBeginningCredit, jdbcType=DECIMAL},
+            #{adjustmentData.originalPeriodDebit, jdbcType=DECIMAL},
+            #{adjustmentData.originalPeriodCredit, jdbcType=DECIMAL},
+            #{adjustmentData.newBeginningDebit, jdbcType=DECIMAL},
+            #{adjustmentData.newBeginningCredit, jdbcType=DECIMAL},
+            #{adjustmentData.newPeriodDebit, jdbcType=DECIMAL},
+            #{adjustmentData.newPeriodCredit, jdbcType=DECIMAL},
+            #{adjustmentData.adjustmentReason, jdbcType=VARCHAR},
+            #{adjustmentData.attachmentPath, jdbcType=VARCHAR},
+            #{adjustmentData.status, jdbcType=VARCHAR},
+            #{adjustmentData.applicantId, jdbcType=BIGINT},
+            #{adjustmentData.applicantName, jdbcType=VARCHAR},
+            SYSDATE,
+            #{adjustmentData.remark, jdbcType=VARCHAR},
+            SYSDATE
+        )
+    </insert>
+
+    <!-- 更新余额调整状态 -->
+    <update id="updateAdjustmentStatus">
+        UPDATE TBL_BALANCE_ADJUSTMENT
+        SET
+            STATUS = #{status, jdbcType=VARCHAR},
+            APPROVER_ID = #{approverId, jdbcType=BIGINT},
+            APPROVER_NAME = #{approverName, jdbcType=VARCHAR},
+            APPROVAL_TIME = SYSDATE,
+            APPROVAL_COMMENT = #{approvalComment, jdbcType=VARCHAR},
+            UPDATE_TIME = SYSDATE
+        WHERE ADJUSTMENT_ID = #{adjustmentId}
+    </update>
+
+    <!-- 获取余额调整类型列表 -->
+    <select id="selectAdjustmentTypes" resultType="map">
+        SELECT
+            TYPE_CODE as typeCode,
+            TYPE_NAME as typeName,
+            DESCRIPTION as description
+        FROM TBL_BALANCE_ADJUSTMENT_TYPE
+        WHERE STATUS = 'ACTIVE'
+        ORDER BY TYPE_CODE
+    </select>
+
+    <!-- 获取科目余额汇总信息 -->
+    <select id="selectBalanceSummary" resultType="map">
+        SELECT
+            COUNT(1) as totalRecords,
+            NVL(SUM(BEGINNING_DEBIT), 0) as totalBeginningDebit,
+            NVL(SUM(BEGINNING_CREDIT), 0) as totalBeginningCredit,
+            NVL(SUM(PERIOD_DEBIT), 0) as totalPeriodDebit,
+            NVL(SUM(PERIOD_CREDIT), 0) as totalPeriodCredit,
+            NVL(SUM(ENDING_DEBIT), 0) as totalEndingDebit,
+            NVL(SUM(ENDING_CREDIT), 0) as totalEndingCredit,
+            COUNT(DISTINCT ACCOUNT_CODE) as accountCount,
+            COUNT(DISTINCT CURRENCY_CODE) as currencyCount
+        FROM TBL_ACCOUNT_BALANCE
+        WHERE 1=1
+        <if test="param.bookId != null">
+            AND BOOK_ID = #{param.bookId}
+        </if>
+        <if test="param.period != null and param.period != ''">
+            AND PERIOD = #{param.period}
+        </if>
+        <if test="param.currencyCode != null and param.currencyCode != ''">
+            AND CURRENCY_CODE = #{param.currencyCode}
+        </if>
+    </select>
+
+    <!-- 获取下级科目列表 -->
+    <select id="selectSubAccountCodes" resultType="java.lang.String">
+        SELECT ACCOUNT_CODE
+        FROM TBL_ACCOUNT_SUBJECT
+        WHERE BOOK_ID = #{bookId}
+        AND PARENT_ACCOUNT_CODE = #{parentAccountCode}
+        AND STATUS = 'ACTIVE'
+        ORDER BY ACCOUNT_CODE
+    </select>
+
+    <!-- 获取待审批的调整申请数量 -->
+    <select id="selectPendingApprovalCount" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM TBL_BALANCE_ADJUSTMENT
+        WHERE STATUS = 'PENDING'
+        AND APPROVER_ID = #{userId}
+    </select>
+
+</mapper>

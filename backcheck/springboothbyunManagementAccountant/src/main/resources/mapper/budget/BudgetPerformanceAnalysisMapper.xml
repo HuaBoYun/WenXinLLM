@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.management.accountant.oracle.mapper.budget.BudgetPerformanceAnalysisMapper">
+    <resultMap id="BaseResultMap" type="com.management.accountant.oracle.entity.budget.BudgetPerformanceAnalysis">
+        <id column="PERFORMANCE_ID" property="performanceId"/>
+        <result column="PERFORMANCE_CODE" property="performanceCode"/>
+        <result column="PERFORMANCE_NAME" property="performanceName"/>
+        <result column="BUDGET_YEAR" property="budgetYear"/>
+        <result column="ORGANIZATION_ID" property="organizationId"/>
+        <result column="BUDGET_AMOUNT" property="budgetAmount"/>
+        <result column="ACTUAL_AMOUNT" property="actualAmount"/>
+        <result column="PERFORMANCE_SCORE" property="performanceScore"/>
+        <result column="PERFORMANCE_LEVEL" property="performanceLevel"/>
+        <result column="ANALYSIS_STATUS" property="analysisStatus"/>
+        <result column="CREATE_BY" property="createBy"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_BY" property="updateBy"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="DEL_FLAG" property="delFlag"/>
+    </resultMap>
+    <update id="batchDelete">
+        UPDATE TBL_BUDGET_PERFORMANCE_ANALYSIS SET DEL_FLAG = 1, UPDATE_TIME = SYSDATE
+        WHERE PERFORMANCE_ID IN <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+    </update>
+</mapper>
+

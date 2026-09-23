@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.GuaranteeMonitoringMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TblGuaranteeMonitoring">
+        <id column="ALERT_ID" property="alertId" />
+        <result column="ALERT_NO" property="alertNo" />
+        <result column="ALERT_TYPE" property="alertType" />
+        <result column="ALERT_LEVEL" property="alertLevel" />
+        <result column="ALERT_MESSAGE" property="alertMessage" />
+        <result column="RELATED_GUARANTEE_ID" property="relatedGuaranteeId" />
+        <result column="ALERT_STATUS" property="alertStatus" />
+        <result column="ALERT_DATE" property="alertDate" />
+        <result column="HANDLER_ID" property="handlerId" />
+        <result column="HANDLER_NAME" property="handlerName" />
+        <result column="HANDLE_DATE" property="handleDate" />
+        <result column="HANDLE_OPINION" property="handleOpinion" />
+        <result column="COMPANY_ID" property="companyId" />
+        <result column="COMPANY_NAME" property="companyName" />
+        <result column="DELETE_FLAG" property="deleteFlag" />
+        <result column="CREATED_TIME" property="createdTime" />
+        <result column="UPDATED_TIME" property="updatedTime" />
+        <result column="REMARK" property="remark" />
+    </resultMap>
+
+    <!-- 基础字段列表 -->
+    <sql id="Base_Column_List">
+        ALERT_ID, ALERT_NO, ALERT_TYPE, ALERT_LEVEL, ALERT_MESSAGE,
+        RELATED_GUARANTEE_ID, ALERT_STATUS, ALERT_DATE, HANDLER_ID,
+        HANDLER_NAME, HANDLE_DATE, HANDLE_OPINION, COMPANY_ID, COMPANY_NAME,
+        DELETE_FLAG, CREATED_TIME, UPDATED_TIME, REMARK
+    </sql>
+
+    <!-- 查询担保监控预警列表 -->
+    <select id="selectMonitoringList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_GUARANTEE_MONITORING
+        <where>
+            DELETE_FLAG = 0
+            <if test="alertNo != null and alertNo.trim() != ''">
+                AND ALERT_NO LIKE CONCAT('%', #{alertNo}, '%')
+            </if>
+            <if test="alertType != null and alertType.trim() != ''">
+                AND ALERT_TYPE = #{alertType}
+            </if>
+            <if test="alertLevel != null and alertLevel.trim() != ''">
+                AND ALERT_LEVEL = #{alertLevel}
+            </if>
+            <if test="alertStatus != null and alertStatus.trim() != ''">
+                AND ALERT_STATUS = #{alertStatus}
+            </if>
+            <if test="companyName != null and companyName.trim() != ''">
+                AND COMPANY_NAME LIKE CONCAT('%', #{companyName}, '%')
+            </if>
+        </where>
+        ORDER BY ALERT_DATE DESC, CREATED_TIME DESC
+    </select>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_GUARANTEE_MONITORING
+        WHERE ALERT_ID = #{alertId}
+        AND DELETE_FLAG = 0
+    </select>
+
+    <!-- 插入 -->
+    <insert id="insert" parameterType="com.global.treasurer.entity.TblGuaranteeMonitoring">
+        <selectKey keyProperty="alertId" resultType="java.lang.Long" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        INSERT INTO TBL_GUARANTEE_MONITORING (
+            ALERT_NO, ALERT_TYPE, ALERT_LEVEL, ALERT_MESSAGE,
+            RELATED_GUARANTEE_ID, ALERT_STATUS, ALERT_DATE, HANDLER_ID,
+            HANDLER_NAME, HANDLE_DATE, HANDLE_OPINION, COMPANY_ID,
+            COMPANY_NAME, DELETE_FLAG, CREATED_TIME, UPDATED_TIME, REMARK
+        ) VALUES (
+            #{alertNo}, #{alertType}, #{alertLevel}, #{alertMessage},
+            #{relatedGuaranteeId}, #{alertStatus}, #{alertDate}, #{handlerId},
+            #{handlerName}, #{handleDate}, #{handleOpinion}, #{companyId},
+            #{companyName}, #{deleteFlag}, #{createdTime}, #{updatedTime}, #{remark}
+        )
+    </insert>
+
+    <!-- 更新 -->
+    <update id="updateById" parameterType="com.global.treasurer.entity.TblGuaranteeMonitoring">
+        UPDATE TBL_GUARANTEE_MONITORING
+        <set>
+            <if test="alertType != null">ALERT_TYPE = #{alertType},</if>
+            <if test="alertLevel != null">ALERT_LEVEL = #{alertLevel},</if>
+            <if test="alertMessage != null">ALERT_MESSAGE = #{alertMessage},</if>
+            <if test="alertStatus != null">ALERT_STATUS = #{alertStatus},</if>
+            <if test="handlerId != null">HANDLER_ID = #{handlerId},</if>
+            <if test="handlerName != null">HANDLER_NAME = #{handlerName},</if>
+            <if test="handleDate != null">HANDLE_DATE = #{handleDate},</if>
+            <if test="handleOpinion != null">HANDLE_OPINION = #{handleOpinion},</if>
+            <if test="updatedTime != null">UPDATED_TIME = #{updatedTime},</if>
+            <if test="remark != null">REMARK = #{remark},</if>
+        </set>
+        WHERE ALERT_ID = #{alertId}
+    </update>
+
+    <!-- 删除（软删除） -->
+    <update id="deleteById">
+        UPDATE TBL_GUARANTEE_MONITORING
+        SET DELETE_FLAG = 1
+        WHERE ALERT_ID = #{alertId}
+    </update>
+
+    <!-- 更新预警状态 -->
+    <update id="updateAlertStatus">
+        UPDATE TBL_GUARANTEE_MONITORING
+        SET ALERT_STATUS = #{status},
+            UPDATED_TIME = CURRENT_TIMESTAMP
+        WHERE ALERT_ID = #{alertId}
+    </update>
+
+</mapper>

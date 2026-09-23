@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.audit.oracle.mapper.RectifyHomeMapper">
+
+    <!-- 问题总量（整改问题清单总数） -->
+    <select id="countIssuesTotal" parameterType="map" resultType="int">
+        SELECT COUNT(1) FROM TBL_ZGZZ_ISSUESILIST
+        WHERE 1=1
+        <if test="year != null and year != ''">
+            AND EXTRACT(YEAR FROM CREATETIME) = #{year}
+        </if>
+    </select>
+
+    <!-- 整改完成数（已整改到位或已销号） -->
+    <select id="countRectifyCompleted" parameterType="map" resultType="int">
+        SELECT COUNT(1) FROM TBL_ZGZZ_ISSUESILIST
+        WHERE STATUS IN (6, 8, 11)
+        <if test="year != null and year != ''">
+            AND EXTRACT(YEAR FROM CREATETIME) = #{year}
+        </if>
+    </select>
+
+    <!-- 整改落实数（已提交落实记录） -->
+    <select id="countRectifyImplemented" parameterType="map" resultType="int">
+        SELECT COUNT(1) FROM TBL_ZGZZ_RECTIFICATIONIMPL
+        WHERE 1=1
+        <if test="year != null and year != ''">
+            AND EXTRACT(YEAR FROM CREATETIME) = #{year}
+        </if>
+    </select>
+
+    <!-- 未销号问题数 -->
+    <select id="countUnregistered" parameterType="map" resultType="int">
+        SELECT COUNT(1) FROM TBL_ZGZZ_ISSUESILIST
+        WHERE STATUS = 9
+        <if test="year != null and year != ''">
+            AND EXTRACT(YEAR FROM CREATETIME) = #{year}
+        </if>
+    </select>
+
+    <!-- 整改分派数（有整改计划） -->
+    <select id="countAssign" parameterType="map" resultType="int">
+        SELECT COUNT(1) FROM TBL_ZGZZ_RECTIFICATIONPLAN
+        WHERE 1=1
+        <if test="year != null and year != ''">
+            AND EXTRACT(YEAR FROM CREATETIME) = #{year}
+        </if>
+    </select>
+
+    <!-- 整改落实中数量（尚在落实阶段） -->
+    <select id="countPracticable" parameterType="map" resultType="int">
+        SELECT COUNT(1) FROM TBL_ZGZZ_ISSUESILIST
+        WHERE STATUS IN (3, 4, 5)
+        <if test="year != null and year != ''">
+            AND EXTRACT(YEAR FROM CREATETIME) = #{year}
+        </if>
+    </select>
+
+    <!-- 整改跟踪中数量（进入跟踪阶段） -->
+    <select id="countTracking" parameterType="map" resultType="int">
+        SELECT COUNT(1) FROM TBL_ZGZZ_ISSUESILIST
+        WHERE STATUS IN (6, 7, 8, 10, 11)
+        <if test="year != null and year != ''">
+            AND EXTRACT(YEAR FROM CREATETIME) = #{year}
+        </if>
+    </select>
+
+    <!-- 违规追责-受理立案数 -->
+    <select id="countWgzzAccepted" parameterType="map" resultType="int">
+        SELECT COUNT(1) FROM TBL_WGZZ_WGZZ
+        WHERE ISACCEPTED = 1
+        <if test="year != null and year != ''">
+            AND EXTRACT(YEAR FROM IMPCREATEUSERNAME) = #{year}
+        </if>
+    </select>
+
+    <!-- 违规追责-核查完成数（已通过） -->
+    <select id="countWgzzVerified" parameterType="map" resultType="int">
+        SELECT COUNT(1) FROM TBL_WGZZ_WGHS
+        WHERE STATUS = 5
+        <if test="year != null and year != ''">
+            AND EXTRACT(YEAR FROM IMPCREATEUSERNAME) = #{year}
+        </if>
+    </select>
+
+    <!-- 违规追责-处置完成数（已移送） -->
+    <select id="countWgzzDisposed" parameterType="map" resultType="int">
+        SELECT COUNT(1) FROM TBL_WGZZ_WGJY_YS
+        WHERE YSSTUTS = 2
+        <if test="year != null and year != ''">
+            AND EXTRACT(YEAR FROM IMPCREATEUSERNAME) = #{year}
+        </if>
+    </select>
+
+    <!-- 违规追责-待处理数（badge） -->
+    <select id="countWgzzPending" parameterType="map" resultType="int">
+        SELECT COUNT(1) FROM TBL_WGZZ_WGZZ
+        WHERE ISACCEPTED = 0 OR ISACCEPTED IS NULL
+        <if test="year != null and year != ''">
+            AND EXTRACT(YEAR FROM IMPCREATEUSERNAME) = #{year}
+        </if>
+    </select>
+
+    <!-- 整改评价平均分 -->
+    <select id="avgEvaluationScore" parameterType="map" resultType="java.lang.Double">
+        SELECT AVG(RESULTSTATUS) FROM TBL_ZGZZ_RCTEVALUATION
+        WHERE RESULTSTATUS IS NOT NULL AND RESULTSTATUS > 0
+        <if test="year != null and year != ''">
+            AND EXTRACT(YEAR FROM CREATETIME) = #{year}
+        </if>
+    </select>
+
+    <!-- 整改台账总数 -->
+    <select id="countLedger" parameterType="map" resultType="int">
+        SELECT COUNT(1) FROM TBL_ZGZZ_ISSUESILIST
+        WHERE STATUS IS NOT NULL
+        <if test="year != null and year != ''">
+            AND EXTRACT(YEAR FROM CREATETIME) = #{year}
+        </if>
+    </select>
+
+</mapper>

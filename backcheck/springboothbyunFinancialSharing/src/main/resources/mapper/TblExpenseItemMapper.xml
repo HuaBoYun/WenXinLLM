@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.mapper.TblExpenseItemMapper">
+
+    <select id="selectByItemCode" resultType="com.financial.sharing.entity.TblExpenseItem">
+        SELECT * FROM TBL_EXPENSE_ITEM WHERE ITEM_CODE = #{itemCode}
+    </select>
+
+    <select id="selectByParentId" resultType="com.financial.sharing.entity.TblExpenseItem">
+        SELECT * FROM TBL_EXPENSE_ITEM WHERE PARENT_ID = #{parentId} ORDER BY SORT_ORDER ASC, CREATE_TIME DESC
+    </select>
+
+    <select id="selectByItemLevel" resultType="com.financial.sharing.entity.TblExpenseItem">
+        SELECT * FROM TBL_EXPENSE_ITEM WHERE ITEM_LEVEL = #{itemLevel} ORDER BY SORT_ORDER ASC, CREATE_TIME DESC
+    </select>
+
+    <select id="selectByIsEnabled" resultType="com.financial.sharing.entity.TblExpenseItem">
+        SELECT * FROM TBL_EXPENSE_ITEM WHERE IS_ENABLED = #{isEnabled} ORDER BY SORT_ORDER ASC, CREATE_TIME DESC
+    </select>
+
+    <select id="selectTopLevelItems" resultType="com.financial.sharing.entity.TblExpenseItem">
+        SELECT * FROM TBL_EXPENSE_ITEM WHERE PARENT_ID IS NULL OR PARENT_ID = '' ORDER BY SORT_ORDER ASC, CREATE_TIME DESC
+    </select>
+
+</mapper>

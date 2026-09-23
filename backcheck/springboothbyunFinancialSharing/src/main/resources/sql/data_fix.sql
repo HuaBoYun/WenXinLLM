@@ -1,0 +1,345 @@
+-- =====================================================
+-- 华博云 T_INTERNAL_SETTLEMENT 外键约束违反 Bug 数据修复脚本
+-- 创建时间: 2025-12-03
+-- 问题描述: 违反引用约束[FK_INTERNAL_SETTLEMENT_FROM]
+-- 解决方案: 为缺失的责任中心创建记录
+-- =====================================================
+
+-- 步骤1: 数据备份（重要！执行修复前必须备份）
+-- =====================================================
+
+-- 备份 T_INTERNAL_SETTLEMENT 表
+CREATE TABLE T_INTERNAL_SETTLEMENT_BACKUP_20251203 AS
+SELECT * FROM T_INTERNAL_SETTLEMENT;
+
+-- 备份 T_RESPONSIBILITY_CENTER 表
+CREATE TABLE T_RESPONSIBILITY_CENTER_BACKUP_20251203 AS
+SELECT * FROM REDACTED.T_RESPONSIBILITY_CENTER;
+
+-- 记录备份操作
+INSERT INTO OPERATION_LOG (LOG_ID, OPERATION_TYPE, OPERATION_TIME, OPERATOR, DESCRIPTION)
+VALUES (
+    SYS_GUID(),
+    'DATA_BACKUP',
+    SYSDATE,
+    'SYSTEM',
+    '修复外键约束问题前的数据备份'
+);
+
+COMMIT;
+
+-- 步骤2: 问题数据分析
+-- =====================================================
+
+-- 查询所有有问题的结算记录（FROM_CENTER_ID 或 TO_CENTER_ID 在责任中心表中不存在）
+SELECT
+    s.SETTLEMENT_ID,
+    s.SETTLEMENT_NO,
+    s.FROM_CENTER_ID,
+    s.TO_CENTER_ID,
+    s.BOOK_ID,
+    s.TENANT_ID,
+    s.CREATE_TIME,
+    CASE
+        WHEN r_from.CENTER_ID IS NULL THEN 'FROM_CENTER_ID 不存在'
+        WHEN r_to.CENTER_ID IS NULL THEN 'TO_CENTER_ID 不存在'
+        ELSE '其他问题'
+    END as ISSUE_TYPE
+FROM T_INTERNAL_SETTLEMENT s
+LEFT JOIN REDACTED.T_RESPONSIBILITY_CENTER r_from ON s.FROM_CENTER_ID = r_from.CENTER_ID
+LEFT JOIN REDACTED.T_RESPONSIBILITY_CENTER r_to ON s.TO_CENTER_ID = r_to.CENTER_ID
+WHERE r_from.CENTER_ID IS NULL OR r_to.CENTER_ID IS NULL
+ORDER BY s.CREATE_TIME DESC;
+
+-- 查询对应的成本中心记录，确认成本中心是否存在
+SELECT
+    s.SETTLEMENT_ID,
+    s.FROM_CENTER_ID as settlement_from_id,
+    cf.CENTER_ID as cost_center_from_id,
+    cf.CENTER_CODE as from_code,
+    cf.CENTER_NAME as from_name,
+    s.TO_CENTER_ID as settlement_to_id,
+    ct.CENTER_ID as cost_center_to_id,
+    ct.CENTER_CODE as to_code,
+    ct.CENTER_NAME as to_name,
+    s.CREATE_TIME
+FROM T_INTERNAL_SETTLEMENT s
+LEFT JOIN T_COST_CENTER cf ON s.FROM_CENTER_ID = cf.CENTER_ID
+LEFT JOIN T_COST_CENTER ct ON s.TO_CENTER_ID = ct.CENTER_ID
+WHERE s.CREATE_TIME >= '2025-12-03'
+  AND (s.FROM_CENTER_ID NOT IN (SELECT CENTER_ID FROM REDACTED.T_RESPONSIBILITY_CENTER)
+       OR s.TO_CENTER_ID NOT IN (SELECT CENTER_ID FROM REDACTED.T_RESPONSIBILITY_CENTER))
+ORDER BY s.CREATE_TIME DESC;
+
+-- 统计问题数据量
+SELECT
+    '问题数据统计' as 统计类型,
+    COUNT(*) as total_settlements,
+    SUM(CASE WHEN r_from.CENTER_ID IS NULL THEN 1 ELSE 0 END) as invalid_from_centers,
+    SUM(CASE WHEN r_to.CENTER_ID IS NULL THEN 1 ELSE 0 END) as invalid_to_centers,
+    SUM(CASE WHEN r_from.CENTER_ID IS NULL AND r_to.CENTER_ID IS NULL THEN 1 ELSE 0 END) as both_invalid,
+    MAX(s.CREATE_TIME) as latest_settlement_time
+FROM T_INTERNAL_SETTLEMENT s
+LEFT JOIN REDACTED.T_RESPONSIBILITY_CENTER r_from ON s.FROM_CENTER_ID = r_from.CENTER_ID
+LEFT JOIN REDACTED.T_RESPONSIBILITY_CENTER r_to ON s.TO_CENTER_ID = r_to.CENTER_ID
+WHERE r_from.CENTER_ID IS NULL OR r_to.CENTER_ID IS NULL;
+
+-- 步骤3: 数据修复（推荐方案A：创建缺失的责任中心记录）
+-- =====================================================
+
+-- 方案A: 为缺失的责任中心创建记录（推荐，保留历史数据）
+-- 从成本中心数据生成对应的责任中心记录
+
+-- 首先查询哪些成本中心ID需要创建对应的责任中心记录
+SELECT DISTINCT
+    c.CENTER_ID,
+    c.CENTER_CODE,
+    c.CENTER_NAME,
+    c.CENTER_TYPE,
+    c.BOOK_ID,
+    c.TENANT_ID,
+    c.IS_ENABLED,
+    c.IS_DELETED
+FROM T_COST_CENTER c
+WHERE c.CENTER_ID IN (
+    -- 查询在结算表中使用但在责任中心表中不存在的FROM_CENTER_ID
+    SELECT DISTINCT FROM_CENTER_ID
+    FROM T_INTERNAL_SETTLEMENT
+    WHERE FROM_CENTER_ID NOT IN (
+        SELECT CENTER_ID FROM REDACTED.T_RESPONSIBILITY_CENTER
+    )
+    UNION
+    -- 查询在结算表中使用但在责任中心表中不存在的TO_CENTER_ID
+    SELECT DISTINCT TO_CENTER_ID
+    FROM T_INTERNAL_SETTLEMENT
+    WHERE TO_CENTER_ID NOT IN (
+        SELECT CENTER_ID FROM REDACTED.T_RESPONSIBILITY_CENTER
+    )
+)
+AND c.IS_DELETED = 0 AND c.IS_ENABLED = 1
+ORDER BY c.CENTER_ID;
+
+-- 执行插入操作：为缺失的责任中心创建记录
+INSERT INTO REDACTED.T_RESPONSIBILITY_CENTER (
+    CENTER_ID,
+    CENTER_CODE,
+    CENTER_NAME,
+    CENTER_TYPE,
+    PARENT_CENTER_ID,
+    CENTER_LEVEL,
+    IS_LEAF,
+    MANAGER_ID,
+    IS_ENABLED,
+    BOOK_ID,
+    TENANT_ID,
+    VERSION,
+    IS_DELETED,
+    CREATE_TIME,
+    UPDATE_TIME,
+    CREATOR,
+    UPDATER
+)
+SELECT
+    c.CENTER_ID,
+    c.CENTER_CODE,
+    c.CENTER_NAME,
+    CASE c.CENTER_TYPE
+        WHEN 1 THEN 1  -- 成本中心对应责任中心类型1
+        WHEN 2 THEN 2  -- 利润中心对应责任中心类型2
+        WHEN 3 THEN 3  -- 投资中心对应责任中心类型3
+        ELSE 1         -- 默认为类型1
+    END as CENTER_TYPE,
+    c.PARENT_CENTER_ID,
+    c.CENTER_LEVEL,
+    c.IS_LEAF,
+    c.MANAGER_ID,
+    c.IS_ENABLED,
+    c.BOOK_ID,
+    c.TENANT_ID,
+    1 as VERSION,
+    0 as IS_DELETED,
+    SYSDATE as CREATE_TIME,
+    SYSDATE as UPDATE_TIME,
+    1 as CREATOR,
+    1 as UPDATER
+FROM T_COST_CENTER c
+WHERE c.CENTER_ID IN (
+    SELECT DISTINCT FROM_CENTER_ID
+    FROM T_INTERNAL_SETTLEMENT
+    WHERE FROM_CENTER_ID NOT IN (
+        SELECT CENTER_ID FROM REDACTED.T_RESPONSIBILITY_CENTER
+    )
+    UNION
+    SELECT DISTINCT TO_CENTER_ID
+    FROM T_INTERNAL_SETTLEMENT
+    WHERE TO_CENTER_ID NOT IN (
+        SELECT CENTER_ID FROM REDACTED.T_RESPONSIBILITY_CENTER
+    )
+)
+AND c.IS_DELETED = 0 AND c.IS_ENABLED = 1;
+
+-- 记录修复操作
+INSERT INTO OPERATION_LOG (LOG_ID, OPERATION_TYPE, OPERATION_TIME, OPERATOR, DESCRIPTION, AFFECTED_ROWS)
+VALUES (
+    SYS_GUID(),
+    'DATA_REPAIR',
+    SYSDATE,
+    'SYSTEM',
+    '为缺失的责任中心创建记录',
+    SQL%ROWCOUNT
+);
+
+COMMIT;
+
+-- =====================================================
+-- 方案B: 删除无效的结算记录（谨慎使用，会丢失数据）
+-- 注意：此方案会丢失数据，仅在确认数据无价值时使用
+-- =====================================================
+
+/*
+-- 备份待删除的记录
+CREATE TABLE T_INTERNAL_SETTLEMENT_DELETED_20251203 AS
+SELECT s.*
+FROM T_INTERNAL_SETTLEMENT s
+LEFT JOIN REDACTED.T_RESPONSIBILITY_CENTER r_from ON s.FROM_CENTER_ID = r_from.CENTER_ID
+LEFT JOIN REDACTED.T_RESPONSIBILITY_CENTER r_to ON s.TO_CENTER_ID = r_to.CENTER_ID
+WHERE r_from.CENTER_ID IS NULL OR r_to.CENTER_ID IS NULL;
+
+-- 删除无效记录
+DELETE FROM T_INTERNAL_SETTLEMENT
+WHERE FROM_CENTER_ID NOT IN (SELECT CENTER_ID FROM REDACTED.T_RESPONSIBILITY_CENTER)
+   OR TO_CENTER_ID NOT IN (SELECT CENTER_ID FROM REDACTED.T_RESPONSIBILITY_CENTER);
+
+COMMIT;
+*/
+
+-- 步骤4: 修复结果验证
+-- =====================================================
+
+-- 验证修复后的数据完整性
+SELECT
+    '修复后数据完整性检查' as 检查类型,
+    COUNT(*) as total_settlements,
+    SUM(CASE WHEN r_from.CENTER_ID IS NULL THEN 1 ELSE 0 END) as invalid_from_centers,
+    SUM(CASE WHEN r_to.CENTER_ID IS NULL THEN 1 ELSE 0 END) as invalid_to_centers,
+    SUM(CASE WHEN r_from.CENTER_ID IS NULL AND r_to.CENTER_ID IS NULL THEN 1 ELSE 0 END) as both_invalid
+FROM T_INTERNAL_SETTLEMENT s
+LEFT JOIN REDACTED.T_RESPONSIBILITY_CENTER r_from ON s.FROM_CENTER_ID = r_from.CENTER_ID
+LEFT JOIN REDACTED.T_RESPONSIBILITY_CENTER r_to ON s.TO_CENTER_ID = r_to.CENTER_ID;
+
+-- 验证新创建的责任中心记录
+SELECT COUNT(*) as new_responsibility_centers,
+       MIN(CREATE_TIME) as earliest_creation,
+       MAX(CREATE_TIME) as latest_creation
+FROM REDACTED.T_RESPONSIBILITY_CENTER r
+WHERE r.CENTER_ID IN (
+    SELECT FROM_CENTER_ID FROM T_INTERNAL_SETTLEMENT
+    UNION
+    SELECT TO_CENTER_ID FROM T_INTERNAL_SETTLEMENT
+)
+AND r.CREATE_TIME >= SYSDATE - 1/24; -- 最近1小时创建的
+
+-- 查看新创建的责任中心详情
+SELECT
+    r.CENTER_ID,
+    r.CENTER_CODE,
+    r.CENTER_NAME,
+    r.CENTER_TYPE,
+    r.BOOK_ID,
+    r.TENANT_ID,
+    r.IS_ENABLED,
+    r.CREATE_TIME
+FROM REDACTED.T_RESPONSIBILITY_CENTER r
+WHERE r.CENTER_ID IN (
+    SELECT FROM_CENTER_ID FROM T_INTERNAL_SETTLEMENT
+    UNION
+    SELECT TO_CENTER_ID FROM T_INTERNAL_SETTLEMENT
+)
+AND r.CREATE_TIME >= SYSDATE - 1/24
+ORDER BY r.CENTER_ID;
+
+-- 步骤5: 数据一致性检查
+-- =====================================================
+
+-- 检查成本中心和责任中心的数据一致性
+SELECT
+    '成本中心与责任中心一致性检查' as 检查类型,
+    COUNT(*) as total_centers,
+    SUM(CASE WHEN c.CENTER_ID = r.CENTER_ID THEN 1 ELSE 0 END) as matched_centers,
+    SUM(CASE WHEN c.CENTER_ID IS NOT NULL AND r.CENTER_ID IS NULL THEN 1 ELSE 0 END) as missing_in_responsibility,
+    SUM(CASE WHEN c.CENTER_CODE = r.CENTER_CODE AND c.CENTER_NAME = r.CENTER_NAME THEN 1 ELSE 0 END) as consistent_basic_info
+FROM T_COST_CENTER c
+FULL OUTER JOIN REDACTED.T_RESPONSIBILITY_CENTER r ON c.CENTER_ID = r.CENTER_ID
+WHERE c.IS_DELETED = 0 OR r.IS_DELETED = 0;
+
+-- 检查结算记录的完整性
+SELECT
+    s.SETTLEMENT_STATUS,
+    COUNT(*) as record_count,
+    SUM(s.SETTLEMENT_AMOUNT) as total_amount,
+    MIN(s.CREATE_TIME) as earliest_record,
+    MAX(s.CREATE_TIME) as latest_record
+FROM T_INTERNAL_SETTLEMENT s
+JOIN REDACTED.T_RESPONSIBILITY_CENTER r_from ON s.FROM_CENTER_ID = r_from.CENTER_ID
+JOIN REDACTED.T_RESPONSIBILITY_CENTER r_to ON s.TO_CENTER_ID = r_to.CENTER_ID
+GROUP BY s.SETTLEMENT_STATUS
+ORDER BY s.SETTLEMENT_STATUS;
+
+-- 步骤6: 清理和总结
+-- =====================================================
+
+-- 生成修复报告
+SELECT
+    '修复总结' as report_type,
+    (SELECT COUNT(*) FROM T_INTERNAL_SETTLEMENT) as total_settlements,
+    (SELECT COUNT(*) FROM REDACTED.T_RESPONSIBILITY_CENTER) as total_responsibility_centers,
+    (SELECT COUNT(*) FROM REDACTED.T_RESPONSIBILITY_CENTER WHERE CREATE_TIME >= SYSDATE - 1/24) as new_centers_created,
+    SYSDATE as repair_completion_time
+FROM DUAL;
+
+-- 最终验证：确保没有外键约束违反
+-- 这个查询应该返回0行，表示所有问题都已解决
+SELECT
+    s.SETTLEMENT_ID,
+    s.SETTLEMENT_NO,
+    s.FROM_CENTER_ID,
+    s.TO_CENTER_ID,
+    '仍有外键约束问题' as status
+FROM T_INTERNAL_SETTLEMENT s
+LEFT JOIN REDACTED.T_RESPONSIBILITY_CENTER r_from ON s.FROM_CENTER_ID = r_from.CENTER_ID
+LEFT JOIN REDACTED.T_RESPONSIBILITY_CENTER r_to ON s.TO_CENTER_ID = r_to.CENTER_ID
+WHERE r_from.CENTER_ID IS NULL OR r_to.CENTER_ID IS NULL;
+
+-- =====================================================
+-- 修复脚本执行完成
+-- =====================================================
+
+-- 提示信息：
+-- 1. 请在测试环境先验证此脚本
+-- 2. 执行前确保已完整备份数据
+-- 3. 执行过程中如遇问题，可使用备份表回滚
+-- 4. 修复完成后请重启相关应用服务
+-- 5. 建议在业务低峰期执行此修复脚本
+
+-- 回滚脚本（如需要）：
+/*
+-- 删除新创建的责任中心记录
+DELETE FROM REDACTED.T_RESPONSIBILITY_CENTER
+WHERE CENTER_ID IN (
+    SELECT CENTER_ID FROM T_COST_CENTER
+    WHERE CENTER_ID IN (
+        SELECT FROM_CENTER_ID FROM T_INTERNAL_SETTLEMENT_BACKUP_20251203
+        UNION
+        SELECT TO_CENTER_ID FROM T_INTERNAL_SETTLEMENT_BACKUP_20251203
+    )
+    AND CENTER_ID NOT IN (
+        SELECT CENTER_ID FROM T_RESPONSIBILITY_CENTER_BACKUP_20251203
+    )
+);
+
+-- 恢复原始结算数据
+DELETE FROM T_INTERNAL_SETTLEMENT;
+INSERT INTO T_INTERNAL_SETTLEMENT SELECT * FROM T_INTERNAL_SETTLEMENT_BACKUP_20251203;
+
+COMMIT;
+*/

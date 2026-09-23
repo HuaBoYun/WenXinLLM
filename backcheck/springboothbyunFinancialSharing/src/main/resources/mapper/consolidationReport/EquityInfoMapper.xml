@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.consolidationReport.mapper.EquityInfoMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.financial.sharing.consolidationReport.entity.TblEquityInfo">
+        <id column="EQUITY_ID" property="equityId"/>
+        <result column="MODEL_ID" property="modelId"/>
+        <result column="PARENT_ORG_ID" property="parentOrgId"/>
+        <result column="PARENT_ORG_NAME" property="parentOrgName"/>
+        <result column="SUBSIDIARY_ORG_ID" property="subsidiaryOrgId"/>
+        <result column="SUBSIDIARY_ORG_NAME" property="subsidiaryOrgName"/>
+        <result column="EQUITY_TYPE" property="equityType"/>
+        <result column="HOLDING_RATIO" property="holdingRatio"/>
+        <result column="INVESTMENT_DATE" property="investmentDate"/>
+        <result column="EFFECTIVE_START_PERIOD" property="effectiveStartPeriod"/>
+        <result column="EFFECTIVE_END_PERIOD" property="effectiveEndPeriod"/>
+        <result column="IS_ACTIVE" property="isActive"/>
+        <result column="REMARK" property="remark"/>
+        <result column="TENANT_ID" property="tenantId"/>
+        <result column="CREATE_USER" property="createUser"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_USER" property="updateUser"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="MODEL_NAME" property="modelName"/>
+    </resultMap>
+
+    <!-- 查询股权信息列表 -->
+    <select id="selectEquityList" resultMap="BaseResultMap">
+        SELECT
+            e.EQUITY_ID,
+            e.MODEL_ID,
+            e.PARENT_ORG_ID,
+            e.PARENT_ORG_NAME,
+            e.SUBSIDIARY_ORG_ID,
+            e.SUBSIDIARY_ORG_NAME,
+            e.EQUITY_TYPE,
+            e.HOLDING_RATIO,
+            e.INVESTMENT_DATE,
+            e.EFFECTIVE_START_PERIOD,
+            e.EFFECTIVE_END_PERIOD,
+            e.IS_ACTIVE,
+            e.REMARK,
+            e.TENANT_ID,
+            e.CREATE_USER,
+            e.CREATE_TIME,
+            e.UPDATE_USER,
+            e.UPDATE_TIME,
+            m.MODEL_NAME
+        FROM TBL_EQUITY_INFO e
+        LEFT JOIN TBL_CONSOLIDATION_MODEL m ON e.MODEL_ID = m.MODEL_ID
+        WHERE 1=1
+        <if test="param.modelId != null and param.modelId != ''">
+            AND e.MODEL_ID = #{param.modelId}
+        </if>
+        <if test="param.parentOrgId != null and param.parentOrgId != ''">
+            AND e.PARENT_ORG_ID = #{param.parentOrgId}
+        </if>
+        <if test="param.parentOrgName != null and param.parentOrgName != ''">
+            AND e.PARENT_ORG_NAME LIKE CONCAT('%', #{param.parentOrgName}, '%')
+        </if>
+        <if test="param.subsidiaryOrgId != null and param.subsidiaryOrgId != ''">
+            AND e.SUBSIDIARY_ORG_ID = #{param.subsidiaryOrgId}
+        </if>
+        <if test="param.subsidiaryOrgName != null and param.subsidiaryOrgName != ''">
+            AND e.SUBSIDIARY_ORG_NAME LIKE CONCAT('%', #{param.subsidiaryOrgName}, '%')
+        </if>
+        <if test="param.equityType != null and param.equityType != ''">
+            AND e.EQUITY_TYPE = #{param.equityType}
+        </if>
+        <if test="param.isActive != null and param.isActive != ''">
+            AND e.IS_ACTIVE = #{param.isActive}
+        </if>
+        ORDER BY e.CREATE_TIME DESC
+    </select>
+
+    <!-- 检查股权关系是否已存在 -->
+    <select id="checkEquityExists" resultType="int">
+        SELECT COUNT(*)
+        FROM TBL_EQUITY_INFO
+        WHERE MODEL_ID = #{modelId}
+        AND PARENT_ORG_ID = #{parentOrgId}
+        AND SUBSIDIARY_ORG_ID = #{subsidiaryOrgId}
+        <if test="excludeEquityId != null and excludeEquityId != ''">
+            AND EQUITY_ID != #{excludeEquityId}
+        </if>
+    </select>
+
+    <!-- 根据模型ID查询股权信息列表 -->
+    <select id="selectByModelId" resultMap="BaseResultMap">
+        SELECT
+            EQUITY_ID,
+            MODEL_ID,
+            PARENT_ORG_ID,
+            PARENT_ORG_NAME,
+            SUBSIDIARY_ORG_ID,
+            SUBSIDIARY_ORG_NAME,
+            EQUITY_TYPE,
+            HOLDING_RATIO,
+            INVESTMENT_DATE,
+            EFFECTIVE_START_PERIOD,
+            EFFECTIVE_END_PERIOD,
+            IS_ACTIVE,
+            REMARK,
+            TENANT_ID,
+            CREATE_USER,
+            CREATE_TIME,
+            UPDATE_USER,
+            UPDATE_TIME
+        FROM TBL_EQUITY_INFO
+        WHERE MODEL_ID = #{modelId}
+        AND IS_ACTIVE = 'Y'
+        ORDER BY PARENT_ORG_ID, SUBSIDIARY_ORG_ID
+    </select>
+
+    <!-- 根据模型ID删除股权信息 -->
+    <delete id="deleteByModelId">
+        DELETE FROM TBL_EQUITY_INFO
+        WHERE MODEL_ID = #{modelId}
+    </delete>
+
+</mapper>
+

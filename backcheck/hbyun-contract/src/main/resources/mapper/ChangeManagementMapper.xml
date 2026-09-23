@@ -1,0 +1,774 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.contract.mapper.ChangeManagementMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.huabo.contract.entity.ChangeManagement">
+        <id column="id" property="id" />
+        <result column="project_id" property="projectId" />
+        <result column="change_no" property="changeNo" />
+        <result column="change_title" property="changeTitle" />
+        <result column="change_type" property="changeType" />
+        <result column="project_name" property="projectName" />
+        <result column="change_level" property="changeLevel" />
+        <result column="change_reason" property="changeReason" />
+        <result column="change_content" property="changeContent" />
+        <result column="before_change" property="beforeChange" />
+        <result column="after_change" property="afterChange" />
+        <result column="impact_analysis" property="impactAnalysis" />
+        <result column="cost_impact" property="costImpact" />
+        <result column="schedule_impact" property="scheduleImpact" />
+        <result column="quality_impact" property="qualityImpact" />
+        <result column="risk_impact" property="riskImpact" />
+        <result column="priority" property="priority" />
+        <result column="is_urgent" property="isUrgent" />
+        <result column="is_important" property="isImportant" />
+        <result column="change_status" property="changeStatus" />
+        <result column="applicant_id" property="applicantId" />
+        <result column="applicant_name" property="applicantName" />
+        <result column="apply_time" property="applyTime" />
+        <result column="apply_department_id" property="applyDepartmentId" />
+        <result column="apply_department_name" property="applyDepartmentName" />
+        <result column="reviewer_id" property="reviewerId" />
+        <result column="reviewer_name" property="reviewerName" />
+        <result column="review_time" property="reviewTime" />
+        <result column="review_comments" property="reviewComments" />
+        <result column="approver_id" property="approverId" />
+        <result column="approver_name" property="approverName" />
+        <result column="approve_time" property="approveTime" />
+        <result column="approve_comments" property="approveComments" />
+        <result column="implementer_id" property="implementerId" />
+        <result column="implementer_name" property="implementerName" />
+        <result column="implement_start_time" property="implementStartTime" />
+        <result column="implement_end_time" property="implementEndTime" />
+        <result column="implement_status" property="implementStatus" />
+        <result column="completion_rate" property="completionRate" />
+        <result column="acceptor_id" property="acceptorId" />
+        <result column="acceptor_name" property="acceptorName" />
+        <result column="acceptance_time" property="acceptanceTime" />
+        <result column="acceptance_result" property="acceptanceResult" />
+        <result column="actual_cost_impact" property="actualCostImpact" />
+        <result column="actual_schedule_impact" property="actualScheduleImpact" />
+        <result column="effectiveness_evaluation" property="effectivenessEvaluation" />
+        <result column="lessons_learned" property="lessonsLearned" />
+        <result column="attachment_path" property="attachmentPath" />
+        <result column="remarks" property="remarks" />
+        <result column="create_by" property="createBy" />
+        <result column="create_time" property="createTime" />
+        <result column="update_by" property="updateBy" />
+        <result column="update_time" property="updateTime" />
+        <result column="version" property="version" />
+        <result column="department_id" property="departmentId" />
+        <result column="department_name" property="departmentName" />
+        <result column="organization_id" property="organizationId" />
+        <result column="organization_name" property="organizationName" />
+        <result column="deleted" property="deleted" />
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="Base_Column_List">
+        id, project_id, project_name, change_no, change_title, change_type, change_level, change_reason,
+        change_content, before_change, after_change, impact_analysis, cost_impact, schedule_impact,
+        quality_impact, risk_impact, applicant_id, applicant_name, apply_time, apply_department_id,
+        apply_department_name, change_status, reviewer_id, reviewer_name, review_time, review_comments,
+        approver_id, approver_name, approve_time, approve_comments, implementer_id, implementer_name,
+        implement_start_time, implement_end_time, implement_status, completion_rate, acceptor_id,
+        acceptor_name, acceptance_time, acceptance_result, actual_cost_impact, actual_schedule_impact,
+        effectiveness_evaluation, lessons_learned, attachment_path, remarks, priority, is_urgent,
+        is_important, version, department_id, department_name, organization_id, organization_name,
+        create_time, update_time, create_by, update_by, deleted
+    </sql>
+
+    <!-- 分页查询项目变更管理列表 -->
+    <select id="selectChangeManagementList" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM project_change
+        WHERE 1=1
+        AND deleted = 0
+        <if test="param.projectId != null">
+            AND project_id = #{param.projectId}
+        </if>
+        <if test="param.changeNo != null and param.changeNo != ''">
+            AND change_no LIKE CONCAT('%', #{param.changeNo}, '%')
+        </if>
+        <if test="param.changeTitle != null and param.changeTitle != ''">
+            AND change_title LIKE CONCAT('%', #{param.changeTitle}, '%')
+        </if>
+        <if test="param.changeType != null">
+            AND change_type = #{param.changeType}
+        </if>
+        <if test="param.changeLevel != null">
+            AND change_level = #{param.changeLevel}
+        </if>
+        <if test="param.changeStatus != null">
+            AND change_status = #{param.changeStatus}
+        </if>
+        <if test="param.priority != null">
+            AND priority = #{param.priority}
+        </if>
+        <if test="param.isUrgent != null">
+            AND is_urgent = #{param.isUrgent}
+        </if>
+        <if test="param.applicantId != null">
+            AND applicant_id = #{param.applicantId}
+        </if>
+        <if test="param.applicantName != null and param.applicantName != ''">
+            AND applicant_name LIKE CONCAT('%', #{param.applicantName}, '%')
+        </if>
+        <if test="param.reviewerId != null">
+            AND reviewer_id = #{param.reviewerId}
+        </if>
+        <if test="param.approverId != null">
+            AND approver_id = #{param.approverId}
+        </if>
+        <if test="param.implementerId != null">
+            AND implementer_id = #{param.implementerId}
+        </if>
+        <if test="param.minCostImpact != null">
+            AND cost_impact >= #{param.minCostImpact}
+        </if>
+        <if test="param.maxCostImpact != null">
+            AND cost_impact &lt;= #{param.maxCostImpact}
+        </if>
+        <if test="param.minScheduleImpact != null">
+            AND schedule_impact >= #{param.minScheduleImpact}
+        </if>
+        <if test="param.maxScheduleImpact != null">
+            AND schedule_impact &lt;= #{param.maxScheduleImpact}
+        </if>
+        <if test="param.applicationStartDate != null">
+            AND apply_time >= #{param.applicationStartDate}
+        </if>
+        <if test="param.applicationEndDate != null">
+            AND apply_time &lt;= #{param.applicationEndDate}
+        </if>
+        <if test="param.implementationStartDate != null">
+            AND implement_start_time >= #{param.implementationStartDate}
+        </if>
+        <if test="param.implementationEndDate != null">
+            AND implement_end_time &lt;= #{param.implementationEndDate}
+        </if>
+        <if test="param.createStartTime != null">
+            AND create_time >= #{param.createStartTime}
+        </if>
+        <if test="param.createEndTime != null">
+            AND create_time &lt;= #{param.createEndTime}
+        </if>
+        <if test="param.createBy != null">
+            AND create_by = #{param.createBy}
+        </if>
+        <if test="param.keyword != null and param.keyword != ''">
+            AND (change_no LIKE CONCAT('%', #{param.keyword}, '%')
+                 OR change_title LIKE CONCAT('%', #{param.keyword}, '%')
+                 OR change_content LIKE CONCAT('%', #{param.keyword}, '%')
+                 OR applicant_name LIKE CONCAT('%', #{param.keyword}, '%')
+                 OR impact_analysis LIKE CONCAT('%', #{param.keyword}, '%')
+                 OR remarks LIKE CONCAT('%', #{param.keyword}, '%'))
+        </if>
+        ORDER BY create_time DESC, id DESC
+    </select>
+
+    <!-- 根据变更编号查询项目变更管理 -->
+    <select id="selectByChangeNo" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM project_change
+        WHERE change_no = #{changeNo}
+        AND deleted = 0
+        <if test="excludeId != null">
+            AND id != #{excludeId}
+        </if>
+        LIMIT 1
+    </select>
+
+    <!-- 根据项目ID查询项目变更管理列表 -->
+    <select id="selectByProjectId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM project_change
+        WHERE project_id = #{projectId}
+        AND deleted = 0
+        ORDER BY apply_time DESC, create_time DESC
+    </select>
+
+    <!-- 根据变更类型查询项目变更管理列表 -->
+    <select id="selectByChangeType" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM project_change
+        WHERE change_type = #{changeType}
+        ORDER BY apply_time DESC
+    </select>
+
+    <!-- 根据变更状态查询项目变更管理列表 -->
+    <select id="selectByChangeStatus" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM project_change
+        WHERE change_status = #{changeStatus}
+        ORDER BY apply_time DESC
+    </select>
+
+    <!-- 根据申请人ID查询项目变更管理列表 -->
+    <select id="selectByApplicantId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM project_change
+        WHERE applicant_id = #{applicantId}
+        ORDER BY apply_time DESC
+    </select>
+
+    <!-- 根据审核人ID查询项目变更管理列表 -->
+    <select id="selectByReviewerId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM project_change
+        WHERE reviewer_id = #{reviewerId}
+        ORDER BY apply_time DESC
+    </select>
+
+    <!-- 根据批准人ID查询项目变更管理列表 -->
+    <select id="selectByApproverId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM project_change
+        WHERE approver_id = #{approverId}
+        ORDER BY apply_time DESC
+    </select>
+
+    <!-- 根据实施人ID查询项目变更管理列表 -->
+    <select id="selectByImplementerId" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM project_change
+        WHERE implementer_id = #{implementerId}
+        ORDER BY implement_start_time DESC
+    </select>
+
+    <!-- 获取草稿状态的变更列表 -->
+    <select id="selectDraftChanges" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM project_change
+        WHERE change_status = 1
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 获取待审核的变更列表 -->
+    <select id="selectPendingReviewChanges" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM project_change
+        WHERE change_status = 2
+        ORDER BY apply_time ASC
+    </select>
+
+    <!-- 获取审核中的变更列表 -->
+    <select id="selectInReviewChanges" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM project_change
+        WHERE change_status = 3
+        ORDER BY review_time ASC
+    </select>
+
+    <!-- 获取已批准的变更列表 -->
+    <select id="selectApprovedChanges" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM project_change
+        WHERE change_status = 4
+        ORDER BY approve_time DESC
+    </select>
+
+    <!-- 获取已拒绝的变更列表 -->
+    <select id="selectRejectedChanges" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM project_change
+        WHERE change_status = 5
+        ORDER BY approve_time DESC
+    </select>
+
+    <!-- 获取实施中的变更列表 -->
+    <select id="selectImplementingChanges" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM project_change
+        WHERE change_status = 6
+        ORDER BY implement_start_time DESC
+    </select>
+
+    <!-- 获取已完成的变更列表 -->
+    <select id="selectCompletedChanges" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM project_change
+        WHERE change_status = 7
+        ORDER BY implement_end_time DESC
+    </select>
+
+    <!-- 获取已取消的变更列表 -->
+    <select id="selectCancelledChanges" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM project_change
+        WHERE change_status = 8
+        ORDER BY update_time DESC
+    </select>
+
+    <!-- 获取紧急变更列表 -->
+    <select id="selectUrgentChanges" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM project_change
+        WHERE is_urgent = 1
+        ORDER BY priority DESC, apply_time ASC
+    </select>
+
+    <!-- 获取重要变更列表 -->
+    <select id="selectImportantChanges" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM project_change
+        WHERE priority >= 4
+        ORDER BY priority DESC, apply_time ASC
+    </select>
+
+    <!-- 获取高优先级变更列表 -->
+    <select id="selectHighPriorityChanges" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM project_change
+        WHERE priority >= 4
+        AND change_status IN (2, 3, 4, 6)
+        ORDER BY priority DESC, apply_time ASC
+    </select>
+
+    <!-- 获取有成本影响的变更列表 -->
+    <select id="selectCostImpactChanges" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM project_change
+        WHERE cost_impact != 0
+        ORDER BY ABS(cost_impact) DESC
+    </select>
+
+    <!-- 获取有进度影响的变更列表 -->
+    <select id="selectScheduleImpactChanges" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM project_change
+        WHERE schedule_impact != 0
+        ORDER BY ABS(schedule_impact) DESC
+    </select>
+
+    <!-- 模糊搜索项目变更管理 -->
+    <select id="searchChangeManagement" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM project_change
+        WHERE deleted = 0
+        AND (change_no LIKE CONCAT('%', #{keyword}, '%')
+           OR change_title LIKE CONCAT('%', #{keyword}, '%')
+           OR change_content LIKE CONCAT('%', #{keyword}, '%')
+           OR applicant_name LIKE CONCAT('%', #{keyword}, '%')
+           OR impact_analysis LIKE CONCAT('%', #{keyword}, '%'))
+        ORDER BY create_time DESC
+        <if test="limit != null">
+            LIMIT #{limit}
+        </if>
+    </select>
+
+    <!-- 统计项目变更管理数据 -->
+    <select id="statisticsChangeManagement" resultType="map">
+        SELECT
+            COUNT(*) as totalCount,
+            COUNT(CASE WHEN change_status = 1 THEN 1 END) as draftCount,
+            COUNT(CASE WHEN change_status = 2 THEN 1 END) as pendingReviewCount,
+            COUNT(CASE WHEN change_status = 3 THEN 1 END) as inReviewCount,
+            COUNT(CASE WHEN change_status = 4 THEN 1 END) as approvedCount,
+            COUNT(CASE WHEN change_status = 5 THEN 1 END) as rejectedCount,
+            COUNT(CASE WHEN change_status = 6 THEN 1 END) as implementingCount,
+            COUNT(CASE WHEN change_status = 7 THEN 1 END) as completedCount,
+            COUNT(CASE WHEN change_status = 8 THEN 1 END) as cancelledCount,
+            COALESCE(SUM(cost_impact), 0) as totalCostImpact,
+            COALESCE(SUM(schedule_impact), 0) as totalScheduleImpact,
+            COALESCE(AVG(completion_rate), 0) as avgCompletionRate
+        FROM project_change
+        WHERE 1=1
+        AND deleted = 0
+        <if test="param.projectId != null">
+            AND project_id = #{param.projectId}
+        </if>
+        <if test="param.changeType != null">
+            AND change_type = #{param.changeType}
+        </if>
+        <if test="param.changeStatus != null">
+            AND change_status = #{param.changeStatus}
+        </if>
+        <if test="param.applicantId != null">
+            AND applicant_id = #{param.applicantId}
+        </if>
+        <if test="param.createStartTime != null">
+            AND create_time >= #{param.createStartTime}
+        </if>
+        <if test="param.createEndTime != null">
+            AND create_time &lt;= #{param.createEndTime}
+        </if>
+    </select>
+
+    <!-- 统计变更类型分布 -->
+    <select id="statisticsChangeTypeDistribution" resultType="map">
+        SELECT
+            change_type as changeType,
+            COUNT(*) as count,
+            COALESCE(SUM(cost_impact), 0) as totalCostImpact,
+            COALESCE(AVG(completion_rate), 0) as avgCompletionRate
+        FROM project_change
+        WHERE 1=1
+        <if test="param.projectId != null">
+            AND project_id = #{param.projectId}
+        </if>
+        <if test="param.changeStatus != null">
+            AND change_status = #{param.changeStatus}
+        </if>
+        <if test="param.createStartTime != null">
+            AND create_time >= #{param.createStartTime}
+        </if>
+        <if test="param.createEndTime != null">
+            AND create_time &lt;= #{param.createEndTime}
+        </if>
+        GROUP BY change_type
+        ORDER BY count DESC
+    </select>
+
+    <!-- 统计变更状态分布 -->
+    <select id="statisticsChangeStatusDistribution" resultType="map">
+        SELECT
+            change_status as changeStatus,
+            COUNT(*) as count,
+            COALESCE(SUM(cost_impact), 0) as totalCostImpact,
+            COALESCE(AVG(completion_rate), 0) as avgCompletionRate
+        FROM project_change
+        WHERE 1=1
+        <if test="param.projectId != null">
+            AND project_id = #{param.projectId}
+        </if>
+        <if test="param.changeType != null">
+            AND change_type = #{param.changeType}
+        </if>
+        <if test="param.createStartTime != null">
+            AND create_time >= #{param.createStartTime}
+        </if>
+        <if test="param.createEndTime != null">
+            AND create_time &lt;= #{param.createEndTime}
+        </if>
+        GROUP BY change_status
+        ORDER BY change_status
+    </select>
+
+    <!-- 统计优先级分布 -->
+    <select id="statisticsPriorityDistribution" resultType="map">
+        SELECT
+            priority,
+            COUNT(*) as count,
+            COALESCE(SUM(cost_impact), 0) as totalCostImpact,
+            COALESCE(AVG(completion_rate), 0) as avgCompletionRate
+        FROM project_change
+        WHERE 1=1
+        <if test="param.projectId != null">
+            AND project_id = #{param.projectId}
+        </if>
+        <if test="param.changeStatus != null">
+            AND change_status = #{param.changeStatus}
+        </if>
+        <if test="param.createStartTime != null">
+            AND create_time >= #{param.createStartTime}
+        </if>
+        <if test="param.createEndTime != null">
+            AND create_time &lt;= #{param.createEndTime}
+        </if>
+        GROUP BY priority
+        ORDER BY priority DESC
+    </select>
+
+    <!-- 统计月度变更趋势 -->
+    <select id="statisticsMonthlyChangeTrend" resultType="map">
+        SELECT
+            DATE_FORMAT(apply_time, '%Y-%m') as month,
+            COUNT(*) as count,
+            COUNT(CASE WHEN change_status = 7 THEN 1 END) as completedCount,
+            COALESCE(SUM(cost_impact), 0) as totalCostImpact,
+            COALESCE(AVG(completion_rate), 0) as avgCompletionRate
+        FROM project_change
+        WHERE apply_time >= DATE_SUB(SYSDATE, INTERVAL 12 MONTH)
+        <if test="param.projectId != null">
+            AND project_id = #{param.projectId}
+        </if>
+        <if test="param.changeType != null">
+            AND change_type = #{param.changeType}
+        </if>
+        GROUP BY DATE_FORMAT(apply_time, '%Y-%m')
+        ORDER BY month
+    </select>
+
+    <!-- 统计项目变更数据 -->
+    <select id="statisticsProjectChanges" resultType="map">
+        SELECT
+            project_id as projectId,
+            COUNT(*) as count,
+            COUNT(CASE WHEN change_status = 7 THEN 1 END) as completedCount,
+            COALESCE(SUM(cost_impact), 0) as totalCostImpact,
+            COALESCE(SUM(schedule_impact), 0) as totalScheduleImpact,
+            COALESCE(AVG(completion_rate), 0) as avgCompletionRate
+        FROM project_change
+        WHERE 1=1
+        <if test="param.changeType != null">
+            AND change_type = #{param.changeType}
+        </if>
+        <if test="param.changeStatus != null">
+            AND change_status = #{param.changeStatus}
+        </if>
+        <if test="param.createStartTime != null">
+            AND create_time >= #{param.createStartTime}
+        </if>
+        <if test="param.createEndTime != null">
+            AND create_time &lt;= #{param.createEndTime}
+        </if>
+        GROUP BY project_id
+        ORDER BY count DESC
+    </select>
+
+    <!-- 统计申请人变更数据 -->
+    <select id="statisticsApplicantChanges" resultType="map">
+        SELECT
+            applicant_id as applicantId,
+            applicant_name as applicantName,
+            COUNT(*) as count,
+            COUNT(CASE WHEN change_status = 7 THEN 1 END) as completedCount,
+            COALESCE(SUM(cost_impact), 0) as totalCostImpact,
+            COALESCE(AVG(completion_rate), 0) as avgCompletionRate
+        FROM project_change
+        WHERE 1=1
+        <if test="param.projectId != null">
+            AND project_id = #{param.projectId}
+        </if>
+        <if test="param.changeType != null">
+            AND change_type = #{param.changeType}
+        </if>
+        <if test="param.changeStatus != null">
+            AND change_status = #{param.changeStatus}
+        </if>
+        <if test="param.createStartTime != null">
+            AND create_time >= #{param.createStartTime}
+        </if>
+        <if test="param.createEndTime != null">
+            AND create_time &lt;= #{param.createEndTime}
+        </if>
+        GROUP BY applicant_id, applicant_name
+        ORDER BY count DESC
+    </select>
+
+    <!-- 计算总成本影响 -->
+    <select id="calculateTotalCostImpact" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(cost_impact), 0)
+        FROM project_change
+        WHERE 1=1
+        <if test="param.projectId != null">
+            AND project_id = #{param.projectId}
+        </if>
+        <if test="param.changeType != null">
+            AND change_type = #{param.changeType}
+        </if>
+        <if test="param.changeStatus != null">
+            AND change_status = #{param.changeStatus}
+        </if>
+        <if test="param.createStartTime != null">
+            AND create_time >= #{param.createStartTime}
+        </if>
+        <if test="param.createEndTime != null">
+            AND create_time &lt;= #{param.createEndTime}
+        </if>
+    </select>
+
+    <!-- 计算总进度影响 -->
+    <select id="calculateTotalScheduleImpact" resultType="java.lang.Integer">
+        SELECT COALESCE(SUM(schedule_impact), 0)
+        FROM project_change
+        WHERE 1=1
+        <if test="param.projectId != null">
+            AND project_id = #{param.projectId}
+        </if>
+        <if test="param.changeType != null">
+            AND change_type = #{param.changeType}
+        </if>
+        <if test="param.changeStatus != null">
+            AND change_status = #{param.changeStatus}
+        </if>
+        <if test="param.createStartTime != null">
+            AND create_time >= #{param.createStartTime}
+        </if>
+        <if test="param.createEndTime != null">
+            AND create_time &lt;= #{param.createEndTime}
+        </if>
+    </select>
+
+    <!-- 计算平均完成度 -->
+    <select id="calculateAverageCompletionRate" resultType="java.math.BigDecimal">
+        SELECT COALESCE(AVG(completion_rate), 0)
+        FROM project_change
+        WHERE 1=1
+        <if test="param.projectId != null">
+            AND project_id = #{param.projectId}
+        </if>
+        <if test="param.changeType != null">
+            AND change_type = #{param.changeType}
+        </if>
+        <if test="param.changeStatus != null">
+            AND change_status = #{param.changeStatus}
+        </if>
+        <if test="param.createStartTime != null">
+            AND create_time >= #{param.createStartTime}
+        </if>
+        <if test="param.createEndTime != null">
+            AND create_time &lt;= #{param.createEndTime}
+        </if>
+    </select>
+
+    <!-- 计算变更成功率 -->
+    <select id="calculateChangeSuccessRate" resultType="java.math.BigDecimal">
+        SELECT
+            CASE
+                WHEN COUNT(*) = 0 THEN 0
+                ELSE ROUND(COUNT(CASE WHEN change_status = 7 THEN 1 END) * 100.0 / COUNT(*), 2)
+            END
+        FROM project_change
+        WHERE 1=1
+        <if test="param.projectId != null">
+            AND project_id = #{param.projectId}
+        </if>
+        <if test="param.changeType != null">
+            AND change_type = #{param.changeType}
+        </if>
+        <if test="param.createStartTime != null">
+            AND create_time >= #{param.createStartTime}
+        </if>
+        <if test="param.createEndTime != null">
+            AND create_time &lt;= #{param.createEndTime}
+        </if>
+    </select>
+
+    <!-- 获取变更影响分析 -->
+    <select id="getChangeImpactAnalysis" resultType="map">
+        SELECT
+            COUNT(*) as totalChanges,
+            COUNT(CASE WHEN cost_impact > 0 THEN 1 END) as costIncreaseCount,
+            COUNT(CASE WHEN cost_impact &lt; 0 THEN 1 END) as costDecreaseCount,
+            COUNT(CASE WHEN schedule_impact > 0 THEN 1 END) as scheduleDelayCount,
+            COUNT(CASE WHEN schedule_impact &lt; 0 THEN 1 END) as scheduleAdvanceCount,
+            COALESCE(SUM(CASE WHEN cost_impact > 0 THEN cost_impact END), 0) as totalCostIncrease,
+            COALESCE(SUM(CASE WHEN cost_impact &lt; 0 THEN ABS(cost_impact) END), 0) as totalCostDecrease,
+            COALESCE(SUM(CASE WHEN schedule_impact > 0 THEN schedule_impact END), 0) as totalScheduleDelay,
+            COALESCE(SUM(CASE WHEN schedule_impact &lt; 0 THEN ABS(schedule_impact) END), 0) as totalScheduleAdvance,
+            COALESCE(AVG(ABS(cost_impact)), 0) as avgCostImpact,
+            COALESCE(AVG(ABS(schedule_impact)), 0) as avgScheduleImpact
+        FROM project_change
+        WHERE 1=1
+        <if test="param.projectId != null">
+            AND project_id = #{param.projectId}
+        </if>
+        <if test="param.changeType != null">
+            AND change_type = #{param.changeType}
+        </if>
+        <if test="param.changeStatus != null">
+            AND change_status = #{param.changeStatus}
+        </if>
+        <if test="param.createStartTime != null">
+            AND create_time >= #{param.createStartTime}
+        </if>
+        <if test="param.createEndTime != null">
+            AND create_time &lt;= #{param.createEndTime}
+        </if>
+    </select>
+
+    <!-- 获取变更效果评估 -->
+    <select id="getChangeEffectivenessEvaluation" resultType="map">
+        SELECT
+            COUNT(*) as totalChanges,
+            COUNT(CASE WHEN change_status = 7 THEN 1 END) as completedChanges,
+            COUNT(CASE WHEN change_status = 5 THEN 1 END) as rejectedChanges,
+            COUNT(CASE WHEN change_status = 8 THEN 1 END) as cancelledChanges,
+            COALESCE(AVG(CASE WHEN change_status = 7 THEN completion_rate END), 0) as avgCompletionRate,
+            COALESCE(AVG(CASE WHEN change_status = 7 AND implement_end_time IS NOT NULL AND implement_start_time IS NOT NULL
+                         THEN DATEDIFF(implement_end_time, implement_start_time) END), 0) as avgImplementationDelay,
+            COUNT(CASE WHEN priority >= 4 THEN 1 END) as highPriorityCount,
+            COUNT(CASE WHEN is_urgent = 1 THEN 1 END) as urgentCount,
+            COUNT(CASE WHEN priority >= 4 AND change_status = 7 THEN 1 END) as highPriorityCompletedCount,
+            COUNT(CASE WHEN is_urgent = 1 AND change_status = 7 THEN 1 END) as urgentCompletedCount
+        FROM project_change
+        WHERE 1=1
+        <if test="param.projectId != null">
+            AND project_id = #{param.projectId}
+        </if>
+        <if test="param.changeType != null">
+            AND change_type = #{param.changeType}
+        </if>
+        <if test="param.createStartTime != null">
+            AND create_time >= #{param.createStartTime}
+        </if>
+        <if test="param.createEndTime != null">
+            AND create_time &lt;= #{param.createEndTime}
+        </if>
+    </select>
+
+    <!-- 导出项目变更管理数据 -->
+    <select id="exportChangeManagement" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM project_change
+        WHERE 1=1
+        <if test="param.projectId != null">
+            AND project_id = #{param.projectId}
+        </if>
+        <if test="param.changeType != null">
+            AND change_type = #{param.changeType}
+        </if>
+        <if test="param.changeStatus != null">
+            AND change_status = #{param.changeStatus}
+        </if>
+        <if test="param.createStartTime != null">
+            AND create_time >= #{param.createStartTime}
+        </if>
+        <if test="param.createEndTime != null">
+            AND create_time &lt;= #{param.createEndTime}
+        </if>
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 检查变更编号是否存在 -->
+    <select id="existsChangeNo" resultType="boolean">
+        SELECT COUNT(1) > 0
+        FROM project_change
+        WHERE change_no = #{changeNo}
+        <if test="excludeId != null">
+            AND id != #{excludeId}
+        </if>
+    </select>
+
+    <!-- 批量更新变更状态 -->
+    <update id="batchUpdateChangeStatus">
+        UPDATE project_change
+        SET change_status = #{changeStatus},
+            update_time = SYSDATE
+        <if test="updateBy != null">
+            , update_by = #{updateBy}
+        </if>
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+</mapper>

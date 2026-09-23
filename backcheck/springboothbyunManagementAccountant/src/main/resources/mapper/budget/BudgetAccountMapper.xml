@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.management.accountant.oracle.mapper.budget.BudgetAccountMapper">
+
+    <resultMap id="BaseResultMap" type="com.management.accountant.oracle.entity.budget.BudgetAccount">
+        <id column="ACCOUNT_ID" property="accountId"/>
+        <result column="ACCOUNT_CODE" property="accountCode"/>
+        <result column="ACCOUNT_NAME" property="accountName"/>
+        <result column="ACCOUNT_TYPE" property="accountType"/>
+        <result column="ACCOUNT_CATEGORY" property="accountCategory"/>
+        <result column="PARENT_ID" property="parentId"/>
+        <result column="ACCOUNT_LEVEL" property="accountLevel"/>
+        <result column="ACCOUNT_PATH" property="accountPath"/>
+        <result column="IS_LEAF" property="isLeaf"/>
+        <result column="BALANCE_DIRECTION" property="balanceDirection"/>
+        <result column="SORT_ORDER" property="sortOrder"/>
+        <result column="IS_ENABLED" property="isEnabled"/>
+        <result column="ACCOUNT_DESCRIPTION" property="accountDescription"/>
+        <result column="REMARK" property="remark"/>
+        <result column="CREATE_BY" property="createBy"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_BY" property="updateBy"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="DEL_FLAG" property="delFlag"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        ACCOUNT_ID, ACCOUNT_CODE, ACCOUNT_NAME, ACCOUNT_TYPE, ACCOUNT_CATEGORY,
+        PARENT_ID, ACCOUNT_LEVEL, ACCOUNT_PATH, IS_LEAF, BALANCE_DIRECTION,
+        SORT_ORDER, IS_ENABLED, ACCOUNT_DESCRIPTION, REMARK,
+        CREATE_BY, CREATE_TIME, UPDATE_BY, UPDATE_TIME, DEL_FLAG
+    </sql>
+
+    <select id="selectByAccountCode" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_BUDGET_ACCOUNT
+        WHERE ACCOUNT_CODE = #{accountCode} AND DEL_FLAG = 0
+    </select>
+
+    <select id="selectByAccountType" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_BUDGET_ACCOUNT
+        WHERE ACCOUNT_TYPE = #{accountType} AND DEL_FLAG = 0
+        ORDER BY SORT_ORDER, ACCOUNT_CODE
+    </select>
+
+    <select id="selectByParentId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_BUDGET_ACCOUNT
+        WHERE PARENT_ID = #{parentId} AND DEL_FLAG = 0
+        ORDER BY SORT_ORDER, ACCOUNT_CODE
+    </select>
+
+    <select id="selectAccountTree" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_BUDGET_ACCOUNT
+        WHERE DEL_FLAG = 0 AND IS_ENABLED = 1
+        <if test="parentId != null">
+            START WITH PARENT_ID = #{parentId}
+        </if>
+        <if test="parentId == null">
+            START WITH PARENT_ID IS NULL
+        </if>
+        CONNECT BY PRIOR ACCOUNT_ID = PARENT_ID
+        ORDER SIBLINGS BY SORT_ORDER, ACCOUNT_CODE
+    </select>
+
+    <select id="selectLeafAccounts" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_BUDGET_ACCOUNT
+        WHERE IS_LEAF = 1 AND DEL_FLAG = 0 AND IS_ENABLED = 1
+        ORDER BY SORT_ORDER, ACCOUNT_CODE
+    </select>
+
+    <select id="selectEnabledAccounts" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_BUDGET_ACCOUNT
+        WHERE IS_ENABLED = 1 AND DEL_FLAG = 0
+        ORDER BY SORT_ORDER, ACCOUNT_CODE
+    </select>
+
+    <update id="batchDeleteAccounts">
+        UPDATE TBL_BUDGET_ACCOUNT
+        SET DEL_FLAG = 1, UPDATE_TIME = SYSDATE
+        WHERE ACCOUNT_ID IN
+        <foreach collection="accountIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+</mapper>
+

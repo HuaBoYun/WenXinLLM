@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.budgetPlanning.mapper.BudgetExecutionMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.financial.sharing.budgetPlanning.entity.TblBudgetExecution">
+        <id column="EXECUTION_ID" property="executionId"/>
+        <result column="MODEL_ID" property="modelId"/>
+        <result column="BIZ_ORG_ID" property="bizOrgId"/>
+        <result column="ORG_CODE" property="orgCode"/>
+        <result column="ORG_NAME" property="orgName"/>
+        <result column="SUBJECT_CODE" property="subjectCode"/>
+        <result column="SUBJECT_NAME" property="subjectName"/>
+        <result column="PERIOD" property="period"/>
+        <result column="BUDGET_YEAR" property="budgetYear"/>
+        <result column="VERSION_NO" property="versionNo"/>
+        <result column="DIMENSION1_CODE" property="dimension1Code"/>
+        <result column="DIMENSION1_NAME" property="dimension1Name"/>
+        <result column="DIMENSION2_CODE" property="dimension2Code"/>
+        <result column="DIMENSION2_NAME" property="dimension2Name"/>
+        <result column="BUDGET_AMOUNT" property="budgetAmount"/>
+        <result column="ADJUSTED_AMOUNT" property="adjustedAmount"/>
+        <result column="ACTUAL_AMOUNT" property="actualAmount"/>
+        <result column="COMMITTED_AMOUNT" property="committedAmount"/>
+        <result column="OCCUPIED_AMOUNT" property="occupiedAmount"/>
+        <result column="AVAILABLE_AMOUNT" property="availableAmount"/>
+        <result column="VARIANCE_AMOUNT" property="varianceAmount"/>
+        <result column="EXECUTION_RATE" property="executionRate"/>
+        <result column="VARIANCE_RATE" property="varianceRate"/>
+        <result column="STATUS" property="status"/>
+        <result column="WARNING_LEVEL" property="warningLevel"/>
+        <result column="LAST_UPDATE_TIME" property="lastUpdateTime"/>
+        <result column="ORG_ID" property="orgId"/>
+        <result column="CREATE_USER" property="createUser"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_USER" property="updateUser"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="MODEL_NAME" property="modelName"/>
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="Base_Column_List">
+        e.EXECUTION_ID, e.MODEL_ID, e.BIZ_ORG_ID, e.ORG_CODE, e.ORG_NAME,
+        e.SUBJECT_CODE, e.SUBJECT_NAME, e.PERIOD, e.BUDGET_YEAR, e.VERSION_NO,
+        e.DIMENSION1_CODE, e.DIMENSION1_NAME, e.DIMENSION2_CODE, e.DIMENSION2_NAME,
+        e.BUDGET_AMOUNT, e.ADJUSTED_AMOUNT, e.ACTUAL_AMOUNT, e.COMMITTED_AMOUNT,
+        e.OCCUPIED_AMOUNT, e.AVAILABLE_AMOUNT, e.VARIANCE_AMOUNT, e.EXECUTION_RATE,
+        e.VARIANCE_RATE, e.STATUS, e.WARNING_LEVEL, e.LAST_UPDATE_TIME,
+        e.ORG_ID, e.CREATE_USER, e.CREATE_TIME, e.UPDATE_USER, e.UPDATE_TIME,
+        m.MODEL_NAME
+    </sql>
+
+    <!-- 查询条件 -->
+    <sql id="Query_Where_Clause">
+        <where>
+            <if test="param.orgId != null and param.orgId != ''">
+                AND e.ORG_ID = #{param.orgId}
+            </if>
+            <if test="param.modelId != null and param.modelId != ''">
+                AND e.MODEL_ID = #{param.modelId}
+            </if>
+            <if test="param.bizOrgId != null and param.bizOrgId != ''">
+                AND e.BIZ_ORG_ID = #{param.bizOrgId}
+            </if>
+            <if test="param.subjectCode != null and param.subjectCode != ''">
+                AND e.SUBJECT_CODE = #{param.subjectCode}
+            </if>
+            <if test="param.period != null and param.period != ''">
+                AND e.PERIOD = #{param.period}
+            </if>
+            <if test="param.budgetYear != null and param.budgetYear != ''">
+                AND e.BUDGET_YEAR = #{param.budgetYear}
+            </if>
+            <if test="param.versionNo != null and param.versionNo != ''">
+                AND e.VERSION_NO = #{param.versionNo}
+            </if>
+            <if test="param.status != null and param.status != ''">
+                AND e.STATUS = #{param.status}
+            </if>
+            <if test="param.warningLevel != null and param.warningLevel != ''">
+                AND e.WARNING_LEVEL = #{param.warningLevel}
+            </if>
+            <if test="param.startPeriod != null and param.startPeriod != ''">
+                AND e.PERIOD &gt;= #{param.startPeriod}
+            </if>
+            <if test="param.endPeriod != null and param.endPeriod != ''">
+                AND e.PERIOD &lt;= #{param.endPeriod}
+            </if>
+            <if test="param.startTime != null and param.startTime != ''">
+                AND e.LAST_UPDATE_TIME &gt;= #{param.startTime}
+            </if>
+            <if test="param.endTime != null and param.endTime != ''">
+                AND e.LAST_UPDATE_TIME &lt;= #{param.endTime}
+            </if>
+        </where>
+    </sql>
+
+    <!-- 查询预算执行列表 -->
+    <select id="selectExecutionList" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM TBL_BUDGET_EXECUTION e
+        LEFT JOIN TBL_BUDGET_MODEL m ON e.MODEL_ID = m.MODEL_ID
+        <include refid="Query_Where_Clause"/>
+        ORDER BY e.LAST_UPDATE_TIME DESC, e.PERIOD DESC
+    </select>
+
+    <!-- 查询预算执行统计
+         注意: 达梦/Oracle JDBC 驱动会将不带双引号的别名强制转成大写,
+         resultType=Map 时 mybatis 不会做 underscore->camel 映射,
+         所以这里用双引号强制保留驼峰小写, 避免前端 totalCount 取不到值. -->
+    <select id="selectExecutionStatistics" resultType="java.util.Map">
+        SELECT
+            COUNT(*) AS "totalCount",
+            SUM(CASE WHEN e.STATUS = 'NORMAL' THEN 1 ELSE 0 END) AS "normalCount",
+            SUM(CASE WHEN e.STATUS = 'WARNING' THEN 1 ELSE 0 END) AS "warningCount",
+            SUM(CASE WHEN e.STATUS = 'EXCEEDED' THEN 1 ELSE 0 END) AS "exceededCount",
+            SUM(e.BUDGET_AMOUNT) AS "totalBudget",
+            SUM(e.ADJUSTED_AMOUNT) AS "totalAdjusted",
+            SUM(e.ACTUAL_AMOUNT) AS "totalActual",
+            SUM(e.AVAILABLE_AMOUNT) AS "totalAvailable",
+            CASE
+                WHEN SUM(e.ADJUSTED_AMOUNT) = 0 THEN 0
+                ELSE ROUND(SUM(e.ACTUAL_AMOUNT) / SUM(e.ADJUSTED_AMOUNT) * 100, 2)
+            END AS "avgExecutionRate"
+        FROM TBL_BUDGET_EXECUTION e
+        <include refid="Query_Where_Clause"/>
+    </select>
+
+    <!-- 查询预算执行趋势 (同样保留驼峰小写) -->
+    <select id="selectExecutionTrend" resultType="java.util.Map">
+        SELECT
+            e.PERIOD AS "period",
+            SUM(e.BUDGET_AMOUNT) AS "budgetAmount",
+            SUM(e.ADJUSTED_AMOUNT) AS "adjustedAmount",
+            SUM(e.ACTUAL_AMOUNT) AS "actualAmount",
+            SUM(e.AVAILABLE_AMOUNT) AS "availableAmount",
+            CASE
+                WHEN SUM(e.ADJUSTED_AMOUNT) = 0 THEN 0
+                ELSE ROUND(SUM(e.ACTUAL_AMOUNT) / SUM(e.ADJUSTED_AMOUNT) * 100, 2)
+            END AS "executionRate"
+        FROM TBL_BUDGET_EXECUTION e
+        <include refid="Query_Where_Clause"/>
+        GROUP BY e.PERIOD
+        ORDER BY e.PERIOD
+    </select>
+
+    <!-- 查询预算执行预警列表 -->
+    <select id="selectExecutionWarnings" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM TBL_BUDGET_EXECUTION e
+        LEFT JOIN TBL_BUDGET_MODEL m ON e.MODEL_ID = m.MODEL_ID
+        <where>
+            <if test="param.orgId != null and param.orgId != ''">
+                AND e.ORG_ID = #{param.orgId}
+            </if>
+            AND e.STATUS IN ('WARNING', 'EXCEEDED')
+            <if test="param.warningLevel != null and param.warningLevel != ''">
+                AND e.WARNING_LEVEL = #{param.warningLevel}
+            </if>
+        </where>
+        ORDER BY
+            CASE e.WARNING_LEVEL
+                WHEN 'HIGH' THEN 1
+                WHEN 'MEDIUM' THEN 2
+                WHEN 'LOW' THEN 3
+                ELSE 4
+            END,
+            e.LAST_UPDATE_TIME DESC
+    </select>
+
+</mapper>
+

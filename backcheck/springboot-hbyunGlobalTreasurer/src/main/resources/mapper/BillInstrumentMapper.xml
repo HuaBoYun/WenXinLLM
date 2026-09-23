@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.BillInstrumentMapper">
+
+    <resultMap id="BillInstrumentVOResult" type="com.global.treasurer.vo.BillInstrumentVO">
+        <id property="instrumentId" column="INSTRUMENT_ID"/>
+        <result property="instrumentNumber" column="INSTRUMENT_NO"/>
+        <result property="instrumentType" column="BILL_TYPE"/>
+        <result property="instrumentAmount" column="BILL_AMOUNT"/>
+        <result property="currency" column="CURRENCY_CODE"/>
+        <result property="issueDate" column="ISSUE_DATE"/>
+        <result property="maturityDate" column="MATURITY_DATE"/>
+        <result property="drawer" column="DRAWER"/>
+        <result property="payee" column="PAYEE"/>
+        <result property="acceptor" column="ACCEPTOR"/>
+        <result property="instrumentStatus" column="BILL_STATUS"/>
+        <result property="remark" column="REMARK"/>
+        <result property="createTime" column="CREATE_TIME"/>
+        <result property="updateTime" column="UPDATE_TIME"/>
+    </resultMap>
+
+    <select id="selectBillInstrumentList" parameterType="com.global.treasurer.dto.BillInstrumentQueryDTO" resultMap="BillInstrumentVOResult">
+        SELECT INSTRUMENT_ID, INSTRUMENT_NO, BILL_NO, BILL_TYPE, BILL_AMOUNT, CURRENCY_CODE,
+               DRAWER, DRAWER_ACCOUNT, PAYEE, PAYEE_ACCOUNT, ACCEPTOR, ACCEPTOR_ACCOUNT,
+               ISSUE_DATE, MATURITY_DATE, BILL_STATUS, DELETE_FLAG,
+               REMARK, CREATE_TIME, UPDATE_TIME, CREATE_USER, UPDATE_USER
+        FROM TBL_BILL_INSTRUMENT
+        WHERE DELETE_FLAG = 0
+        <if test="instrumentNumber != null and instrumentNumber != ''">
+            AND INSTRUMENT_NO LIKE CONCAT('%', #{instrumentNumber}, '%')
+        </if>
+        <if test="instrumentType != null and instrumentType != ''">
+            AND BILL_TYPE = #{instrumentType}
+        </if>
+        <if test="instrumentStatus != null and instrumentStatus != ''">
+            AND BILL_STATUS = #{instrumentStatus}
+        </if>
+        <if test="drawer != null and drawer != ''">
+            AND DRAWER LIKE CONCAT('%', #{drawer}, '%')
+        </if>
+        <if test="payee != null and payee != ''">
+            AND PAYEE LIKE CONCAT('%', #{payee}, '%')
+        </if>
+        <if test="startDate != null">
+            AND CREATE_TIME &gt;= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND CREATE_TIME &lt;= #{endDate}
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <select id="selectBillInstrumentById" parameterType="Long" resultMap="BillInstrumentVOResult">
+        SELECT INSTRUMENT_ID, INSTRUMENT_NO, BILL_NO, BILL_TYPE, BILL_AMOUNT, CURRENCY_CODE,
+               DRAWER, DRAWER_ACCOUNT, PAYEE, PAYEE_ACCOUNT, ACCEPTOR, ACCEPTOR_ACCOUNT,
+               ISSUE_DATE, MATURITY_DATE, BILL_STATUS, DELETE_FLAG,
+               REMARK, CREATE_TIME, UPDATE_TIME, CREATE_USER, UPDATE_USER
+        FROM TBL_BILL_INSTRUMENT
+        WHERE INSTRUMENT_ID = #{instrumentId} AND DELETE_FLAG = 0
+    </select>
+
+    <update id="deleteBillInstrumentByIds">
+        UPDATE TBL_BILL_INSTRUMENT SET DELETE_FLAG = 1, UPDATE_TIME = SYSDATE
+        WHERE INSTRUMENT_ID IN
+        <foreach item="id" collection="instrumentIds" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- ==================== 统计查询方法（合并 TBL_BILL_INSTRUMENT 和 TBL_BILL_REGISTRATION 两个表） ==================== -->
+
+    <!-- 获取票据统计数据（合并两个表） -->
+    <select id="getBillStatistics" resultType="java.util.HashMap">
+        SELECT
+            COUNT(*) AS totalCount,
+            COALESCE(SUM(BILL_AMOUNT), 0) AS totalAmount,
+            COALESCE(AVG(BILL_AMOUNT), 0) AS avgAmount,
+            COALESCE(MAX(BILL_AMOUNT), 0) AS maxAmount,
+            COALESCE(MIN(BILL_AMOUNT), 0) AS minAmount,
+            SUM(CASE WHEN BILL_STATUS IN ('NORMAL', 'VALID', 'ACTIVE', 'HOLDING', '已开立', '已承兑') THEN 1 ELSE 0 END) AS activeCount
+        FROM (
+            SELECT BILL_AMOUNT, BILL_STATUS FROM TBL_BILL_INSTRUMENT WHERE DELETE_FLAG = 0
+            UNION ALL
+            SELECT BILL_AMOUNT, BILL_STATUS FROM TBL_BILL_REGISTRATION WHERE DELETE_FLAG = 0
+        ) combined
+    </select>
+
+    <!-- 按票据类型统计（合并两个表） -->
+    <select id="getBillTypeStatistics" resultType="java.util.HashMap">
+        SELECT
+            BILL_TYPE AS billType,
+            COUNT(*) AS count,
+            COALESCE(SUM(BILL_AMOUNT), 0) AS amount
+        FROM (
+            SELECT BILL_TYPE, BILL_AMOUNT FROM TBL_BILL_INSTRUMENT WHERE DELETE_FLAG = 0
+            UNION ALL
+            SELECT BILL_TYPE, BILL_AMOUNT FROM TBL_BILL_REGISTRATION WHERE DELETE_FLAG = 0
+        ) combined
+        GROUP BY BILL_TYPE
+        ORDER BY count DESC
+    </select>
+
+    <!-- 按票据状态统计（合并两个表） -->
+    <select id="getBillStatusStatistics" resultType="java.util.HashMap">
+        SELECT
+            BILL_STATUS AS billStatus,
+            COUNT(*) AS count,
+            COALESCE(SUM(BILL_AMOUNT), 0) AS amount
+        FROM (
+            SELECT BILL_STATUS, BILL_AMOUNT FROM TBL_BILL_INSTRUMENT WHERE DELETE_FLAG = 0
+            UNION ALL
+            SELECT BILL_STATUS, BILL_AMOUNT FROM TBL_BILL_REGISTRATION WHERE DELETE_FLAG = 0
+        ) combined
+        GROUP BY BILL_STATUS
+        ORDER BY count DESC
+    </select>
+
+    <!-- 按承兑人/承兑银行统计（合并两个表） -->
+    <select id="getBillAcceptorStatistics" resultType="java.util.HashMap">
+        SELECT
+            ACCEPTOR AS acceptor,
+            COUNT(*) AS count,
+            COALESCE(SUM(BILL_AMOUNT), 0) AS amount
+        FROM (
+            SELECT ACCEPTOR, BILL_AMOUNT FROM TBL_BILL_INSTRUMENT WHERE DELETE_FLAG = 0 AND ACCEPTOR IS NOT NULL
+            UNION ALL
+            SELECT ACCEPTING_BANK AS ACCEPTOR, BILL_AMOUNT FROM TBL_BILL_REGISTRATION WHERE DELETE_FLAG = 0 AND ACCEPTING_BANK IS NOT NULL
+        ) combined
+        GROUP BY ACCEPTOR
+        ORDER BY count DESC
+    </select>
+
+    <!-- 按金额区间统计（合并两个表） -->
+    <select id="getBillAmountRangeStatistics" resultType="java.util.HashMap">
+        SELECT
+            CASE
+                WHEN BILL_AMOUNT &lt; 100000 THEN '10万以下'
+                WHEN BILL_AMOUNT &gt;= 100000 AND BILL_AMOUNT &lt; 500000 THEN '10-50万'
+                WHEN BILL_AMOUNT &gt;= 500000 AND BILL_AMOUNT &lt; 1000000 THEN '50-100万'
+                WHEN BILL_AMOUNT &gt;= 1000000 AND BILL_AMOUNT &lt; 5000000 THEN '100-500万'
+                ELSE '500万以上'
+            END AS amountRange,
+            COUNT(*) AS count,
+            COALESCE(SUM(BILL_AMOUNT), 0) AS amount
+        FROM (
+            SELECT BILL_AMOUNT FROM TBL_BILL_INSTRUMENT WHERE DELETE_FLAG = 0
+            UNION ALL
+            SELECT BILL_AMOUNT FROM TBL_BILL_REGISTRATION WHERE DELETE_FLAG = 0
+        ) combined
+        GROUP BY
+            CASE
+                WHEN BILL_AMOUNT &lt; 100000 THEN '10万以下'
+                WHEN BILL_AMOUNT &gt;= 100000 AND BILL_AMOUNT &lt; 500000 THEN '10-50万'
+                WHEN BILL_AMOUNT &gt;= 500000 AND BILL_AMOUNT &lt; 1000000 THEN '50-100万'
+                WHEN BILL_AMOUNT &gt;= 1000000 AND BILL_AMOUNT &lt; 5000000 THEN '100-500万'
+                ELSE '500万以上'
+            END
+        ORDER BY amount DESC
+    </select>
+
+    <!-- 按日期统计票据趋势（合并两个表，每日统计） -->
+    <select id="getBillDailyTrend" parameterType="java.util.Map" resultType="java.util.HashMap">
+        SELECT
+            dateLabel,
+            SUM(count) AS count,
+            SUM(amount) AS amount
+        FROM (
+            SELECT
+                TO_CHAR(CREATE_TIME, 'MM/DD') AS dateLabel,
+                TO_CHAR(CREATE_TIME, 'YYYY-MM-DD') AS sortDate,
+                COUNT(*) AS count,
+                COALESCE(SUM(BILL_AMOUNT), 0) AS amount
+            FROM TBL_BILL_INSTRUMENT
+            WHERE DELETE_FLAG = 0
+            <if test="startDate != null">
+                AND CREATE_TIME &gt;= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND CREATE_TIME &lt;= #{endDate}
+            </if>
+            GROUP BY TO_CHAR(CREATE_TIME, 'MM/DD'), TO_CHAR(CREATE_TIME, 'YYYY-MM-DD')
+            UNION ALL
+            SELECT
+                TO_CHAR(CREATE_TIME, 'MM/DD') AS dateLabel,
+                TO_CHAR(CREATE_TIME, 'YYYY-MM-DD') AS sortDate,
+                COUNT(*) AS count,
+                COALESCE(SUM(BILL_AMOUNT), 0) AS amount
+            FROM TBL_BILL_REGISTRATION
+            WHERE DELETE_FLAG = 0
+            <if test="startDate != null">
+                AND CREATE_TIME &gt;= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND CREATE_TIME &lt;= #{endDate}
+            </if>
+            GROUP BY TO_CHAR(CREATE_TIME, 'MM/DD'), TO_CHAR(CREATE_TIME, 'YYYY-MM-DD')
+        ) combined
+        GROUP BY dateLabel, sortDate
+        ORDER BY sortDate ASC
+    </select>
+
+    <!-- 获取上月统计数据（合并两个表，用于计算增长率） -->
+    <select id="getLastMonthStatistics" resultType="java.util.HashMap">
+        SELECT
+            COUNT(*) AS totalCount,
+            COALESCE(SUM(BILL_AMOUNT), 0) AS totalAmount
+        FROM (
+            SELECT BILL_AMOUNT FROM TBL_BILL_INSTRUMENT
+            WHERE DELETE_FLAG = 0
+              AND CREATE_TIME &gt;= ADD_MONTHS(TRUNC(SYSDATE, 'MM'), -1)
+              AND CREATE_TIME &lt; TRUNC(SYSDATE, 'MM')
+            UNION ALL
+            SELECT BILL_AMOUNT FROM TBL_BILL_REGISTRATION
+            WHERE DELETE_FLAG = 0
+              AND CREATE_TIME &gt;= ADD_MONTHS(TRUNC(SYSDATE, 'MM'), -1)
+              AND CREATE_TIME &lt; TRUNC(SYSDATE, 'MM')
+        ) combined
+    </select>
+
+    <!-- 获取本月统计数据（合并两个表） -->
+    <select id="getCurrentMonthStatistics" resultType="java.util.HashMap">
+        SELECT
+            COUNT(*) AS totalCount,
+            COALESCE(SUM(BILL_AMOUNT), 0) AS totalAmount
+        FROM (
+            SELECT BILL_AMOUNT FROM TBL_BILL_INSTRUMENT
+            WHERE DELETE_FLAG = 0
+              AND CREATE_TIME &gt;= TRUNC(SYSDATE, 'MM')
+            UNION ALL
+            SELECT BILL_AMOUNT FROM TBL_BILL_REGISTRATION
+            WHERE DELETE_FLAG = 0
+              AND CREATE_TIME &gt;= TRUNC(SYSDATE, 'MM')
+        ) combined
+    </select>
+
+    <!-- 获取统计表格数据（合并两个表，按维度分组） -->
+    <select id="getStatisticsTableData" parameterType="java.util.Map" resultType="java.util.HashMap">
+        SELECT
+            category,
+            SUM(count) AS count,
+            SUM(amount) AS amount,
+            AVG(avgAmount) AS avgAmount
+        FROM (
+            SELECT
+                <choose>
+                    <when test="dimension == 'billType'">
+                        BILL_TYPE AS category,
+                    </when>
+                    <when test="dimension == 'billStatus'">
+                        BILL_STATUS AS category,
+                    </when>
+                    <when test="dimension == 'acceptingBank'">
+                        ACCEPTOR AS category,
+                    </when>
+                    <otherwise>
+                        BILL_TYPE AS category,
+                    </otherwise>
+                </choose>
+                COUNT(*) AS count,
+                COALESCE(SUM(BILL_AMOUNT), 0) AS amount,
+                COALESCE(AVG(BILL_AMOUNT), 0) AS avgAmount
+            FROM TBL_BILL_INSTRUMENT
+            WHERE DELETE_FLAG = 0
+            <if test="startDate != null">
+                AND CREATE_TIME &gt;= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND CREATE_TIME &lt;= #{endDate}
+            </if>
+            <if test="billTypes != null and billTypes.size() > 0">
+                AND BILL_TYPE IN
+                <foreach collection="billTypes" item="type" open="(" separator="," close=")">
+                    #{type}
+                </foreach>
+            </if>
+            <if test="billStatuses != null and billStatuses.size() > 0">
+                AND BILL_STATUS IN
+                <foreach collection="billStatuses" item="status" open="(" separator="," close=")">
+                    #{status}
+                </foreach>
+            </if>
+            GROUP BY
+                <choose>
+                    <when test="dimension == 'billType'">BILL_TYPE</when>
+                    <when test="dimension == 'billStatus'">BILL_STATUS</when>
+                    <when test="dimension == 'acceptingBank'">ACCEPTOR</when>
+                    <otherwise>BILL_TYPE</otherwise>
+                </choose>
+            UNION ALL
+            SELECT
+                <choose>
+                    <when test="dimension == 'billType'">
+                        BILL_TYPE AS category,
+                    </when>
+                    <when test="dimension == 'billStatus'">
+                        BILL_STATUS AS category,
+                    </when>
+                    <when test="dimension == 'acceptingBank'">
+                        ACCEPTING_BANK AS category,
+                    </when>
+                    <otherwise>
+                        BILL_TYPE AS category,
+                    </otherwise>
+                </choose>
+                COUNT(*) AS count,
+                COALESCE(SUM(BILL_AMOUNT), 0) AS amount,
+                COALESCE(AVG(BILL_AMOUNT), 0) AS avgAmount
+            FROM TBL_BILL_REGISTRATION
+            WHERE DELETE_FLAG = 0
+            <if test="startDate != null">
+                AND CREATE_TIME &gt;= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND CREATE_TIME &lt;= #{endDate}
+            </if>
+            <if test="billTypes != null and billTypes.size() > 0">
+                AND BILL_TYPE IN
+                <foreach collection="billTypes" item="type" open="(" separator="," close=")">
+                    #{type}
+                </foreach>
+            </if>
+            <if test="billStatuses != null and billStatuses.size() > 0">
+                AND BILL_STATUS IN
+                <foreach collection="billStatuses" item="status" open="(" separator="," close=")">
+                    #{status}
+                </foreach>
+            </if>
+            GROUP BY
+                <choose>
+                    <when test="dimension == 'billType'">BILL_TYPE</when>
+                    <when test="dimension == 'billStatus'">BILL_STATUS</when>
+                    <when test="dimension == 'acceptingBank'">ACCEPTING_BANK</when>
+                    <otherwise>BILL_TYPE</otherwise>
+                </choose>
+        ) combined
+        GROUP BY category
+        ORDER BY count DESC
+    </select>
+
+</mapper>
+

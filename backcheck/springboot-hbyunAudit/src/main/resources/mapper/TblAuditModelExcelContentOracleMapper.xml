@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.audit.oracle.mapper.TblAuditModelExcelContentOracleMapper">
+    <resultMap id="BaseResultMap" type="com.huabo.audit.oracle.entity.TblAuditModelExcelContentOracle">
+        <!--@mbg.generated generated on Tue May 02 14:53:32 CST 2023.-->
+        <!--@Table HBGRCTEST.TBL_AUDIT_MODEL_EXCEL_CONTENT-->
+        <id column="ID" jdbcType="INTEGER" property="id"/>
+        <result column="TABLENAMEEN" jdbcType="VARCHAR" property="tableNameEn"/>
+        <result column="EXCELID" jdbcType="INTEGER" property="excelId"/>
+        <result column="TABLELIST" jdbcType="VARCHAR" property="tableList"/>
+        <result column="TABLEVALUELIST" jdbcType="VARCHAR" property="tableValueList"/>
+        <result column="STATE" jdbcType="INTEGER" property="state"/>
+        <result column="CREATOR" jdbcType="INTEGER" property="creator"/>
+        <result column="WORKUNIT" jdbcType="INTEGER" property="workUnit"/>
+        <result column="BELONGGROUP" jdbcType="INTEGER" property="belongGroup"/>
+        <result column="CREATEDTIME" jdbcType="TIMESTAMP" property="createdTime"/>
+        <result column="UPDATEDTIME" jdbcType="TIMESTAMP" property="updatedTime"/>
+    </resultMap>
+</mapper>

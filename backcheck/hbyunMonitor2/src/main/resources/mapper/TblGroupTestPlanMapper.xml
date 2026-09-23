@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.huabo.monitor.mapper.TblGroupTestplanMapper">
+
+
+	<select id="findAllNew"
+		resultType="com.huabo.monitor.entity.TblGroupTestplan">
+		select * from TBL_Group_TESTPLAN where 1=1
+		<if test="queryParam.planname!=null and queryParam.planname!= ''">
+			AND planname LIKE concat(concat('%',#{queryParam.planname}),'%')
+		</if>
+		<if
+			test="queryParam.plannumber!=null and queryParam.plannumber!= ''">
+			AND plannumber LIKE concat(concat('%',#{queryParam.plannumber}),'%')
+		</if>
+		<if test="queryParam.planyear!=null and queryParam.planyear!= ''">
+			AND planyear LIKE concat(concat('%',#{queryParam.planyear}),'%')
+		</if>
+		<if test="queryParam.status!=null and queryParam.status!= ''">
+			AND status LIKE concat(concat('%',#{queryParam.status}),'%')
+		</if>
+		<if test="queryParam.toIssued!=null ">
+			AND toIssued =#{queryParam.toIssued}
+		</if>
+		<if test="queryParam.issuedStaffid!=null and queryParam.issuedStaffid!='' ">
+			AND ISSUED_STAFFID  LIKE concat(concat('%',#{queryParam.issuedStaffid}),'%')
+		</if>
+		<if test="queryParam.starttime != null">
+			and starttime &gt;=#{queryParam.starttime}
+		</if>
+		<if test="queryParam.endtime != null">
+			and endtime &lt;=#{queryParam.endtime}
+		</if>
+		<if
+			test="queryParam.creatid!=null and queryParam.creatid!='' and queryParam.authorityType == 0 ">
+			AND creatid=#{queryParam.creatid}
+		</if>
+		<if test="queryParam.orgids!=null and queryParam.orgids.size()>0">
+			and orgid IN
+			<foreach collection="queryParam.orgList" open="(" close=")"
+				item="item" separator=",">
+				#{item}
+			</foreach>
+		</if>
+
+		<if test="sql!=null and sql!=''">
+			${sql}
+		</if>
+		order by id desc
+	</select>
+
+
+
+	<select id="findAllnoSjNew"
+		resultType="com.huabo.monitor.entity.TblGroupTestplan">
+		select * from TBL_GROUP_TESTPLAN where 1=1
+		<if test="queryParam.planname!=null and queryParam.planname!= ''">
+			AND planname LIKE concat(concat('%',#{queryParam.planname}),'%')
+		</if>
+		<if
+			test="queryParam.plannumber!=null and queryParam.plannumber!= ''">
+			AND plannumber LIKE concat(concat('%',#{queryParam.plannumber}),'%')
+		</if>
+		<if test="queryParam.planyear!=null and queryParam.planyear!= ''">
+			AND planyear LIKE concat(concat('%',#{queryParam.planyear}),'%')
+		</if>
+		<if test="queryParam.status!=null and queryParam.status!= ''">
+			AND status LIKE concat(concat('%',#{queryParam.status}),'%')
+		</if>
+		<if test="queryParam.starttime != null">
+			and starttime &gt;=#{queryParam.starttime}
+		</if>
+		<if test="queryParam.endtime != null">
+			and endtime &lt;=#{queryParam.endtime}
+		</if>
+		<if test="queryParam.creatid!=null and queryParam.creatid!='' ">
+			AND ( creatid=#{queryParam.creatid} or
+			staffid=#{queryParam.creatid})
+		</if>
+		<if
+			test="queryParam.creatid!=null and queryParam.creatid!='' and queryParam.authorityType == 0 ">
+			AND ( creatid=#{queryParam.creatid} or
+			staffid=#{queryParam.creatid})
+		</if>
+		<if test="sql!=null and sql!=''">
+			${sql}
+		</if>
+		order by id desc
+	</select>
+
+</mapper>

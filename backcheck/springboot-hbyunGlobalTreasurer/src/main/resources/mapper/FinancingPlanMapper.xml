@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.FinancingPlanMapper">
+
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TblFinancingPlan">
+        <id column="PLAN_ID" property="planId"/>
+        <result column="PLAN_NO" property="planNo"/>
+        <result column="PLAN_NAME" property="planName"/>
+        <result column="COMPANY_ID" property="companyId"/>
+        <result column="COMPANY_NAME" property="companyName"/>
+        <result column="PLAN_TYPE" property="planType"/>
+        <result column="PLAN_YEAR" property="planYear"/>
+        <result column="PLAN_AMOUNT" property="planAmount"/>
+        <result column="CURRENCY_CODE" property="currencyCode"/>
+        <result column="PLAN_STATUS" property="planStatus"/>
+        <result column="START_DATE" property="startDate"/>
+        <result column="END_DATE" property="endDate"/>
+        <result column="DESCRIPTION" property="description"/>
+        <result column="DELETE_FLAG" property="deleteFlag"/>
+        <result column="CREATED_BY" property="createdBy"/>
+        <result column="CREATED_TIME" property="createdTime"/>
+        <result column="UPDATED_BY" property="updatedBy"/>
+        <result column="UPDATED_TIME" property="updatedTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        PLAN_ID, PLAN_NO, PLAN_NAME, COMPANY_ID, COMPANY_NAME, PLAN_TYPE, PLAN_YEAR,
+        PLAN_AMOUNT, CURRENCY_CODE, PLAN_STATUS, START_DATE, END_DATE, DESCRIPTION,
+        DELETE_FLAG, CREATED_BY, CREATED_TIME, UPDATED_BY, UPDATED_TIME
+    </sql>
+
+    <select id="selectPlanList" resultMap="BaseResultMap" parameterType="map">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_FINANCING_PLAN
+        WHERE DELETE_FLAG = 0
+        <if test="planType != null and planType != ''">
+            AND PLAN_TYPE = #{planType}
+        </if>
+        <if test="planStatus != null and planStatus != ''">
+            AND PLAN_STATUS = #{planStatus}
+        </if>
+        <if test="companyId != null">
+            AND COMPANY_ID = #{companyId}
+        </if>
+        <if test="planYear != null">
+            AND PLAN_YEAR = #{planYear}
+        </if>
+        <if test="currencyCode != null and currencyCode != ''">
+            AND CURRENCY_CODE = #{currencyCode}
+        </if>
+        ORDER BY CREATED_TIME DESC
+    </select>
+
+    <select id="selectPlanById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_FINANCING_PLAN
+        WHERE PLAN_ID = #{planId} AND DELETE_FLAG = 0
+    </select>
+
+    <update id="updatePlanStatus">
+        UPDATE TBL_FINANCING_PLAN
+        SET PLAN_STATUS = #{status}, UPDATED_TIME = SYSDATE
+        WHERE PLAN_ID = #{planId}
+    </update>
+
+    <update id="batchDeleteByIds">
+        UPDATE TBL_FINANCING_PLAN
+        SET DELETE_FLAG = 1, UPDATED_TIME = SYSDATE
+        WHERE PLAN_ID IN
+        <foreach collection="planIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <select id="selectPlanSummary" resultType="map">
+        SELECT
+            COUNT(*) AS totalCount,
+            SUM(PLAN_AMOUNT) AS totalAmount,
+            SUM(CASE WHEN PLAN_STATUS = 'APPROVED' THEN PLAN_AMOUNT ELSE 0 END) AS approvedAmount
+        FROM TBL_FINANCING_PLAN
+        WHERE DELETE_FLAG = 0
+        <if test="companyId != null">
+            AND COMPANY_ID = #{companyId}
+        </if>
+    </select>
+
+    <select id="selectByPlanNo" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_FINANCING_PLAN
+        WHERE PLAN_NO = #{planNo} AND DELETE_FLAG = 0
+    </select>
+
+    <select id="countPlanList" resultType="int" parameterType="map">
+        SELECT COUNT(*)
+        FROM TBL_FINANCING_PLAN
+        WHERE DELETE_FLAG = 0
+        <if test="planType != null and planType != ''">
+            AND PLAN_TYPE = #{planType}
+        </if>
+        <if test="planStatus != null and planStatus != ''">
+            AND PLAN_STATUS = #{planStatus}
+        </if>
+        <if test="companyId != null">
+            AND COMPANY_ID = #{companyId}
+        </if>
+        <if test="planYear != null">
+            AND PLAN_YEAR = #{planYear}
+        </if>
+    </select>
+
+    <select id="selectYearSummary" resultType="map">
+        SELECT
+            COUNT(*) AS "totalPlans",
+            SUM(CASE WHEN PLAN_STATUS = 'EXECUTING' THEN 1 ELSE 0 END) AS "executingPlans",
+            NVL(SUM(PLAN_AMOUNT), 0) AS "totalAmount",
+            CASE WHEN COUNT(*) > 0
+                THEN ROUND(SUM(CASE WHEN PLAN_STATUS = 'COMPLETED' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2)
+                ELSE 0
+            END AS "completionRate"
+        FROM TBL_FINANCING_PLAN
+        WHERE DELETE_FLAG = 0
+        <if test="planYear != null">
+            AND PLAN_YEAR = #{planYear}
+        </if>
+        <if test="companyId != null">
+            AND COMPANY_ID = #{companyId}
+        </if>
+    </select>
+
+    <select id="countByStatus" resultType="int">
+        SELECT COUNT(*)
+        FROM TBL_FINANCING_PLAN
+        WHERE DELETE_FLAG = 0 AND PLAN_STATUS = #{status}
+        <if test="planYear != null">
+            AND PLAN_YEAR = #{planYear}
+        </if>
+        <if test="companyId != null">
+            AND COMPANY_ID = #{companyId}
+        </if>
+    </select>
+
+    <select id="selectMonthlyTrend" resultType="map">
+        SELECT
+            TO_CHAR(CREATED_TIME, 'MM') AS "month",
+            COUNT(*) AS "planCount",
+            NVL(SUM(PLAN_AMOUNT), 0) AS "totalAmount"
+        FROM TBL_FINANCING_PLAN
+        WHERE DELETE_FLAG = 0
+        <if test="planYear != null">
+            AND PLAN_YEAR = #{planYear}
+        </if>
+        GROUP BY TO_CHAR(CREATED_TIME, 'MM')
+        ORDER BY TO_CHAR(CREATED_TIME, 'MM')
+    </select>
+
+</mapper>
+

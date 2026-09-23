@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.RegulatoryAuthorityMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.RegulatoryAuthority">
+        <id column="authority_id" property="authorityId" />
+        <result column="authority_code" property="authorityCode" />
+        <result column="authority_name" property="authorityName" />
+        <result column="authority_name_eng" property="authorityNameEng" />
+        <result column="authority_type" property="authorityType" />
+        <result column="country_code" property="countryCode" />
+        <result column="jurisdiction" property="jurisdiction" />
+        <result column="contact_person" property="contactPerson" />
+        <result column="contact_phone" property="contactPhone" />
+        <result column="contact_email" property="contactEmail" />
+        <result column="address" property="address" />
+        <result column="website" property="website" />
+        <result column="is_active" property="isActive" />
+        <result column="remark" property="remark" />
+        <result column="org_id" property="orgId" />
+        <result column="create_user" property="createUser" />
+        <result column="create_time" property="createTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        authority_id, authority_code, authority_name, authority_name_eng, authority_type,
+        country_code, jurisdiction, contact_person, contact_phone, contact_email,
+        address, website, is_active, remark, org_id, create_user, create_time, update_user, update_time
+    </sql>
+
+    <!-- 分页查询监管机构 -->
+    <select id="selectAuthorityPage" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM regulatory_authority
+        <where>
+            <if test="params.authorityCode != null and params.authorityCode != ''">
+                AND authority_code LIKE CONCAT('%', #{params.authorityCode}, '%')
+            </if>
+            <if test="params.authorityName != null and params.authorityName != ''">
+                AND authority_name LIKE CONCAT('%', #{params.authorityName}, '%')
+            </if>
+            <if test="params.authorityType != null and params.authorityType != ''">
+                AND authority_type = #{params.authorityType}
+            </if>
+            <if test="params.countryCode != null and params.countryCode != ''">
+                AND country_code = #{params.countryCode}
+            </if>
+            <if test="params.isActive != null">
+                AND is_active = #{params.isActive}
+            </if>
+            <if test="params.orgId != null">
+                AND org_id = #{params.orgId}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据机构类型查询 -->
+    <select id="selectByAuthorityType" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM regulatory_authority
+        WHERE authority_type = #{authorityType}
+        AND org_id = #{orgId}
+        AND is_active = 1
+        ORDER BY authority_name
+    </select>
+
+    <!-- 查询活跃的监管机构 -->
+    <select id="selectActiveAuthorities" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM regulatory_authority
+        WHERE is_active = 1
+        AND org_id = #{orgId}
+        ORDER BY authority_name
+    </select>
+
+    <!-- 查询重要监管机构 -->
+    <select id="selectImportantAuthorities" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM regulatory_authority
+        WHERE is_active = 1
+        AND org_id = #{orgId}
+        AND authority_type IN ('CENTRAL_BANK', 'SECURITIES_COMMISSION', 'BANKING_REGULATOR')
+        ORDER BY authority_name
+    </select>
+
+    <!-- 检查机构编码是否存在 -->
+    <select id="checkAuthorityCodeExists" resultType="int">
+        SELECT COUNT(1)
+        FROM regulatory_authority
+        WHERE authority_code = #{authorityCode}
+        AND org_id = #{orgId}
+        <if test="authorityId != null">
+            AND authority_id != #{authorityId}
+        </if>
+    </select>
+
+    <!-- 统计报告模板数量 -->
+    <select id="countReportTemplates" resultType="int">
+        SELECT COUNT(1)
+        FROM regulatory_report_template
+        WHERE authority_id = #{authorityId}
+    </select>
+
+    <!-- 统计报告数量 -->
+    <select id="countReports" resultType="int">
+        SELECT COUNT(1)
+        FROM regulatory_report r
+        INNER JOIN regulatory_report_template t ON r.template_id = t.template_id
+        WHERE t.authority_id = #{authorityId}
+    </select>
+
+    <!-- 创建机构备份 -->
+    <insert id="createAuthorityBackup">
+        INSERT INTO regulatory_authority_backup (
+            authority_id, authority_code, authority_name, authority_name_eng, authority_type,
+            country_code, jurisdiction, contact_person, contact_phone, contact_email,
+            address, website, is_active, remark, org_id, backup_note, backup_time, backup_by
+        )
+        SELECT authority_id, authority_code, authority_name, authority_name_eng, authority_type,
+               country_code, jurisdiction, contact_person, contact_phone, contact_email,
+               address, website, is_active, remark, org_id, #{backupNote}, NOW(), #{backupBy}
+        FROM regulatory_authority
+        WHERE authority_id = #{authorityId}
+    </insert>
+
+    <!-- 记录操作日志 -->
+    <insert id="insertOperationLog">
+        INSERT INTO regulatory_authority_log (
+            authority_id, operation_type, operation_desc, operation_by, operation_time
+        ) VALUES (
+            #{authorityId}, #{operationType}, #{operationDesc}, #{operationBy}, NOW()
+        )
+    </insert>
+
+    <!-- 获取机构统计信息 -->
+    <select id="getAuthorityStatistics" resultType="map">
+        SELECT
+            authority_type,
+            COUNT(*) as total_count,
+            SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as active_count,
+            SUM(CASE WHEN is_active = 0 THEN 1 ELSE 0 END) as inactive_count
+        FROM regulatory_authority
+        <where>
+            <if test="params.orgId != null">
+                AND org_id = #{params.orgId}
+            </if>
+            <if test="params.startDate != null and params.startDate != ''">
+                AND create_time >= #{params.startDate}
+            </if>
+            <if test="params.endDate != null and params.endDate != ''">
+                AND create_time &lt;= #{params.endDate}
+            </if>
+        </where>
+        GROUP BY authority_type
+        ORDER BY total_count DESC
+    </select>
+
+    <!-- 获取机构性能分析 -->
+    <select id="getAuthorityPerformanceAnalysis" resultType="map">
+        SELECT
+            a.authority_id,
+            a.authority_name,
+            a.authority_type,
+            COUNT(DISTINCT t.template_id) as template_count,
+            COUNT(DISTINCT r.report_id) as report_count,
+            AVG(CASE WHEN r.report_status = 'ACCEPTED' THEN 1 ELSE 0 END) as success_rate
+        FROM regulatory_authority a
+        LEFT JOIN regulatory_report_template t ON a.authority_id = t.authority_id
+        LEFT JOIN regulatory_report r ON t.template_id = r.template_id
+        <where>
+            <if test="params.orgId != null">
+                AND a.org_id = #{params.orgId}
+            </if>
+            <if test="params.authorityType != null and params.authorityType != ''">
+                AND a.authority_type = #{params.authorityType}
+            </if>
+        </where>
+        GROUP BY a.authority_id, a.authority_name, a.authority_type
+        ORDER BY report_count DESC
+    </select>
+
+    <!-- 验证导入数据 -->
+    <select id="validateImportData" resultType="map">
+        SELECT
+            'authority_code' as field_name,
+            '机构编码重复' as error_message,
+            authority_code as field_value
+        FROM regulatory_authority
+        WHERE authority_code IN
+        <foreach collection="dataList" item="item" open="(" separator="," close=")">
+            #{item.authorityCode}
+        </foreach>
+        AND org_id = #{orgId}
+    </select>
+
+    <!-- 导出机构数据 -->
+    <select id="exportAuthorityData" resultType="map">
+        SELECT
+            authority_code as "机构编码",
+            authority_name as "机构名称",
+            authority_name_eng as "英文名称",
+            authority_type as "机构类型",
+            country_code as "国家代码",
+            jurisdiction as "管辖范围",
+            contact_person as "联系人",
+            contact_phone as "联系电话",
+            contact_email as "联系邮箱",
+            address as "地址",
+            website as "网站",
+            CASE WHEN is_active = 1 THEN '启用' ELSE '停用' END as "状态",
+            remark as "备注",
+            create_time as "创建时间"
+        FROM regulatory_authority
+        <where>
+            <if test="params.authorityType != null and params.authorityType != ''">
+                AND authority_type = #{params.authorityType}
+            </if>
+            <if test="params.isActive != null">
+                AND is_active = #{params.isActive}
+            </if>
+            <if test="params.orgId != null">
+                AND org_id = #{params.orgId}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 获取机构审计日志 -->
+    <select id="getAuthorityAuditLog" resultType="map">
+        SELECT
+            operation_type,
+            operation_desc,
+            operation_by,
+            operation_time
+        FROM regulatory_authority_log
+        WHERE authority_id = #{authorityId}
+        <if test="params.startDate != null and params.startDate != ''">
+            AND operation_time >= #{params.startDate}
+        </if>
+        <if test="params.endDate != null and params.endDate != ''">
+            AND operation_time &lt;= #{params.endDate}
+        </if>
+        ORDER BY operation_time DESC
+    </select>
+
+    <!-- 清理过期机构数据 -->
+    <delete id="cleanupExpiredAuthorityData">
+        DELETE FROM regulatory_authority_backup
+        WHERE backup_time &lt; DATE_SUB(NOW(), INTERVAL #{retentionDays} DAY)
+        AND org_id = #{orgId}
+    </delete>
+
+    <!-- 获取机构监控数据 -->
+    <select id="getAuthorityMonitoringData" resultType="map">
+        SELECT
+            DATE(create_time) as date,
+            COUNT(*) as new_authorities,
+            SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as active_authorities
+        FROM regulatory_authority
+        <where>
+            <if test="params.orgId != null">
+                AND org_id = #{params.orgId}
+            </if>
+            <if test="params.startDate != null and params.startDate != ''">
+                AND create_time >= #{params.startDate}
+            </if>
+            <if test="params.endDate != null and params.endDate != ''">
+                AND create_time &lt;= #{params.endDate}
+            </if>
+        </where>
+        GROUP BY DATE(create_time)
+        ORDER BY date DESC
+    </select>
+
+    <!-- 生成机构报告 -->
+    <select id="generateAuthorityReport" resultType="map">
+        SELECT
+            '监管机构总数' as metric_name,
+            COUNT(*) as metric_value,
+            'count' as metric_type
+        FROM regulatory_authority
+        WHERE org_id = #{params.orgId}
+        
+        UNION ALL
+        
+        SELECT
+            '活跃机构数' as metric_name,
+            COUNT(*) as metric_value,
+            'count' as metric_type
+        FROM regulatory_authority
+        WHERE org_id = #{params.orgId} AND is_active = 1
+        
+        UNION ALL
+        
+        SELECT
+            '机构类型数' as metric_name,
+            COUNT(DISTINCT authority_type) as metric_value,
+            'count' as metric_type
+        FROM regulatory_authority
+        WHERE org_id = #{params.orgId}
+    </select>
+
+</mapper>

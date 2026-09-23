@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.AmDirectConnectionConfigMapper">
+
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.AmDirectConnectionConfig">
+        <id column="id" property="id"/>
+        <result column="account_id" property="accountId"/>
+        <result column="connection_type" property="connectionType"/>
+        <result column="interface_url" property="interfaceUrl"/>
+        <result column="interface_version" property="interfaceVersion"/>
+        <result column="communication_protocol" property="communicationProtocol"/>
+        <result column="timeout_seconds" property="timeoutSeconds"/>
+        <result column="retry_times" property="retryTimes"/>
+        <result column="certificate_path" property="certificatePath"/>
+        <result column="certificate_password" property="certificatePassword"/>
+        <result column="encryption_algorithm" property="encryptionAlgorithm"/>
+        <result column="signature_algorithm" property="signatureAlgorithm"/>
+        <result column="connection_status" property="connectionStatus"/>
+        <result column="last_test_time" property="lastTestTime"/>
+        <result column="last_test_result" property="lastTestResult"/>
+        <result column="authorization_start_date" property="authorizationStartDate"/>
+        <result column="authorization_end_date" property="authorizationEndDate"/>
+        <result column="authorized_operations" property="authorizedOperations"/>
+        <result column="daily_limit" property="dailyLimit"/>
+        <result column="single_limit" property="singleLimit"/>
+        <result column="remark" property="remark"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+        <result column="create_user" property="createUser"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="version_no" property="versionNo"/>
+        <result column="client_ip" property="clientIp"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, account_id, connection_type, interface_url, interface_version, communication_protocol,
+        timeout_seconds, retry_times, certificate_path, certificate_password, encryption_algorithm,
+        signature_algorithm, connection_status, last_test_time, last_test_result,
+        authorization_start_date, authorization_end_date, authorized_operations, daily_limit,
+        single_limit, remark, status, create_time, create_user, update_time, update_user, version_no, client_ip
+    </sql>
+
+    <select id="selectByParams" resultMap="BaseResultMap" parameterType="map">
+        SELECT <include refid="Base_Column_List"/>
+        FROM t_am_direct_connection_config
+        <where>
+            <if test="connectionType != null and connectionType != ''">
+                AND connection_type = #{connectionType}
+            </if>
+            <if test="connectionStatus != null and connectionStatus != ''">
+                AND connection_status = #{connectionStatus}
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+            <if test="bankName != null and bankName != ''">
+                AND account_id IN (SELECT id FROM am_account_archive WHERE bank_name LIKE CONCAT('%', #{bankName}, '%'))
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectStatistics" resultType="java.util.Map">
+        SELECT 
+            COUNT(1) as totalConfigs,
+            SUM(CASE WHEN status = '1' THEN 1 ELSE 0 END) as activeConfigs,
+            SUM(CASE WHEN connection_status = 'ACTIVE' THEN 1 ELSE 0 END) as connectedConfigs,
+            SUM(CASE WHEN last_test_result = 'SUCCESS' THEN 1 ELSE 0 END) as successConfigs,
+            SUM(CASE WHEN last_test_result = 'FAILED' THEN 1 ELSE 0 END) as failedConfigs
+        FROM t_am_direct_connection_config
+    </select>
+
+</mapper>
+

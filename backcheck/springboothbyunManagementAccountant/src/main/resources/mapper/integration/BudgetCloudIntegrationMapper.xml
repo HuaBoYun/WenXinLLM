@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.management.accountant.oracle.mapper.integration.BudgetCloudIntegrationMapper">
+    <resultMap id="BaseResultMap" type="com.management.accountant.oracle.entity.integration.BudgetCloudIntegration">
+        <id column="CLOUD_ID" property="cloudId"/>
+        <result column="CLOUD_CODE" property="cloudCode"/>
+        <result column="CLOUD_NAME" property="cloudName"/>
+        <result column="CLOUD_TYPE" property="cloudType"/>
+        <result column="SERVICE_TYPE" property="serviceType"/>
+        <result column="REGION" property="region"/>
+        <result column="ACCESS_KEY_ID" property="accessKeyId"/>
+        <result column="ACCESS_KEY_SECRET" property="accessKeySecret"/>
+        <result column="ENDPOINT" property="endpoint"/>
+        <result column="BUCKET_NAME" property="bucketName"/>
+        <result column="DB_INSTANCE_ID" property="dbInstanceId"/>
+        <result column="QUEUE_NAME" property="queueName"/>
+        <result column="FUNCTION_NAME" property="functionName"/>
+        <result column="API_GATEWAY_ID" property="apiGatewayId"/>
+        <result column="CONNECTION_CONFIG" property="connectionConfig"/>
+        <result column="SYNC_MODE" property="syncMode"/>
+        <result column="SYNC_FREQUENCY" property="syncFrequency"/>
+        <result column="SYNC_SCHEDULE" property="syncSchedule"/>
+        <result column="DATA_MAPPING" property="dataMapping"/>
+        <result column="ENABLE_ENCRYPTION" property="enableEncryption"/>
+        <result column="ENCRYPTION_ALGORITHM" property="encryptionAlgorithm"/>
+        <result column="IS_ENABLED" property="isEnabled"/>
+        <result column="LAST_SYNC_TIME" property="lastSyncTime"/>
+        <result column="LAST_SYNC_RECORDS" property="lastSyncRecords"/>
+        <result column="TOTAL_DATA_TRANSFER" property="totalDataTransfer"/>
+        <result column="NEXT_SYNC_TIME" property="nextSyncTime"/>
+        <result column="SUCCESS_COUNT" property="successCount"/>
+        <result column="FAILURE_COUNT" property="failureCount"/>
+        <result column="DATA_TRANSFER_MB" property="dataTransferMb"/>
+        <result column="INTEGRATION_STATUS" property="integrationStatus"/>
+        <result column="ERROR_MESSAGE" property="errorMessage"/>
+        <result column="REMARK" property="remark"/>
+        <result column="CREATED_BY" property="createdBy"/>
+        <result column="CREATED_TIME" property="createdTime"/>
+        <result column="UPDATED_BY" property="updatedBy"/>
+        <result column="UPDATED_TIME" property="updatedTime"/>
+    </resultMap>
+    <update id="batchDelete">
+        UPDATE TBL_BUDGET_CLOUD_INTEGRATION SET DEL_FLAG = 1, UPDATE_TIME = SYSDATE
+        WHERE CLOUD_ID IN <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+    </update>
+</mapper>
+

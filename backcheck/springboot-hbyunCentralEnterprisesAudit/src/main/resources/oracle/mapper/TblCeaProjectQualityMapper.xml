@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.central.enterprises.audit.oracle.mapper.TblCeaProjectQualityMapper">
+
+    <select id="getList" resultType="com.huabo.central.enterprises.audit.oracle.entity.TblCeaProjectQuality">
+        select t1.*,t2.REALNAME as assessName
+        from TBL_CEA_PROJECT_QUALITY t1
+        left join TBL_STAFF t2 on t2.STAFFID = t1.ASSESSID
+        where 1=1 and (t1.creator = #{param.creator}
+        <if test="param.deptIds != null and param.deptIds != ''">
+           or t1.creator in (SELECT DISTINCT STAFFID FROM TBL_USER_ORGRELATION WHERE DEPTID IN (${param.getDeptIds}))
+        </if>)
+        <if test="param.assessName != null and param.assessName != ''">
+            and t2.REALNAME like concat('%',concat(#{param.assessName},'%'))
+        </if>
+        order by id desc
+    </select>
+
+    <select id="getTblCeaProjectList" resultType="com.huabo.central.enterprises.audit.vo.result.TblCeaProjectVoResult">
+        select t1.id,
+               t1.plan_project_Id as planProjectId,
+               t1.project_name as projectName,
+               t1.project_type as projectType,
+               t1.plan_name as planName,
+               t1.plan_project_name as planProjectName,
+               t1.project_order_name as projectOrderName,
+               t1.plan_year as planYear,
+               t1.zsname as zsname,
+               t1.fzname as fzname,
+               t1.QDCODE as qdcode,
+               t1.SJLX_NAME as sjlxName,
+               t1.PLAN_STARTTIME as planStarttime,
+               t1.PLAN_ENDTIME as planEndtime
+        from TBL_YQNS_IMPLEMENT_PLAN t1
+        left join TBL_YQNS_IMPLEMENT_PLAN_TEAM t2 on t1.id = t2.im_plan_id
+        where 1=1
+<!--        and t1.spzt = 6-->
+        <if test="param.ids != null and param.ids.size() > 0">
+            and t1.id in
+            <foreach collection="param.ids" item="item" open="(" close=")"  separator=",">
+                #{item}
+            </foreach>
+        </if>
+        <if test="param.projectName != null and param.projectName != ''">
+             AND t1.project_name like concat('%',concat(#{param.projectName},'%'))
+        </if>
+        order by t1.id desc
+    </select>
+
+    <select id="getTblCeaProjectVoList" resultType="com.huabo.central.enterprises.audit.vo.result.TblCeaProjectVoResult">
+        select t1.id,
+               t1.plan_project_Id as planProjectId,
+               t1.project_name as projectName,
+               t1.project_type as projectType,
+               t1.plan_name as planName,
+               t1.plan_project_name as planProjectName,
+               t1.project_order_name as projectOrderName,
+               t1.plan_year as planYear,
+               t1.zsname as zsname,
+               t1.fzname as fzname,
+               t1.QDCODE as qdcode,
+               t1.SJLX_NAME as sjlxName,
+               t1.PLAN_STARTTIME as planStarttime,
+               t1.PLAN_ENDTIME as planEndtime
+        from TBL_YQNS_IMPLEMENT_PLAN t1
+        left join TBL_CEA_PROJECT_DECLARE t2 on t2.IMPLEMENTATIONPLANID = t1.ID
+        where 1 = 1 AND spzt = 6 and t2.IMPLEMENTATIONPLANID is null
+        <if test="param.projectName != null and param.projectName != ''">
+             AND t1.project_name like concat('%',concat(#{param.projectName},'%'))
+        </if>
+    </select>
+
+    <select id="getTblCeaProjectTeamList" resultType="com.huabo.central.enterprises.audit.vo.result.TblCeaProjectVoResult">
+        select team_leader_id as teamLeaderId,team_members_ids as teamMembersIds,fzzstaffid as fzzstaffid from TBL_YQNS_IMPLEMENT_PLAN_TEAM where im_plan_id = #{id}
+    </select>
+
+    <select id="getIds" resultType="java.lang.Long">
+        select distinct t1.id
+        from TBL_YQNS_IMPLEMENT_PLAN t1
+        left join TBL_YQNS_IMPLEMENT_PLAN_TEAM t2 on t1.id = t2.im_plan_id
+        where 1 = 1 and (plan_project_id = #{assessId} or zsname = #{assessId} or fzname = #{assessId} or team_leader_id = #{assessId} or team_members_ids like concat('%',concat(#{assessId},'%')))
+    </select>
+
+</mapper>

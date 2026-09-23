@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.huabo.etl</groupId>
+    <artifactId>springboot-hbyunEtl</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <name>etl微服务</name>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.7.18</version>
+    </parent>
+
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <spring-cloud.version>2021.0.3</spring-cloud.version>
+		<mybatis-plus.version>3.5.6</mybatis-plus.version>
+		<mybatis.version>3.5.16</mybatis.version>
+    </properties>
+	<dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    <dependencies>
+		<dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-boot-starter</artifactId>
+            <version>3.5.3.1</version>
+            <exclusions>
+	            <exclusion>
+	                <groupId>org.mybatis</groupId>
+	                <artifactId>mybatis</artifactId>
+	            </exclusion>
+	            <exclusion>
+	                <groupId>org.mybatis</groupId>
+	                <artifactId>mybatis-spring</artifactId>
+	            </exclusion>
+	        </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <exclusions>
+	            <exclusion>
+	                <groupId>org.yaml</groupId>
+	                <artifactId>snakeyaml</artifactId>
+	            </exclusion>
+	        </exclusions>
+        </dependency>
+        <dependency>
+	        <groupId>org.mybatis</groupId>
+	        <artifactId>mybatis</artifactId>
+	        <version>${mybatis.version}</version>
+	    </dependency>
+	    <dependency>
+	        <groupId>org.mybatis</groupId>
+	        <artifactId>mybatis-spring</artifactId>
+	        <version>2.0.7</version>
+	    </dependency>
+	    <dependency>
+		    <groupId>org.yaml</groupId>
+		    <artifactId>snakeyaml</artifactId>
+		    <version>2.0</version>
+		</dependency>
+		<!-- JSQLParser -->
+	    <dependency>
+	        <groupId>com.github.jsqlparser</groupId>
+	        <artifactId>jsqlparser</artifactId>
+	        <version>4.6</version>
+	    </dependency>
+        <!-- 工具类 -->
+        <dependency>
+            <groupId>com.hbfk.utils</groupId>
+            <artifactId>springboot-hbyunutils</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <!--定时调度-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-quartz</artifactId>
+        </dependency>
+
+        <!-- 阿里数据库连接池 -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid-spring-boot-starter</artifactId>
+            <version>1.2.8</version>
+        </dependency>
+
+        <!-- pagehelper 分页插件 -->
+        <dependency>
+            <groupId>com.github.pagehelper</groupId>
+            <artifactId>pagehelper-spring-boot-starter</artifactId>
+            <version>1.4.3</version>
+        </dependency>
+
+        <!-- 注册中心 -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+            <version>3.0.4</version>
+        </dependency>
+
+        <!-- collections工具类 -->
+        <dependency>
+		    <groupId>commons-collections</groupId>
+		    <artifactId>commons-collections</artifactId>
+		    <version>3.2.2</version>
+		</dependency>
+
+        <!-- commons-lang3 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-vfs2</artifactId>
+            <version>2.6.0</version>
+        </dependency>
+
+        <!-- 文件上传工具类 -->
+        <dependency>
+            <groupId>commons-fileupload</groupId>
+            <artifactId>commons-fileupload</artifactId>
+            <version>1.6.0</version>
+        </dependency>
+
+        <!-- lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+
+        <!-- kettle核心依赖 -->
+        <dependency>
+            <groupId>pentaho-kettle</groupId>
+            <artifactId>kettle-core</artifactId>
+            <version>9.1.0.0-324</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/kettle-core-9.1.0.0-324.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>pentaho-kettle</groupId>
+            <artifactId>kettle-engine</artifactId>
+            <version>9.1.0.0-324</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/kettle-engine-9.1.0.0-324.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>pentaho-kettle</groupId>
+            <artifactId>kettle-dbdialog</artifactId>
+            <version>9.1.0.0-324</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/kettle-dbdialog-9.1.0.0-324.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>org.pentaho.di.plugins</groupId>
+            <artifactId>kettle-sap-plugin-core</artifactId>
+            <version>9.1.0.0-324</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/kettle-sap-plugin-core-9.1.0.0-324.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>pentaho-kettle</groupId>
+            <artifactId>kettle-ui-swt</artifactId>
+            <version>9.1.0.0-324</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/kettle-ui-swt-9.1.0.0-324.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>pentaho-kettle</groupId>
+            <artifactId>pentaho-encryption-support</artifactId>
+            <version>9.1.0.0-324</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/pentaho-encryption-support-9.1.0.0-324.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>org.scannotation</groupId>
+            <artifactId>scannotation</artifactId>
+            <version>1.0.3</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/scannotation-1.0.2.jar</systemPath>
+        </dependency>
+
+        <dependency>
+            <groupId>pentaho-kettle</groupId>
+            <artifactId>metastore</artifactId>
+            <version>9.1.0.0-324</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/metastore-9.1.0.0-324.jar</systemPath>
+        </dependency>
+
+        <dependency>
+            <groupId>net.sourceforge.jexcelapi</groupId>
+            <artifactId>jxl</artifactId>
+            <version>2.6.12</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/jxl-2.6.12.jar</systemPath>
+        </dependency>
+
+
+    </dependencies>
+
+    <repositories>
+        <repository>
+            <id>alibaba</id>
+            <url>https://maven.aliyun.com/repository/public</url>
+        </repository>
+    </repositories>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <!-- 加入此配置，才会把本地的jar包也引进去 -->
+                    <includeSystemScope>true</includeSystemScope>
+                </configuration>
+            </plugin>
+        </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
+
+</project>

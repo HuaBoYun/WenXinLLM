@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.oracle.mapper.TcSealCombinationMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.oracle.entity.TcSealCombination">
+        <id column="ID" jdbcType="VARCHAR" property="id" />
+        <result column="COMBINATION_CODE" jdbcType="VARCHAR" property="combinationCode" />
+        <result column="COMBINATION_NAME" jdbcType="VARCHAR" property="combinationName" />
+        <result column="BUSINESS_SCENARIO" jdbcType="VARCHAR" property="businessScenario" />
+        <result column="COMBINATION_DESC" jdbcType="VARCHAR" property="combinationDesc" />
+        <result column="APPROVAL_LEVEL" jdbcType="VARCHAR" property="approvalLevel" />
+        <result column="USAGE_RULE" jdbcType="VARCHAR" property="usageRule" />
+        <result column="TIME_LIMIT" jdbcType="VARCHAR" property="timeLimit" />
+        <result column="LOCATION_LIMIT" jdbcType="VARCHAR" property="locationLimit" />
+        <result column="STATUS" jdbcType="VARCHAR" property="status" />
+        <result column="REMARK" jdbcType="VARCHAR" property="remark" />
+        <result column="CREATE_TIME" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="UPDATE_TIME" jdbcType="TIMESTAMP" property="updateTime" />
+        <result column="CREATE_USER" jdbcType="VARCHAR" property="createUser" />
+        <result column="UPDATE_USER" jdbcType="VARCHAR" property="updateUser" />
+        <result column="VERSION_NO" jdbcType="INTEGER" property="versionNo" />
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="Base_Column_List">
+        ID, COMBINATION_CODE, COMBINATION_NAME, BUSINESS_SCENARIO, COMBINATION_DESC,
+        APPROVAL_LEVEL, USAGE_RULE, TIME_LIMIT, LOCATION_LIMIT, STATUS, REMARK,
+        CREATE_TIME, UPDATE_TIME, CREATE_USER, UPDATE_USER, VERSION_NO
+    </sql>
+
+    <!-- 根据组合编码查询 -->
+    <select id="selectByCombinationCode" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TC_SEAL_COMBINATION
+        WHERE COMBINATION_CODE = #{combinationCode,jdbcType=VARCHAR}
+    </select>
+
+    <!-- 根据业务场景查询 -->
+    <select id="selectByBusinessScenario" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TC_SEAL_COMBINATION
+        WHERE BUSINESS_SCENARIO = #{businessScenario,jdbcType=VARCHAR}
+        AND STATUS = '1'
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据条件查询 -->
+    <select id="selectByCondition" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TC_SEAL_COMBINATION
+        <where>
+            <if test="combinationCode != null and combinationCode != ''">
+                AND COMBINATION_CODE LIKE CONCAT('%', #{combinationCode,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="combinationName != null and combinationName != ''">
+                AND COMBINATION_NAME LIKE CONCAT('%', #{combinationName,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="businessScenario != null and businessScenario != ''">
+                AND BUSINESS_SCENARIO = #{businessScenario,jdbcType=VARCHAR}
+            </if>
+            <if test="approvalLevel != null and approvalLevel != ''">
+                AND APPROVAL_LEVEL = #{approvalLevel,jdbcType=VARCHAR}
+            </if>
+            <if test="status != null and status != ''">
+                AND STATUS = #{status,jdbcType=VARCHAR}
+            </if>
+        </where>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据审批级别查询 -->
+    <select id="selectByApprovalLevel" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TC_SEAL_COMBINATION
+        WHERE APPROVAL_LEVEL = #{approvalLevel,jdbcType=VARCHAR}
+        AND STATUS = '1'
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 查询所有业务场景 -->
+    <select id="selectAllBusinessScenarios" resultType="java.lang.String">
+        SELECT DISTINCT BUSINESS_SCENARIO
+        FROM TC_SEAL_COMBINATION
+        WHERE BUSINESS_SCENARIO IS NOT NULL
+        AND BUSINESS_SCENARIO != ''
+        AND STATUS = '1'
+        ORDER BY BUSINESS_SCENARIO
+    </select>
+
+    <!-- 查询启用状态的印鉴组合 -->
+    <select id="selectActiveCombinations" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TC_SEAL_COMBINATION
+        WHERE STATUS = '1'
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 统计各审批级别组合数量 -->
+    <select id="countByApprovalLevel" resultType="java.util.Map">
+        SELECT
+            APPROVAL_LEVEL as approvalLevel,
+            COUNT(*) as count
+        FROM TC_SEAL_COMBINATION
+        WHERE STATUS = '1'
+        GROUP BY APPROVAL_LEVEL
+        ORDER BY APPROVAL_LEVEL
+    </select>
+
+</mapper>

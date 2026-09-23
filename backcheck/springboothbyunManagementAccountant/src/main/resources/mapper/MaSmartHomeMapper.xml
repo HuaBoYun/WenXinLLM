@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.management.accountant.oracle.mapper.MaSmartHomeMapper">
+
+    <!-- 预算执行率 & 偏差率 & 成本节约率: 从 TBL_NCV_BUDGET_DATA 全量计算 -->
+    <select id="selectBudgetRates" resultType="java.util.HashMap">
+        SELECT
+            ROUND(AVG(CASE WHEN BUDGET_VALUE > 0 THEN ACTUAL_VALUE / BUDGET_VALUE * 100 ELSE 0 END), 2) AS EXEC_RATE,
+            ROUND(AVG(ABS(NVL(VARIANCE_RATE, 0))), 2) AS DEVIATION_RATE,
+            ROUND(CASE WHEN SUM(NVL(BUDGET_VALUE, 0)) > 0
+                THEN (SUM(NVL(BUDGET_VALUE, 0)) - SUM(NVL(ACTUAL_VALUE, 0))) / SUM(NVL(BUDGET_VALUE, 0)) * 100
+                ELSE 0 END, 2) AS COST_SAVE_RATE
+        FROM TBL_NCV_BUDGET_DATA
+        WHERE DEL_FLAG = 0
+          AND BUDGET_VALUE IS NOT NULL
+          AND BUDGET_VALUE > 0
+          AND ACTUAL_VALUE IS NOT NULL
+    </select>
+
+    <!-- 预算编制完成套数 & 总任务数 -->
+    <select id="selectBudgetTaskCount" resultType="java.util.HashMap">
+        SELECT
+            COUNT(CASE WHEN TASK_STATUS = 'COMPLETED' THEN 1 END) AS COMPLETED_COUNT,
+            COUNT(*) AS TOTAL_COUNT
+        FROM TBL_BUDGET_TASK
+        WHERE DEL_FLAG = 0
+    </select>
+
+    <!-- 预算控制待处理数 -->
+    <select id="selectControlPendingCount" resultType="int">
+        SELECT COUNT(*)
+        FROM TBL_BUDGET_TASK
+        WHERE DEL_FLAG = 0
+          AND TASK_STATUS IN ('PENDING', 'IN_PROGRESS', 'SUBMITTED')
+    </select>
+
+</mapper>

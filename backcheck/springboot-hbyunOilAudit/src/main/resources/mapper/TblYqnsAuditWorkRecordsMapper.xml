@@ -1,0 +1,481 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.audit.oracle.mapper.TblYqnsAuditWorkRecordsMapper">
+    <sql id="selectRecordsListField">
+        ID,
+        AUDITEENAME,
+        AUDITEENAMEID,
+        IMPLEMENTATIONTIME,
+        PROJECTNAME,
+        RESPONSIBLECONTENT,
+        CONTENTOBJECTIVES,
+        EXECUTEDPROCEDURESPROCESSES,
+        VERIFICATIONSITUATION,
+        CLUESSOURCES,
+        CREATEUSER,
+        CREATETIME,
+        UPDATEUSER,
+        UPDATETIME,
+        DELFLAG,
+        PROJECTID,
+        STATUS,
+        INDEXNO,
+        RESERVED,
+        NO
+    </sql>
+
+    <select id="selectRecordsList" resultType="com.huabo.audit.oracle.entity.TblYqnsAuditWorkRecordsEntity">
+        SELECT
+        rs.ID,
+        rs.AUDITEENAME,
+        rs.AUDITEENAMEID,
+        rs.IMPLEMENTATIONTIME,
+        rs.PROJECTNAME,
+        rs.RESPONSIBLECONTENT,
+        rs.CONTENTOBJECTIVES,
+        rs.EXECUTEDPROCEDURESPROCESSES,
+        rs.VERIFICATIONSITUATION,
+        rs.CLUESSOURCES,
+        rs.CREATEUSER,
+        rs.CREATETIME,
+        rs.UPDATEUSER,
+        rs.UPDATETIME,
+        rs.DELFLAG,
+        rs.PROJECTID,
+        rs.STATUS,
+        rs.INDEXNO,
+        rs.RESERVED,
+        rs.NO,
+        STA.REALNAME
+        FROM TBL_YQNS_AUDIT_WORK_RECORDS rs LEFT JOIN TBL_STAFF sta on RS.CREATEUSER=to_char(STA.STAFFID)
+        <where>
+        <if test="auditeeNameId !=null  and auditeeNameId !='' ">
+             rs.AUDITEENAMEID = #{auditeeNameId}
+        </if>
+        <if test="projectName !=null and projectName !='' ">
+            and rs.PROJECTNAME like concat(concat('%',#{projectName}),'%')
+        </if>
+        <if test="projectId !=null and projectId !='' ">
+            and rs.PROJECTID = #{projectId}
+        </if>
+        <if test="indexno !=null and indexno !='' ">
+            and rs.INDEXNO like concat(concat('%',#{indexno}),'%')
+        </if>
+        <if test="status !=null ">
+            and rs.STATUS = #{status}
+        </if>
+        
+        <if test="createUser !=null and createUser !='' ">
+            and rs.CREATEUSER = #{createUser}
+        </if>
+        
+        </where>
+    </select>
+
+
+    <select id="selectRecordsById" resultType="com.huabo.audit.oracle.entity.TblYqnsAuditWorkRecordsEntity">
+        SELECT
+        rs.ID,
+        rs.AUDITEENAME,
+        rs.AUDITEENAMEID,
+        rs.IMPLEMENTATIONTIME,
+        rs.PROJECTNAME,
+        rs.RESPONSIBLECONTENT,
+        rs.CONTENTOBJECTIVES,
+        rs.EXECUTEDPROCEDURESPROCESSES,
+        rs.VERIFICATIONSITUATION,
+        rs.CLUESSOURCES,
+        rs.CREATEUSER,
+        rs.CREATETIME,
+        rs.UPDATEUSER,
+        rs.UPDATETIME,
+        rs.DELFLAG,
+        rs.PROJECTID,
+        rs.STATUS,
+        rs.INDEXNO,
+        rs.RESERVED,
+        rs.NO,
+        STA.REALNAME,
+        rs.RESERVEDSTRING1, rs.RESERVEDSTRING2, rs.RESERVEDSTRING3, rs.RESERVEDSTRING4, rs.RESERVEDSTRING5,
+        rs.RESERVEDSTRING6, rs.RESERVEDSTRING7, rs.RESERVEDSTRING8, rs.RESERVEDSTRING9, rs.RESERVEDSTRING10,
+        rs.RESERVEDCONTENT1, rs.RESERVEDCONTENT2, rs.RESERVEDCONTENT3, rs.RESERVEDCONTENT4, rs.RESERVEDCONTENT5,
+        rs.RESERVEDCONTENT6, rs.RESERVEDCONTENT7, rs.RESERVEDCONTENT8, rs.RESERVEDCONTENT9, rs.RESERVEDCONTENT10,
+        rs.RESERVEDDROPDOWNMULTIPLE1, rs.RESERVEDDROPDOWNMULTIPLE2, rs.RESERVEDDROPDOWNMULTIPLE3,
+        rs.RESERVEDDROPDOWNMULTIPLE4, rs.RESERVEDDROPDOWNMULTIPLE5,
+        rs.RESERVEDMULTIPLECHOICE1, rs.RESERVEDMULTIPLECHOICE2, rs.RESERVEDMULTIPLECHOICE3,
+        rs.RESERVEDMULTIPLECHOICE4, rs.RESERVEDMULTIPLECHOICE5,
+        rs.RESERVEDYEARTIME1, rs.RESERVEDYEARTIME2, rs.RESERVEDYEARTIME3, rs.RESERVEDYEARTIME4, rs.RESERVEDYEARTIME5,
+        rs.RESERVEDYEARACCURATETIME1, rs.RESERVEDYEARACCURATETIME2, rs.RESERVEDYEARACCURATETIME3,
+        rs.RESERVEDYEARACCURATETIME4, rs.RESERVEDYEARACCURATETIME5,
+        rs.RESERVEDTIME1, rs.RESERVEDTIME2, rs.RESERVEDTIME3, rs.RESERVEDTIME4, rs.RESERVEDTIME5,
+        rs.RESERVEDSINGLECHOICE1, rs.RESERVEDSINGLECHOICE2, rs.RESERVEDSINGLECHOICE3,
+        rs.RESERVEDSINGLECHOICE4, rs.RESERVEDSINGLECHOICE5,
+        rs.RESERVEDDROPDOWNSINGLECHOICE1, rs.RESERVEDDROPDOWNSINGLECHOICE2, rs.RESERVEDDROPDOWNSINGLECHOICE3,
+        rs.RESERVEDDROPDOWNSINGLECHOICE4, rs.RESERVEDDROPDOWNSINGLECHOICE5,
+        rs.RESERVEDNUM1, rs.RESERVEDNUM2, rs.RESERVEDNUM3, rs.RESERVEDNUM4, rs.RESERVEDNUM5,
+        rs.STAFFID1, rs.STAFFID2, rs.STAFFID3, rs.STAFFID4, rs.STAFFID5,
+        rs.STAFFIDS1, rs.STAFFIDS2, rs.STAFFIDS3, rs.STAFFIDS4, rs.STAFFIDS5,
+        rs.ORGID1, rs.ORGID2, rs.ORGID3, rs.ORGID4, rs.ORGID5,
+        rs.ORGIDS1, rs.ORGIDS2, rs.ORGIDS3, rs.ORGIDS4, ORGIDS5
+        FROM TBL_YQNS_AUDIT_WORK_RECORDS rs LEFT JOIN TBL_STAFF sta on RS.CREATEUSER=to_char(STA.STAFFID)
+        where
+        id = #{id}
+    </select>
+
+
+    <insert id="insertEntity">
+        INSERT INTO TBL_YQNS_AUDIT_WORK_RECORDS
+                (ID,AUDITEENAME,AUDITEENAMEID, IMPLEMENTATIONTIME, PROJECTNAME,
+                 CONTENTOBJECTIVES, EXECUTEDPROCEDURESPROCESSES, VERIFICATIONSITUATION,
+                 CLUESSOURCES, CREATEUSER,PROJECTID,INDEXNO,NO,
+                 RESERVEDSTRING1, RESERVEDSTRING2, RESERVEDSTRING3, RESERVEDSTRING4, RESERVEDSTRING5,
+                 RESERVEDSTRING6, RESERVEDSTRING7, RESERVEDSTRING8, RESERVEDSTRING9, RESERVEDSTRING10,
+                 RESERVEDCONTENT1, RESERVEDCONTENT2, RESERVEDCONTENT3, RESERVEDCONTENT4, RESERVEDCONTENT5,
+                 RESERVEDCONTENT6, RESERVEDCONTENT7, RESERVEDCONTENT8, RESERVEDCONTENT9, RESERVEDCONTENT10,
+                 RESERVEDDROPDOWNMULTIPLE1, RESERVEDDROPDOWNMULTIPLE2, RESERVEDDROPDOWNMULTIPLE3,
+                 RESERVEDDROPDOWNMULTIPLE4, RESERVEDDROPDOWNMULTIPLE5,
+                 RESERVEDMULTIPLECHOICE1, RESERVEDMULTIPLECHOICE2, RESERVEDMULTIPLECHOICE3,
+                 RESERVEDMULTIPLECHOICE4, RESERVEDMULTIPLECHOICE5,
+                 RESERVEDYEARTIME1, RESERVEDYEARTIME2, RESERVEDYEARTIME3, RESERVEDYEARTIME4, RESERVEDYEARTIME5,
+                 RESERVEDYEARACCURATETIME1, RESERVEDYEARACCURATETIME2, RESERVEDYEARACCURATETIME3,
+                 RESERVEDYEARACCURATETIME4, RESERVEDYEARACCURATETIME5,
+                 RESERVEDTIME1, RESERVEDTIME2, RESERVEDTIME3, RESERVEDTIME4, RESERVEDTIME5,
+                 RESERVEDSINGLECHOICE1, RESERVEDSINGLECHOICE2, RESERVEDSINGLECHOICE3,
+                 RESERVEDSINGLECHOICE4, RESERVEDSINGLECHOICE5,
+                 RESERVEDDROPDOWNSINGLECHOICE1, RESERVEDDROPDOWNSINGLECHOICE2, RESERVEDDROPDOWNSINGLECHOICE3,
+                 RESERVEDDROPDOWNSINGLECHOICE4, RESERVEDDROPDOWNSINGLECHOICE5,
+                 RESERVEDNUM1, RESERVEDNUM2, RESERVEDNUM3, RESERVEDNUM4, RESERVEDNUM5,
+                 STAFFID1, STAFFID2, STAFFID3, STAFFID4, STAFFID5,
+                 STAFFIDS1, STAFFIDS2, STAFFIDS3, STAFFIDS4, STAFFIDS5,
+                 ORGID1, ORGID2, ORGID3, ORGID4, ORGID5,
+                 ORGIDS1, ORGIDS2, ORGIDS3, ORGIDS4, ORGIDS5
+                 )
+        VALUES (#{id},#{auditeeName,jdbcType=VARCHAR},#{auditeeNameId,jdbcType=VARCHAR}, #{implementationTime}, #{projectName},
+                #{contentObjectives}, #{executedProceduresProcesses}, #{verificationSituation},
+                #{cluesSources}, #{createUser}, #{projectId}, #{indexno,jdbcType=VARCHAR}, #{no,jdbcType=VARCHAR},
+                #{reservedString1,jdbcType=VARCHAR}, #{reservedString2,jdbcType=VARCHAR}, #{reservedString3,jdbcType=VARCHAR}, #{reservedString4,jdbcType=VARCHAR}, #{reservedString5,jdbcType=VARCHAR},
+                #{reservedString6,jdbcType=VARCHAR}, #{reservedString7,jdbcType=VARCHAR}, #{reservedString8,jdbcType=VARCHAR}, #{reservedString9,jdbcType=VARCHAR}, #{reservedString10,jdbcType=VARCHAR},
+                #{reservedContent1,jdbcType=VARCHAR}, #{reservedContent2,jdbcType=VARCHAR}, #{reservedContent3,jdbcType=VARCHAR}, #{reservedContent4,jdbcType=VARCHAR}, #{reservedContent5,jdbcType=VARCHAR},
+                #{reservedContent6,jdbcType=VARCHAR}, #{reservedContent7,jdbcType=VARCHAR}, #{reservedContent8,jdbcType=VARCHAR}, #{reservedContent9,jdbcType=VARCHAR}, #{reservedContent10,jdbcType=VARCHAR},
+                #{reservedDropdownMultiple1,jdbcType=VARCHAR}, #{reservedDropdownMultiple2,jdbcType=VARCHAR}, #{reservedDropdownMultiple3,jdbcType=VARCHAR},
+                #{reservedDropdownMultiple4,jdbcType=VARCHAR}, #{reservedDropdownMultiple5,jdbcType=VARCHAR},
+                #{reservedMultipleChoice1,jdbcType=VARCHAR}, #{reservedMultipleChoice2,jdbcType=VARCHAR}, #{reservedMultipleChoice3,jdbcType=VARCHAR},
+                #{reservedMultipleChoice4,jdbcType=VARCHAR}, #{reservedMultipleChoice5,jdbcType=VARCHAR},
+                #{reservedYearTime1,jdbcType=TIMESTAMP}, #{reservedYearTime2,jdbcType=TIMESTAMP}, #{reservedYearTime3,jdbcType=TIMESTAMP}, #{reservedYearTime4,jdbcType=TIMESTAMP}, #{reservedYearTime5,jdbcType=TIMESTAMP},
+                #{reservedYearAccurateTime1,jdbcType=TIMESTAMP}, #{reservedYearAccurateTime2,jdbcType=TIMESTAMP}, #{reservedYearAccurateTime3,jdbcType=TIMESTAMP},
+                #{reservedYearAccurateTime4,jdbcType=TIMESTAMP}, #{reservedYearAccurateTime5,jdbcType=TIMESTAMP},
+                #{reservedTime1,jdbcType=TIMESTAMP}, #{reservedTime2,jdbcType=TIMESTAMP}, #{reservedTime3,jdbcType=TIMESTAMP}, #{reservedTime4,jdbcType=TIMESTAMP}, #{reservedTime5,jdbcType=TIMESTAMP},
+                #{reservedSingleChoice1,jdbcType=VARCHAR}, #{reservedSingleChoice2,jdbcType=VARCHAR}, #{reservedSingleChoice3,jdbcType=VARCHAR},
+                #{reservedSingleChoice4,jdbcType=VARCHAR}, #{reservedSingleChoice5,jdbcType=VARCHAR},
+                #{reservedDropdownSingleChoice1,jdbcType=VARCHAR}, #{reservedDropdownSingleChoice2,jdbcType=VARCHAR}, #{reservedDropdownSingleChoice3,jdbcType=VARCHAR},
+                #{reservedDropdownSingleChoice4,jdbcType=VARCHAR}, #{reservedDropdownSingleChoice5,jdbcType=VARCHAR},
+                #{reservedNum1,jdbcType=INTEGER}, #{reservedNum2,jdbcType=INTEGER}, #{reservedNum3,jdbcType=INTEGER}, #{reservedNum4,jdbcType=INTEGER}, #{reservedNum5,jdbcType=INTEGER},
+                #{staffid1,jdbcType=DECIMAL}, #{staffid2,jdbcType=DECIMAL}, #{staffid3,jdbcType=DECIMAL}, #{staffid4,jdbcType=DECIMAL}, #{staffid5,jdbcType=DECIMAL},
+                #{staffids1,jdbcType=VARCHAR}, #{staffids2,jdbcType=VARCHAR}, #{staffids3,jdbcType=VARCHAR}, #{staffids4,jdbcType=VARCHAR}, #{staffids5,jdbcType=VARCHAR},
+                #{orgid1,jdbcType=DECIMAL}, #{orgid2,jdbcType=DECIMAL}, #{orgid3,jdbcType=DECIMAL}, #{orgid4,jdbcType=DECIMAL}, #{orgid5,jdbcType=DECIMAL},
+                #{orgids1,jdbcType=VARCHAR}, #{orgids2,jdbcType=VARCHAR}, #{orgids3,jdbcType=VARCHAR}, #{orgids4,jdbcType=VARCHAR}, #{orgids5,jdbcType=VARCHAR}
+                )
+    </insert>
+
+    <update id="updateEntity">
+        UPDATE TBL_YQNS_AUDIT_WORK_RECORDS
+        SET AUDITEENAME=#{auditeeName,jdbcType=VARCHAR},
+            AUDITEENAMEID =#{auditeeNameId,jdbcType=VARCHAR},
+            IMPLEMENTATIONTIME=#{implementationTime},
+            NO=#{no},
+            PROJECTNAME=#{projectName},
+            CONTENTOBJECTIVES=#{contentObjectives},
+            EXECUTEDPROCEDURESPROCESSES=#{executedProceduresProcesses},
+            VERIFICATIONSITUATION=#{verificationSituation},
+            CLUESSOURCES=#{cluesSources},
+            UPDATEUSER=#{updateUser},
+            PROJECTID=#{projectId},
+            INDEXNO=#{indexno},
+            UPDATETIME=SYSDATE
+        <!-- 预留字符串（输入框）10个 -->
+        <if test="reservedString1 != null">
+            ,RESERVEDSTRING1 = #{reservedString1}
+        </if>
+        <if test="reservedString2 != null">
+            ,RESERVEDSTRING2 = #{reservedString2}
+        </if>
+        <if test="reservedString3 != null">
+            ,RESERVEDSTRING3 = #{reservedString3}
+        </if>
+        <if test="reservedString4 != null">
+            ,RESERVEDSTRING4 = #{reservedString4}
+        </if>
+        <if test="reservedString5 != null">
+            ,RESERVEDSTRING5 = #{reservedString5}
+        </if>
+        <if test="reservedString6 != null">
+            ,RESERVEDSTRING6 = #{reservedString6}
+        </if>
+        <if test="reservedString7 != null">
+            ,RESERVEDSTRING7 = #{reservedString7}
+        </if>
+        <if test="reservedString8 != null">
+            ,RESERVEDSTRING8 = #{reservedString8}
+        </if>
+        <if test="reservedString9 != null">
+            ,RESERVEDSTRING9 = #{reservedString9}
+        </if>
+        <if test="reservedString10 != null">
+            ,RESERVEDSTRING10 = #{reservedString10}
+        </if>
+
+        <!-- 预留大文本（文本域）10个 -->
+        <if test="reservedContent1 != null">
+            ,RESERVEDCONTENT1 = #{reservedContent1}
+        </if>
+        <if test="reservedContent2 != null">
+            ,RESERVEDCONTENT2 = #{reservedContent2}
+        </if>
+        <if test="reservedContent3 != null">
+            ,RESERVEDCONTENT3 = #{reservedContent3}
+        </if>
+        <if test="reservedContent4 != null">
+            ,RESERVEDCONTENT4 = #{reservedContent4}
+        </if>
+        <if test="reservedContent5 != null">
+            ,RESERVEDCONTENT5 = #{reservedContent5}
+        </if>
+        <if test="reservedContent6 != null">
+            ,RESERVEDCONTENT6 = #{reservedContent6}
+        </if>
+        <if test="reservedContent7 != null">
+            ,RESERVEDCONTENT7 = #{reservedContent7}
+        </if>
+        <if test="reservedContent8 != null">
+            ,RESERVEDCONTENT8 = #{reservedContent8}
+        </if>
+        <if test="reservedContent9 != null">
+            ,RESERVEDCONTENT9 = #{reservedContent9}
+        </if>
+        <if test="reservedContent10 != null">
+            ,RESERVEDCONTENT10 = #{reservedContent10}
+        </if>
+
+        <!-- 预留下拉多选字符串（多选下拉）5个 -->
+        <if test="reservedDropdownMultiple1 != null">
+            ,RESERVEDDROPDOWNMULTIPLE1 = #{reservedDropdownMultiple1}
+        </if>
+        <if test="reservedDropdownMultiple2 != null">
+            ,RESERVEDDROPDOWNMULTIPLE2 = #{reservedDropdownMultiple2}
+        </if>
+        <if test="reservedDropdownMultiple3 != null">
+            ,RESERVEDDROPDOWNMULTIPLE3 = #{reservedDropdownMultiple3}
+        </if>
+        <if test="reservedDropdownMultiple4 != null">
+            ,RESERVEDDROPDOWNMULTIPLE4 = #{reservedDropdownMultiple4}
+        </if>
+        <if test="reservedDropdownMultiple5 != null">
+            ,RESERVEDDROPDOWNMULTIPLE5 = #{reservedDropdownMultiple5}
+        </if>
+
+        <!-- 预留多选字符串（多选框）5个 -->
+        <if test="reservedMultipleChoice1 != null">
+            ,RESERVEDMULTIPLECHOICE1 = #{reservedMultipleChoice1}
+        </if>
+        <if test="reservedMultipleChoice2 != null">
+            ,RESERVEDMULTIPLECHOICE2 = #{reservedMultipleChoice2}
+        </if>
+        <if test="reservedMultipleChoice3 != null">
+            ,RESERVEDMULTIPLECHOICE3 = #{reservedMultipleChoice3}
+        </if>
+        <if test="reservedMultipleChoice4 != null">
+            ,RESERVEDMULTIPLECHOICE4 = #{reservedMultipleChoice4}
+        </if>
+        <if test="reservedMultipleChoice5 != null">
+            ,RESERVEDMULTIPLECHOICE5 = #{reservedMultipleChoice5}
+        </if>
+
+        <!-- 预留年份（年份）5个 -->
+        <if test="reservedYearTime1 != null">
+            ,RESERVEDYEARTIME1 = #{reservedYearTime1}
+        </if>
+        <if test="reservedYearTime2 != null">
+            ,RESERVEDYEARTIME2 = #{reservedYearTime2}
+        </if>
+        <if test="reservedYearTime3 != null">
+            ,RESERVEDYEARTIME3 = #{reservedYearTime3}
+        </if>
+        <if test="reservedYearTime4 != null">
+            ,RESERVEDYEARTIME4 = #{reservedYearTime4}
+        </if>
+        <if test="reservedYearTime5 != null">
+            ,RESERVEDYEARTIME5 = #{reservedYearTime5}
+        </if>
+
+        <!-- 预留时间（日期（年月日时分秒））5个 -->
+        <if test="reservedYearAccurateTime1 != null">
+            ,RESERVEDYEARACCURATETIME1 = #{reservedYearAccurateTime1}
+        </if>
+        <if test="reservedYearAccurateTime2 != null">
+            ,RESERVEDYEARACCURATETIME2 = #{reservedYearAccurateTime2}
+        </if>
+        <if test="reservedYearAccurateTime3 != null">
+            ,RESERVEDYEARACCURATETIME3 = #{reservedYearAccurateTime3}
+        </if>
+        <if test="reservedYearAccurateTime4 != null">
+            ,RESERVEDYEARACCURATETIME4 = #{reservedYearAccurateTime4}
+        </if>
+        <if test="reservedYearAccurateTime5 != null">
+            ,RESERVEDYEARACCURATETIME5 = #{reservedYearAccurateTime5}
+        </if>
+
+        <!-- 预留年月日（日期（年月日））5个 -->
+        <if test="reservedTime1 != null">
+            ,RESERVEDTIME1 = #{reservedTime1}
+        </if>
+        <if test="reservedTime2 != null">
+            ,RESERVEDTIME2 = #{reservedTime2}
+        </if>
+        <if test="reservedTime3 != null">
+            ,RESERVEDTIME3 = #{reservedTime3}
+        </if>
+        <if test="reservedTime4 != null">
+            ,RESERVEDTIME4 = #{reservedTime4}
+        </if>
+        <if test="reservedTime5 != null">
+            ,RESERVEDTIME5 = #{reservedTime5}
+        </if>
+
+        <!-- 预留单选字符串（单选框）5个 -->
+        <if test="reservedSingleChoice1 != null">
+            ,RESERVEDSINGLECHOICE1 = #{reservedSingleChoice1}
+        </if>
+        <if test="reservedSingleChoice2 != null">
+            ,RESERVEDSINGLECHOICE2 = #{reservedSingleChoice2}
+        </if>
+        <if test="reservedSingleChoice3 != null">
+            ,RESERVEDSINGLECHOICE3 = #{reservedSingleChoice3}
+        </if>
+        <if test="reservedSingleChoice4 != null">
+            ,RESERVEDSINGLECHOICE4 = #{reservedSingleChoice4}
+        </if>
+        <if test="reservedSingleChoice5 != null">
+            ,RESERVEDSINGLECHOICE5 = #{reservedSingleChoice5}
+        </if>
+
+        <!-- 预留下拉单选字符串（单选下拉框）5个 -->
+        <if test="reservedDropdownSingleChoice1 != null">
+            ,RESERVEDDROPDOWNSINGLECHOICE1 = #{reservedDropdownSingleChoice1}
+        </if>
+        <if test="reservedDropdownSingleChoice2 != null">
+            ,RESERVEDDROPDOWNSINGLECHOICE2 = #{reservedDropdownSingleChoice2}
+        </if>
+        <if test="reservedDropdownSingleChoice3 != null">
+            ,RESERVEDDROPDOWNSINGLECHOICE3 = #{reservedDropdownSingleChoice3}
+        </if>
+        <if test="reservedDropdownSingleChoice4 != null">
+            ,RESERVEDDROPDOWNSINGLECHOICE4 = #{reservedDropdownSingleChoice4}
+        </if>
+        <if test="reservedDropdownSingleChoice5 != null">
+            ,RESERVEDDROPDOWNSINGLECHOICE5 = #{reservedDropdownSingleChoice5}
+        </if>
+
+        <!-- 预留数字（数字输入框）5个 -->
+        <if test="reservedNum1 != null">
+            ,RESERVEDNUM1 = #{reservedNum1}
+        </if>
+        <if test="reservedNum2 != null">
+            ,RESERVEDNUM2 = #{reservedNum2}
+        </if>
+        <if test="reservedNum3 != null">
+            ,RESERVEDNUM3 = #{reservedNum3}
+        </if>
+        <if test="reservedNum4 != null">
+            ,RESERVEDNUM4 = #{reservedNum4}
+        </if>
+        <if test="reservedNum5 != null">
+            ,RESERVEDNUM5 = #{reservedNum5}
+        </if>
+
+        <!-- 预留人员单选 5个 -->
+        <if test="staffid1 != null">
+            ,STAFFID1 = #{staffid1}
+        </if>
+        <if test="staffid2 != null">
+            ,STAFFID2 = #{staffid2}
+        </if>
+        <if test="staffid3 != null">
+            ,STAFFID3 = #{staffid3}
+        </if>
+        <if test="staffid4 != null">
+            ,STAFFID4 = #{staffid4}
+        </if>
+        <if test="staffid5 != null">
+            ,STAFFID5 = #{staffid5}
+        </if>
+
+        <!-- 预留人员多选 5个 -->
+        <if test="staffids1 != null">
+            ,STAFFIDS1 = #{staffids1}
+        </if>
+        <if test="staffids2 != null">
+            ,STAFFIDS2 = #{staffids2}
+        </if>
+        <if test="staffids3 != null">
+            ,STAFFIDS3 = #{staffids3}
+        </if>
+        <if test="staffids4 != null">
+            ,STAFFIDS4 = #{staffids4}
+        </if>
+        <if test="staffids5 != null">
+            ,STAFFIDS5 = #{staffids5}
+        </if>
+
+        <!-- 预留组织单选 5个 -->
+        <if test="orgid1 != null">
+            ,ORGID1 = #{orgid1}
+        </if>
+        <if test="orgid2 != null">
+            ,ORGID2 = #{orgid2}
+        </if>
+        <if test="orgid3 != null">
+            ,ORGID3 = #{orgid3}
+        </if>
+        <if test="orgid4 != null">
+            ,ORGID4 = #{orgid4}
+        </if>
+        <if test="orgid5 != null">
+            ,ORGID5 = #{orgid5}
+        </if>
+
+        <!-- 预留组织多选 5个 -->
+        <if test="orgids1 != null">
+            ,ORGIDS1 = #{orgids1}
+        </if>
+        <if test="orgids2 != null">
+            ,ORGIDS2 = #{orgids2}
+        </if>
+        <if test="orgids3 != null">
+            ,ORGIDS3 = #{orgids3}
+        </if>
+        <if test="orgids4 != null">
+            ,ORGIDS4 = #{orgids4}
+        </if>
+        <if test="orgids5 != null">
+            ,ORGIDS5 = #{orgids5}
+        </if>
+        WHERE ID = #{id}
+    </update>
+
+
+    <delete id="deleteEntity">
+        DELETE FROM TBL_YQNS_AUDIT_WORK_RECORDS WHERE ID= #{id}
+    </delete>
+
+    <select id="getIdSequence" resultType="LONG">
+        SELECT  AUDIT_WORK_RECORDS_SEQ.Nextval FROM dual
+    </select>
+
+    <insert id="insertATT" >
+        INSERT INTO TBL_YQNS_WORK_RECORDS_ATT (RECORDSID,ATTID) values (#{id},#{aid})
+    </insert>
+
+    <insert id="deleteATT" >
+        DELETE FROM TBL_YQNS_WORK_RECORDS_ATT WHERE RECORDSID = #{id}
+    </insert>
+</mapper>

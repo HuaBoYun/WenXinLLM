@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.oracle.mapper.FinancingGuaranteeMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.oracle.entity.TblFinancingGuarantee">
+        <id column="GUARANTEE_ID" property="guaranteeId" />
+        <result column="CONTRACT_NO" property="contractNo" />
+        <result column="GUARANTEE_TYPE" property="guaranteeType" />
+        <result column="GUARANTEE_TYPE_NAME" property="guaranteeTypeName" />
+        <result column="GUARANTOR" property="guarantor" />
+        <result column="GUARANTOR_ORG_ID" property="guarantorOrgId" />
+        <result column="GUARANTOR_ORG_NAME" property="guarantorOrgName" />
+        <result column="BORROWER" property="borrower" />
+        <result column="BORROWER_ORG_ID" property="borrowerOrgId" />
+        <result column="BORROWER_ORG_NAME" property="borrowerOrgName" />
+        <result column="GUARANTEE_AMOUNT" property="guaranteeAmount" />
+        <result column="CURRENCY" property="currency" />
+        <result column="START_DATE" property="startDate" />
+        <result column="END_DATE" property="endDate" />
+        <result column="GUARANTEE_PERIOD" property="guaranteePeriod" />
+        <result column="GUARANTEE_PURPOSE" property="guaranteePurpose" />
+        <result column="REMARK" property="remark" />
+        <result column="ATTACHMENT_ID" property="attachmentId" />
+        <result column="STATUS" property="status" />
+        <result column="APPROVAL_STATUS" property="approvalStatus" />
+        <result column="APPROVAL_BY" property="approvalBy" />
+        <result column="APPROVAL_TIME" property="approvalTime" />
+        <result column="APPROVAL_OPINION" property="approvalOpinion" />
+        <result column="RELEASE_DATE" property="releaseDate" />
+        <result column="RELEASE_REASON" property="releaseReason" />
+        <result column="CREATE_BY" property="createBy" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_BY" property="updateBy" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="ORG_ID" property="orgId" />
+        <result column="STAFF_ID" property="staffId" />
+        <result column="DATASOURCE" property="datasource" />
+    </resultMap>
+
+    <!-- DTO映射结果 -->
+    <resultMap id="DTOResultMap" type="com.global.treasurer.dto.FinancingGuaranteeDTO" extends="BaseResultMap">
+        <result column="STATUS_NAME" property="statusName" />
+        <result column="APPROVAL_STATUS_NAME" property="approvalStatusName" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        GUARANTEE_ID, CONTRACT_NO, GUARANTEE_TYPE, GUARANTEE_TYPE_NAME, GUARANTOR, GUARANTOR_ORG_ID,
+        GUARANTOR_ORG_NAME, BORROWER, BORROWER_ORG_ID, BORROWER_ORG_NAME, GUARANTEE_AMOUNT,
+        CURRENCY, START_DATE, END_DATE, GUARANTEE_PERIOD, GUARANTEE_PURPOSE, REMARK,
+        ATTACHMENT_ID, STATUS, APPROVAL_STATUS, APPROVAL_BY, APPROVAL_TIME, APPROVAL_OPINION,
+        RELEASE_DATE, RELEASE_REASON, CREATE_BY, CREATE_TIME, UPDATE_BY, UPDATE_TIME,
+        ORG_ID, STAFF_ID, DATASOURCE
+    </sql>
+
+    <!-- 插入担保记录 -->
+    <insert id="insert" parameterType="com.global.treasurer.oracle.entity.TblFinancingGuarantee">
+        INSERT INTO TBL_FINANCING_GUARANTEE (
+            GUARANTEE_ID, CONTRACT_NO, GUARANTEE_TYPE, GUARANTEE_TYPE_NAME, GUARANTOR, GUARANTOR_ORG_ID,
+            GUARANTOR_ORG_NAME, BORROWER, BORROWER_ORG_ID, BORROWER_ORG_NAME, GUARANTEE_AMOUNT,
+            CURRENCY, START_DATE, END_DATE, GUARANTEE_PERIOD, GUARANTEE_PURPOSE, REMARK,
+            ATTACHMENT_ID, STATUS, APPROVAL_STATUS, CREATE_BY, CREATE_TIME, ORG_ID, STAFF_ID, DATASOURCE
+        ) VALUES (
+            #{guaranteeId}, #{contractNo}, #{guaranteeType}, #{guaranteeTypeName}, #{guarantor}, #{guarantorOrgId},
+            #{guarantorOrgName}, #{borrower}, #{borrowerOrgId}, #{borrowerOrgName}, #{guaranteeAmount},
+            #{currency}, #{startDate}, #{endDate}, #{guaranteePeriod}, #{guaranteePurpose}, #{remark},
+            #{attachmentId}, #{status}, #{approvalStatus}, #{createBy}, #{createTime}, #{orgId}, #{staffId}, #{datasource}
+        )
+    </insert>
+
+    <!-- 更新担保记录 -->
+    <update id="updateById" parameterType="com.global.treasurer.oracle.entity.TblFinancingGuarantee">
+        UPDATE TBL_FINANCING_GUARANTEE
+        <set>
+            <if test="contractNo != null">CONTRACT_NO = #{contractNo},</if>
+            <if test="guaranteeType != null">GUARANTEE_TYPE = #{guaranteeType},</if>
+            <if test="guaranteeTypeName != null">GUARANTEE_TYPE_NAME = #{guaranteeTypeName},</if>
+            <if test="guarantor != null">GUARANTOR = #{guarantor},</if>
+            <if test="guarantorOrgId != null">GUARANTOR_ORG_ID = #{guarantorOrgId},</if>
+            <if test="guarantorOrgName != null">GUARANTOR_ORG_NAME = #{guarantorOrgName},</if>
+            <if test="borrower != null">BORROWER = #{borrower},</if>
+            <if test="borrowerOrgId != null">BORROWER_ORG_ID = #{borrowerOrgId},</if>
+            <if test="borrowerOrgName != null">BORROWER_ORG_NAME = #{borrowerOrgName},</if>
+            <if test="guaranteeAmount != null">GUARANTEE_AMOUNT = #{guaranteeAmount},</if>
+            <if test="currency != null">CURRENCY = #{currency},</if>
+            <if test="startDate != null">START_DATE = #{startDate},</if>
+            <if test="endDate != null">END_DATE = #{endDate},</if>
+            <if test="guaranteePeriod != null">GUARANTEE_PERIOD = #{guaranteePeriod},</if>
+            <if test="guaranteePurpose != null">GUARANTEE_PURPOSE = #{guaranteePurpose},</if>
+            <if test="remark != null">REMARK = #{remark},</if>
+            <if test="attachmentId != null">ATTACHMENT_ID = #{attachmentId},</if>
+            <if test="status != null">STATUS = #{status},</if>
+            <if test="approvalStatus != null">APPROVAL_STATUS = #{approvalStatus},</if>
+            <if test="updateBy != null">UPDATE_BY = #{updateBy},</if>
+            UPDATE_TIME = #{updateTime}
+        </set>
+        WHERE GUARANTEE_ID = #{guaranteeId}
+    </update>
+
+    <!-- 根据ID删除担保记录 -->
+    <delete id="deleteById">
+        DELETE FROM TBL_FINANCING_GUARANTEE
+        WHERE GUARANTEE_ID = #{guaranteeId}
+    </delete>
+
+    <!-- 根据ID查询担保记录 -->
+    <select id="selectById" resultMap="DTOResultMap">
+        SELECT
+            <include refid="Base_Column_List" />,
+            CASE STATUS
+                WHEN 0 THEN '草稿'
+                WHEN 1 THEN '生效中'
+                WHEN 2 THEN '已解除'
+                WHEN 3 THEN '已失效'
+                ELSE '未知'
+            END AS STATUS_NAME,
+            CASE APPROVAL_STATUS
+                WHEN 0 THEN '待审批'
+                WHEN 1 THEN '已审批'
+                WHEN 2 THEN '审批拒绝'
+                ELSE '未知'
+            END AS APPROVAL_STATUS_NAME
+        FROM TBL_FINANCING_GUARANTEE
+        WHERE GUARANTEE_ID = #{guaranteeId}
+    </select>
+
+    <!-- 分页查询担保列表 -->
+    <select id="selectList" resultMap="DTOResultMap">
+        SELECT
+            <include refid="Base_Column_List" />,
+            CASE STATUS
+                WHEN 0 THEN '草稿'
+                WHEN 1 THEN '生效中'
+                WHEN 2 THEN '已解除'
+                WHEN 3 THEN '已失效'
+                ELSE '未知'
+            END AS STATUS_NAME,
+            CASE APPROVAL_STATUS
+                WHEN 0 THEN '待审批'
+                WHEN 1 THEN '已审批'
+                WHEN 2 THEN '审批拒绝'
+                ELSE '未知'
+            END AS APPROVAL_STATUS_NAME
+        FROM TBL_FINANCING_GUARANTEE
+        WHERE 1=1
+        <if test="contractNo != null and contractNo != ''">
+            AND CONTRACT_NO LIKE '%' || #{contractNo} || '%'
+        </if>
+        <if test="guaranteeType != null">
+            AND GUARANTEE_TYPE = #{guaranteeType}
+        </if>
+        <if test="guarantor != null and guarantor != ''">
+            AND GUARANTOR LIKE '%' || #{guarantor} || '%'
+        </if>
+        <if test="borrower != null and borrower != ''">
+            AND BORROWER LIKE '%' || #{borrower} || '%'
+        </if>
+        <if test="startDateBegin != null">
+            AND START_DATE >= #{startDateBegin}
+        </if>
+        <if test="startDateEnd != null">
+            AND START_DATE &lt;= #{startDateEnd}
+        </if>
+        <if test="endDateBegin != null">
+            AND END_DATE >= #{endDateBegin}
+        </if>
+        <if test="endDateEnd != null">
+            AND END_DATE &lt;= #{endDateEnd}
+        </if>
+        <if test="status != null">
+            AND STATUS = #{status}
+        </if>
+        <if test="approvalStatus != null">
+            AND APPROVAL_STATUS = #{approvalStatus}
+        </if>
+        <if test="orgId != null">
+            AND ORG_ID = #{orgId}
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 查询担保总数 -->
+    <select id="selectCount" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM TBL_FINANCING_GUARANTEE
+        WHERE 1=1
+        <if test="contractNo != null and contractNo != ''">
+            AND CONTRACT_NO LIKE '%' || #{contractNo} || '%'
+        </if>
+        <if test="guaranteeType != null">
+            AND GUARANTEE_TYPE = #{guaranteeType}
+        </if>
+        <if test="guarantor != null and guarantor != ''">
+            AND GUARANTOR LIKE '%' || #{guarantor} || '%'
+        </if>
+        <if test="borrower != null and borrower != ''">
+            AND BORROWER LIKE '%' || #{borrower} || '%'
+        </if>
+        <if test="startDateBegin != null">
+            AND START_DATE >= #{startDateBegin}
+        </if>
+        <if test="startDateEnd != null">
+            AND START_DATE &lt;= #{startDateEnd}
+        </if>
+        <if test="endDateBegin != null">
+            AND END_DATE >= #{endDateBegin}
+        </if>
+        <if test="endDateEnd != null">
+            AND END_DATE &lt;= #{endDateEnd}
+        </if>
+        <if test="status != null">
+            AND STATUS = #{status}
+        </if>
+        <if test="approvalStatus != null">
+            AND APPROVAL_STATUS = #{approvalStatus}
+        </if>
+        <if test="orgId != null">
+            AND ORG_ID = #{orgId}
+        </if>
+    </select>
+
+    <!-- 更新审批状态 -->
+    <update id="updateApprovalStatus">
+        UPDATE TBL_FINANCING_GUARANTEE
+        SET
+            APPROVAL_STATUS = #{approvalStatus},
+            APPROVAL_BY = #{approvalBy},
+            APPROVAL_TIME = SYSDATE,
+            APPROVAL_OPINION = #{approvalOpinion},
+            <if test="approvalStatus == 1">
+                STATUS = 1,
+            </if>
+            UPDATE_TIME = SYSDATE
+        WHERE GUARANTEE_ID = #{guaranteeId}
+    </update>
+
+    <!-- 更新担保状态为已解除 -->
+    <update id="updateReleaseStatus">
+        UPDATE TBL_FINANCING_GUARANTEE
+        SET
+            STATUS = 2,
+            RELEASE_DATE = SYSDATE,
+            RELEASE_REASON = #{releaseReason},
+            UPDATE_TIME = SYSDATE
+        WHERE GUARANTEE_ID = #{guaranteeId}
+    </update>
+
+</mapper>

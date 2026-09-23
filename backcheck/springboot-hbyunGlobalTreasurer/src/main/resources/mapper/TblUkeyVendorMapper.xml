@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.TblUkeyVendorMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TblUkeyVendor">
+        <id column="ID" property="id" />
+        <result column="VENDOR_CODE" property="vendorCode" />
+        <result column="VENDOR_NAME" property="vendorName" />
+        <result column="VENDOR_TYPE" property="vendorType" />
+        <result column="VENDOR_LEVEL" property="vendorLevel" />
+        <result column="CONTACT_PERSON" property="contactPerson" />
+        <result column="CONTACT_PHONE" property="contactPhone" />
+        <result column="CONTACT_EMAIL" property="contactEmail" />
+        <result column="COOPERATION_STATUS" property="cooperationStatus" />
+        <result column="EVALUATION_LEVEL" property="evaluationLevel" />
+        <result column="CERTIFICATE_INFO" property="certificateInfo" />
+        <result column="CERTIFICATION_STATUS" property="certificationStatus" />
+        <result column="PRODUCT_MODELS" property="productModels" />
+        <result column="CONTACT_INFO" property="contactInfo" />
+        <result column="ADDRESS" property="address" />
+        <result column="DESCRIPTION" property="description" />
+        <result column="AUTH_METHODS" property="authMethods" />
+        <result column="REMARK" property="remark" />
+        <result column="IS_ENABLED" property="isEnabled" />
+        <result column="CREATE_BY" property="createBy" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_BY" property="updateBy" />
+        <result column="UPDATE_TIME" property="updateTime" />
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        ID, VENDOR_CODE, VENDOR_NAME, VENDOR_TYPE, VENDOR_LEVEL, CONTACT_PERSON,
+        CONTACT_PHONE, CONTACT_EMAIL, COOPERATION_STATUS, EVALUATION_LEVEL,
+        CERTIFICATE_INFO, CERTIFICATION_STATUS, PRODUCT_MODELS, CONTACT_INFO,
+        ADDRESS, DESCRIPTION, AUTH_METHODS, REMARK, IS_ENABLED, CREATE_BY,
+        CREATE_TIME, UPDATE_BY, UPDATE_TIME
+    </sql>
+
+    <!-- selectList -->
+    <select id="selectList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_UKEY_VENDOR
+        <if test="ew != null and ew.sqlSegment != null and ew.sqlSegment != ''">
+            WHERE ${ew.sqlSegment}
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- selectById -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_UKEY_VENDOR
+        WHERE ID = #{id}
+    </select>
+
+    <!-- selectOne -->
+    <select id="selectOne" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_UKEY_VENDOR
+        <if test="ew != null and ew.sqlSegment != null and ew.sqlSegment != ''">
+            ${ew.sqlSegment}
+        </if>
+        LIMIT 1
+    </select>
+
+    <!-- selectCount -->
+    <select id="selectCount" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM TBL_UKEY_VENDOR
+        <if test="ew != null and ew.sqlSegment != null and ew.sqlSegment != ''">
+            ${ew.sqlSegment}
+        </if>
+    </select>
+
+    <!-- insert -->
+    <insert id="insert" parameterType="com.global.treasurer.entity.TblUkeyVendor">
+        INSERT INTO TBL_UKEY_VENDOR (
+            ID, VENDOR_CODE, VENDOR_NAME, VENDOR_TYPE, VENDOR_LEVEL, CONTACT_PERSON,
+            CONTACT_PHONE, CONTACT_EMAIL, COOPERATION_STATUS, EVALUATION_LEVEL,
+            CERTIFICATE_INFO, CERTIFICATION_STATUS, PRODUCT_MODELS, CONTACT_INFO,
+            ADDRESS, DESCRIPTION, AUTH_METHODS, REMARK, IS_ENABLED, CREATE_BY,
+            CREATE_TIME, UPDATE_BY, UPDATE_TIME
+        ) VALUES (
+            #{id}, #{vendorCode}, #{vendorName}, #{vendorType}, #{vendorLevel}, #{contactPerson},
+            #{contactPhone}, #{contactEmail}, #{cooperationStatus}, #{evaluationLevel},
+            #{certificateInfo}, #{certificationStatus}, #{productModels}, #{contactInfo},
+            #{address}, #{description}, #{authMethods}, #{remark}, #{isEnabled}, #{createBy},
+            #{createTime}, #{updateBy}, #{updateTime}
+        )
+    </insert>
+
+    <!-- updateById -->
+    <update id="updateById" parameterType="com.global.treasurer.entity.TblUkeyVendor">
+        UPDATE TBL_UKEY_VENDOR
+        <set>
+            <if test="vendorCode != null">VENDOR_CODE = #{vendorCode},</if>
+            <if test="vendorName != null">VENDOR_NAME = #{vendorName},</if>
+            <if test="vendorType != null">VENDOR_TYPE = #{vendorType},</if>
+            <if test="vendorLevel != null">VENDOR_LEVEL = #{vendorLevel},</if>
+            <if test="contactPerson != null">CONTACT_PERSON = #{contactPerson},</if>
+            <if test="contactPhone != null">CONTACT_PHONE = #{contactPhone},</if>
+            <if test="contactEmail != null">CONTACT_EMAIL = #{contactEmail},</if>
+            <if test="cooperationStatus != null">COOPERATION_STATUS = #{cooperationStatus},</if>
+            <if test="evaluationLevel != null">EVALUATION_LEVEL = #{evaluationLevel},</if>
+            <if test="certificateInfo != null">CERTIFICATE_INFO = #{certificateInfo},</if>
+            <if test="certificationStatus != null">CERTIFICATION_STATUS = #{certificationStatus},</if>
+            <if test="productModels != null">PRODUCT_MODELS = #{productModels},</if>
+            <if test="contactInfo != null">CONTACT_INFO = #{contactInfo},</if>
+            <if test="address != null">ADDRESS = #{address},</if>
+            <if test="description != null">DESCRIPTION = #{description},</if>
+            <if test="authMethods != null">AUTH_METHODS = #{authMethods},</if>
+            <if test="remark != null">REMARK = #{remark},</if>
+            <if test="isEnabled != null">IS_ENABLED = #{isEnabled},</if>
+            <if test="createBy != null">CREATE_BY = #{createBy},</if>
+            <if test="createTime != null">CREATE_TIME = #{createTime},</if>
+            <if test="updateBy != null">UPDATE_BY = #{updateBy},</if>
+            <if test="updateTime != null">UPDATE_TIME = #{updateTime}</if>
+        </set>
+        WHERE ID = #{id}
+    </update>
+
+    <!-- deleteById -->
+    <delete id="deleteById">
+        DELETE FROM TBL_UKEY_VENDOR WHERE ID = #{id}
+    </delete>
+
+</mapper>

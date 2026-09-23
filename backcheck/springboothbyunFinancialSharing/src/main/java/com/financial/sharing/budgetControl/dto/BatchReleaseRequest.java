@@ -1,0 +1,31 @@
+package com.financial.sharing.budgetControl.dto;
+
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
+
+import java.io.Serializable;
+import java.util.List;
+
+/**
+ * 批量预算释放请求
+ * 
+ * @author Augment Agent
+ * @date 2026-02-02
+ */
+@Data
+@ApiModel(value = "BatchReleaseRequest", description = "批量预算释放请求")
+public class BatchReleaseRequest implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    @ApiModelProperty(value = "释放请求列表")
+    private List<BudgetReleaseRequest> releaseRequests;
+
+    @ApiModelProperty(value = "操作用户")
+    private String operateUser;
+
+    @ApiModelProperty(value = "组织ID")
+    private String orgId;
+}
+

@@ -1,0 +1,23 @@
+server:
+  port: 8088
+  tomcat:
+    uri-encoding: UTF-8
+spring:
+  profiles:
+    active: dev
+  http:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+  # 启用 multipart 文件上传支持
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+      file-size-threshold: 0
+# Jackson配置: 忽略JSON反序列化时的未知属性
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: false

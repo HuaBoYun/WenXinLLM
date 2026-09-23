@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.BillEndorsementMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BillEndorsementVOResult" type="com.global.treasurer.vo.BillEndorsementVO">
+        <id property="endorsementId" column="ENDORSEMENT_ID"/>
+        <result property="endorsementNumber" column="ENDORSEMENT_NUMBER"/>
+        <result property="billNumber" column="BILL_NUMBER"/>
+        <result property="endorsementType" column="ENDORSEMENT_TYPE"/>
+        <result property="billAmount" column="BILL_AMOUNT"/>
+        <result property="endorserName" column="ENDORSER_NAME"/>
+        <result property="endorserAccount" column="ENDORSER_ACCOUNT"/>
+        <result property="endorseeName" column="ENDORSEE_NAME"/>
+        <result property="endorseeAccount" column="ENDORSEE_ACCOUNT"/>
+        <result property="endorseeBank" column="ENDORSEE_BANK"/>
+        <result property="contactPhone" column="CONTACT_PHONE"/>
+        <result property="applicationDate" column="APPLICATION_DATE"/>
+        <result property="expectedExecutionDate" column="EXPECTED_EXECUTION_DATE"/>
+        <result property="actualExecutionDate" column="ACTUAL_EXECUTION_DATE"/>
+        <result property="endorsementStatus" column="ENDORSEMENT_STATUS"/>
+        <result property="applicantId" column="APPLICANT_ID"/>
+        <result property="applicantName" column="APPLICANT_NAME"/>
+        <result property="approverId" column="APPROVER_ID"/>
+        <result property="approverName" column="APPROVER_NAME"/>
+        <result property="approvalDate" column="APPROVAL_DATE"/>
+        <result property="approvalComment" column="APPROVAL_COMMENT"/>
+        <result property="endorsementPurpose" column="ENDORSEMENT_PURPOSE"/>
+        <result property="isContinuous" column="IS_CONTINUOUS"/>
+        <result property="riskLevel" column="RISK_LEVEL"/>
+        <result property="remark" column="REMARK"/>
+        <result property="createTime" column="CREATE_TIME"/>
+        <result property="updateTime" column="UPDATE_TIME"/>
+        <result property="createBy" column="CREATE_BY"/>
+        <result property="updateBy" column="UPDATE_BY"/>
+        <result property="companyId" column="COMPANY_ID"/>
+        <result property="deptId" column="DEPT_ID"/>
+    </resultMap>
+
+    <!-- 查询票据背书列表 -->
+    <select id="selectBillEndorsementList" parameterType="com.global.treasurer.dto.BillEndorsementQueryDTO" 
+            resultMap="BillEndorsementVOResult">
+        SELECT * FROM TBL_BILL_ENDORSEMENT
+        WHERE DELETE_FLAG = 0
+        <if test="query.endorsementNumber != null and query.endorsementNumber != ''">
+            AND ENDORSEMENT_NUMBER LIKE CONCAT('%', #{query.endorsementNumber}, '%')
+        </if>
+        <if test="query.billNumber != null and query.billNumber != ''">
+            AND BILL_NUMBER LIKE CONCAT('%', #{query.billNumber}, '%')
+        </if>
+        <if test="query.endorsementType != null and query.endorsementType != ''">
+            AND ENDORSEMENT_TYPE = #{query.endorsementType}
+        </if>
+        <if test="query.endorserName != null and query.endorserName != ''">
+            AND ENDORSER_NAME LIKE CONCAT('%', #{query.endorserName}, '%')
+        </if>
+        <if test="query.endorseeName != null and query.endorseeName != ''">
+            AND ENDORSEE_NAME LIKE CONCAT('%', #{query.endorseeName}, '%')
+        </if>
+        <if test="query.endorsementStatus != null and query.endorsementStatus != ''">
+            AND ENDORSEMENT_STATUS = #{query.endorsementStatus}
+        </if>
+        <if test="query.applicationDateStart != null">
+            AND APPLICATION_DATE &gt;= #{query.applicationDateStart}
+        </if>
+        <if test="query.applicationDateEnd != null">
+            AND APPLICATION_DATE &lt;= #{query.applicationDateEnd}
+        </if>
+        <if test="query.amountMin != null">
+            AND BILL_AMOUNT &gt;= #{query.amountMin}
+        </if>
+        <if test="query.amountMax != null">
+            AND BILL_AMOUNT &lt;= #{query.amountMax}
+        </if>
+        <if test="query.companyId != null">
+            AND COMPANY_ID = #{query.companyId}
+        </if>
+        <if test="query.deptId != null">
+            AND DEPT_ID = #{query.deptId}
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据ID查询票据背书详情 -->
+    <select id="selectBillEndorsementById" parameterType="Long" resultMap="BillEndorsementVOResult">
+        SELECT * FROM TBL_BILL_ENDORSEMENT
+        WHERE ENDORSEMENT_ID = #{endorsementId} AND DELETE_FLAG = 0
+    </select>
+
+    <!-- 根据背书编号查询背书 -->
+    <select id="selectByEndorsementNumber" parameterType="String" resultType="com.global.treasurer.entity.TblBillEndorsement">
+        SELECT * FROM TBL_BILL_ENDORSEMENT
+        WHERE ENDORSEMENT_NUMBER = #{endorsementNumber} AND DELETE_FLAG = 0
+    </select>
+
+    <!-- 批量删除票据背书(逻辑删除) -->
+    <update id="deleteBillEndorsementByIds">
+        UPDATE TBL_BILL_ENDORSEMENT SET DELETE_FLAG = 1
+        WHERE ENDORSEMENT_ID IN
+        <foreach collection="endorsementIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 批量更新背书状态 -->
+    <update id="batchUpdateStatus">
+        UPDATE TBL_BILL_ENDORSEMENT SET ENDORSEMENT_STATUS = #{status}, UPDATE_TIME = SYSDATE
+        WHERE ENDORSEMENT_ID IN
+        <foreach collection="endorsementIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 流转记录结果映射 -->
+    <resultMap id="CirculationRecordVOResult" type="com.global.treasurer.vo.CirculationRecordVO">
+        <result property="recordId" column="RECORD_ID"/>
+        <result property="billId" column="BILL_ID"/>
+        <result property="recordType" column="RECORD_TYPE"/>
+        <result property="recordTypeName" column="RECORD_TYPE_NAME"/>
+        <result property="fromHolder" column="FROM_HOLDER"/>
+        <result property="toHolder" column="TO_HOLDER"/>
+        <result property="transactionTime" column="TRANSACTION_TIME"/>
+        <result property="operatorName" column="OPERATOR_NAME"/>
+        <result property="amount" column="AMOUNT"/>
+        <result property="status" column="STATUS"/>
+        <result property="remark" column="REMARK"/>
+    </resultMap>
+
+    <!-- 根据票据ID查询流转记录(背书) -->
+    <select id="selectCirculationByBillId" parameterType="Long" resultMap="CirculationRecordVOResult">
+        SELECT
+            ENDORSEMENT_ID AS RECORD_ID,
+            BILL_ID AS BILL_ID,
+            'ENDORSEMENT' AS RECORD_TYPE,
+            '背书' AS RECORD_TYPE_NAME,
+            ENDORSER_NAME AS FROM_HOLDER,
+            ENDORSEE_NAME AS TO_HOLDER,
+            ACTUAL_EXECUTION_DATE AS TRANSACTION_TIME,
+            APPLICANT_NAME AS OPERATOR_NAME,
+            BILL_AMOUNT AS AMOUNT,
+            ENDORSEMENT_STATUS AS STATUS,
+            REMARK
+        FROM TBL_BILL_ENDORSEMENT
+        WHERE BILL_ID = #{billId}
+          AND DELETE_FLAG = 0
+          AND ENDORSEMENT_STATUS = 'COMPLETED'
+          AND ACTUAL_EXECUTION_DATE IS NOT NULL
+        ORDER BY ACTUAL_EXECUTION_DATE DESC
+    </select>
+</mapper>
+

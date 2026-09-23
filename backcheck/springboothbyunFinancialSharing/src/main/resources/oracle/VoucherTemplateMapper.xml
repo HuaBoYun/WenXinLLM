@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.oracle.mapper.VoucherTemplateMapper">
+
+    <!-- 凭证模板结果映射 -->
+    <resultMap id="BaseResultMap" type="map">
+        <id column="TEMPLATE_ID" property="templateId" jdbcType="BIGINT"/>
+        <result column="TEMPLATE_CODE" property="templateCode" jdbcType="VARCHAR"/>
+        <result column="TEMPLATE_NAME" property="templateName" jdbcType="VARCHAR"/>
+        <result column="TEMPLATE_TYPE" property="templateType" jdbcType="VARCHAR"/>
+        <result column="STATUS" property="status" jdbcType="VARCHAR"/>
+        <result column="VERSION" property="version" jdbcType="VARCHAR"/>
+        <result column="DESCRIPTION" property="description" jdbcType="VARCHAR"/>
+        <result column="VOUCHER_TYPE" property="voucherType" jdbcType="VARCHAR"/>
+        <result column="SUMMARY_RULE" property="summaryRule" jdbcType="VARCHAR"/>
+        <result column="DEBIT_SUBJECT" property="debitSubject" jdbcType="VARCHAR"/>
+        <result column="CREDIT_SUBJECT" property="creditSubject" jdbcType="VARCHAR"/>
+        <result column="AMOUNT_FIELD" property="amountField" jdbcType="VARCHAR"/>
+        <result column="CURRENCY_FIELD" property="currencyField" jdbcType="VARCHAR"/>
+        <result column="GENERATE_CONDITION" property="generateCondition" jdbcType="VARCHAR"/>
+        <result column="SORT_RULE" property="sortRule" jdbcType="VARCHAR"/>
+        <result column="GROUP_RULE" property="groupRule" jdbcType="VARCHAR"/>
+        <result column="USED_COUNT" property="usedCount" jdbcType="INTEGER"/>
+        <result column="BOOK_ID" property="bookId" jdbcType="BIGINT"/>
+        <result column="TENANT_ID" property="tenantId" jdbcType="BIGINT"/>
+        <result column="CREATOR_ID" property="creatorId" jdbcType="BIGINT"/>
+        <result column="CREATOR_NAME" property="creatorName" jdbcType="VARCHAR"/>
+        <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="UPDATER_ID" property="updaterId" jdbcType="BIGINT"/>
+        <result column="UPDATER_NAME" property="updaterName" jdbcType="VARCHAR"/>
+        <result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 分页查询凭证模板 -->
+    <select id="selectTemplatePage" resultMap="BaseResultMap">
+        SELECT
+            TEMPLATE_ID,
+            TEMPLATE_CODE,
+            TEMPLATE_NAME,
+            TEMPLATE_TYPE,
+            STATUS,
+            VERSION,
+            DESCRIPTION,
+            VOUCHER_TYPE,
+            USED_COUNT,
+            BOOK_ID,
+            TENANT_ID,
+            CREATOR_ID,
+            CREATOR_NAME,
+            CREATE_TIME,
+            UPDATE_TIME
+        FROM TBL_VOUCHER_TEMPLATE
+        WHERE 1=1
+        <if test="param.bookId != null">
+            AND BOOK_ID = #{param.bookId}
+        </if>
+        <if test="param.tenantId != null">
+            AND TENANT_ID = #{param.tenantId}
+        </if>
+        <if test="param.keyword != null and param.keyword != ''">
+            AND (TEMPLATE_CODE LIKE '%'||#{param.keyword}||'%'
+                 OR TEMPLATE_NAME LIKE '%'||#{param.keyword}||'%'
+                 OR DESCRIPTION LIKE '%'||#{param.keyword}||'%')
+        </if>
+        <if test="param.templateType != null and param.templateType != ''">
+            AND TEMPLATE_TYPE = #{param.templateType}
+        </if>
+        <if test="param.status != null and param.status != ''">
+            AND STATUS = #{param.status}
+        </if>
+        <if test="param.creatorId != null">
+            AND CREATOR_ID = #{param.creatorId}
+        </if>
+        <if test="param.startDate != null and param.startDate != ''">
+            AND CREATE_TIME >= TO_DATE(#{param.startDate}, 'YYYY-MM-DD')
+        </if>
+        <if test="param.endDate != null and param.endDate != ''">
+            AND CREATE_TIME &lt;= TO_DATE(#{param.endDate}, 'YYYY-MM-DD') + 1
+        </if>
+        ORDER BY CREATE_TIME DESC
+        OFFSET #{param.offset} ROWS FETCH NEXT #{param.pageSize} ROWS ONLY
+    </select>
+
+    <!-- 查询凭证模板总数 -->
+    <select id="selectTemplateCount" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM TBL_VOUCHER_TEMPLATE
+        WHERE 1=1
+        <if test="param.bookId != null">
+            AND BOOK_ID = #{param.bookId}
+        </if>
+        <if test="param.tenantId != null">
+            AND TENANT_ID = #{param.tenantId}
+        </if>
+        <if test="param.keyword != null and param.keyword != ''">
+            AND (TEMPLATE_CODE LIKE '%'||#{param.keyword}||'%'
+                 OR TEMPLATE_NAME LIKE '%'||#{param.keyword}||'%'
+                 OR DESCRIPTION LIKE '%'||#{param.keyword}||'%')
+        </if>
+        <if test="param.templateType != null and param.templateType != ''">
+            AND TEMPLATE_TYPE = #{param.templateType}
+        </if>
+        <if test="param.status != null and param.status != ''">
+            AND STATUS = #{param.status}
+        </if>
+        <if test="param.creatorId != null">
+            AND CREATOR_ID = #{param.creatorId}
+        </if>
+        <if test="param.startDate != null and param.startDate != ''">
+            AND CREATE_TIME >= TO_DATE(#{param.startDate}, 'YYYY-MM-DD')
+        </if>
+        <if test="param.endDate != null and param.endDate != ''">
+            AND CREATE_TIME &lt;= TO_DATE(#{param.endDate}, 'YYYY-MM-DD') + 1
+        </if>
+    </select>
+
+    <!-- 根据ID查询凭证模板详情 -->
+    <select id="selectTemplateById" resultMap="BaseResultMap">
+        SELECT
+            TEMPLATE_ID,
+            TEMPLATE_CODE,
+            TEMPLATE_NAME,
+            TEMPLATE_TYPE,
+            STATUS,
+            VERSION,
+            DESCRIPTION,
+            VOUCHER_TYPE,
+            SUMMARY_RULE,
+            DEBIT_SUBJECT,
+            CREDIT_SUBJECT,
+            AMOUNT_FIELD,
+            CURRENCY_FIELD,
+            GENERATE_CONDITION,
+            SORT_RULE,
+            GROUP_RULE,
+            USED_COUNT,
+            BOOK_ID,
+            TENANT_ID,
+            CREATOR_ID,
+            CREATOR_NAME,
+            CREATE_TIME,
+            UPDATER_ID,
+            UPDATER_NAME,
+            UPDATE_TIME
+        FROM TBL_VOUCHER_TEMPLATE
+        WHERE TEMPLATE_ID = #{templateId}
+    </select>
+
+    <!-- 插入凭证模板 -->
+    <insert id="insertTemplate" parameterType="map">
+        INSERT INTO TBL_VOUCHER_TEMPLATE (
+            TEMPLATE_ID,
+            TEMPLATE_CODE,
+            TEMPLATE_NAME,
+            TEMPLATE_TYPE,
+            STATUS,
+            VERSION,
+            DESCRIPTION,
+            VOUCHER_TYPE,
+            SUMMARY_RULE,
+            DEBIT_SUBJECT,
+            CREDIT_SUBJECT,
+            AMOUNT_FIELD,
+            CURRENCY_FIELD,
+            GENERATE_CONDITION,
+            SORT_RULE,
+            GROUP_RULE,
+            USED_COUNT,
+            BOOK_ID,
+            TENANT_ID,
+            CREATOR_ID,
+            CREATOR_NAME,
+            CREATE_TIME
+        ) VALUES (
+            #{templateData.templateId, jdbcType=BIGINT},
+            #{templateData.templateCode, jdbcType=VARCHAR},
+            #{templateData.templateName, jdbcType=VARCHAR},
+            #{templateData.templateType, jdbcType=VARCHAR},
+            #{templateData.status, jdbcType=VARCHAR},
+            #{templateData.version, jdbcType=VARCHAR},
+            #{templateData.description, jdbcType=VARCHAR},
+            #{templateData.voucherType, jdbcType=VARCHAR},
+            #{templateData.summaryRule, jdbcType=VARCHAR},
+            #{templateData.debitSubject, jdbcType=VARCHAR},
+            #{templateData.creditSubject, jdbcType=VARCHAR},
+            #{templateData.amountField, jdbcType=VARCHAR},
+            #{templateData.currencyField, jdbcType=VARCHAR},
+            #{templateData.generateCondition, jdbcType=VARCHAR},
+            #{templateData.sortRule, jdbcType=VARCHAR},
+            #{templateData.groupRule, jdbcType=VARCHAR},
+            #{templateData.usedCount, jdbcType=INTEGER},
+            #{templateData.bookId, jdbcType=BIGINT},
+            #{templateData.tenantId, jdbcType=BIGINT},
+            #{templateData.creatorId, jdbcType=BIGINT},
+            #{templateData.creatorName, jdbcType=VARCHAR},
+            SYSDATE
+        )
+    </insert>
+
+    <!-- 更新凭证模板 -->
+    <update id="updateTemplate" parameterType="map">
+        UPDATE TBL_VOUCHER_TEMPLATE
+        SET
+            TEMPLATE_NAME = #{templateData.templateName, jdbcType=VARCHAR},
+            TEMPLATE_TYPE = #{templateData.templateType, jdbcType=VARCHAR},
+            STATUS = #{templateData.status, jdbcType=VARCHAR},
+            DESCRIPTION = #{templateData.description, jdbcType=VARCHAR},
+            VOUCHER_TYPE = #{templateData.voucherType, jdbcType=VARCHAR},
+            SUMMARY_RULE = #{templateData.summaryRule, jdbcType=VARCHAR},
+            DEBIT_SUBJECT = #{templateData.debitSubject, jdbcType=VARCHAR},
+            CREDIT_SUBJECT = #{templateData.creditSubject, jdbcType=VARCHAR},
+            AMOUNT_FIELD = #{templateData.amountField, jdbcType=VARCHAR},
+            CURRENCY_FIELD = #{templateData.currencyField, jdbcType=VARCHAR},
+            GENERATE_CONDITION = #{templateData.generateCondition, jdbcType=VARCHAR},
+            SORT_RULE = #{templateData.sortRule, jdbcType=VARCHAR},
+            GROUP_RULE = #{templateData.groupRule, jdbcType=VARCHAR},
+            UPDATER_ID = #{templateData.updaterId, jdbcType=BIGINT},
+            UPDATER_NAME = #{templateData.updaterName, jdbcType=VARCHAR},
+            UPDATE_TIME = SYSDATE
+        WHERE TEMPLATE_ID = #{templateData.templateId, jdbcType=BIGINT}
+    </update>
+
+    <!-- 删除凭证模板 -->
+    <delete id="deleteTemplate">
+        DELETE FROM TBL_VOUCHER_TEMPLATE
+        WHERE TEMPLATE_ID = #{templateId}
+    </delete>
+
+    <!-- 检查模板编码是否存在 -->
+    <select id="checkTemplateCodeExists" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM TBL_VOUCHER_TEMPLATE
+        WHERE TEMPLATE_CODE = #{templateCode}
+        <if test="excludeId != null">
+            AND TEMPLATE_ID != #{excludeId}
+        </if>
+    </select>
+
+    <!-- 更新模板状态 -->
+    <update id="updateTemplateStatus">
+        UPDATE TBL_VOUCHER_TEMPLATE
+        SET STATUS = #{status},
+            UPDATE_TIME = SYSDATE
+        WHERE TEMPLATE_ID IN
+        <foreach collection="templateIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 获取模板类型列表 -->
+    <select id="selectTemplateTypes" resultType="map">
+        SELECT
+            TYPE_CODE as typeCode,
+            TYPE_NAME as typeName,
+            DESCRIPTION as description
+        FROM TBL_VOUCHER_TEMPLATE_TYPE
+        WHERE STATUS = 'ACTIVE'
+        ORDER BY TYPE_CODE
+    </select>
+
+    <!-- 更新模板使用次数 -->
+    <update id="updateTemplateUsageCount">
+        UPDATE TBL_VOUCHER_TEMPLATE
+        SET USED_COUNT = NVL(USED_COUNT, 0) + 1
+        WHERE TEMPLATE_ID = #{templateId}
+    </update>
+
+    <!-- 获取模板使用统计 -->
+    <select id="selectTemplateUsageStats" resultType="map">
+        SELECT
+            NVL(SUM(CASE WHEN STATUS = 'SUCCESS' THEN 1 ELSE 0 END), 0) as successCount,
+            NVL(SUM(CASE WHEN STATUS = 'FAILED' THEN 1 ELSE 0 END), 0) as failedCount,
+            NVL(SUM(CASE WHEN STATUS = 'PENDING' THEN 1 ELSE 0 END), 0) as pendingCount,
+            NVL(MAX(CREATE_TIME), SYSDATE) as lastUsedTime
+        FROM TBL_VOUCHER_GENERATE_LOG
+        WHERE TEMPLATE_ID = #{templateId}
+    </select>
+
+    <!-- 获取最大模板编码 -->
+    <select id="selectMaxTemplateCode" resultType="java.lang.String">
+        SELECT MAX(TEMPLATE_CODE)
+        FROM TBL_VOUCHER_TEMPLATE
+        WHERE TEMPLATE_CODE LIKE #{prefix}||'%'
+    </select>
+
+    <!-- 批量删除模板 -->
+    <delete id="batchDeleteTemplates">
+        DELETE FROM TBL_VOUCHER_TEMPLATE
+        WHERE TEMPLATE_ID IN
+        <foreach collection="templateIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- ==================== 版本管理相关SQL ==================== -->
+
+    <!-- 版本结果映射 -->
+    <resultMap id="VersionResultMap" type="map">
+        <id column="VERSION_ID" property="versionId" jdbcType="BIGINT"/>
+        <result column="TEMPLATE_ID" property="templateId" jdbcType="BIGINT"/>
+        <result column="TEMPLATE_NAME" property="templateName" jdbcType="VARCHAR"/>
+        <result column="TEMPLATE_CODE" property="templateCode" jdbcType="VARCHAR"/>
+        <result column="VERSION_NUMBER" property="version" jdbcType="VARCHAR"/>
+        <result column="VERSION_TYPE" property="versionType" jdbcType="VARCHAR"/>
+        <result column="STATUS" property="status" jdbcType="VARCHAR"/>
+        <result column="CHANGE_LOG" property="changeLog" jdbcType="VARCHAR"/>
+        <result column="TEMPLATE_SNAPSHOT" property="templateSnapshot" jdbcType="CLOB"/>
+        <result column="IS_CURRENT" property="isCurrent" jdbcType="INTEGER"/>
+        <result column="PUBLISH_DATE" property="publishDate" jdbcType="TIMESTAMP"/>
+        <result column="EFFECTIVE_DATE" property="effectiveDate" jdbcType="TIMESTAMP"/>
+        <result column="EXPIRY_DATE" property="expiryDate" jdbcType="TIMESTAMP"/>
+        <result column="BOOK_ID" property="bookId" jdbcType="VARCHAR"/>
+        <result column="TENANT_ID" property="tenantId" jdbcType="VARCHAR"/>
+        <result column="CREATOR_ID" property="creatorId" jdbcType="BIGINT"/>
+        <result column="CREATOR_NAME" property="creator" jdbcType="VARCHAR"/>
+        <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="UPDATER_ID" property="updaterId" jdbcType="BIGINT"/>
+        <result column="UPDATER_NAME" property="updaterName" jdbcType="VARCHAR"/>
+        <result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 分页查询模板版本列表 -->
+    <select id="selectVersionPage" resultMap="VersionResultMap">
+        SELECT
+            VERSION_ID,
+            TEMPLATE_ID,
+            TEMPLATE_NAME,
+            TEMPLATE_CODE,
+            VERSION_NUMBER,
+            VERSION_TYPE,
+            STATUS,
+            CHANGE_LOG,
+            IS_CURRENT,
+            PUBLISH_DATE,
+            EFFECTIVE_DATE,
+            EXPIRY_DATE,
+            BOOK_ID,
+            TENANT_ID,
+            CREATOR_ID,
+            CREATOR_NAME,
+            CREATE_TIME,
+            UPDATE_TIME
+        FROM TBL_VOUCHER_TEMPLATE_VERSION
+        WHERE IS_DELETED = 0
+        <if test="param.templateId != null">
+            AND TEMPLATE_ID = #{param.templateId}
+        </if>
+        <if test="param.templateName != null and param.templateName != ''">
+            AND TEMPLATE_NAME LIKE '%'||#{param.templateName}||'%'
+        </if>
+        <if test="param.versionType != null and param.versionType != ''">
+            AND VERSION_TYPE = #{param.versionType}
+        </if>
+        <if test="param.status != null and param.status != ''">
+            AND STATUS = #{param.status}
+        </if>
+        <if test="param.bookId != null">
+            AND BOOK_ID = #{param.bookId}
+        </if>
+        <if test="param.tenantId != null">
+            AND TENANT_ID = #{param.tenantId}
+        </if>
+        ORDER BY CREATE_TIME DESC
+        OFFSET #{param.offset} ROWS FETCH NEXT #{param.pageSize} ROWS ONLY
+    </select>
+
+    <!-- 查询模板版本总数 -->
+    <select id="selectVersionCount" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM TBL_VOUCHER_TEMPLATE_VERSION
+        WHERE IS_DELETED = 0
+        <if test="param.templateId != null">
+            AND TEMPLATE_ID = #{param.templateId}
+        </if>
+        <if test="param.templateName != null and param.templateName != ''">
+            AND TEMPLATE_NAME LIKE '%'||#{param.templateName}||'%'
+        </if>
+        <if test="param.versionType != null and param.versionType != ''">
+            AND VERSION_TYPE = #{param.versionType}
+        </if>
+        <if test="param.status != null and param.status != ''">
+            AND STATUS = #{param.status}
+        </if>
+        <if test="param.bookId != null">
+            AND BOOK_ID = #{param.bookId}
+        </if>
+        <if test="param.tenantId != null">
+            AND TENANT_ID = #{param.tenantId}
+        </if>
+    </select>
+
+    <!-- 根据ID查询版本详情 -->
+    <select id="selectVersionById" resultMap="VersionResultMap">
+        SELECT
+            VERSION_ID,
+            TEMPLATE_ID,
+            TEMPLATE_NAME,
+            TEMPLATE_CODE,
+            VERSION_NUMBER,
+            VERSION_TYPE,
+            STATUS,
+            CHANGE_LOG,
+            TEMPLATE_SNAPSHOT,
+            IS_CURRENT,
+            PUBLISH_DATE,
+            EFFECTIVE_DATE,
+            EXPIRY_DATE,
+            BOOK_ID,
+            TENANT_ID,
+            CREATOR_ID,
+            CREATOR_NAME,
+            CREATE_TIME,
+            UPDATER_ID,
+            UPDATER_NAME,
+            UPDATE_TIME
+        FROM TBL_VOUCHER_TEMPLATE_VERSION
+        WHERE VERSION_ID = #{versionId}
+          AND IS_DELETED = 0
+    </select>
+
+    <!-- 激活版本 -->
+    <update id="activateVersion">
+        UPDATE TBL_VOUCHER_TEMPLATE_VERSION
+        SET STATUS = 'ACTIVE',
+            IS_CURRENT = 1,
+            UPDATE_TIME = CURRENT_TIMESTAMP
+        WHERE VERSION_ID = #{versionId}
+    </update>
+
+    <!-- 取消激活同模板的其他版本 -->
+    <update id="deactivateOtherVersions">
+        UPDATE TBL_VOUCHER_TEMPLATE_VERSION
+        SET STATUS = 'INACTIVE',
+            IS_CURRENT = 0,
+            UPDATE_TIME = CURRENT_TIMESTAMP
+        WHERE TEMPLATE_ID = #{templateId}
+          AND VERSION_ID != #{excludeVersionId}
+          AND STATUS = 'ACTIVE'
+    </update>
+
+    <!-- 回滚到指定版本（将该版本设为当前版本） -->
+    <update id="rollbackToVersion">
+        UPDATE TBL_VOUCHER_TEMPLATE_VERSION
+        SET IS_CURRENT = 1,
+            STATUS = 'ACTIVE',
+            UPDATE_TIME = CURRENT_TIMESTAMP
+        WHERE VERSION_ID = #{versionId}
+    </update>
+
+</mapper>

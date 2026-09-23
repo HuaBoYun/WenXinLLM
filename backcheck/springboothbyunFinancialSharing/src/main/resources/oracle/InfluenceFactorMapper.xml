@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.oracle.mapper.InfluenceFactorMapper">
+
+    <!-- 基础结果映射 -->
+    <resultMap id="BaseResultMap" type="com.financial.sharing.oracle.entity.InfluenceFactorEntity">
+        <id column="ID" property="factorId" />
+        <result column="FACTOR_CODE" property="factorCode" />
+        <result column="FACTOR_NAME" property="factorName" />
+        <result column="FACTOR_TYPE" property="factorType" />
+        <result column="DATA_TYPE" property="dataType" />
+        <result column="FACTOR_VALUE" property="factorValue" />
+        <result column="DEFAULT_VALUE" property="defaultValue" />
+        <result column="CALCULATION_FORMULA" property="calculationFormula" />
+        <result column="AFFECT_SCOPE" property="affectScope" />
+        <result column="PRIORITY_LEVEL" property="priorityLevel" />
+        <result column="IS_ENABLED" property="isEnabled" />
+        <result column="REMARK" property="remark" />
+        <result column="DESCRIPTION" property="description" />
+        <result column="TENANT_ID" property="tenantId" />
+        <result column="BOOK_ID" property="bookId" />
+        <result column="IS_DELETED" property="isDeleted" />
+        <result column="VERSION" property="version" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="CREATE_BY" property="createBy" />
+        <result column="UPDATE_BY" property="updateBy" />
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="Base_Column_List">
+        ID, FACTOR_CODE, FACTOR_NAME, FACTOR_TYPE, DATA_TYPE,
+        FACTOR_VALUE, DEFAULT_VALUE, CALCULATION_FORMULA, AFFECT_SCOPE,
+        PRIORITY_LEVEL, IS_ENABLED, REMARK, DESCRIPTION, TENANT_ID, BOOK_ID,
+        IS_DELETED, VERSION, CREATE_TIME, UPDATE_TIME, CREATE_BY, UPDATE_BY
+    </sql>
+
+    <!-- 分页查询影响因素 -->
+    <select id="selectInfluenceFactorPage" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_INFLUENCE_FACTOR
+        WHERE IS_DELETED = 0
+        <if test="param.tenantId != null">
+            AND TENANT_ID = #{param.tenantId}
+        </if>
+        <if test="param.bookId != null">
+            AND BOOK_ID = #{param.bookId}
+        </if>
+        <if test="param.factorCode != null and param.factorCode != ''">
+            AND FACTOR_CODE LIKE '%' || #{param.factorCode} || '%'
+        </if>
+        <if test="param.factorName != null and param.factorName != ''">
+            AND FACTOR_NAME LIKE '%' || #{param.factorName} || '%'
+        </if>
+        <if test="param.factorType != null">
+            AND FACTOR_TYPE = #{param.factorType}
+        </if>
+        <if test="param.isEnabled != null">
+            AND IS_ENABLED = #{param.isEnabled}
+        </if>
+        ORDER BY PRIORITY_LEVEL ASC, CREATE_TIME DESC
+    </select>
+
+    <!-- 根据编码查询影响因素 -->
+    <select id="selectByFactorCode" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_INFLUENCE_FACTOR
+        WHERE FACTOR_CODE = #{factorCode}
+        AND TENANT_ID = #{tenantId}
+        AND BOOK_ID = #{bookId}
+        AND IS_DELETED = 0
+        AND ROWNUM = 1
+    </select>
+
+    <!-- 根据类型查询影响因素列表 -->
+    <select id="selectByFactorType" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_INFLUENCE_FACTOR
+        WHERE FACTOR_TYPE = #{factorType}
+        AND TENANT_ID = #{tenantId}
+        AND BOOK_ID = #{bookId}
+        AND IS_DELETED = 0
+        AND IS_ENABLED = 1
+        ORDER BY FACTOR_CODE ASC
+    </select>
+
+    <!-- 检查编码是否存在 -->
+    <select id="checkFactorCodeExists" resultType="int">
+        SELECT COUNT(1)
+        FROM TBL_INFLUENCE_FACTOR
+        WHERE FACTOR_CODE = #{factorCode}
+        AND TENANT_ID = #{tenantId}
+        AND BOOK_ID = #{bookId}
+        AND IS_DELETED = 0
+        <if test="excludeId != null">
+            AND ID != #{excludeId}
+        </if>
+    </select>
+
+    <!-- 批量更新启用状态 -->
+    <update id="batchUpdateEnabled">
+        UPDATE TBL_INFLUENCE_FACTOR
+        SET IS_ENABLED = #{isEnabled},
+            UPDATE_TIME = SYSDATE,
+            UPDATER = #{updater}
+        WHERE ID IN
+        <foreach collection="factorIds" item="factorId" open="(" separator="," close=")">
+            #{factorId}
+        </foreach>
+        AND IS_DELETED = 0
+    </update>
+
+    <!-- 批量删除 -->
+    <update id="batchDelete">
+        UPDATE TBL_INFLUENCE_FACTOR
+        SET IS_DELETED = 1,
+            UPDATE_TIME = SYSDATE,
+            UPDATER = #{updater}
+        WHERE ID IN
+        <foreach collection="factorIds" item="factorId" open="(" separator="," close=")">
+            #{factorId}
+        </foreach>
+        AND IS_DELETED = 0
+    </update>
+
+    <!-- 插入影响因素 -->
+    <insert id="insert" parameterType="com.financial.sharing.oracle.entity.InfluenceFactorEntity" useGeneratedKeys="false">
+        INSERT INTO TBL_INFLUENCE_FACTOR (
+            FACTOR_CODE, FACTOR_NAME, FACTOR_TYPE, DATA_TYPE,
+            FACTOR_VALUE, DEFAULT_VALUE, CALCULATION_FORMULA, AFFECT_SCOPE,
+            PRIORITY_LEVEL, IS_ENABLED, DESCRIPTION,
+            TENANT_ID, BOOK_ID, IS_DELETED, VERSION,
+            CREATE_TIME, UPDATE_TIME, CREATE_BY, UPDATE_BY
+        ) VALUES (
+            #{factorCode}, #{factorName}, #{factorType}, #{dataType},
+            #{factorValue}, #{defaultValue}, #{calculationFormula}, #{affectScope},
+            #{priorityLevel}, #{isEnabled}, #{description},
+            #{tenantId}, #{bookId}, #{isDeleted}, #{version},
+            #{createTime}, #{updateTime}, #{createBy}, #{updateBy}
+        )
+    </insert>
+
+    <!-- 根据ID更新 -->
+    <update id="updateById" parameterType="com.financial.sharing.oracle.entity.InfluenceFactorEntity">
+        UPDATE TBL_INFLUENCE_FACTOR
+        <set>
+            <if test="factorCode != null">FACTOR_CODE = #{factorCode},</if>
+            <if test="factorName != null">FACTOR_NAME = #{factorName},</if>
+            <if test="factorType != null">FACTOR_TYPE = #{factorType},</if>
+            <if test="dataType != null">DATA_TYPE = #{dataType},</if>
+            <if test="factorValue != null">FACTOR_VALUE = #{factorValue},</if>
+            <if test="defaultValue != null">DEFAULT_VALUE = #{defaultValue},</if>
+            <if test="calculationFormula != null">CALCULATION_FORMULA = #{calculationFormula},</if>
+            <if test="affectScope != null">AFFECT_SCOPE = #{affectScope},</if>
+            <if test="priorityLevel != null">PRIORITY_LEVEL = #{priorityLevel},</if>
+            <if test="isEnabled != null">IS_ENABLED = #{isEnabled},</if>
+            <if test="description != null">DESCRIPTION = #{description},</if>
+            <if test="updateTime != null">UPDATE_TIME = #{updateTime},</if>
+            <if test="updateBy != null">UPDATE_BY = #{updateBy},</if>
+        </set>
+        WHERE ID = #{factorId}
+    </update>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_INFLUENCE_FACTOR
+        WHERE ID = #{factorId}
+        AND IS_DELETED = 0
+    </select>
+
+</mapper>

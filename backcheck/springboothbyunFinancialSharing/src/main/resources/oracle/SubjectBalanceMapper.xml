@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.oracle.mapper.SubjectBalanceMapper">
+
+    <!-- 科目余额结果映射 -->
+    <resultMap id="BaseResultMap" type="com.financial.sharing.oracle.entity.SubjectBalanceEntity">
+        <id column="BALANCE_ID" jdbcType="BIGINT" property="balanceId"/>
+        <result column="SUBJECT_ID" jdbcType="BIGINT" property="subjectId"/>
+        <result column="SUBJECT_CODE" jdbcType="VARCHAR" property="subjectCode"/>
+        <result column="SUBJECT_NAME" jdbcType="VARCHAR" property="subjectName"/>
+        <result column="ACCOUNTING_PERIOD" jdbcType="VARCHAR" property="accountingPeriod"/>
+        <result column="BEGINNING_BALANCE" jdbcType="DECIMAL" property="beginningBalance"/>
+        <result column="PERIOD_DEBIT_AMOUNT" jdbcType="DECIMAL" property="periodDebitAmount"/>
+        <result column="PERIOD_CREDIT_AMOUNT" jdbcType="DECIMAL" property="periodCreditAmount"/>
+        <result column="ENDING_BALANCE" jdbcType="DECIMAL" property="endingBalance"/>
+        <result column="BALANCE_DIRECTION" jdbcType="VARCHAR" property="balanceDirection"/>
+        <result column="BOOK_ID" jdbcType="BIGINT" property="bookId"/>
+        <result column="TENANT_ID" jdbcType="BIGINT" property="tenantId"/>
+        <result column="CREATED_TIME" jdbcType="TIMESTAMP" property="createdTime"/>
+        <result column="UPDATED_TIME" jdbcType="TIMESTAMP" property="updatedTime"/>
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        BALANCE_ID, SUBJECT_ID, SUBJECT_CODE, SUBJECT_NAME, ACCOUNTING_PERIOD,
+        BEGINNING_BALANCE, PERIOD_DEBIT_AMOUNT, PERIOD_CREDIT_AMOUNT, ENDING_BALANCE,
+        BALANCE_DIRECTION, BOOK_ID, TENANT_ID, CREATED_TIME, UPDATED_TIME
+    </sql>
+
+    <!-- 分页查询科目余额 (使用PageHelper分页，不要在SQL中手动分页) -->
+    <select id="selectBalancePage" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM TBL_SUBJECT_BALANCE
+        <where>
+            <if test="param.bookId != null">
+                AND BOOK_ID = #{param.bookId}
+            </if>
+            <if test="param.tenantId != null">
+                AND TENANT_ID = #{param.tenantId}
+            </if>
+            <if test="param.subjectCode != null and param.subjectCode != ''">
+                AND SUBJECT_CODE = #{param.subjectCode}
+            </if>
+            <if test="param.subjectName != null and param.subjectName != ''">
+                AND SUBJECT_NAME LIKE CONCAT('%', #{param.subjectName}, '%')
+            </if>
+            <if test="param.accountingPeriod != null and param.accountingPeriod != ''">
+                AND ACCOUNTING_PERIOD = #{param.accountingPeriod}
+            </if>
+            <if test="param.balanceDirection != null and param.balanceDirection != ''">
+                AND BALANCE_DIRECTION = #{param.balanceDirection}
+            </if>
+        </where>
+        ORDER BY SUBJECT_CODE
+    </select>
+
+    <!-- 查询科目余额总数 -->
+    <select id="selectBalanceCount" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM TBL_SUBJECT_BALANCE
+        <where>
+            <if test="param.bookId != null">
+                AND BOOK_ID = #{param.bookId}
+            </if>
+            <if test="param.tenantId != null">
+                AND TENANT_ID = #{param.tenantId}
+            </if>
+            <if test="param.subjectCode != null and param.subjectCode != ''">
+                AND SUBJECT_CODE = #{param.subjectCode}
+            </if>
+            <if test="param.accountName != null and param.accountName != ''">
+                AND SUBJECT_NAME LIKE CONCAT('%', #{param.accountName}, '%')
+            </if>
+            <if test="param.accountingPeriod != null and param.accountingPeriod != ''">
+                AND ACCOUNTING_PERIOD = #{param.accountingPeriod}
+            </if>
+            <if test="param.balanceDirection != null and param.balanceDirection != ''">
+                AND BALANCE_DIRECTION = #{param.balanceDirection}
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据科目编码和期间查询余额详情 -->
+    <select id="selectSubjectBalanceDetail" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM TBL_SUBJECT_BALANCE
+        WHERE SUBJECT_CODE = #{subjectCode}
+        AND ACCOUNTING_PERIOD = #{period}
+        AND BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+    </select>
+
+    <!-- 计算科目余额 -->
+    <select id="calculateSubjectBalance" resultType="java.util.Map">
+        SELECT
+            #{subjectCode} as subjectCode,
+            s.SUBJECT_NAME as subjectName,
+            #{period} as period,
+            COALESCE(b.BEGINNING_BALANCE, 0) as beginningBalance,
+            COALESCE(gl.periodDebit, 0) as currentDebit,
+            COALESCE(gl.periodCredit, 0) as currentCredit,
+            COALESCE(b.BEGINNING_BALANCE, 0) + COALESCE(gl.periodDebit, 0) - COALESCE(gl.periodCredit, 0) as endingBalance,
+            s.BALANCE_DIRECTION as balanceDirection
+        FROM T_ACCOUNT_SUBJECT s
+        LEFT JOIN TBL_SUBJECT_BALANCE b ON s.SUBJECT_CODE = b.SUBJECT_CODE AND b.ACCOUNTING_PERIOD = #{period}
+        LEFT JOIN (
+            SELECT
+                ACCOUNT_CODE,
+                SUM(DEBIT_AMOUNT) as periodDebit,
+                SUM(CREDIT_AMOUNT) as periodCredit
+            FROM TBL_GENERAL_LEDGER
+            WHERE ACCOUNT_CODE = #{subjectCode}
+            AND ACCOUNTING_PERIOD = #{period}
+            AND BOOK_ID = #{bookId}
+            AND TENANT_ID = #{tenantId}
+            GROUP BY ACCOUNT_CODE
+        ) gl ON s.SUBJECT_CODE = gl.ACCOUNT_CODE
+        WHERE s.SUBJECT_CODE = #{subjectCode}
+        AND s.BOOK_ID = #{bookId}
+        AND s.TENANT_ID = #{tenantId}
+    </select>
+
+    <!-- 获取科目期初余额 -->
+    <select id="getBeginningBalance" resultType="java.math.BigDecimal">
+        SELECT COALESCE(ENDING_BALANCE, 0)
+        FROM TBL_SUBJECT_BALANCE
+        WHERE SUBJECT_ID = #{subjectId}
+        AND ACCOUNTING_PERIOD = (
+            SELECT MAX(ACCOUNTING_PERIOD)
+            FROM TBL_SUBJECT_BALANCE
+            WHERE SUBJECT_ID = #{subjectId}
+            AND ACCOUNTING_PERIOD &lt; #{period}
+            AND BOOK_ID = #{bookId}
+            AND TENANT_ID = #{tenantId}
+        )
+        AND BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+    </select>
+
+    <!-- 获取科目本期发生额 -->
+    <select id="getPeriodAmount" resultType="java.util.Map">
+        SELECT
+            SUM(DEBIT_AMOUNT) as debitAmount,
+            SUM(CREDIT_AMOUNT) as creditAmount
+        FROM TBL_GENERAL_LEDGER
+        WHERE ACCOUNT_CODE = #{subjectCode}
+        AND ACCOUNTING_PERIOD = #{period}
+        AND BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+    </select>
+
+    <!-- 插入或更新科目余额 -->
+    <insert id="upsertBalance" parameterType="com.financial.sharing.oracle.entity.SubjectBalanceEntity">
+        MERGE INTO TBL_SUBJECT_BALANCE t
+        USING (
+            SELECT
+                #{subjectId} as SUBJECT_ID,
+                #{subjectCode} as SUBJECT_CODE,
+                #{accountingPeriod} as ACCOUNTING_PERIOD,
+                #{bookId} as BOOK_ID,
+                #{tenantId} as TENANT_ID
+            FROM DUAL
+        ) s
+        ON (t.SUBJECT_CODE = s.SUBJECT_CODE
+            AND t.ACCOUNTING_PERIOD = s.ACCOUNTING_PERIOD
+            AND t.BOOK_ID = s.BOOK_ID
+            AND t.TENANT_ID = s.TENANT_ID)
+        WHEN MATCHED THEN
+            UPDATE SET
+                t.SUBJECT_NAME = #{subjectName},
+                t.BEGINNING_BALANCE = #{beginningBalance},
+                t.PERIOD_DEBIT_AMOUNT = #{periodDebitAmount},
+                t.PERIOD_CREDIT_AMOUNT = #{periodCreditAmount},
+                t.ENDING_BALANCE = #{endingBalance},
+                t.BALANCE_DIRECTION = #{balanceDirection},
+                t.UPDATED_TIME = CURRENT_TIMESTAMP
+        WHEN NOT MATCHED THEN
+            INSERT (
+                SUBJECT_ID, SUBJECT_CODE, SUBJECT_NAME, ACCOUNTING_PERIOD,
+                BEGINNING_BALANCE, PERIOD_DEBIT_AMOUNT, PERIOD_CREDIT_AMOUNT,
+                ENDING_BALANCE, BALANCE_DIRECTION, BOOK_ID, TENANT_ID, CREATED_TIME
+            ) VALUES (
+                #{subjectId}, #{subjectCode}, #{subjectName}, #{accountingPeriod},
+                #{beginningBalance}, #{periodDebitAmount}, #{periodCreditAmount},
+                #{endingBalance}, #{balanceDirection}, #{bookId}, #{tenantId}, CURRENT_TIMESTAMP
+            )
+    </insert>
+
+    <!-- 批量插入或更新科目余额 -->
+    <insert id="batchUpsertBalance" parameterType="java.util.List">
+        <foreach collection="balances" item="balance" separator=";">
+            MERGE INTO TBL_SUBJECT_BALANCE t
+            USING (
+                SELECT
+                    #{balance.subjectId} as SUBJECT_ID,
+                    #{balance.subjectCode} as SUBJECT_CODE,
+                    #{balance.accountingPeriod} as ACCOUNTING_PERIOD,
+                    #{balance.bookId} as BOOK_ID,
+                    #{balance.tenantId} as TENANT_ID
+                FROM DUAL
+            ) s
+            ON (t.SUBJECT_CODE = s.SUBJECT_CODE
+                AND t.ACCOUNTING_PERIOD = s.ACCOUNTING_PERIOD
+                AND t.BOOK_ID = s.BOOK_ID
+                AND t.TENANT_ID = s.TENANT_ID)
+            WHEN MATCHED THEN
+                UPDATE SET
+                    t.SUBJECT_NAME = #{balance.subjectName},
+                    t.BEGINNING_BALANCE = #{balance.beginningBalance},
+                    t.PERIOD_DEBIT_AMOUNT = #{balance.periodDebitAmount},
+                    t.PERIOD_CREDIT_AMOUNT = #{balance.periodCreditAmount},
+                    t.ENDING_BALANCE = #{balance.endingBalance},
+                    t.BALANCE_DIRECTION = #{balance.balanceDirection},
+                    t.UPDATED_TIME = CURRENT_TIMESTAMP
+            WHEN NOT MATCHED THEN
+                INSERT (
+                    SUBJECT_ID, SUBJECT_CODE, SUBJECT_NAME, ACCOUNTING_PERIOD,
+                    BEGINNING_BALANCE, PERIOD_DEBIT_AMOUNT, PERIOD_CREDIT_AMOUNT,
+                    ENDING_BALANCE, BALANCE_DIRECTION, BOOK_ID, TENANT_ID, CREATED_TIME
+                ) VALUES (
+                    #{balance.subjectId}, #{balance.subjectCode}, #{balance.subjectName}, #{balance.accountingPeriod},
+                    #{balance.beginningBalance}, #{balance.periodDebitAmount}, #{balance.periodCreditAmount},
+                    #{balance.endingBalance}, #{balance.balanceDirection}, #{balance.bookId}, #{balance.tenantId}, CURRENT_TIMESTAMP
+                )
+        </foreach>
+    </insert>
+
+    <!-- 重新计算科目余额 -->
+    <update id="recalculateBalance">
+        <choose>
+            <when test="param.subjectCode != null and param.subjectCode != ''">
+                <!-- 重新计算指定科目余额 -->
+                MERGE INTO TBL_SUBJECT_BALANCE t
+                USING (
+                    SELECT
+                        s.SUBJECT_ID,
+                        s.SUBJECT_CODE,
+                        s.SUBJECT_NAME,
+                        #{param.period} as ACCOUNTING_PERIOD,
+                        COALESCE(
+                            (SELECT ENDING_BALANCE FROM TBL_SUBJECT_BALANCE
+                             WHERE SUBJECT_CODE = s.SUBJECT_CODE
+                             AND ACCOUNTING_PERIOD = (
+                                 SELECT MAX(ACCOUNTING_PERIOD)
+                                 FROM TBL_SUBJECT_BALANCE
+                                 WHERE SUBJECT_CODE = s.SUBJECT_CODE
+                                 AND ACCOUNTING_PERIOD &lt; #{param.period}
+                             )
+                             AND BOOK_ID = s.BOOK_ID
+                             AND TENANT_ID = s.TENANT_ID
+                             LIMIT 1), 0
+                        ) as BEGINNING_BALANCE,
+                        COALESCE(gl.periodDebit, 0) as PERIOD_DEBIT_AMOUNT,
+                        COALESCE(gl.periodCredit, 0) as PERIOD_CREDIT_AMOUNT,
+                        COALESCE(
+                            (SELECT ENDING_BALANCE FROM TBL_SUBJECT_BALANCE
+                             WHERE SUBJECT_CODE = s.SUBJECT_CODE
+                             AND ACCOUNTING_PERIOD = (
+                                 SELECT MAX(ACCOUNTING_PERIOD)
+                                 FROM TBL_SUBJECT_BALANCE
+                                 WHERE SUBJECT_CODE = s.SUBJECT_CODE
+                                 AND ACCOUNTING_PERIOD &lt; #{param.period}
+                             )
+                             AND BOOK_ID = s.BOOK_ID
+                             AND TENANT_ID = s.TENANT_ID
+                             LIMIT 1), 0
+                        ) + COALESCE(gl.periodDebit, 0) - COALESCE(gl.periodCredit, 0) as ENDING_BALANCE,
+                        s.BALANCE_DIRECTION,
+                        s.BOOK_ID,
+                        s.TENANT_ID
+                    FROM T_ACCOUNT_SUBJECT s
+                    LEFT JOIN (
+                        SELECT
+                            ACCOUNT_CODE,
+                            SUM(DEBIT_AMOUNT) as periodDebit,
+                            SUM(CREDIT_AMOUNT) as periodCredit
+                        FROM TBL_GENERAL_LEDGER
+                        WHERE ACCOUNT_CODE = #{param.subjectCode}
+                        AND ACCOUNTING_PERIOD = #{param.period}
+                        <if test="param.bookId != null">
+                            AND BOOK_ID = #{param.bookId}
+                        </if>
+                        <if test="param.tenantId != null">
+                            AND TENANT_ID = #{param.tenantId}
+                        </if>
+                        GROUP BY ACCOUNT_CODE
+                    ) gl ON s.SUBJECT_CODE = gl.ACCOUNT_CODE
+                    WHERE s.SUBJECT_CODE = #{param.subjectCode}
+                    <if test="param.bookId != null">
+                        AND s.BOOK_ID = #{param.bookId}
+                    </if>
+                    <if test="param.tenantId != null">
+                        AND s.TENANT_ID = #{param.tenantId}
+                    </if>
+                ) src
+                ON (t.SUBJECT_CODE = src.SUBJECT_CODE
+                    AND t.ACCOUNTING_PERIOD = src.ACCOUNTING_PERIOD
+                    AND t.BOOK_ID = src.BOOK_ID
+                    AND t.TENANT_ID = src.TENANT_ID)
+                WHEN MATCHED THEN
+                    UPDATE SET
+                        t.BEGINNING_BALANCE = src.BEGINNING_BALANCE,
+                        t.PERIOD_DEBIT_AMOUNT = src.PERIOD_DEBIT_AMOUNT,
+                        t.PERIOD_CREDIT_AMOUNT = src.PERIOD_CREDIT_AMOUNT,
+                        t.ENDING_BALANCE = src.ENDING_BALANCE,
+                        t.UPDATED_TIME = CURRENT_TIMESTAMP
+                WHEN NOT MATCHED THEN
+                    INSERT (
+                        SUBJECT_ID, SUBJECT_CODE, SUBJECT_NAME, ACCOUNTING_PERIOD,
+                        BEGINNING_BALANCE, PERIOD_DEBIT_AMOUNT, PERIOD_CREDIT_AMOUNT,
+                        ENDING_BALANCE, BALANCE_DIRECTION, BOOK_ID, TENANT_ID, CREATED_TIME
+                    ) VALUES (
+                        src.SUBJECT_ID, src.SUBJECT_CODE, src.SUBJECT_NAME, src.ACCOUNTING_PERIOD,
+                        src.BEGINNING_BALANCE, src.PERIOD_DEBIT_AMOUNT, src.PERIOD_CREDIT_AMOUNT,
+                        src.ENDING_BALANCE, src.BALANCE_DIRECTION, src.BOOK_ID, src.TENANT_ID, CURRENT_TIMESTAMP
+                    )
+            </when>
+            <otherwise>
+                <!-- 重新计算所有科目余额 -->
+                CALL RECALCULATE_ALL_BALANCE(#{param.period}, #{param.bookId}, #{param.tenantId})
+            </otherwise>
+        </choose>
+    </update>
+
+    <!-- 删除指定期间的科目余额 -->
+    <delete id="deleteBalanceByPeriod">
+        DELETE FROM TBL_SUBJECT_BALANCE
+        WHERE ACCOUNTING_PERIOD = #{period}
+        AND BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+    </delete>
+
+    <!-- 重新计算所有科目余额 -->
+    <update id="recalculateAllBalance">
+        -- 删除现有余额
+        DELETE FROM TBL_SUBJECT_BALANCE
+        WHERE ACCOUNTING_PERIOD = #{period}
+        AND BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId};
+
+        -- 重新计算并插入余额
+        INSERT INTO TBL_SUBJECT_BALANCE (
+            SUBJECT_ID, SUBJECT_CODE, SUBJECT_NAME, ACCOUNTING_PERIOD,
+            BEGINNING_BALANCE, PERIOD_DEBIT_AMOUNT, PERIOD_CREDIT_AMOUNT,
+            ENDING_BALANCE, BALANCE_DIRECTION, BOOK_ID, TENANT_ID, CREATED_TIME
+        )
+        SELECT
+            s.SUBJECT_ID,
+            s.SUBJECT_CODE,
+            s.SUBJECT_NAME,
+            #{period} as ACCOUNTING_PERIOD,
+            COALESCE(prev.ENDING_BALANCE, 0) as BEGINNING_BALANCE,
+            COALESCE(curr.periodDebit, 0) as PERIOD_DEBIT_AMOUNT,
+            COALESCE(curr.periodCredit, 0) as PERIOD_CREDIT_AMOUNT,
+            COALESCE(prev.ENDING_BALANCE, 0) + COALESCE(curr.periodDebit, 0) - COALESCE(curr.periodCredit, 0) as ENDING_BALANCE,
+            s.BALANCE_DIRECTION,
+            s.BOOK_ID,
+            s.TENANT_ID,
+            CURRENT_TIMESTAMP
+        FROM T_ACCOUNT_SUBJECT s
+        LEFT JOIN (
+            SELECT
+                ACCOUNT_CODE,
+                SUM(DEBIT_AMOUNT) as periodDebit,
+                SUM(CREDIT_AMOUNT) as periodCredit
+            FROM TBL_GENERAL_LEDGER
+            WHERE ACCOUNTING_PERIOD = #{period}
+            AND BOOK_ID = #{bookId}
+            AND TENANT_ID = #{tenantId}
+            GROUP BY ACCOUNT_CODE
+        ) curr ON s.SUBJECT_CODE = curr.ACCOUNT_CODE
+        LEFT JOIN (
+            SELECT DISTINCT
+                SUBJECT_CODE,
+                ENDING_BALANCE
+            FROM TBL_SUBJECT_BALANCE b1
+            WHERE b1.ACCOUNTING_PERIOD = (
+                SELECT MAX(ACCOUNTING_PERIOD)
+                FROM TBL_SUBJECT_BALANCE
+                WHERE ACCOUNTING_PERIOD &lt; #{period}
+                AND BOOK_ID = #{bookId}
+                AND TENANT_ID = #{tenantId}
+            )
+            AND BOOK_ID = #{bookId}
+            AND TENANT_ID = #{tenantId}
+        ) prev ON s.SUBJECT_CODE = prev.SUBJECT_CODE
+        WHERE s.BOOK_ID = #{bookId}
+        AND s.TENANT_ID = #{tenantId}
+        AND (curr.periodDebit IS NOT NULL OR curr.periodCredit IS NOT NULL OR prev.ENDING_BALANCE IS NOT NULL)
+    </update>
+
+    <!-- 查询余额统计信息 -->
+    <select id="selectBalanceStatistics" resultType="java.util.Map">
+        SELECT
+            COUNT(1) as subjectCount,
+            SUM(CASE WHEN BALANCE_DIRECTION = '借方' THEN ENDING_BALANCE ELSE 0 END) as totalDebitBalance,
+            SUM(CASE WHEN BALANCE_DIRECTION = '贷方' THEN ENDING_BALANCE ELSE 0 END) as totalCreditBalance,
+            SUM(PERIOD_DEBIT_AMOUNT) as totalPeriodDebit,
+            SUM(PERIOD_CREDIT_AMOUNT) as totalPeriodCredit
+        FROM TBL_SUBJECT_BALANCE
+        WHERE ACCOUNTING_PERIOD = #{period}
+        AND BOOK_ID = #{bookId}
+        AND TENANT_ID = #{tenantId}
+    </select>
+
+</mapper>

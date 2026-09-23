@@ -1,0 +1,383 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.oracle.mapper.InternalSettlementMapper">
+
+    <!-- 内部结算结果映射 -->
+    <resultMap id="InternalSettlementResultMap" type="com.financial.sharing.oracle.entity.InternalSettlementEntity">
+        <id column="SETTLEMENT_ID" property="settlementId" jdbcType="BIGINT"/>
+        <result column="SETTLEMENT_NO" property="settlementNo" jdbcType="VARCHAR"/>
+        <result column="FROM_CENTER_ID" property="fromCenterId" jdbcType="VARCHAR"/>
+        <result column="TO_CENTER_ID" property="toCenterId" jdbcType="VARCHAR"/>
+        <result column="SETTLEMENT_DATE" property="settlementDate" jdbcType="DATE"/>
+        <result column="SETTLEMENT_AMOUNT" property="settlementAmount" jdbcType="DECIMAL"/>
+        <result column="SETTLEMENT_TYPE" property="settlementType" jdbcType="INTEGER"/>
+        <result column="SETTLEMENT_BASIS" property="settlementBasis" jdbcType="VARCHAR"/>
+        <result column="SETTLEMENT_STATUS" property="settlementStatus" jdbcType="INTEGER"/>
+        <result column="VOUCHER_ID" property="voucherId" jdbcType="BIGINT"/>
+        <result column="REMARK" property="remark" jdbcType="VARCHAR"/>
+        <result column="BOOK_ID" property="bookId" jdbcType="VARCHAR"/>
+        <result column="TENANT_ID" property="tenantId" jdbcType="VARCHAR"/>
+        <result column="VERSION" property="version" jdbcType="INTEGER"/>
+        <result column="IS_DELETED" property="isDeleted" jdbcType="INTEGER"/>
+        <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="CREATOR" property="creator" jdbcType="BIGINT"/>
+        <result column="UPDATER" property="updater" jdbcType="BIGINT"/>
+
+        <!-- 扩展字段 -->
+        <result column="TRANSACTION_ID" property="transactionId" jdbcType="BIGINT"/>
+        <result column="TRANSACTION_NO" property="transactionNo" jdbcType="VARCHAR"/>
+        <result column="TRANSACTION_TYPE" property="transactionType" jdbcType="INTEGER"/>
+        <result column="TRANSACTION_DESC" property="transactionDesc" jdbcType="VARCHAR"/>
+        <result column="TRANSACTION_STATUS" property="transactionStatus" jdbcType="INTEGER"/>
+
+        <result column="PRICING_POLICY_ID" property="pricingPolicyId" jdbcType="BIGINT"/>
+        <result column="PRICING_METHOD" property="pricingMethod" jdbcType="INTEGER"/>
+        <result column="BASE_PRICE" property="basePrice" jdbcType="DECIMAL"/>
+        <result column="MARGIN_RATE" property="marginRate" jdbcType="DECIMAL"/>
+        <result column="ADJUSTMENT_FACTOR" property="adjustmentFactor" jdbcType="DECIMAL"/>
+
+        <result column="PROFIT_CENTER_ID" property="profitCenterId" jdbcType="BIGINT"/>
+        <result column="REVENUE_AMOUNT" property="revenueAmount" jdbcType="DECIMAL"/>
+        <result column="COST_AMOUNT" property="costAmount" jdbcType="DECIMAL"/>
+        <result column="PROFIT_AMOUNT" property="profitAmount" jdbcType="DECIMAL"/>
+        <result column="PROFIT_MARGIN" property="profitMargin" jdbcType="DECIMAL"/>
+
+        <result column="FUND_ALLOCATION_ID" property="fundAllocationId" jdbcType="BIGINT"/>
+        <result column="ALLOCATION_TYPE" property="allocationType" jdbcType="INTEGER"/>
+        <result column="ALLOCATION_AMOUNT" property="allocationAmount" jdbcType="DECIMAL"/>
+        <result column="INTEREST_RATE" property="interestRate" jdbcType="DECIMAL"/>
+        <result column="INTEREST_AMOUNT" property="interestAmount" jdbcType="DECIMAL"/>
+        <result column="MATURITY_DATE" property="maturityDate" jdbcType="DATE"/>
+
+        <result column="SETTLEMENT_EFFICIENCY" property="settlementEfficiency" jdbcType="DECIMAL"/>
+        <result column="AVG_SETTLEMENT_TIME" property="avgSettlementTime" jdbcType="INTEGER"/>
+        <result column="COST_SAVINGS" property="costSavings" jdbcType="DECIMAL"/>
+        <result column="RISK_LEVEL" property="riskLevel" jdbcType="INTEGER"/>
+        <result column="OPTIMIZATION_SUGGESTION" property="optimizationSuggestion" jdbcType="VARCHAR"/>
+
+        <result column="APPROVAL_STATUS" property="approvalStatus" jdbcType="INTEGER"/>
+        <result column="APPROVER" property="approver" jdbcType="BIGINT"/>
+        <result column="APPROVAL_TIME" property="approvalTime" jdbcType="TIMESTAMP"/>
+        <result column="APPROVAL_COMMENT" property="approvalComment" jdbcType="VARCHAR"/>
+
+        <result column="BUSINESS_PROCESS_ID" property="businessProcessId" jdbcType="BIGINT"/>
+        <result column="PROCESS_STATUS" property="processStatus" jdbcType="INTEGER"/>
+        <result column="CURRENT_NODE" property="currentNode" jdbcType="VARCHAR"/>
+        <result column="NEXT_NODE" property="nextNode" jdbcType="VARCHAR"/>
+
+        <result column="ACCOUNTING_PERIOD" property="accountingPeriod" jdbcType="VARCHAR"/>
+        <result column="SUBJECT_CODE" property="subjectCode" jdbcType="VARCHAR"/>
+        <result column="SUBJECT_NAME" property="subjectName" jdbcType="VARCHAR"/>
+        <result column="DEBIT_AMOUNT" property="debitAmount" jdbcType="DECIMAL"/>
+        <result column="CREDIT_AMOUNT" property="creditAmount" jdbcType="DECIMAL"/>
+
+        <result column="BUSINESS_TYPE" property="businessType" jdbcType="VARCHAR"/>
+        <result column="BUSINESS_NO" property="businessNo" jdbcType="VARCHAR"/>
+        <result column="BUSINESS_DESC" property="businessDesc" jdbcType="VARCHAR"/>
+        <result column="RELATED_DOC_ID" property="relatedDocId" jdbcType="BIGINT"/>
+        <result column="RELATED_DOC_NO" property="relatedDocNo" jdbcType="VARCHAR"/>
+        <result column="RELATED_DOC_TYPE" property="relatedDocType" jdbcType="VARCHAR"/>
+
+        <result column="DATA_SOURCE" property="dataSource" jdbcType="VARCHAR"/>
+        <result column="SYNC_STATUS" property="syncStatus" jdbcType="INTEGER"/>
+        <result column="SYNC_TIME" property="syncTime" jdbcType="TIMESTAMP"/>
+        <result column="EXT_FIELD1" property="extField1" jdbcType="VARCHAR"/>
+        <result column="EXT_FIELD2" property="extField2" jdbcType="VARCHAR"/>
+        <result column="EXT_FIELD3" property="extField3" jdbcType="VARCHAR"/>
+        <result column="EXT_FIELD4" property="extField4" jdbcType="VARCHAR"/>
+        <result column="EXT_FIELD5" property="extField5" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 基础字段映射，用于简单查询 -->
+    <resultMap id="BaseResultMap" type="com.financial.sharing.oracle.entity.InternalSettlementEntity">
+        <id column="SETTLEMENT_ID" property="settlementId" jdbcType="BIGINT"/>
+        <result column="SETTLEMENT_NO" property="settlementNo" jdbcType="VARCHAR"/>
+        <result column="FROM_CENTER_ID" property="fromCenterId" jdbcType="VARCHAR"/>
+        <result column="TO_CENTER_ID" property="toCenterId" jdbcType="VARCHAR"/>
+        <result column="SETTLEMENT_DATE" property="settlementDate" jdbcType="DATE"/>
+        <result column="SETTLEMENT_AMOUNT" property="settlementAmount" jdbcType="DECIMAL"/>
+        <result column="SETTLEMENT_TYPE" property="settlementType" jdbcType="INTEGER"/>
+        <result column="SETTLEMENT_BASIS" property="settlementBasis" jdbcType="VARCHAR"/>
+        <result column="SETTLEMENT_STATUS" property="settlementStatus" jdbcType="INTEGER"/>
+        <result column="VOUCHER_ID" property="voucherId" jdbcType="BIGINT"/>
+        <result column="REMARK" property="remark" jdbcType="VARCHAR"/>
+        <result column="BOOK_ID" property="bookId" jdbcType="VARCHAR"/>
+        <result column="TENANT_ID" property="tenantId" jdbcType="VARCHAR"/>
+        <result column="VERSION" property="version" jdbcType="INTEGER"/>
+        <result column="IS_DELETED" property="isDeleted" jdbcType="INTEGER"/>
+        <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="CREATOR" property="creator" jdbcType="BIGINT"/>
+        <result column="UPDATER" property="updater" jdbcType="BIGINT"/>
+
+        <!-- 业务类型字段 -->
+        <result column="BUSINESS_TYPE" property="businessType" jdbcType="VARCHAR"/>
+        <result column="ACCOUNTING_PERIOD" property="accountingPeriod" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 分页查询内部结算列表 -->
+    <select id="selectInternalSettlementPage" resultMap="BaseResultMap">
+        SELECT
+            SETTLEMENT_ID,
+            SETTLEMENT_NO,
+            FROM_CENTER_ID,
+            TO_CENTER_ID,
+            SETTLEMENT_DATE,
+            SETTLEMENT_AMOUNT,
+            SETTLEMENT_TYPE,
+            SETTLEMENT_BASIS,
+            SETTLEMENT_STATUS,
+            VOUCHER_ID,
+            REMARK,
+            BOOK_ID,
+            TENANT_ID,
+            VERSION,
+            IS_DELETED,
+            CREATE_TIME,
+            UPDATE_TIME,
+            CREATOR,
+            UPDATER,
+            BUSINESS_TYPE,
+            ACCOUNTING_PERIOD
+        FROM T_INTERNAL_SETTLEMENT
+        WHERE IS_DELETED = 0
+        <if test="param.settlementType != null">
+            AND SETTLEMENT_TYPE = #{param.settlementType}
+        </if>
+        <if test="param.bookId != null">
+            AND BOOK_ID = #{param.bookId}
+        </if>
+        <if test="param.tenantId != null">
+            AND TENANT_ID = #{param.tenantId}
+        </if>
+        <if test="param.settlementStatus != null">
+            AND SETTLEMENT_STATUS = #{param.settlementStatus}
+        </if>
+        <if test="param.settlementNo != null and param.settlementNo != ''">
+            AND SETTLEMENT_NO LIKE '%' || #{param.settlementNo} || '%'
+        </if>
+        <if test="param.accountingPeriod != null and param.accountingPeriod != ''">
+            AND ACCOUNTING_PERIOD = #{param.accountingPeriod}
+        </if>
+        ORDER BY SETTLEMENT_DATE DESC, SETTLEMENT_ID DESC
+    </select>
+
+    <!-- 查询内部结算详情 -->
+    <select id="selectInternalSettlementDetail" resultMap="InternalSettlementResultMap">
+        SELECT *
+        FROM T_INTERNAL_SETTLEMENT
+        WHERE SETTLEMENT_ID = #{settlementId,jdbcType=BIGINT}
+          AND IS_DELETED = 0
+    </select>
+
+    <!-- 根据结算单号查询 -->
+    <select id="selectBySettlementNo" resultMap="InternalSettlementResultMap">
+        SELECT *
+        FROM T_INTERNAL_SETTLEMENT
+        WHERE SETTLEMENT_NO = #{settlementNo,jdbcType=VARCHAR}
+          AND IS_DELETED = 0
+    </select>
+
+    <!-- 查询内部结算统计信息 -->
+    <select id="selectInternalSettlementStats" resultType="java.util.Map">
+        SELECT
+            COUNT(1) as totalSettlements,
+            SUM(SETTLEMENT_AMOUNT) as totalAmount,
+            SUM(CASE WHEN SETTLEMENT_STATUS = 1 THEN 1 ELSE 0 END) as pendingCount,
+            SUM(CASE WHEN SETTLEMENT_STATUS = 2 THEN 1 ELSE 0 END) as completedCount
+        FROM T_INTERNAL_SETTLEMENT
+        WHERE IS_DELETED = 0
+        <if test="param.settlementType != null">
+            AND SETTLEMENT_TYPE = #{param.settlementType}
+        </if>
+        <if test="param.bookId != null">
+            AND BOOK_ID = #{param.bookId}
+        </if>
+        <if test="param.tenantId != null">
+            AND TENANT_ID = #{param.tenantId}
+        </if>
+    </select>
+
+    <!-- 批量插入内部结算记录 -->
+    <insert id="batchInsertInternalSettlement" parameterType="java.util.List">
+        INSERT INTO T_INTERNAL_SETTLEMENT (
+            SETTLEMENT_ID,
+            SETTLEMENT_NO,
+            FROM_CENTER_ID,
+            TO_CENTER_ID,
+            SETTLEMENT_DATE,
+            SETTLEMENT_AMOUNT,
+            SETTLEMENT_TYPE,
+            SETTLEMENT_BASIS,
+            SETTLEMENT_STATUS,
+            VOUCHER_ID,
+            REMARK,
+            BOOK_ID,
+            TENANT_ID,
+            VERSION,
+            IS_DELETED,
+            CREATE_TIME,
+            UPDATE_TIME,
+            CREATOR,
+            UPDATER,
+            BUSINESS_TYPE,
+            ACCOUNTING_PERIOD
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.settlementId},
+                #{item.settlementNo},
+                CAST(#{item.fromCenterId} AS NUMBER),
+                CAST(#{item.toCenterId} AS NUMBER),
+                #{item.settlementDate},
+                #{item.settlementAmount},
+                #{item.settlementType},
+                #{item.settlementBasis},
+                #{item.settlementStatus},
+                #{item.voucherId},
+                #{item.remark},
+                CAST(#{item.bookId} AS NUMBER),
+                CAST(#{item.tenantId} AS NUMBER),
+                #{item.version},
+                #{item.isDeleted},
+                #{item.createTime},
+                #{item.updateTime},
+                #{item.creator},
+                #{item.updater},
+                #{item.businessType},
+                #{item.accountingPeriod}
+            )
+        </foreach>
+    </insert>
+
+    <!-- 批量更新结算状态 -->
+    <update id="batchUpdateSettlementStatus">
+        UPDATE T_INTERNAL_SETTLEMENT
+        SET SETTLEMENT_STATUS = #{status,jdbcType=INTEGER},
+            UPDATE_TIME = SYSDATE,
+            UPDATER = #{updater,jdbcType=BIGINT}
+        WHERE SETTLEMENT_ID IN
+        <foreach collection="settlementIds" item="settlementId" open="(" separator="," close=")">
+            #{settlementId,jdbcType=BIGINT}
+        </foreach>
+          AND IS_DELETED = 0
+    </update>
+
+    <!-- 根据条件删除记录 -->
+    <delete id="deleteByCondition">
+        UPDATE T_INTERNAL_SETTLEMENT
+        SET IS_DELETED = 1,
+            UPDATE_TIME = SYSDATE
+        WHERE IS_DELETED = 0
+        <if test="param.settlementType != null">
+            AND SETTLEMENT_TYPE = #{param.settlementType}
+        </if>
+        <if test="param.bookId != null">
+            AND BOOK_ID = #{param.bookId}
+        </if>
+        <if test="param.tenantId != null">
+            AND TENANT_ID = #{param.tenantId}
+        </if>
+        <if test="param.beforeDate != null">
+            AND SETTLEMENT_DATE <![CDATA[ < ]]> #{param.beforeDate,jdbcType=DATE}
+        </if>
+    </delete>
+
+    <!-- 内部交易相关方法 -->
+    <select id="selectInternalTransactionPage" resultMap="BaseResultMap">
+        SELECT * FROM (
+            SELECT a.*, ROWNUM as rn FROM (
+                SELECT
+                    SETTLEMENT_ID,
+                    TRANSACTION_ID,
+                    TRANSACTION_NO,
+                    TRANSACTION_TYPE,
+                    TRANSACTION_DESC,
+                    TRANSACTION_STATUS,
+                    FROM_CENTER_ID,
+                    TO_CENTER_ID,
+                    SETTLEMENT_AMOUNT as TRANSACTION_AMOUNT,
+                    SETTLEMENT_DATE as TRANSACTION_DATE,
+                    BOOK_ID,
+                    TENANT_ID,
+                    CREATE_TIME,
+                    UPDATE_TIME
+                FROM T_INTERNAL_SETTLEMENT
+                WHERE IS_DELETED = 0
+                  AND SETTLEMENT_TYPE = 2  <!-- 内部交易类型 -->
+                <if test="param.transactionType != null">
+                    AND TRANSACTION_TYPE = #{param.transactionType}
+                </if>
+                <if test="param.bookId != null">
+                    AND BOOK_ID = #{param.bookId}
+                </if>
+                <if test="param.tenantId != null">
+                    AND TENANT_ID = #{param.tenantId}
+                </if>
+                ORDER BY TRANSACTION_DATE DESC, SETTLEMENT_ID DESC
+            ) a WHERE ROWNUM <![CDATA[ <= ]]> (#{offset} + #{limit})
+        ) WHERE rn <![CDATA[ > ]]> #{offset}
+    </select>
+
+    <select id="selectInternalTransactionStats" resultType="java.util.Map">
+        SELECT
+            COUNT(1) as totalTransactions,
+            SUM(SETTLEMENT_AMOUNT) as totalAmount,
+            SUM(CASE WHEN TRANSACTION_STATUS = 1 THEN 1 ELSE 0 END) as pendingCount,
+            SUM(CASE WHEN TRANSACTION_STATUS = 6 THEN 1 ELSE 0 END) as settledCount,
+            AVG(SETTLEMENT_AMOUNT) as avgAmount
+        FROM T_INTERNAL_SETTLEMENT
+        WHERE IS_DELETED = 0
+          AND SETTLEMENT_TYPE = 2
+        <if test="param.bookId != null">
+            AND BOOK_ID = #{param.bookId}
+        </if>
+        <if test="param.tenantId != null">
+            AND TENANT_ID = #{param.tenantId}
+        </if>
+    </select>
+
+    <select id="selectByTransactionNo" resultMap="InternalSettlementResultMap">
+        SELECT *
+        FROM T_INTERNAL_SETTLEMENT
+        WHERE TRANSACTION_NO = #{transactionNo,jdbcType=VARCHAR}
+          AND IS_DELETED = 0
+    </select>
+
+    <update id="updateTransactionStatus">
+        UPDATE T_INTERNAL_SETTLEMENT
+        SET TRANSACTION_STATUS = #{status,jdbcType=INTEGER},
+            UPDATE_TIME = SYSDATE,
+            UPDATER = #{updater,jdbcType=BIGINT}
+        WHERE TRANSACTION_ID = #{transactionId,jdbcType=BIGINT}
+          AND IS_DELETED = 0
+    </update>
+
+    <update id="batchApproveTransactions">
+        UPDATE T_INTERNAL_SETTLEMENT
+        SET TRANSACTION_STATUS = 2,
+            APPROVAL_STATUS = 1,
+            APPROVER = #{approver,jdbcType=BIGINT},
+            APPROVAL_TIME = SYSDATE,
+            APPROVAL_COMMENT = #{comment,jdbcType=VARCHAR},
+            UPDATE_TIME = SYSDATE
+        WHERE TRANSACTION_ID IN
+        <foreach collection="transactionIds" item="transactionId" open="(" separator="," close=")">
+            #{transactionId,jdbcType=BIGINT}
+        </foreach>
+          AND IS_DELETED = 0
+    </update>
+
+    <!-- 检查责任中心ID是否存在 -->
+    <select id="checkResponsibilityCenterIds" resultType="java.util.HashMap">
+        SELECT DISTINCT CENTER_ID
+        FROM REDACTED.T_RESPONSIBILITY_CENTER
+        WHERE CENTER_ID IN
+        <foreach collection="centerIds" item="centerId" open="(" separator="," close=")">
+            CAST(#{centerId} AS NUMBER)
+        </foreach>
+        AND IS_DELETED = 0
+    </select>
+
+</mapper>

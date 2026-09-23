@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.FundForecastMapper">
+
+    <!-- 基础结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.FundForecast">
+        <id column="forecast_id" property="forecastId" />
+        <result column="plan_id" property="planId" />
+        <result column="forecast_no" property="forecastNo" />
+        <result column="forecast_type" property="forecastType" />
+        <result column="forecast_method" property="forecastMethod" />
+        <result column="forecast_date" property="forecastDate" />
+        <result column="forecast_amount" property="forecastAmount" />
+        <result column="actual_amount" property="actualAmount" />
+        <result column="forecast_accuracy" property="forecastAccuracy" />
+        <result column="confidence_interval" property="confidenceInterval" />
+        <result column="forecast_period" property="forecastPeriod" />
+        <result column="data_source" property="dataSource" />
+        <result column="model_parameters" property="modelParameters" />
+        <result column="forecast_notes" property="forecastNotes" />
+        <result column="org_id" property="orgId" />
+        <result column="create_user" property="createUser" />
+        <result column="create_time" property="createTime" />
+        <result column="update_user" property="updateUser" />
+        <result column="update_time" property="updateTime" />
+        <result column="description" property="description" />
+        <result column="remark" property="remark" />
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="Base_Column_List">
+        forecast_id, plan_id, forecast_no, forecast_type, forecast_method, forecast_date,
+        forecast_amount, actual_amount, forecast_accuracy, confidence_interval, forecast_period,
+        data_source, model_parameters, forecast_notes, org_id, create_user, create_time,
+        update_user, update_time, description, remark
+    </sql>
+
+    <!-- 分页查询资金预测 -->
+    <select id="selectFundForecastPage" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM fund_forecast
+        <where>
+            <if test="params.planId != null">
+                AND plan_id = #{params.planId}
+            </if>
+            <if test="params.forecastType != null and params.forecastType != ''">
+                AND forecast_type = #{params.forecastType}
+            </if>
+            <if test="params.forecastMethod != null and params.forecastMethod != ''">
+                AND forecast_method = #{params.forecastMethod}
+            </if>
+            <if test="params.orgId != null">
+                AND org_id = #{params.orgId}
+            </if>
+            <if test="params.startDate != null">
+                AND forecast_date >= #{params.startDate}
+            </if>
+            <if test="params.endDate != null">
+                AND forecast_date <= #{params.endDate}
+            </if>
+        </where>
+        ORDER BY forecast_date DESC, create_time DESC
+    </select>
+
+    <!-- 根据计划ID查询预测 -->
+    <select id="selectByPlanId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM fund_forecast
+        WHERE plan_id = #{planId}
+        ORDER BY forecast_date DESC
+    </select>
+
+    <!-- 根据预测编号查询预测 -->
+    <select id="selectByForecastNo" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM fund_forecast
+        WHERE forecast_no = #{forecastNo}
+    </select>
+
+    <!-- 根据预测类型查询预测 -->
+    <select id="selectByForecastType" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM fund_forecast
+        WHERE forecast_type = #{forecastType} AND org_id = #{orgId}
+        ORDER BY forecast_date DESC
+    </select>
+
+    <!-- 根据预测方法查询预测 -->
+    <select id="selectByForecastMethod" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM fund_forecast
+        WHERE forecast_method = #{forecastMethod} AND org_id = #{orgId}
+        ORDER BY forecast_date DESC
+    </select>
+
+    <!-- 根据日期范围查询预测 -->
+    <select id="selectByDateRange" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM fund_forecast
+        WHERE org_id = #{orgId}
+        AND forecast_date >= #{startDate} AND forecast_date <= #{endDate}
+        ORDER BY forecast_date DESC
+    </select>
+
+    <!-- 查询有效预测 -->
+    <select id="selectActiveForecast" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM fund_forecast
+        WHERE org_id = #{orgId}
+        AND forecast_date >= CURDATE()
+        ORDER BY forecast_date ASC
+    </select>
+
+    <!-- 查询高准确率预测 -->
+    <select id="selectHighAccuracyForecast" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM fund_forecast
+        WHERE org_id = #{orgId}
+        AND forecast_accuracy >= #{minAccuracy}
+        AND actual_amount IS NOT NULL
+        ORDER BY forecast_accuracy DESC
+    </select>
+
+    <!-- 查询最近预测 -->
+    <select id="selectRecentForecast" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM fund_forecast
+        WHERE org_id = #{orgId}
+        AND create_time >= DATE_SUB(NOW(), INTERVAL #{days} DAY)
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 统计预测数量 -->
+    <select id="countForecast" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM fund_forecast
+        <where>
+            <if test="params.planId != null">
+                AND plan_id = #{params.planId}
+            </if>
+            <if test="params.forecastType != null and params.forecastType != ''">
+                AND forecast_type = #{params.forecastType}
+            </if>
+            <if test="params.forecastMethod != null and params.forecastMethod != ''">
+                AND forecast_method = #{params.forecastMethod}
+            </if>
+            <if test="params.orgId != null">
+                AND org_id = #{params.orgId}
+            </if>
+        </where>
+    </select>
+
+    <!-- 统计各预测类型数量 -->
+    <select id="countByForecastType" resultType="java.util.Map">
+        SELECT forecast_type as type, COUNT(*) as count
+        FROM fund_forecast
+        WHERE org_id = #{orgId}
+        GROUP BY forecast_type
+        ORDER BY count DESC
+    </select>
+
+    <!-- 统计各预测方法数量 -->
+    <select id="countByForecastMethod" resultType="java.util.Map">
+        SELECT forecast_method as method, COUNT(*) as count
+        FROM fund_forecast
+        WHERE org_id = #{orgId}
+        GROUP BY forecast_method
+        ORDER BY count DESC
+    </select>
+
+    <!-- 计算平均预测准确率 -->
+    <select id="avgForecastAccuracy" resultType="java.math.BigDecimal">
+        SELECT COALESCE(AVG(forecast_accuracy), 0)
+        FROM fund_forecast
+        WHERE actual_amount IS NOT NULL
+        <if test="params.planId != null">
+            AND plan_id = #{params.planId}
+        </if>
+        <if test="params.forecastType != null and params.forecastType != ''">
+            AND forecast_type = #{params.forecastType}
+        </if>
+        <if test="params.forecastMethod != null and params.forecastMethod != ''">
+            AND forecast_method = #{params.forecastMethod}
+        </if>
+        <if test="params.orgId != null">
+            AND org_id = #{params.orgId}
+        </if>
+    </select>
+
+    <!-- 查询预测汇总信息 -->
+    <select id="selectSummaryInfo" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as totalCount,
+            COALESCE(SUM(forecast_amount), 0) as totalForecastAmount,
+            COALESCE(SUM(CASE WHEN actual_amount IS NOT NULL THEN actual_amount ELSE 0 END), 0) as totalActualAmount,
+            COALESCE(AVG(CASE WHEN actual_amount IS NOT NULL THEN forecast_accuracy ELSE NULL END), 0) as avgAccuracy,
+            COUNT(CASE WHEN actual_amount IS NOT NULL THEN 1 END) as verifiedCount,
+            COUNT(CASE WHEN forecast_accuracy >= 80 THEN 1 END) as highAccuracyCount
+        FROM fund_forecast
+        <where>
+            <if test="params.planId != null">
+                AND plan_id = #{params.planId}
+            </if>
+            <if test="params.forecastType != null and params.forecastType != ''">
+                AND forecast_type = #{params.forecastType}
+            </if>
+            <if test="params.forecastMethod != null and params.forecastMethod != ''">
+                AND forecast_method = #{params.forecastMethod}
+            </if>
+            <if test="params.orgId != null">
+                AND org_id = #{params.orgId}
+            </if>
+        </where>
+    </select>
+
+    <!-- 查询准确率分析 -->
+    <select id="selectAccuracyAnalysis" resultType="java.util.Map">
+        SELECT 
+            forecast_method,
+            COUNT(*) as forecastCount,
+            COALESCE(AVG(forecast_accuracy), 0) as avgAccuracy,
+            COALESCE(MIN(forecast_accuracy), 0) as minAccuracy,
+            COALESCE(MAX(forecast_accuracy), 0) as maxAccuracy,
+            COUNT(CASE WHEN forecast_accuracy >= 90 THEN 1 END) as excellentCount,
+            COUNT(CASE WHEN forecast_accuracy >= 80 AND forecast_accuracy < 90 THEN 1 END) as goodCount,
+            COUNT(CASE WHEN forecast_accuracy < 80 THEN 1 END) as poorCount
+        FROM fund_forecast
+        WHERE org_id = #{orgId} AND actual_amount IS NOT NULL
+        GROUP BY forecast_method
+        ORDER BY avgAccuracy DESC
+    </select>
+
+    <!-- 查询趋势分析 -->
+    <select id="selectTrendAnalysis" resultType="java.util.Map">
+        SELECT 
+            DATE_FORMAT(forecast_date, '%Y-%m') as month,
+            COUNT(*) as forecastCount,
+            COALESCE(SUM(forecast_amount), 0) as totalForecastAmount,
+            COALESCE(SUM(CASE WHEN actual_amount IS NOT NULL THEN actual_amount ELSE 0 END), 0) as totalActualAmount,
+            COALESCE(AVG(CASE WHEN actual_amount IS NOT NULL THEN forecast_accuracy ELSE NULL END), 0) as avgAccuracy
+        FROM fund_forecast
+        WHERE org_id = #{orgId}
+        <if test="forecastType != null and forecastType != ''">
+            AND forecast_type = #{forecastType}
+        </if>
+        AND forecast_date >= DATE_SUB(CURDATE(), INTERVAL #{months} MONTH)
+        GROUP BY DATE_FORMAT(forecast_date, '%Y-%m')
+        ORDER BY month ASC
+    </select>
+
+    <!-- 查询方法对比 -->
+    <select id="selectMethodComparison" resultType="java.util.Map">
+        SELECT 
+            forecast_method,
+            COUNT(*) as totalCount,
+            COUNT(CASE WHEN actual_amount IS NOT NULL THEN 1 END) as verifiedCount,
+            COALESCE(AVG(CASE WHEN actual_amount IS NOT NULL THEN forecast_accuracy ELSE NULL END), 0) as avgAccuracy,
+            COALESCE(SUM(forecast_amount), 0) as totalForecastAmount,
+            COALESCE(SUM(CASE WHEN actual_amount IS NOT NULL THEN actual_amount ELSE 0 END), 0) as totalActualAmount,
+            COALESCE(SUM(CASE WHEN actual_amount IS NOT NULL THEN ABS(forecast_amount - actual_amount) ELSE 0 END), 0) as totalDeviation
+        FROM fund_forecast
+        WHERE org_id = #{orgId}
+        <if test="startDate != null">
+            AND forecast_date >= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND forecast_date <= #{endDate}
+        </if>
+        GROUP BY forecast_method
+        ORDER BY avgAccuracy DESC
+    </select>
+
+    <!-- 查询当天同前缀的最大序号 -->
+    <select id="selectMaxSeqByPrefix" resultType="java.lang.Integer">
+        SELECT MAX(CAST(SUBSTRING(forecast_no, LENGTH(#{prefix}) + 1) AS UNSIGNED))
+        FROM fund_forecast
+        WHERE forecast_no LIKE CONCAT(#{prefix}, '%')
+    </select>
+
+    <!-- 检查预测编号是否存在 -->
+    <select id="existsByForecastNo" resultType="java.lang.Boolean">
+        SELECT COUNT(*) > 0
+        FROM fund_forecast
+        WHERE forecast_no = #{forecastNo}
+    </select>
+
+</mapper>

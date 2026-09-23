@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.TblGtAccountLimitMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TblGtAccountLimit">
+        <id column="LIMIT_ID" property="limitId"/>
+        <result column="ACCOUNT_ID" property="accountId"/>
+        <result column="ACCOUNT_NUMBER" property="accountNumber"/>
+        <result column="LIMIT_TYPE" property="limitType"/>
+        <result column="CURRENCY_CODE" property="currencyCode"/>
+        <result column="LIMIT_AMOUNT" property="limitAmount"/>
+        <result column="USED_AMOUNT" property="usedAmount"/>
+        <result column="WARNING_THRESHOLD" property="warningThreshold"/>
+        <result column="EFFECTIVE_DATE" property="effectiveDate"/>
+        <result column="EXPIRY_DATE" property="expiryDate"/>
+        <result column="LIMIT_STATUS" property="limitStatus"/>
+        <result column="REMARK" property="remark"/>
+        <result column="CREATE_USER" property="createUser"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_USER" property="updateUser"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        LIMIT_ID, ACCOUNT_ID, ACCOUNT_NUMBER, LIMIT_TYPE, CURRENCY_CODE,
+        LIMIT_AMOUNT, USED_AMOUNT, WARNING_THRESHOLD, EFFECTIVE_DATE, EXPIRY_DATE,
+        LIMIT_STATUS, REMARK, CREATE_USER, CREATE_TIME, UPDATE_USER, UPDATE_TIME
+    </sql>
+
+    <!-- 分页查询账户限额列表 -->
+    <select id="selectPageList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_GT_ACCOUNT_LIMIT
+        WHERE 1=1
+        <if test="accountNumber != null and accountNumber != ''">
+            AND ACCOUNT_NUMBER LIKE '%' || #{accountNumber} || '%'
+        </if>
+        <if test="limitType != null and limitType != ''">
+            AND LIMIT_TYPE = #{limitType}
+        </if>
+        <if test="limitStatus != null and limitStatus != ''">
+            AND LIMIT_STATUS = #{limitStatus}
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+</mapper>
+

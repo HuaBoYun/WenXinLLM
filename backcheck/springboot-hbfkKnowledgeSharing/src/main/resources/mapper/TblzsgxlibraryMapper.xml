@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.know.mapper.TblzsgxlibraryMapper">
+    <insert id="insertSelective" parameterType="com.huabo.know.entity.Tblzsgxlibrary">
+        insert into TBL_ZSGX_LIBRARY
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="libraryid!=null">
+                LIBRARYID,
+            </if>
+            <if test="wkname!=null and wkname!=''">
+                WKNANE,
+            </if>
+            <if test="wkcode!=null and wkcode!=''">
+                WKCODE,
+            </if>
+            <if test="xllevel!=null and xllevel!=''">
+                XLLEVEL,
+            </if>
+            <if test="toplicclass!=null and toplicclass!=''">
+                TOPLICCLASS,
+            </if>
+            <if test="zdorgan!=null and zdorgan!=''">
+                ZDORGAN,
+            </if>
+            <if test="timeliness!=null and timeliness!=''">
+                TIMELINESS,
+            </if>
+            <if test="fgcategory!=null and fgcategory!=''">
+                FGCATEGORY,
+            </if>
+            <if test="gbyear!=null and gbyear!=''">
+                GBYEAR,
+            </if>
+            <if test="fgcontent!=null and fgcontent!=''">
+                FGCONTENT,
+            </if>
+            <if test="fgimage!=null and fgimage!=''">
+                FGIMAGE,
+            </if>
+            <if test="lrtype!=null and lrtype!=''">
+                LRTYPE,
+            </if>
+            <if test="createorganid!=null">
+                CREATEORGANID,
+            </if>
+            <if test="ckcount!=null">
+                CKCOUNT,
+            </if>
+            <if test="xzcount!=null">
+                XZCOUNT
+            </if>
+        </trim>
+        <trim prefix="VALUES(" suffix=")" suffixOverrides=",">
+            <if test="libraryid!=null">
+                #{libraryid},
+            </if>
+            <if test="wkname!=null and wkname!=''">
+                #{wkname},
+            </if>
+            <if test="wkcode!=null and wkcode!=''">
+                #{wkcode},
+            </if>
+            <if test="xllevel!=null and xllevel!=''">
+                #{xllevel},
+            </if>
+            <if test="toplicclass!=null and toplicclass!=''">
+                #{toplicclass},
+            </if>
+            <if test="zdorgan!=null and zdorgan!=''">
+                #{zdorgan},
+            </if>
+            <if test="timeliness!=null and timeliness!=''">
+                #{timeliness},
+            </if>
+            <if test="fgcategory!=null and fgcategory!=''">
+                #{fgcategory},
+            </if>
+            <if test="gbyear!=null and gbyear!=''">
+                #{gbyear},
+            </if>
+            <if test="fgcontent!=null and fgcontent!=''">
+                #{fgcontent},
+            </if>
+            <if test="fgimage!=null and fgimage!=''">
+                #{fgimage},
+            </if>
+            <if test="lrtype!=null and lrtype!=''">
+                #{lrtype},
+            </if>
+            <if test="createorganid!=null">
+                #{createorganid},
+            </if>
+            <if test="ckcount!=null">
+                #{ckcount},
+            </if>
+            <if test="xzcount!=null">
+                #{xzcount}
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateByIdSelective" parameterType="com.huabo.know.entity.Tblzsgxlibrary">
+        update TBL_ZSGX_LIBRARY
+            <set>
+                <if test="wkname!=null and wkname!=''">
+                    WKNANE = #{wkname},
+                </if>
+                <if test="wkcode!=null and wkcode!=''">
+                    WKCODE = #{wkcode},
+                </if>
+                <if test="xllevel!=null and xllevel!=''">
+                    XLLEVEL = #{xllevel},
+                </if>
+                <if test="toplicclass!=null and toplicclass!=''">
+                    TOPLICCLASS = #{toplicclass},
+                </if>
+                <if test="zdorgan!=null and zdorgan!=''">
+                    ZDORGAN = #{zdorgan},
+                </if>
+                <if test="timeliness!=null and timeliness!=''">
+                    TIMELINESS = #{timeliness},
+                </if>
+                <if test="fgcategory!=null and fgcategory!=''">
+                    FGCATEGORY = #{fgcategory},
+                </if>
+                <if test="gbyear!=null and gbyear!=''">
+                    GBYEAR = #{gbyear},
+                </if>
+                <if test="fgcontent!=null and fgcontent!=''">
+                    FGCONTENT = #{fgcontent},
+                </if>
+                <if test="fgimage!=null and fgimage!=''">
+                    FGIMAGE = #{fgimage},
+                </if>
+                <if test="lrtype!=null and lrtype!=''">
+                    LRTYPE = #{lrtype},
+                </if>
+                <if test="createorganid!=null">
+                    CREATEORGANID = #{createorganid},
+                </if>
+                <if test="ckcount!=null">
+                    CKCOUNT = #{ckcount},
+                </if>
+                <if test="xzcount!=null">
+                    XZCOUNT = #{xzcount}
+                </if>
+            </set>
+            where LIBRARYID = #{libraryid}
+    </update>
+</mapper>

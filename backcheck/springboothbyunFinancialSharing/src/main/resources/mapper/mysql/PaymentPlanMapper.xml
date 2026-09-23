@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.mysql.mapper.PaymentPlanMapper">
+
+    <resultMap id="BaseResultMap" type="com.financial.sharing.mysql.entity.TblPaymentPlan">
+        <id column="PLAN_ID" property="planId"/>
+        <result column="PLAN_NO" property="planNo"/>
+        <result column="PLAN_NAME" property="planName"/>
+        <result column="PLAN_DATE" property="planDate"/>
+        <result column="TOTAL_AMOUNT" property="totalAmount"/>
+        <result column="EXECUTED_AMOUNT" property="executedAmount"/>
+        <result column="STATUS" property="status"/>
+        <result column="REMARKS" property="remarks"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="CREATE_BY" property="createBy"/>
+    </resultMap>
+
+    <select id="selectByDateRange" resultMap="BaseResultMap">
+        SELECT * FROM TBL_PAYMENT_PLAN
+        WHERE IS_DELETED = 0
+        AND PLAN_DATE BETWEEN #{startDate} AND #{endDate}
+        ORDER BY PLAN_DATE ASC
+    </select>
+
+    <select id="selectPendingPlans" resultMap="BaseResultMap">
+        SELECT * FROM TBL_PAYMENT_PLAN
+        WHERE IS_DELETED = 0 AND STATUS = 'pending'
+        ORDER BY PLAN_DATE ASC
+    </select>
+</mapper>
+

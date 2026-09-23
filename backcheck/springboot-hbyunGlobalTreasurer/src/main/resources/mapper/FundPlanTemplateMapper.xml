@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.FundPlanTemplateMapper">
+
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TblFundPlanTemplate">
+        <id column="TEMPLATE_ID" property="templateId"/>
+        <result column="TEMPLATE_NO" property="templateNo"/>
+        <result column="TEMPLATE_NAME" property="templateName"/>
+        <result column="TEMPLATE_TYPE" property="templateType"/>
+        <result column="TEMPLATE_STATUS" property="templateStatus"/>
+        <result column="TEMPLATE_VERSION" property="templateVersion"/>
+        <result column="USAGE_COUNT" property="usageCount"/>
+        <result column="QUALITY_SCORE" property="qualityScore"/>
+        <result column="LAST_USED_TIME" property="lastUsedTime"/>
+        <result column="TEMPLATE_DESCRIPTION" property="templateDescription"/>
+        <result column="TEMPLATE_CONTENT" property="templateContent"/>
+        <result column="DELETE_FLAG" property="deleteFlag"/>
+        <result column="CREATED_BY" property="createdBy"/>
+        <result column="CREATED_BY_NAME" property="createdByName"/>
+        <result column="CREATED_TIME" property="createdTime"/>
+        <result column="UPDATED_BY" property="updatedBy"/>
+        <result column="UPDATED_BY_NAME" property="updatedByName"/>
+        <result column="UPDATED_TIME" property="updatedTime"/>
+        <result column="ORG_ID" property="orgId"/>
+        <result column="ORG_NAME" property="orgName"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        TEMPLATE_ID, TEMPLATE_NO, TEMPLATE_NAME, TEMPLATE_TYPE, TEMPLATE_STATUS, TEMPLATE_VERSION,
+        USAGE_COUNT, QUALITY_SCORE, LAST_USED_TIME, TEMPLATE_DESCRIPTION, TEMPLATE_CONTENT,
+        DELETE_FLAG, CREATED_BY, CREATED_BY_NAME, CREATED_TIME, UPDATED_BY, UPDATED_BY_NAME,
+        UPDATED_TIME, ORG_ID, ORG_NAME
+    </sql>
+
+    <select id="selectTemplatePage" resultMap="BaseResultMap" parameterType="map">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_FUND_PLAN_TEMPLATE
+        WHERE DELETE_FLAG = 0
+        <if test="templateType != null and templateType != ''">
+            AND TEMPLATE_TYPE = #{templateType}
+        </if>
+        <if test="templateStatus != null and templateStatus != ''">
+            AND TEMPLATE_STATUS = #{templateStatus}
+        </if>
+        ORDER BY CREATED_TIME DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
+    </select>
+
+    <select id="countTemplateList" resultType="int" parameterType="map">
+        SELECT COUNT(*)
+        FROM TBL_FUND_PLAN_TEMPLATE
+        WHERE DELETE_FLAG = 0
+        <if test="templateType != null and templateType != ''">
+            AND TEMPLATE_TYPE = #{templateType}
+        </if>
+        <if test="templateStatus != null and templateStatus != ''">
+            AND TEMPLATE_STATUS = #{templateStatus}
+        </if>
+    </select>
+
+    <select id="selectTemplateSummary" resultType="map" parameterType="map">
+        SELECT
+            COUNT(*) AS totalCount,
+            SUM(USAGE_COUNT) AS totalUsageCount,
+            AVG(QUALITY_SCORE) AS avgQualityScore
+        FROM TBL_FUND_PLAN_TEMPLATE
+        WHERE DELETE_FLAG = 0
+        <if test="orgId != null">
+            AND ORG_ID = #{orgId}
+        </if>
+    </select>
+
+    <select id="selectDefaultTemplate" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_FUND_PLAN_TEMPLATE
+        WHERE TEMPLATE_TYPE = #{templateType}
+        AND ORG_ID = #{orgId}
+        AND DELETE_FLAG = 0
+        AND TEMPLATE_STATUS = 'ACTIVE'
+        ORDER BY QUALITY_SCORE DESC
+        FETCH FIRST 1 ROWS ONLY
+    </select>
+
+</mapper>

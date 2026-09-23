@@ -1,0 +1,966 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.contract.mapper.ProjectOperationsMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.huabo.contract.entity.ProjectOperations">
+        <id column="id" property="id" />
+        <result column="operations_no" property="operationsNo" />
+        <result column="project_id" property="projectId" />
+        <result column="project_name" property="projectName" />
+        <result column="operations_type" property="operationsType" />
+        <result column="operations_period" property="operationsPeriod" />
+        <result column="contract_amount" property="contractAmount" />
+        <result column="budget_revenue" property="budgetRevenue" />
+        <result column="actual_revenue" property="actualRevenue" />
+        <result column="budget_cost" property="budgetCost" />
+        <result column="actual_cost" property="actualCost" />
+        <result column="budget_profit" property="budgetProfit" />
+        <result column="actual_profit" property="actualProfit" />
+        <result column="profit_rate" property="profitRate" />
+        <result column="gross_profit_rate" property="grossProfitRate" />
+        <result column="net_profit_rate" property="netProfitRate" />
+        <result column="cash_inflow" property="cashInflow" />
+        <result column="cash_outflow" property="cashOutflow" />
+        <result column="net_cash_flow" property="netCashFlow" />
+        <result column="accounts_receivable" property="accountsReceivable" />
+        <result column="accounts_payable" property="accountsPayable" />
+        <result column="total_assets" property="totalAssets" />
+        <result column="total_liabilities" property="totalLiabilities" />
+        <result column="net_assets" property="netAssets" />
+        <result column="debt_ratio" property="debtRatio" />
+        <result column="current_ratio" property="currentRatio" />
+        <result column="quick_ratio" property="quickRatio" />
+        <result column="roi" property="roi" />
+        <result column="npv" property="npv" />
+        <result column="irr" property="irr" />
+        <result column="payback_period" property="paybackPeriod" />
+        <result column="risk_level" property="riskLevel" />
+        <result column="risk_score" property="riskScore" />
+        <result column="performance_score" property="performanceScore" />
+        <result column="operations_status" property="operationsStatus" />
+        <result column="manager_id" property="managerId" />
+        <result column="manager_name" property="managerName" />
+        <result column="analysis_report" property="analysisReport" />
+        <result column="improvement_suggestions" property="improvementSuggestions" />
+        <result column="risk_warnings" property="riskWarnings" />
+        <result column="remarks" property="remarks" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+        <result column="create_by" property="createBy" />
+        <result column="update_by" property="updateBy" />
+        <result column="del_flag" property="delFlag" />
+        <result column="version" property="version" />
+        <result column="department_id" property="departmentId" />
+        <result column="department_name" property="departmentName" />
+        <result column="organization_id" property="organizationId" />
+        <result column="organization_name" property="organizationName" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, operations_no, project_id, project_name, operations_type, operations_period,
+        contract_amount, budget_revenue, actual_revenue, budget_cost, actual_cost,
+        budget_profit, actual_profit, profit_rate, gross_profit_rate, net_profit_rate,
+        cash_inflow, cash_outflow, net_cash_flow, accounts_receivable, accounts_payable,
+        total_assets, total_liabilities, net_assets, debt_ratio, current_ratio, quick_ratio,
+        roi, npv, irr, payback_period, risk_level, risk_score, performance_score,
+        operations_status, manager_id, manager_name, analysis_report, improvement_suggestions,
+        risk_warnings, remarks, create_time, update_time, create_by, update_by, del_flag,
+        version, department_id, department_name, organization_id, organization_name
+    </sql>
+
+    <!-- 查询项目经营管理列表 -->
+    <select id="selectProjectOperationsList" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM tbl_project_operations
+        <where>
+            del_flag = 0
+            <if test="param.operationsNo != null and param.operationsNo != ''">
+                AND operations_no LIKE CONCAT('%', #{param.operationsNo}, '%')
+            </if>
+            <if test="param.projectId != null and param.projectId > 0">
+                AND project_id = #{param.projectId}
+            </if>
+            <if test="param.projectName != null and param.projectName != ''">
+                AND project_name LIKE CONCAT('%', #{param.projectName}, '%')
+            </if>
+            <if test="param.operationsType != null">
+                AND operations_type = #{param.operationsType}
+            </if>
+            <if test="param.operationsTypeList != null and param.operationsTypeList.size() > 0">
+                AND operations_type IN
+                <foreach collection="param.operationsTypeList" item="type" open="(" separator="," close=")">
+                    #{type}
+                </foreach>
+            </if>
+            <if test="param.operationsPeriod != null and param.operationsPeriod != ''">
+                AND operations_period = #{param.operationsPeriod}
+            </if>
+            <if test="param.contractAmountMin != null">
+                AND contract_amount >= #{param.contractAmountMin}
+            </if>
+            <if test="param.contractAmountMax != null">
+                AND contract_amount &lt;= #{param.contractAmountMax}
+            </if>
+            <if test="param.budgetRevenueMin != null">
+                AND budget_revenue >= #{param.budgetRevenueMin}
+            </if>
+            <if test="param.budgetRevenueMax != null">
+                AND budget_revenue &lt;= #{param.budgetRevenueMax}
+            </if>
+            <if test="param.actualRevenueMin != null">
+                AND actual_revenue >= #{param.actualRevenueMin}
+            </if>
+            <if test="param.actualRevenueMax != null">
+                AND actual_revenue &lt;= #{param.actualRevenueMax}
+            </if>
+            <if test="param.budgetCostMin != null">
+                AND budget_cost >= #{param.budgetCostMin}
+            </if>
+            <if test="param.budgetCostMax != null">
+                AND budget_cost &lt;= #{param.budgetCostMax}
+            </if>
+            <if test="param.actualCostMin != null">
+                AND actual_cost >= #{param.actualCostMin}
+            </if>
+            <if test="param.actualCostMax != null">
+                AND actual_cost &lt;= #{param.actualCostMax}
+            </if>
+            <if test="param.profitRateMin != null">
+                AND profit_rate >= #{param.profitRateMin}
+            </if>
+            <if test="param.profitRateMax != null">
+                AND profit_rate &lt;= #{param.profitRateMax}
+            </if>
+            <if test="param.riskLevel != null">
+                AND risk_level = #{param.riskLevel}
+            </if>
+            <if test="param.riskLevelList != null and param.riskLevelList.size() > 0">
+                AND risk_level IN
+                <foreach collection="param.riskLevelList" item="level" open="(" separator="," close=")">
+                    #{level}
+                </foreach>
+            </if>
+            <if test="param.operationsStatus != null">
+                AND operations_status = #{param.operationsStatus}
+            </if>
+            <if test="param.operationsStatusList != null and param.operationsStatusList.size() > 0">
+                AND operations_status IN
+                <foreach collection="param.operationsStatusList" item="status" open="(" separator="," close=")">
+                    #{status}
+                </foreach>
+            </if>
+            <if test="param.managerId != null and param.managerId > 0">
+                AND manager_id = #{param.managerId}
+            </if>
+            <if test="param.managerName != null and param.managerName != ''">
+                AND manager_name LIKE CONCAT('%', #{param.managerName}, '%')
+            </if>
+            <if test="param.keyword != null and param.keyword != ''">
+                AND (
+                    operations_no LIKE CONCAT('%', #{param.keyword}, '%')
+                    OR project_name LIKE CONCAT('%', #{param.keyword}, '%')
+                    OR manager_name LIKE CONCAT('%', #{param.keyword}, '%')
+                    OR analysis_report LIKE CONCAT('%', #{param.keyword}, '%')
+                    OR remarks LIKE CONCAT('%', #{param.keyword}, '%')
+                )
+            </if>
+            <if test="param.createTimeStart != null">
+                AND create_time >= #{param.createTimeStart}
+            </if>
+            <if test="param.createTimeEnd != null">
+                AND create_time &lt;= #{param.createTimeEnd}
+            </if>
+            <if test="param.updateTimeStart != null">
+                AND update_time >= #{param.updateTimeStart}
+            </if>
+            <if test="param.updateTimeEnd != null">
+                AND update_time &lt;= #{param.updateTimeEnd}
+            </if>
+            <if test="param.departmentId != null and param.departmentId > 0">
+                AND department_id = #{param.departmentId}
+            </if>
+            <if test="param.departmentName != null and param.departmentName != ''">
+                AND department_name LIKE CONCAT('%', #{param.departmentName}, '%')
+            </if>
+            <if test="param.organizationId != null and param.organizationId > 0">
+                AND organization_id = #{param.organizationId}
+            </if>
+            <if test="param.organizationName != null and param.organizationName != ''">
+                AND organization_name LIKE CONCAT('%', #{param.organizationName}, '%')
+            </if>
+        </where>
+        <choose>
+            <when test="param.orderBy != null and param.orderBy != ''">
+                ORDER BY ${param.orderBy}
+                <if test="param.orderDirection != null and param.orderDirection != ''">
+                    ${param.orderDirection}
+                </if>
+            </when>
+            <otherwise>
+                ORDER BY operations_status ASC, risk_level DESC, create_time DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 分页查询项目经营管理列表 -->
+    <select id="selectProjectOperationsPage" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM tbl_project_operations
+        <where>
+            del_flag = 0
+            <if test="param.operationsNo != null and param.operationsNo != ''">
+                AND operations_no LIKE CONCAT('%', #{param.operationsNo}, '%')
+            </if>
+            <if test="param.projectId != null and param.projectId > 0">
+                AND project_id = #{param.projectId}
+            </if>
+            <if test="param.projectName != null and param.projectName != ''">
+                AND project_name LIKE CONCAT('%', #{param.projectName}, '%')
+            </if>
+            <if test="param.operationsType != null">
+                AND operations_type = #{param.operationsType}
+            </if>
+            <if test="param.operationsTypeList != null and param.operationsTypeList.size() > 0">
+                AND operations_type IN
+                <foreach collection="param.operationsTypeList" item="type" open="(" separator="," close=")">
+                    #{type}
+                </foreach>
+            </if>
+            <if test="param.operationsPeriod != null and param.operationsPeriod != ''">
+                AND operations_period = #{param.operationsPeriod}
+            </if>
+            <if test="param.contractAmountMin != null">
+                AND contract_amount >= #{param.contractAmountMin}
+            </if>
+            <if test="param.contractAmountMax != null">
+                AND contract_amount &lt;= #{param.contractAmountMax}
+            </if>
+            <if test="param.budgetRevenueMin != null">
+                AND budget_revenue >= #{param.budgetRevenueMin}
+            </if>
+            <if test="param.budgetRevenueMax != null">
+                AND budget_revenue &lt;= #{param.budgetRevenueMax}
+            </if>
+            <if test="param.actualRevenueMin != null">
+                AND actual_revenue >= #{param.actualRevenueMin}
+            </if>
+            <if test="param.actualRevenueMax != null">
+                AND actual_revenue &lt;= #{param.actualRevenueMax}
+            </if>
+            <if test="param.budgetCostMin != null">
+                AND budget_cost >= #{param.budgetCostMin}
+            </if>
+            <if test="param.budgetCostMax != null">
+                AND budget_cost &lt;= #{param.budgetCostMax}
+            </if>
+            <if test="param.actualCostMin != null">
+                AND actual_cost >= #{param.actualCostMin}
+            </if>
+            <if test="param.actualCostMax != null">
+                AND actual_cost &lt;= #{param.actualCostMax}
+            </if>
+            <if test="param.profitRateMin != null">
+                AND profit_rate >= #{param.profitRateMin}
+            </if>
+            <if test="param.profitRateMax != null">
+                AND profit_rate &lt;= #{param.profitRateMax}
+            </if>
+            <if test="param.riskLevel != null">
+                AND risk_level = #{param.riskLevel}
+            </if>
+            <if test="param.riskLevelList != null and param.riskLevelList.size() > 0">
+                AND risk_level IN
+                <foreach collection="param.riskLevelList" item="level" open="(" separator="," close=")">
+                    #{level}
+                </foreach>
+            </if>
+            <if test="param.operationsStatus != null">
+                AND operations_status = #{param.operationsStatus}
+            </if>
+            <if test="param.operationsStatusList != null and param.operationsStatusList.size() > 0">
+                AND operations_status IN
+                <foreach collection="param.operationsStatusList" item="status" open="(" separator="," close=")">
+                    #{status}
+                </foreach>
+            </if>
+            <if test="param.managerId != null and param.managerId > 0">
+                AND manager_id = #{param.managerId}
+            </if>
+            <if test="param.managerName != null and param.managerName != ''">
+                AND manager_name LIKE CONCAT('%', #{param.managerName}, '%')
+            </if>
+            <if test="param.keyword != null and param.keyword != ''">
+                AND (
+                    operations_no LIKE CONCAT('%', #{param.keyword}, '%')
+                    OR project_name LIKE CONCAT('%', #{param.keyword}, '%')
+                    OR manager_name LIKE CONCAT('%', #{param.keyword}, '%')
+                    OR analysis_report LIKE CONCAT('%', #{param.keyword}, '%')
+                    OR remarks LIKE CONCAT('%', #{param.keyword}, '%')
+                )
+            </if>
+            <if test="param.createTimeStart != null">
+                AND create_time >= #{param.createTimeStart}
+            </if>
+            <if test="param.createTimeEnd != null">
+                AND create_time &lt;= #{param.createTimeEnd}
+            </if>
+            <if test="param.updateTimeStart != null">
+                AND update_time >= #{param.updateTimeStart}
+            </if>
+            <if test="param.updateTimeEnd != null">
+                AND update_time &lt;= #{param.updateTimeEnd}
+            </if>
+            <if test="param.departmentId != null and param.departmentId > 0">
+                AND department_id = #{param.departmentId}
+            </if>
+            <if test="param.departmentName != null and param.departmentName != ''">
+                AND department_name LIKE CONCAT('%', #{param.departmentName}, '%')
+            </if>
+            <if test="param.organizationId != null and param.organizationId > 0">
+                AND organization_id = #{param.organizationId}
+            </if>
+            <if test="param.organizationName != null and param.organizationName != ''">
+                AND organization_name LIKE CONCAT('%', #{param.organizationName}, '%')
+            </if>
+        </where>
+        <choose>
+            <when test="param.orderBy != null and param.orderBy != ''">
+                ORDER BY ${param.orderBy}
+                <if test="param.orderDirection != null and param.orderDirection != ''">
+                    ${param.orderDirection}
+                </if>
+            </when>
+            <otherwise>
+                ORDER BY operations_status ASC, risk_level DESC, create_time DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 统计项目经营管理数据 -->
+    <select id="selectProjectOperationsStatistics" resultType="java.util.Map">
+        SELECT
+            COUNT(*) as totalOperations,
+            SUM(CASE WHEN management_type = 1 THEN 1 ELSE 0 END) as financeCount,
+            SUM(CASE WHEN management_type = 2 THEN 1 ELSE 0 END) as progressCount,
+            SUM(CASE WHEN management_type = 3 THEN 1 ELSE 0 END) as qualityCount,
+            SUM(CASE WHEN management_type = 4 THEN 1 ELSE 0 END) as safetyCount,
+            SUM(CASE WHEN management_type = 5 THEN 1 ELSE 0 END) as settlementCount,
+            SUM(CASE WHEN management_status = 1 THEN 1 ELSE 0 END) as normalStatus,
+            SUM(CASE WHEN management_status = 2 THEN 1 ELSE 0 END) as warningStatus,
+            SUM(CASE WHEN management_status = 3 THEN 1 ELSE 0 END) as abnormalStatus,
+            SUM(CASE WHEN management_status = 4 THEN 1 ELSE 0 END) as suspendedStatus,
+            AVG(completion_progress) as avgProgress,
+            AVG(quality_score) as avgQualityScore,
+            SUM(planned_amount) as totalPlannedAmount,
+            SUM(actual_amount) as totalActualAmount
+        FROM project_operations
+        <where>
+            deleted = 0
+            <if test="projectId != null and projectId > 0">
+                AND project_id = #{projectId}
+            </if>
+        </where>
+    </select>
+
+    <!-- 查询高风险经营项目 -->
+    <select id="selectHighRiskOperations" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM project_operations
+        <where>
+            deleted = 0
+            AND risk_level >= #{minRiskLevel}
+            AND management_status != 4
+            <if test="projectId != null and projectId > 0">
+                AND project_id = #{projectId}
+            </if>
+        </where>
+        ORDER BY risk_level DESC, priority_level DESC
+    </select>
+
+    <!-- 查询即将到期的经营项目 -->
+    <select id="selectUpcomingDeadlineOperations" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM project_operations
+        <where>
+            deleted = 0
+            AND management_status IN (1, 2)
+            AND end_date IS NOT NULL
+            AND end_date &lt;= DATE_ADD(NOW(), INTERVAL #{days} DAY)
+            <if test="projectId != null and projectId > 0">
+                AND project_id = #{projectId}
+            </if>
+        </where>
+        ORDER BY end_date ASC
+    </select>
+
+    <!-- 按管理类型统计 -->
+    <select id="selectManagementTypeStatistics" resultType="java.util.Map">
+        SELECT
+            management_type,
+            COUNT(*) as count,
+            AVG(completion_progress) as avgProgress,
+            AVG(quality_score) as avgQualityScore,
+            SUM(planned_amount) as totalPlannedAmount,
+            SUM(actual_amount) as totalActualAmount
+        FROM project_operations
+        <where>
+            deleted = 0
+            <if test="projectId != null and projectId > 0">
+                AND project_id = #{projectId}
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND start_date >= #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND end_date &lt;= #{endDate}
+            </if>
+        </where>
+        GROUP BY management_type
+        ORDER BY count DESC
+    </select>
+
+    <!-- 按月统计经营趋势 -->
+    <select id="selectMonthlyOperationsTrend" resultType="java.util.Map">
+        SELECT
+            DATE_FORMAT(create_time, '%Y-%m') as month,
+            COUNT(*) as totalCount,
+            AVG(completion_progress) as avgProgress,
+            AVG(quality_score) as avgQualityScore,
+            SUM(actual_amount) as totalAmount
+        FROM project_operations
+        <where>
+            deleted = 0
+            <if test="projectId != null and projectId > 0">
+                AND project_id = #{projectId}
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND create_time >= #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND create_time &lt;= #{endDate}
+            </if>
+        </where>
+        GROUP BY DATE_FORMAT(create_time, '%Y-%m')
+        ORDER BY month DESC
+        LIMIT 12
+    </select>
+
+    <!-- 财务分析统计 -->
+    <select id="selectFinancialAnalysis" resultType="java.util.Map">
+        SELECT
+            SUM(CASE WHEN management_type = 1 THEN planned_amount ELSE 0 END) as totalBudget,
+            SUM(CASE WHEN management_type = 1 THEN actual_amount ELSE 0 END) as totalExpenditure,
+            SUM(CASE WHEN management_type = 1 AND actual_amount > planned_amount THEN actual_amount - planned_amount ELSE 0 END) as totalOverrun,
+            COUNT(CASE WHEN management_type = 1 AND actual_amount > planned_amount THEN 1 END) as overrunCount,
+            AVG(CASE WHEN management_type = 1 AND planned_amount > 0 THEN (actual_amount / planned_amount) * 100 ELSE 0 END) as avgExecutionRate
+        FROM project_operations
+        <where>
+            deleted = 0
+            <if test="projectId != null and projectId > 0">
+                AND project_id = #{projectId}
+            </if>
+        </where>
+    </select>
+
+    <!-- 批量更新管理状态 -->
+    <update id="batchUpdateManagementStatus">
+        UPDATE project_operations
+        SET management_status = #{managementStatus},
+            update_time = NOW()
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND deleted = 0
+    </update>
+
+    <!-- 批量更新审批状态 -->
+    <update id="batchUpdateApprovalStatus">
+        UPDATE project_operations
+        SET approval_status = #{approvalStatus},
+            approval_comments = #{approvalComments},
+            update_time = NOW()
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND deleted = 0
+    </update>
+
+    <!-- 更新进度 -->
+    <update id="updateProgress">
+        UPDATE project_operations
+        SET completion_progress = #{progress},
+            update_time = NOW()
+        WHERE id = #{id}
+        AND deleted = 0
+    </update>
+
+    <!-- 根据项目ID删除经营管理记录（软删除） -->
+    <update id="deleteByProjectId">
+        UPDATE project_operations
+        SET deleted = 1,
+            update_time = NOW()
+        WHERE project_id = #{projectId}
+        AND deleted = 0
+    </update>
+
+    <!-- 查询部门绩效统计 -->
+    <select id="selectDepartmentPerformanceStatistics" resultType="java.util.Map">
+        SELECT
+            department,
+            COUNT(*) as totalTasks,
+            AVG(completion_progress) as avgProgress,
+            AVG(quality_score) as avgQualityScore,
+            SUM(CASE WHEN management_status = 1 THEN 1 ELSE 0 END) as normalTasks,
+            SUM(CASE WHEN management_status IN (2, 3) THEN 1 ELSE 0 END) as problemTasks
+        FROM project_operations
+        <where>
+            deleted = 0
+            AND department IS NOT NULL
+            <if test="projectId != null and projectId > 0">
+                AND project_id = #{projectId}
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND create_time >= #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND create_time &lt;= #{endDate}
+            </if>
+        </where>
+        GROUP BY department
+        ORDER BY avgProgress DESC, avgQualityScore DESC
+    </select>
+
+    <!-- 根据经营编号查询项目经营管理 -->
+    <select id="selectByOperationsNo" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM tbl_project_operations
+        WHERE del_flag = 0
+        AND operations_no = #{operationsNo}
+        <if test="excludeId != null">
+            AND id != #{excludeId}
+        </if>
+        LIMIT 1
+    </select>
+
+    <!-- 根据项目ID查询项目经营管理列表 -->
+    <select id="selectByProjectId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM tbl_project_operations
+        WHERE del_flag = 0
+        AND project_id = #{projectId}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据经营类型查询项目经营管理列表 -->
+    <select id="selectByOperationsType" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM tbl_project_operations
+        WHERE del_flag = 0
+        AND operations_type = #{operationsType}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据经营状态查询项目经营管理列表 -->
+    <select id="selectByOperationsStatus" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM tbl_project_operations
+        WHERE del_flag = 0
+        AND operations_status = #{operationsStatus}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据风险等级查询项目经营管理列表 -->
+    <select id="selectByRiskLevel" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM tbl_project_operations
+        WHERE del_flag = 0
+        AND risk_level = #{riskLevel}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据负责人ID查询项目经营管理列表 -->
+    <select id="selectByManagerId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM tbl_project_operations
+        WHERE del_flag = 0
+        AND manager_id = #{managerId}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 获取正常状态的项目经营管理列表 -->
+    <select id="selectNormalOperations" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM tbl_project_operations
+        WHERE del_flag = 0
+        AND operations_status = 1
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 获取预警状态的项目经营管理列表 -->
+    <select id="selectWarningOperations" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM tbl_project_operations
+        WHERE del_flag = 0
+        AND operations_status = 2
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 获取异常状态的项目经营管理列表 -->
+    <select id="selectAbnormalOperations" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM tbl_project_operations
+        WHERE del_flag = 0
+        AND operations_status = 3
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 获取高风险的项目经营管理列表 -->
+    <select id="selectHighRiskOperations" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM tbl_project_operations
+        WHERE del_flag = 0
+        AND risk_level >= 4
+        ORDER BY risk_level DESC, create_time DESC
+    </select>
+
+    <!-- 获取盈利的项目经营管理列表 -->
+    <select id="selectProfitableOperations" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM tbl_project_operations
+        WHERE del_flag = 0
+        AND actual_profit > 0
+        ORDER BY actual_profit DESC
+    </select>
+
+    <!-- 获取亏损的项目经营管理列表 -->
+    <select id="selectLossOperations" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM tbl_project_operations
+        WHERE del_flag = 0
+        AND actual_profit &lt; 0
+        ORDER BY actual_profit ASC
+    </select>
+
+    <!-- 模糊搜索项目经营管理 -->
+    <select id="searchProjectOperations" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM tbl_project_operations
+        WHERE del_flag = 0
+        AND (
+            operations_no LIKE CONCAT('%', #{keyword}, '%')
+            OR project_name LIKE CONCAT('%', #{keyword}, '%')
+            OR manager_name LIKE CONCAT('%', #{keyword}, '%')
+            OR analysis_report LIKE CONCAT('%', #{keyword}, '%')
+            OR remarks LIKE CONCAT('%', #{keyword}, '%')
+        )
+        ORDER BY create_time DESC
+        <if test="limit != null and limit > 0">
+            LIMIT #{limit}
+        </if>
+    </select>
+
+    <!-- 统计项目经营管理数据 -->
+    <select id="statisticsProjectOperations" resultType="java.util.Map">
+        SELECT
+            COUNT(*) as totalCount,
+            SUM(CASE WHEN operations_type = 1 THEN 1 ELSE 0 END) as revenueCount,
+            SUM(CASE WHEN operations_type = 2 THEN 1 ELSE 0 END) as costCount,
+            SUM(CASE WHEN operations_type = 3 THEN 1 ELSE 0 END) as profitCount,
+            SUM(CASE WHEN operations_type = 4 THEN 1 ELSE 0 END) as cashFlowCount,
+            SUM(CASE WHEN operations_type = 5 THEN 1 ELSE 0 END) as riskCount,
+            SUM(CASE WHEN operations_type = 6 THEN 1 ELSE 0 END) as performanceCount,
+            SUM(CASE WHEN operations_status = 1 THEN 1 ELSE 0 END) as normalStatus,
+            SUM(CASE WHEN operations_status = 2 THEN 1 ELSE 0 END) as warningStatus,
+            SUM(CASE WHEN operations_status = 3 THEN 1 ELSE 0 END) as abnormalStatus,
+            SUM(CASE WHEN operations_status = 4 THEN 1 ELSE 0 END) as suspendedStatus,
+            SUM(CASE WHEN risk_level = 1 THEN 1 ELSE 0 END) as lowRisk,
+            SUM(CASE WHEN risk_level = 2 THEN 1 ELSE 0 END) as mediumRisk,
+            SUM(CASE WHEN risk_level = 3 THEN 1 ELSE 0 END) as highRisk,
+            SUM(CASE WHEN risk_level >= 4 THEN 1 ELSE 0 END) as veryHighRisk,
+            COALESCE(SUM(contract_amount), 0) as totalContractAmount,
+            COALESCE(SUM(budget_revenue), 0) as totalBudgetRevenue,
+            COALESCE(SUM(actual_revenue), 0) as totalActualRevenue,
+            COALESCE(SUM(budget_cost), 0) as totalBudgetCost,
+            COALESCE(SUM(actual_cost), 0) as totalActualCost,
+            COALESCE(SUM(budget_profit), 0) as totalBudgetProfit,
+            COALESCE(SUM(actual_profit), 0) as totalActualProfit,
+            COALESCE(AVG(profit_rate), 0) as avgProfitRate,
+            COALESCE(AVG(gross_profit_rate), 0) as avgGrossProfitRate,
+            COALESCE(AVG(net_profit_rate), 0) as avgNetProfitRate,
+            COALESCE(AVG(roi), 0) as avgROI,
+            COALESCE(AVG(risk_score), 0) as avgRiskScore,
+            COALESCE(AVG(performance_score), 0) as avgPerformanceScore
+        FROM tbl_project_operations
+        <where>
+            del_flag = 0
+            <if test="param.projectId != null and param.projectId > 0">
+                AND project_id = #{param.projectId}
+            </if>
+            <if test="param.operationsType != null">
+                AND operations_type = #{param.operationsType}
+            </if>
+            <if test="param.operationsStatus != null">
+                AND operations_status = #{param.operationsStatus}
+            </if>
+            <if test="param.riskLevel != null">
+                AND risk_level = #{param.riskLevel}
+            </if>
+            <if test="param.managerId != null and param.managerId > 0">
+                AND manager_id = #{param.managerId}
+            </if>
+            <if test="param.departmentId != null and param.departmentId > 0">
+                AND department_id = #{param.departmentId}
+            </if>
+            <if test="param.createTimeStart != null">
+                AND create_time >= #{param.createTimeStart}
+            </if>
+            <if test="param.createTimeEnd != null">
+                AND create_time &lt;= #{param.createTimeEnd}
+            </if>
+        </where>
+    </select>
+
+    <!-- 统计经营类型分布 -->
+    <select id="statisticsOperationsTypeDistribution" resultType="java.util.Map">
+        SELECT
+            operations_type as type,
+            CASE operations_type
+                WHEN 1 THEN '收入管理'
+                WHEN 2 THEN '成本管理'
+                WHEN 3 THEN '利润分析'
+                WHEN 4 THEN '现金流管理'
+                WHEN 5 THEN '风险控制'
+                WHEN 6 THEN '绩效评估'
+                ELSE '未知'
+            END as typeName,
+            COUNT(*) as count,
+            COALESCE(SUM(contract_amount), 0) as totalAmount,
+            COALESCE(SUM(actual_revenue), 0) as totalRevenue,
+            COALESCE(SUM(actual_cost), 0) as totalCost,
+            COALESCE(SUM(actual_profit), 0) as totalProfit,
+            COALESCE(AVG(profit_rate), 0) as avgProfitRate
+        FROM tbl_project_operations
+        <where>
+            del_flag = 0
+            <if test="param.projectId != null and param.projectId > 0">
+                AND project_id = #{param.projectId}
+            </if>
+            <if test="param.createTimeStart != null">
+                AND create_time >= #{param.createTimeStart}
+            </if>
+            <if test="param.createTimeEnd != null">
+                AND create_time &lt;= #{param.createTimeEnd}
+            </if>
+        </where>
+        GROUP BY operations_type
+        ORDER BY count DESC
+    </select>
+
+    <!-- 统计经营状态分布 -->
+    <select id="statisticsOperationsStatusDistribution" resultType="java.util.Map">
+        SELECT
+            operations_status as status,
+            CASE operations_status
+                WHEN 1 THEN '正常'
+                WHEN 2 THEN '预警'
+                WHEN 3 THEN '异常'
+                WHEN 4 THEN '停止'
+                ELSE '未知'
+            END as statusName,
+            COUNT(*) as count,
+            COALESCE(SUM(contract_amount), 0) as totalAmount,
+            COALESCE(SUM(actual_revenue), 0) as totalRevenue,
+            COALESCE(SUM(actual_cost), 0) as totalCost,
+            COALESCE(SUM(actual_profit), 0) as totalProfit,
+            COALESCE(AVG(profit_rate), 0) as avgProfitRate
+        FROM tbl_project_operations
+        <where>
+            del_flag = 0
+            <if test="param.projectId != null and param.projectId > 0">
+                AND project_id = #{param.projectId}
+            </if>
+            <if test="param.createTimeStart != null">
+                AND create_time >= #{param.createTimeStart}
+            </if>
+            <if test="param.createTimeEnd != null">
+                AND create_time &lt;= #{param.createTimeEnd}
+            </if>
+        </where>
+        GROUP BY operations_status
+        ORDER BY count DESC
+    </select>
+
+    <!-- 统计风险等级分布 -->
+    <select id="statisticsRiskLevelDistribution" resultType="java.util.Map">
+        SELECT
+            risk_level as level,
+            CASE risk_level
+                WHEN 1 THEN '低'
+                WHEN 2 THEN '中'
+                WHEN 3 THEN '高'
+                WHEN 4 THEN '极高'
+                ELSE '未知'
+            END as levelName,
+            COUNT(*) as count,
+            COALESCE(SUM(contract_amount), 0) as totalAmount,
+            COALESCE(SUM(actual_revenue), 0) as totalRevenue,
+            COALESCE(SUM(actual_cost), 0) as totalCost,
+            COALESCE(SUM(actual_profit), 0) as totalProfit,
+            COALESCE(AVG(profit_rate), 0) as avgProfitRate
+        FROM tbl_project_operations
+        <where>
+            del_flag = 0
+            <if test="param.projectId != null and param.projectId > 0">
+                AND project_id = #{param.projectId}
+            </if>
+            <if test="param.createTimeStart != null">
+                AND create_time >= #{param.createTimeStart}
+            </if>
+            <if test="param.createTimeEnd != null">
+                AND create_time &lt;= #{param.createTimeEnd}
+            </if>
+        </where>
+        GROUP BY risk_level
+        ORDER BY count DESC
+    </select>
+
+    <!-- 统计月度收入趋势 -->
+    <select id="statisticsMonthlyRevenueTrend" resultType="java.util.Map">
+        SELECT
+            DATE_FORMAT(create_time, '%Y-%m') as month,
+            COUNT(*) as count,
+            COALESCE(SUM(budget_revenue), 0) as budgetRevenue,
+            COALESCE(SUM(actual_revenue), 0) as actualRevenue,
+            COALESCE(AVG(CASE WHEN budget_revenue > 0 THEN (actual_revenue / budget_revenue) * 100 ELSE 0 END), 0) as completionRate
+        FROM tbl_project_operations
+        <where>
+            del_flag = 0
+            <if test="param.projectId != null and param.projectId > 0">
+                AND project_id = #{param.projectId}
+            </if>
+            <if test="param.createTimeStart != null">
+                AND create_time >= #{param.createTimeStart}
+            </if>
+            <if test="param.createTimeEnd != null">
+                AND create_time &lt;= #{param.createTimeEnd}
+            </if>
+        </where>
+        GROUP BY DATE_FORMAT(create_time, '%Y-%m')
+        ORDER BY month DESC
+        LIMIT 12
+    </select>
+
+    <!-- 统计月度成本趋势 -->
+    <select id="statisticsMonthlyCostTrend" resultType="java.util.Map">
+        SELECT
+            DATE_FORMAT(create_time, '%Y-%m') as month,
+            COUNT(*) as count,
+            COALESCE(SUM(budget_cost), 0) as budgetCost,
+            COALESCE(SUM(actual_cost), 0) as actualCost,
+            COALESCE(AVG(CASE WHEN budget_cost > 0 THEN (actual_cost / budget_cost) * 100 ELSE 0 END), 0) as controlRate
+        FROM tbl_project_operations
+        <where>
+            del_flag = 0
+            <if test="param.projectId != null and param.projectId > 0">
+                AND project_id = #{param.projectId}
+            </if>
+            <if test="param.createTimeStart != null">
+                AND create_time >= #{param.createTimeStart}
+            </if>
+            <if test="param.createTimeEnd != null">
+                AND create_time &lt;= #{param.createTimeEnd}
+            </if>
+        </where>
+        GROUP BY DATE_FORMAT(create_time, '%Y-%m')
+        ORDER BY month DESC
+        LIMIT 12
+    </select>
+
+    <!-- 统计月度利润趋势 -->
+    <select id="statisticsMonthlyProfitTrend" resultType="java.util.Map">
+        SELECT
+            DATE_FORMAT(create_time, '%Y-%m') as month,
+            COUNT(*) as count,
+            COALESCE(SUM(budget_profit), 0) as budgetProfit,
+            COALESCE(SUM(actual_profit), 0) as actualProfit,
+            COALESCE(AVG(CASE WHEN budget_profit > 0 THEN (actual_profit / budget_profit) * 100 ELSE 0 END), 0) as completionRate,
+            COALESCE(AVG(profit_rate), 0) as avgProfitRate
+        FROM tbl_project_operations
+        <where>
+            del_flag = 0
+            <if test="param.projectId != null and param.projectId > 0">
+                AND project_id = #{param.projectId}
+            </if>
+            <if test="param.createTimeStart != null">
+                AND create_time >= #{param.createTimeStart}
+            </if>
+            <if test="param.createTimeEnd != null">
+                AND create_time &lt;= #{param.createTimeEnd}
+            </if>
+        </where>
+        GROUP BY DATE_FORMAT(create_time, '%Y-%m')
+        ORDER BY month DESC
+        LIMIT 12
+    </select>
+
+    <!-- 批量更新经营状态 -->
+    <update id="batchUpdateOperationsStatus">
+        UPDATE tbl_project_operations
+        SET operations_status = #{operationsStatus},
+            update_time = #{updateTime},
+            update_by = #{updateBy}
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND del_flag = 0
+    </update>
+
+    <!-- 批量更新风险等级 -->
+    <update id="batchUpdateRiskLevel">
+        UPDATE tbl_project_operations
+        SET risk_level = #{riskLevel},
+            update_time = #{updateTime},
+            update_by = #{updateBy}
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND del_flag = 0
+    </update>
+
+    <!-- 批量删除项目经营管理 -->
+    <update id="batchDeleteProjectOperations">
+        UPDATE tbl_project_operations
+        SET del_flag = 1,
+            update_time = #{updateTime},
+            update_by = #{updateBy}
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND del_flag = 0
+    </update>
+
+</mapper>

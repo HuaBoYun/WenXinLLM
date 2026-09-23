@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.mysql.mapper.FixedAssetCardMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.financial.sharing.mysql.entity.FixedAssetCardEntity">
+        <id column="ASSET_ID" property="assetId" />
+        <result column="ASSET_CODE" property="assetCode" />
+        <result column="ASSET_NAME" property="assetName" />
+        <result column="CATEGORY_ID" property="categoryId" />
+        <result column="ORIGINAL_VALUE" property="originalValue" />
+        <result column="RESIDUAL_VALUE" property="residualValue" />
+        <result column="ACCUMULATED_DEPRECIATION" property="accumulatedDepreciation" />
+        <result column="NET_VALUE" property="netValue" />
+        <result column="DEPRECIATION_METHOD" property="depreciationMethod" />
+        <result column="USEFUL_LIFE" property="usefulLife" />
+        <result column="DEPT_ID" property="deptId" />
+        <result column="RESPONSIBLE_PERSON" property="responsiblePerson" />
+        <result column="PURCHASE_DATE" property="purchaseDate" />
+        <result column="START_DEPRECIATION_DATE" property="startDepreciationDate" />
+        <result column="STATUS" property="status" />
+        <result column="SPECIFICATION" property="specification" />
+        <result column="MANUFACTURER" property="manufacturer" />
+        <result column="SUPPLIER" property="supplier" />
+        <result column="LOCATION" property="location" />
+        <result column="REMARK" property="remark" />
+        <result column="TENANT_ID" property="tenantId" />
+        <result column="CREATE_BY" property="createBy" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_BY" property="updateBy" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="IS_DELETED" property="isDeleted" />
+        <!-- 扩展字段 -->
+        <result column="categoryName" property="categoryName" />
+        <result column="deptName" property="deptName" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        ASSET_ID, ASSET_CODE, ASSET_NAME, CATEGORY_ID, ORIGINAL_VALUE, RESIDUAL_VALUE,
+        ACCUMULATED_DEPRECIATION, NET_VALUE, DEPRECIATION_METHOD, USEFUL_LIFE, DEPT_ID,
+        RESPONSIBLE_PERSON, PURCHASE_DATE, START_DEPRECIATION_DATE, STATUS, SPECIFICATION,
+        MANUFACTURER, SUPPLIER, LOCATION, REMARK, TENANT_ID, CREATE_BY, CREATE_TIME,
+        UPDATE_BY, UPDATE_TIME, IS_DELETED
+    </sql>
+
+    <!-- 分页查询资产卡片列表 -->
+    <select id="selectPageList" resultMap="BaseResultMap">
+        SELECT a.ASSET_ID, a.ASSET_CODE, a.ASSET_NAME, a.CATEGORY_ID, a.ORIGINAL_VALUE, a.RESIDUAL_VALUE,
+               a.ACCUMULATED_DEPRECIATION, a.NET_VALUE, a.DEPRECIATION_METHOD, a.USEFUL_LIFE, a.DEPT_ID,
+               a.RESPONSIBLE_PERSON, a.PURCHASE_DATE, a.START_DEPRECIATION_DATE, a.STATUS, a.SPECIFICATION,
+               a.MANUFACTURER, a.SUPPLIER, a.LOCATION, a.REMARK, a.TENANT_ID, a.CREATE_BY, a.CREATE_TIME,
+               a.UPDATE_BY, a.UPDATE_TIME, a.IS_DELETED,
+               c.CATEGORY_NAME AS categoryName,
+               d.ORGNAME AS deptName
+        FROM TBL_FIXED_ASSET_CARD a
+        LEFT JOIN TBL_FIXED_ASSET_CATEGORY c ON a.CATEGORY_ID = c.CATEGORY_ID AND c.IS_DELETED = 0
+        LEFT JOIN TBL_ORGANIZATION d ON a.DEPT_ID = d.ORGID AND (d.STATUS IS NULL OR d.STATUS = 0)
+        WHERE a.IS_DELETED = 0
+        <if test="param.tenantId != null">
+            AND a.TENANT_ID = #{param.tenantId}
+        </if>
+        <if test="param.assetCode != null and param.assetCode != ''">
+            AND a.ASSET_CODE LIKE '%' || #{param.assetCode} || '%'
+        </if>
+        <if test="param.assetName != null and param.assetName != ''">
+            AND a.ASSET_NAME LIKE '%' || #{param.assetName} || '%'
+        </if>
+        <if test="param.categoryId != null and param.categoryId != ''">
+            AND a.CATEGORY_ID = #{param.categoryId}
+        </if>
+        <if test="param.deptId != null and param.deptId != ''">
+            AND a.DEPT_ID = #{param.deptId}
+        </if>
+        <if test="param.status != null and param.status != ''">
+            AND a.STATUS = #{param.status}
+        </if>
+        <if test="param.responsiblePerson != null and param.responsiblePerson != ''">
+            AND a.RESPONSIBLE_PERSON LIKE '%' || #{param.responsiblePerson} || '%'
+        </if>
+        <if test="param.purchaseDateStart != null">
+            AND a.PURCHASE_DATE &gt;= #{param.purchaseDateStart}
+        </if>
+        <if test="param.purchaseDateEnd != null">
+            AND a.PURCHASE_DATE &lt;= #{param.purchaseDateEnd}
+        </if>
+        ORDER BY a.CREATE_TIME DESC
+    </select>
+
+    <!-- 查询资产卡片详情 -->
+    <select id="selectDetailById" resultMap="BaseResultMap">
+        SELECT a.ASSET_ID, a.ASSET_CODE, a.ASSET_NAME, a.CATEGORY_ID, a.ORIGINAL_VALUE, a.RESIDUAL_VALUE,
+               a.ACCUMULATED_DEPRECIATION, a.NET_VALUE, a.DEPRECIATION_METHOD, a.USEFUL_LIFE, a.DEPT_ID,
+               a.RESPONSIBLE_PERSON, a.PURCHASE_DATE, a.START_DEPRECIATION_DATE, a.STATUS, a.SPECIFICATION,
+               a.MANUFACTURER, a.SUPPLIER, a.LOCATION, a.REMARK, a.TENANT_ID, a.CREATE_BY, a.CREATE_TIME,
+               a.UPDATE_BY, a.UPDATE_TIME, a.IS_DELETED,
+               c.CATEGORY_NAME AS categoryName,
+               d.ORGNAME AS deptName
+        FROM TBL_FIXED_ASSET_CARD a
+        LEFT JOIN TBL_FIXED_ASSET_CATEGORY c ON a.CATEGORY_ID = c.CATEGORY_ID AND c.IS_DELETED = 0
+        LEFT JOIN TBL_ORGANIZATION d ON a.DEPT_ID = d.ORGID AND (d.STATUS IS NULL OR d.STATUS = 0)
+        WHERE a.ASSET_ID = #{assetId}
+          AND a.IS_DELETED = 0
+    </select>
+
+    <!-- 统计资产汇总信息 -->
+    <select id="selectAssetSummary" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) AS totalCount,
+            NVL(SUM(ORIGINAL_VALUE), 0) AS totalOriginalValue,
+            NVL(SUM(ACCUMULATED_DEPRECIATION), 0) AS totalAccumulatedDepreciation,
+            NVL(SUM(NET_VALUE), 0) AS totalNetValue
+        FROM TBL_FIXED_ASSET_CARD
+        WHERE IS_DELETED = 0
+        <if test="tenantId != null">
+            AND TENANT_ID = #{tenantId}
+        </if>
+    </select>
+
+    <!-- 按类别统计资产 -->
+    <select id="selectAssetByCategory" resultType="java.util.Map">
+        SELECT 
+            c.CATEGORY_ID AS categoryId,
+            c.CATEGORY_NAME AS categoryName,
+            COUNT(a.ASSET_ID) AS assetCount,
+            NVL(SUM(a.ORIGINAL_VALUE), 0) AS totalOriginalValue,
+            NVL(SUM(a.NET_VALUE), 0) AS totalNetValue
+        FROM TBL_FIXED_ASSET_CATEGORY c
+        LEFT JOIN TBL_FIXED_ASSET_CARD a ON c.CATEGORY_ID = a.CATEGORY_ID AND a.IS_DELETED = 0
+        WHERE c.IS_DELETED = 0
+        <if test="tenantId != null">
+            AND c.TENANT_ID = #{tenantId}
+        </if>
+        GROUP BY c.CATEGORY_ID, c.CATEGORY_NAME
+        ORDER BY totalOriginalValue DESC
+    </select>
+
+</mapper>
+

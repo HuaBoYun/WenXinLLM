@@ -1,0 +1,856 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.cybermonitor.mapper.AssetInfoMapper">
+
+    <!-- 资产信息结果映射 -->
+    <resultMap id="AssetInfoResultMap" type="com.huabo.cybermonitor.entity.AssetInfo">
+        <id column="ASSET_ID" property="assetId"/>
+        <result column="ASSET_CODE" property="assetCode"/>
+        <result column="ASSET_NAME" property="assetName"/>
+        <result column="ENTERPRISE_ID" property="enterpriseId"/>
+        <result column="ENTERPRISE_NAME" property="enterpriseName"/>
+        <result column="ASSET_TYPE" property="assetType"/>
+        <result column="ASSET_CATEGORY" property="assetCategory"/>
+        <result column="ASSET_NATURE" property="assetNature"/>
+        <result column="ASSET_STATUS" property="assetStatus"/>
+        <result column="ORIGINAL_VALUE" property="originalValue"/>
+        <result column="NET_VALUE" property="netValue"/>
+        <result column="MARKET_VALUE" property="marketValue"/>
+        <result column="ASSESSMENT_VALUE" property="assessmentValue"/>
+        <result column="ASSET_RETURN_RATE" property="assetReturnRate"/>
+        <result column="ASSET_TURNOVER_RATE" property="assetTurnoverRate"/>
+        <result column="ASSET_UTILIZATION_RATE" property="assetUtilizationRate"/>
+        <result column="ASSET_OUTPUT_EFFICIENCY" property="assetOutputEfficiency"/>
+        <result column="ASSET_QUALITY_LEVEL" property="assetQualityLevel"/>
+        <result column="ASSET_RISK_LEVEL" property="assetRiskLevel"/>
+        <result column="IS_CORE_ASSET" property="isCoreAsset"/>
+        <result column="IS_STRATEGIC_ASSET" property="isStrategicAsset"/>
+        <result column="IS_IDLE_ASSET" property="isIdleAsset"/>
+        <result column="IS_PLEDGED" property="isPledged"/>
+        <result column="NEED_REGULATORY_ATTENTION" property="needRegulatoryAttention"/>
+        <result column="ASSET_LOCATION" property="assetLocation"/>
+        <result column="ASSET_REGION" property="assetRegion"/>
+        <result column="ASSET_INDUSTRY" property="assetIndustry"/>
+        <result column="ASSET_MANAGER" property="assetManager"/>
+        <result column="MANAGEMENT_DEPARTMENT" property="managementDepartment"/>
+        <result column="ACQUISITION_DATE" property="acquisitionDate"/>
+        <result column="ACQUISITION_METHOD" property="acquisitionMethod"/>
+        <result column="ACQUISITION_COST" property="acquisitionCost"/>
+        <result column="DEPRECIATION_METHOD" property="depreciationMethod"/>
+        <result column="DEPRECIATION_YEARS" property="depreciationYears"/>
+        <result column="ACCUMULATED_DEPRECIATION" property="accumulatedDepreciation"/>
+        <result column="DEPRECIATION_RATE" property="depreciationRate"/>
+        <result column="TECHNICAL_CONDITION" property="technicalCondition"/>
+        <result column="MAINTENANCE_CONDITION" property="maintenanceCondition"/>
+        <result column="INSURANCE_STATUS" property="insuranceStatus"/>
+        <result column="INSURANCE_AMOUNT" property="insuranceAmount"/>
+        <result column="INSURANCE_EXPIRY_DATE" property="insuranceExpiryDate"/>
+        <result column="LAST_ASSESSMENT_DATE" property="lastAssessmentDate"/>
+        <result column="NEXT_ASSESSMENT_DATE" property="nextAssessmentDate"/>
+        <result column="RISK_FACTORS" property="riskFactors"/>
+        <result column="PERFORMANCE_INDICATORS" property="performanceIndicators"/>
+        <result column="USAGE_RESTRICTIONS" property="usageRestrictions"/>
+        <result column="DISPOSAL_RESTRICTIONS" property="disposalRestrictions"/>
+        <result column="REGULATORY_REQUIREMENTS" property="regulatoryRequirements"/>
+        <result column="COMPLIANCE_STATUS" property="complianceStatus"/>
+        <result column="LAST_MAINTENANCE_DATE" property="lastMaintenanceDate"/>
+        <result column="NEXT_MAINTENANCE_DATE" property="nextMaintenanceDate"/>
+        <result column="WARRANTY_EXPIRY_DATE" property="warrantyExpiryDate"/>
+        <result column="SUPPLIER_INFO" property="supplierInfo"/>
+        <result column="PURCHASE_CONTRACT_NO" property="purchaseContractNo"/>
+        <result column="ASSET_CERTIFICATE_NO" property="assetCertificateNo"/>
+        <result column="ASSET_PHOTOS" property="assetPhotos"/>
+        <result column="ASSET_DOCUMENTS" property="assetDocuments"/>
+        <result column="REMARKS" property="remarks"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="CREATE_USER" property="createUser"/>
+        <result column="UPDATE_USER" property="updateUser"/>
+        <result column="VERSION" property="version"/>
+        <result column="DELETED" property="deleted"/>
+    </resultMap>
+
+    <!-- 基础查询条件 -->
+    <sql id="BaseWhereClause">
+        <where>
+            AND DELETED = 0
+            <if test="assetType != null and assetType != ''">
+                AND ASSET_TYPE = #{assetType}
+            </if>
+            <if test="assetCategory != null and assetCategory != ''">
+                AND ASSET_CATEGORY = #{assetCategory}
+            </if>
+            <if test="assetNature != null and assetNature != ''">
+                AND ASSET_NATURE = #{assetNature}
+            </if>
+            <if test="assetStatus != null and assetStatus != ''">
+                AND ASSET_STATUS = #{assetStatus}
+            </if>
+            <if test="assetQualityLevel != null and assetQualityLevel != ''">
+                AND ASSET_QUALITY_LEVEL = #{assetQualityLevel}
+            </if>
+            <if test="assetRiskLevel != null and assetRiskLevel != ''">
+                AND ASSET_RISK_LEVEL = #{assetRiskLevel}
+            </if>
+            <if test="enterpriseId != null and enterpriseId != ''">
+                AND ENTERPRISE_ID = #{enterpriseId}
+            </if>
+            <if test="assetRegion != null and assetRegion != ''">
+                AND ASSET_REGION = #{assetRegion}
+            </if>
+            <if test="assetIndustry != null and assetIndustry != ''">
+                AND ASSET_INDUSTRY = #{assetIndustry}
+            </if>
+            <if test="assetManager != null and assetManager != ''">
+                AND ASSET_MANAGER = #{assetManager}
+            </if>
+            <if test="managementDepartment != null and managementDepartment != ''">
+                AND MANAGEMENT_DEPARTMENT = #{managementDepartment}
+            </if>
+            <if test="isCoreAsset != null">
+                AND IS_CORE_ASSET = #{isCoreAsset}
+            </if>
+            <if test="isStrategicAsset != null">
+                AND IS_STRATEGIC_ASSET = #{isStrategicAsset}
+            </if>
+            <if test="isIdleAsset != null">
+                AND IS_IDLE_ASSET = #{isIdleAsset}
+            </if>
+            <if test="isPledged != null">
+                AND IS_PLEDGED = #{isPledged}
+            </if>
+            <if test="needRegulatoryAttention != null">
+                AND NEED_REGULATORY_ATTENTION = #{needRegulatoryAttention}
+            </if>
+            <if test="minOriginalValue != null">
+                AND ORIGINAL_VALUE >= #{minOriginalValue}
+            </if>
+            <if test="maxOriginalValue != null">
+                AND ORIGINAL_VALUE &lt;= #{maxOriginalValue}
+            </if>
+            <if test="minNetValue != null">
+                AND NET_VALUE >= #{minNetValue}
+            </if>
+            <if test="maxNetValue != null">
+                AND NET_VALUE &lt;= #{maxNetValue}
+            </if>
+            <if test="minMarketValue != null">
+                AND MARKET_VALUE >= #{minMarketValue}
+            </if>
+            <if test="maxMarketValue != null">
+                AND MARKET_VALUE &lt;= #{maxMarketValue}
+            </if>
+            <if test="minReturnRate != null">
+                AND ASSET_RETURN_RATE >= #{minReturnRate}
+            </if>
+            <if test="maxReturnRate != null">
+                AND ASSET_RETURN_RATE &lt;= #{maxReturnRate}
+            </if>
+            <if test="minTurnoverRate != null">
+                AND ASSET_TURNOVER_RATE >= #{minTurnoverRate}
+            </if>
+            <if test="maxTurnoverRate != null">
+                AND ASSET_TURNOVER_RATE &lt;= #{maxTurnoverRate}
+            </if>
+            <if test="minUtilizationRate != null">
+                AND ASSET_UTILIZATION_RATE >= #{minUtilizationRate}
+            </if>
+            <if test="maxUtilizationRate != null">
+                AND ASSET_UTILIZATION_RATE &lt;= #{maxUtilizationRate}
+            </if>
+            <if test="assetName != null and assetName != ''">
+                AND ASSET_NAME LIKE CONCAT('%', #{assetName}, '%')
+            </if>
+            <if test="assetCode != null and assetCode != ''">
+                AND ASSET_CODE LIKE CONCAT('%', #{assetCode}, '%')
+            </if>
+        </where>
+    </sql>
+
+    <!-- 分页查询资产信息列表 -->
+    <select id="selectAssetInfoList" resultMap="AssetInfoResultMap">
+        SELECT * FROM ASSET_INFO
+        <include refid="BaseWhereClause"/>
+        ORDER BY CREATE_TIME DESC
+        <if test="pageNumber != null and pageSize != null">
+            <!-- MySQL分页 -->
+            <if test="_databaseId == 'mysql'">
+                LIMIT #{pageSize} OFFSET #{pageNumber}
+            </if>
+            <!-- 达梦数据库分页 -->
+            <if test="_databaseId == 'dm'">
+                OFFSET #{pageNumber} ROWS FETCH NEXT #{pageSize} ROWS ONLY
+            </if>
+        </if>
+    </select>
+
+    <!-- 根据企业ID查询资产信息 -->
+    <select id="selectByEnterpriseId" resultMap="AssetInfoResultMap">
+        SELECT * FROM ASSET_INFO
+        WHERE ENTERPRISE_ID = #{enterpriseId} AND DELETED = 0
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据资产类型查询 -->
+    <select id="selectByAssetType" resultMap="AssetInfoResultMap">
+        SELECT * FROM ASSET_INFO
+        WHERE ASSET_TYPE = #{assetType} AND DELETED = 0
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据资产分类查询 -->
+    <select id="selectByAssetCategory" resultMap="AssetInfoResultMap">
+        SELECT * FROM ASSET_INFO
+        WHERE ASSET_CATEGORY = #{assetCategory} AND DELETED = 0
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据资产性质查询 -->
+    <select id="selectByAssetNature" resultMap="AssetInfoResultMap">
+        SELECT * FROM ASSET_INFO
+        WHERE ASSET_NATURE = #{assetNature} AND DELETED = 0
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据资产状态查询 -->
+    <select id="selectByAssetStatus" resultMap="AssetInfoResultMap">
+        SELECT * FROM ASSET_INFO
+        WHERE ASSET_STATUS = #{assetStatus} AND DELETED = 0
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据资产地区查询 -->
+    <select id="selectByAssetRegion" resultMap="AssetInfoResultMap">
+        SELECT * FROM ASSET_INFO
+        WHERE ASSET_REGION = #{assetRegion} AND DELETED = 0
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据资产行业查询 -->
+    <select id="selectByAssetIndustry" resultMap="AssetInfoResultMap">
+        SELECT * FROM ASSET_INFO
+        WHERE ASSET_INDUSTRY = #{assetIndustry} AND DELETED = 0
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据资产质量等级查询 -->
+    <select id="selectByAssetQualityLevel" resultMap="AssetInfoResultMap">
+        SELECT * FROM ASSET_INFO
+        WHERE ASSET_QUALITY_LEVEL = #{assetQualityLevel} AND DELETED = 0
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据资产风险等级查询 -->
+    <select id="selectByAssetRiskLevel" resultMap="AssetInfoResultMap">
+        SELECT * FROM ASSET_INFO
+        WHERE ASSET_RISK_LEVEL = #{assetRiskLevel} AND DELETED = 0
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 查询核心资产 -->
+    <select id="selectCoreAssets" resultMap="AssetInfoResultMap">
+        SELECT * FROM ASSET_INFO
+        WHERE IS_CORE_ASSET = #{isCoreAsset} AND DELETED = 0
+        ORDER BY ORIGINAL_VALUE DESC
+    </select>
+
+    <!-- 查询战略资产 -->
+    <select id="selectStrategicAssets" resultMap="AssetInfoResultMap">
+        SELECT * FROM ASSET_INFO
+        WHERE IS_STRATEGIC_ASSET = #{isStrategicAsset} AND DELETED = 0
+        ORDER BY ORIGINAL_VALUE DESC
+    </select>
+
+    <!-- 查询闲置资产 -->
+    <select id="selectIdleAssets" resultMap="AssetInfoResultMap">
+        SELECT * FROM ASSET_INFO
+        WHERE IS_IDLE_ASSET = #{isIdleAsset} AND DELETED = 0
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 查询抵押质押资产 -->
+    <select id="selectPledgedAssets" resultMap="AssetInfoResultMap">
+        SELECT * FROM ASSET_INFO
+        WHERE IS_PLEDGED = #{isPledged} AND DELETED = 0
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 查询需要监管关注的资产 -->
+    <select id="selectRegulatoryAttentionAssets" resultMap="AssetInfoResultMap">
+        SELECT * FROM ASSET_INFO
+        WHERE NEED_REGULATORY_ATTENTION = #{needRegulatoryAttention} AND DELETED = 0
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据资产管理人查询 -->
+    <select id="selectByAssetManager" resultMap="AssetInfoResultMap">
+        SELECT * FROM ASSET_INFO
+        WHERE ASSET_MANAGER = #{assetManager} AND DELETED = 0
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据管理部门查询 -->
+    <select id="selectByManagementDepartment" resultMap="AssetInfoResultMap">
+        SELECT * FROM ASSET_INFO
+        WHERE MANAGEMENT_DEPARTMENT = #{managementDepartment} AND DELETED = 0
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 资产配置效率分析 -->
+    <select id="selectAssetAllocationEfficiencyAnalysis" resultType="map">
+        SELECT 
+            ASSET_TYPE as assetType,
+            COUNT(*) as assetCount,
+            SUM(ORIGINAL_VALUE) as totalOriginalValue,
+            SUM(NET_VALUE) as totalNetValue,
+            SUM(MARKET_VALUE) as totalMarketValue,
+            AVG(ASSET_RETURN_RATE) as avgReturnRate,
+            AVG(ASSET_TURNOVER_RATE) as avgTurnoverRate,
+            AVG(ASSET_UTILIZATION_RATE) as avgUtilizationRate
+        FROM ASSET_INFO
+        WHERE ENTERPRISE_ID = #{enterpriseId} AND DELETED = 0
+        GROUP BY ASSET_TYPE
+        ORDER BY totalOriginalValue DESC
+    </select>
+
+    <!-- 资产质量评估分析 -->
+    <select id="selectAssetQualityAssessmentAnalysis" resultType="map">
+        SELECT 
+            ASSET_QUALITY_LEVEL as qualityLevel,
+            COUNT(*) as assetCount,
+            SUM(ORIGINAL_VALUE) as totalValue,
+            AVG(ASSET_RETURN_RATE) as avgReturnRate,
+            AVG(ASSET_UTILIZATION_RATE) as avgUtilizationRate
+        FROM ASSET_INFO
+        WHERE ENTERPRISE_ID = #{enterpriseId} AND DELETED = 0
+        GROUP BY ASSET_QUALITY_LEVEL
+        ORDER BY 
+            CASE ASSET_QUALITY_LEVEL
+                WHEN 'EXCELLENT' THEN 1
+                WHEN 'GOOD' THEN 2
+                WHEN 'AVERAGE' THEN 3
+                WHEN 'POOR' THEN 4
+                WHEN 'BAD' THEN 5
+                ELSE 6
+            END
+    </select>
+
+    <!-- 资产运营效率分析 -->
+    <select id="selectAssetOperationalEfficiencyAnalysis" resultType="map">
+        SELECT 
+            ASSET_TYPE as assetType,
+            ASSET_CATEGORY as assetCategory,
+            COUNT(*) as assetCount,
+            AVG(ASSET_RETURN_RATE) as avgReturnRate,
+            AVG(ASSET_TURNOVER_RATE) as avgTurnoverRate,
+            AVG(ASSET_UTILIZATION_RATE) as avgUtilizationRate,
+            AVG(ASSET_OUTPUT_EFFICIENCY) as avgOutputEfficiency
+        FROM ASSET_INFO
+        WHERE ENTERPRISE_ID = #{enterpriseId} AND DELETED = 0
+        GROUP BY ASSET_TYPE, ASSET_CATEGORY
+        ORDER BY avgReturnRate DESC
+    </select>
+
+    <!-- 资产收益率分析 -->
+    <select id="selectAssetReturnRateAnalysis" resultType="map">
+        SELECT 
+            ASSET_TYPE as assetType,
+            AVG(ASSET_RETURN_RATE) as avgReturnRate,
+            MAX(ASSET_RETURN_RATE) as maxReturnRate,
+            MIN(ASSET_RETURN_RATE) as minReturnRate,
+            COUNT(*) as assetCount
+        FROM ASSET_INFO
+        WHERE ENTERPRISE_ID = #{enterpriseId} AND DELETED = 0 AND ASSET_RETURN_RATE IS NOT NULL
+        GROUP BY ASSET_TYPE
+        ORDER BY avgReturnRate DESC
+    </select>
+
+    <!-- 资产周转率分析 -->
+    <select id="selectAssetTurnoverRateAnalysis" resultType="map">
+        SELECT 
+            ASSET_TYPE as assetType,
+            AVG(ASSET_TURNOVER_RATE) as avgTurnoverRate,
+            MAX(ASSET_TURNOVER_RATE) as maxTurnoverRate,
+            MIN(ASSET_TURNOVER_RATE) as minTurnoverRate,
+            COUNT(*) as assetCount
+        FROM ASSET_INFO
+        WHERE ENTERPRISE_ID = #{enterpriseId} AND DELETED = 0 AND ASSET_TURNOVER_RATE IS NOT NULL
+        GROUP BY ASSET_TYPE
+        ORDER BY avgTurnoverRate DESC
+    </select>
+
+    <!-- 资产利用率分析 -->
+    <select id="selectAssetUtilizationRateAnalysis" resultType="map">
+        SELECT 
+            ASSET_TYPE as assetType,
+            AVG(ASSET_UTILIZATION_RATE) as avgUtilizationRate,
+            MAX(ASSET_UTILIZATION_RATE) as maxUtilizationRate,
+            MIN(ASSET_UTILIZATION_RATE) as minUtilizationRate,
+            COUNT(*) as assetCount
+        FROM ASSET_INFO
+        WHERE ENTERPRISE_ID = #{enterpriseId} AND DELETED = 0 AND ASSET_UTILIZATION_RATE IS NOT NULL
+        GROUP BY ASSET_TYPE
+        ORDER BY avgUtilizationRate DESC
+    </select>
+
+    <!-- 资产价值趋势分析 -->
+    <select id="selectAssetValueTrendAnalysis" resultType="map">
+        SELECT 
+            <!-- MySQL日期格式化 -->
+            <if test="_databaseId == 'mysql'">
+                DATE_FORMAT(CREATE_TIME, '%Y-%m') as dateMonth,
+            </if>
+            <!-- 达梦数据库日期格式化 -->
+            <if test="_databaseId == 'dm'">
+                TO_CHAR(CREATE_TIME, 'YYYY-MM') as dateMonth,
+            </if>
+            SUM(ORIGINAL_VALUE) as totalOriginalValue,
+            SUM(NET_VALUE) as totalNetValue,
+            SUM(MARKET_VALUE) as totalMarketValue,
+            COUNT(*) as assetCount
+        FROM ASSET_INFO
+        WHERE ENTERPRISE_ID = #{enterpriseId} AND DELETED = 0
+        <if test="startDate != null and startDate != ''">
+            AND CREATE_TIME >= #{startDate}
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND CREATE_TIME &lt;= #{endDate}
+        </if>
+        GROUP BY 
+            <!-- MySQL分组 -->
+            <if test="_databaseId == 'mysql'">
+                DATE_FORMAT(CREATE_TIME, '%Y-%m')
+            </if>
+            <!-- 达梦数据库分组 -->
+            <if test="_databaseId == 'dm'">
+                TO_CHAR(CREATE_TIME, 'YYYY-MM')
+            </if>
+        ORDER BY dateMonth
+    </select>
+
+    <!-- 资产减值风险分析 -->
+    <select id="selectAssetImpairmentRiskAnalysis" resultType="map">
+        SELECT 
+            ASSET_ID as assetId,
+            ASSET_NAME as assetName,
+            ASSET_TYPE as assetType,
+            ORIGINAL_VALUE as originalValue,
+            NET_VALUE as netValue,
+            MARKET_VALUE as marketValue,
+            ASSET_RISK_LEVEL as riskLevel,
+            ASSET_QUALITY_LEVEL as qualityLevel,
+            (ORIGINAL_VALUE - NET_VALUE) / ORIGINAL_VALUE * 100 as depreciationRate
+        FROM ASSET_INFO
+        WHERE ENTERPRISE_ID = #{enterpriseId} AND DELETED = 0
+        AND (ASSET_RISK_LEVEL IN ('HIGH', 'CRITICAL') 
+             OR ASSET_QUALITY_LEVEL IN ('POOR', 'BAD')
+             OR (ORIGINAL_VALUE > 0 AND (ORIGINAL_VALUE - NET_VALUE) / ORIGINAL_VALUE > 0.8))
+        ORDER BY depreciationRate DESC
+    </select>
+
+    <!-- 按资产类型统计分布 -->
+    <select id="selectAssetDistributionByType" resultType="map">
+        SELECT 
+            ASSET_TYPE as assetType,
+            COUNT(*) as assetCount,
+            SUM(ORIGINAL_VALUE) as totalValue,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM ASSET_INFO WHERE DELETED = 0), 2) as percentage
+        FROM ASSET_INFO
+        WHERE DELETED = 0
+        GROUP BY ASSET_TYPE
+        ORDER BY assetCount DESC
+    </select>
+
+    <!-- 按资产分类统计分布 -->
+    <select id="selectAssetDistributionByCategory" resultType="map">
+        SELECT 
+            ASSET_CATEGORY as assetCategory,
+            COUNT(*) as assetCount,
+            SUM(ORIGINAL_VALUE) as totalValue,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM ASSET_INFO WHERE DELETED = 0), 2) as percentage
+        FROM ASSET_INFO
+        WHERE DELETED = 0
+        GROUP BY ASSET_CATEGORY
+        ORDER BY assetCount DESC
+    </select>
+
+    <!-- 按资产性质统计分布 -->
+    <select id="selectAssetDistributionByNature" resultType="map">
+        SELECT 
+            ASSET_NATURE as assetNature,
+            COUNT(*) as assetCount,
+            SUM(ORIGINAL_VALUE) as totalValue,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM ASSET_INFO WHERE DELETED = 0), 2) as percentage
+        FROM ASSET_INFO
+        WHERE DELETED = 0
+        GROUP BY ASSET_NATURE
+        ORDER BY assetCount DESC
+    </select>
+
+    <!-- 按资产状态统计分布 -->
+    <select id="selectAssetDistributionByStatus" resultType="map">
+        SELECT 
+            ASSET_STATUS as assetStatus,
+            COUNT(*) as assetCount,
+            SUM(ORIGINAL_VALUE) as totalValue,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM ASSET_INFO WHERE DELETED = 0), 2) as percentage
+        FROM ASSET_INFO
+        WHERE DELETED = 0
+        GROUP BY ASSET_STATUS
+        ORDER BY assetCount DESC
+    </select>
+
+    <!-- 按资产地区统计分布 -->
+    <select id="selectAssetDistributionByRegion" resultType="map">
+        SELECT 
+            ASSET_REGION as assetRegion,
+            COUNT(*) as assetCount,
+            SUM(ORIGINAL_VALUE) as totalValue,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM ASSET_INFO WHERE DELETED = 0), 2) as percentage
+        FROM ASSET_INFO
+        WHERE DELETED = 0 AND ASSET_REGION IS NOT NULL
+        GROUP BY ASSET_REGION
+        ORDER BY assetCount DESC
+    </select>
+
+    <!-- 按资产行业统计分布 -->
+    <select id="selectAssetDistributionByIndustry" resultType="map">
+        SELECT 
+            ASSET_INDUSTRY as assetIndustry,
+            COUNT(*) as assetCount,
+            SUM(ORIGINAL_VALUE) as totalValue,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM ASSET_INFO WHERE DELETED = 0), 2) as percentage
+        FROM ASSET_INFO
+        WHERE DELETED = 0 AND ASSET_INDUSTRY IS NOT NULL
+        GROUP BY ASSET_INDUSTRY
+        ORDER BY assetCount DESC
+    </select>
+
+    <!-- 按资产质量等级统计分布 -->
+    <select id="selectAssetDistributionByQualityLevel" resultType="map">
+        SELECT 
+            ASSET_QUALITY_LEVEL as qualityLevel,
+            COUNT(*) as assetCount,
+            SUM(ORIGINAL_VALUE) as totalValue,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM ASSET_INFO WHERE DELETED = 0), 2) as percentage
+        FROM ASSET_INFO
+        WHERE DELETED = 0
+        GROUP BY ASSET_QUALITY_LEVEL
+        ORDER BY 
+            CASE ASSET_QUALITY_LEVEL
+                WHEN 'EXCELLENT' THEN 1
+                WHEN 'GOOD' THEN 2
+                WHEN 'AVERAGE' THEN 3
+                WHEN 'POOR' THEN 4
+                WHEN 'BAD' THEN 5
+                ELSE 6
+            END
+    </select>
+
+    <!-- 按资产风险等级统计分布 -->
+    <select id="selectAssetDistributionByRiskLevel" resultType="map">
+        SELECT 
+            ASSET_RISK_LEVEL as riskLevel,
+            COUNT(*) as assetCount,
+            SUM(ORIGINAL_VALUE) as totalValue,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM ASSET_INFO WHERE DELETED = 0), 2) as percentage
+        FROM ASSET_INFO
+        WHERE DELETED = 0
+        GROUP BY ASSET_RISK_LEVEL
+        ORDER BY 
+            CASE ASSET_RISK_LEVEL
+                WHEN 'LOW' THEN 1
+                WHEN 'MEDIUM' THEN 2
+                WHEN 'HIGH' THEN 3
+                WHEN 'CRITICAL' THEN 4
+                ELSE 5
+            END
+    </select>
+
+    <!-- 资产维护分析 -->
+    <select id="selectAssetMaintenanceAnalysis" resultType="map">
+        SELECT 
+            MAINTENANCE_CONDITION as maintenanceCondition,
+            COUNT(*) as assetCount,
+            AVG(ASSET_UTILIZATION_RATE) as avgUtilizationRate
+        FROM ASSET_INFO
+        WHERE ENTERPRISE_ID = #{enterpriseId} AND DELETED = 0
+        GROUP BY MAINTENANCE_CONDITION
+    </select>
+
+    <!-- 资产保险分析 -->
+    <select id="selectAssetInsuranceAnalysis" resultType="map">
+        SELECT 
+            INSURANCE_STATUS as insuranceStatus,
+            COUNT(*) as assetCount,
+            SUM(INSURANCE_AMOUNT) as totalInsuranceAmount
+        FROM ASSET_INFO
+        WHERE ENTERPRISE_ID = #{enterpriseId} AND DELETED = 0
+        GROUP BY INSURANCE_STATUS
+    </select>
+
+    <!-- 资产技术状态分析 -->
+    <select id="selectAssetTechnicalConditionAnalysis" resultType="map">
+        SELECT 
+            TECHNICAL_CONDITION as technicalCondition,
+            COUNT(*) as assetCount,
+            AVG(ASSET_OUTPUT_EFFICIENCY) as avgOutputEfficiency
+        FROM ASSET_INFO
+        WHERE ENTERPRISE_ID = #{enterpriseId} AND DELETED = 0
+        GROUP BY TECHNICAL_CONDITION
+    </select>
+
+    <!-- 资产折旧分析 -->
+    <select id="selectAssetDepreciationAnalysis" resultType="map">
+        SELECT 
+            DEPRECIATION_METHOD as depreciationMethod,
+            COUNT(*) as assetCount,
+            AVG(DEPRECIATION_RATE) as avgDepreciationRate,
+            SUM(ACCUMULATED_DEPRECIATION) as totalAccumulatedDepreciation
+        FROM ASSET_INFO
+        WHERE ENTERPRISE_ID = #{enterpriseId} AND DELETED = 0
+        GROUP BY DEPRECIATION_METHOD
+    </select>
+
+    <!-- 资产集中度分析 -->
+    <select id="selectAssetConcentrationAnalysis" resultType="map">
+        SELECT 
+            ASSET_REGION as assetRegion,
+            COUNT(*) as assetCount,
+            SUM(ORIGINAL_VALUE) as totalValue,
+            ROUND(SUM(ORIGINAL_VALUE) * 100.0 / (SELECT SUM(ORIGINAL_VALUE) FROM ASSET_INFO WHERE ENTERPRISE_ID = #{enterpriseId} AND DELETED = 0), 2) as concentrationRatio
+        FROM ASSET_INFO
+        WHERE ENTERPRISE_ID = #{enterpriseId} AND DELETED = 0
+        GROUP BY ASSET_REGION
+        ORDER BY totalValue DESC
+    </select>
+
+    <!-- 资产风险预警 -->
+    <select id="selectAssetRiskWarning" resultMap="AssetInfoResultMap">
+        SELECT * FROM ASSET_INFO
+        WHERE ASSET_RISK_LEVEL = #{riskLevel} AND DELETED = 0
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 批量更新资产状态 -->
+    <update id="batchUpdateAssetStatus">
+        UPDATE ASSET_INFO 
+        SET ASSET_STATUS = #{assetStatus},
+            UPDATE_TIME = 
+            <!-- MySQL当前时间 -->
+            <if test="_databaseId == 'mysql'">
+                NOW()
+            </if>
+            <!-- 达梦数据库当前时间 -->
+            <if test="_databaseId == 'dm'">
+                SYSDATE
+            </if>
+        WHERE ASSET_ID IN
+        <foreach collection="assetIds" item="assetId" open="(" separator="," close=")">
+            #{assetId}
+        </foreach>
+        AND DELETED = 0
+    </update>
+
+    <!-- 批量更新资产质量等级 -->
+    <update id="batchUpdateAssetQualityLevel">
+        UPDATE ASSET_INFO 
+        SET ASSET_QUALITY_LEVEL = #{qualityLevel},
+            UPDATE_TIME = 
+            <!-- MySQL当前时间 -->
+            <if test="_databaseId == 'mysql'">
+                NOW()
+            </if>
+            <!-- 达梦数据库当前时间 -->
+            <if test="_databaseId == 'dm'">
+                SYSDATE
+            </if>
+        WHERE ASSET_ID IN
+        <foreach collection="assetIds" item="assetId" open="(" separator="," close=")">
+            #{assetId}
+        </foreach>
+        AND DELETED = 0
+    </update>
+
+    <!-- 批量更新资产风险等级 -->
+    <update id="batchUpdateAssetRiskLevel">
+        UPDATE ASSET_INFO 
+        SET ASSET_RISK_LEVEL = #{riskLevel},
+            UPDATE_TIME = 
+            <!-- MySQL当前时间 -->
+            <if test="_databaseId == 'mysql'">
+                NOW()
+            </if>
+            <!-- 达梦数据库当前时间 -->
+            <if test="_databaseId == 'dm'">
+                SYSDATE
+            </if>
+        WHERE ASSET_ID IN
+        <foreach collection="assetIds" item="assetId" open="(" separator="," close=")">
+            #{assetId}
+        </foreach>
+        AND DELETED = 0
+    </update>
+
+    <!-- 批量更新资产价值 -->
+    <update id="batchUpdateAssetValue">
+        <foreach collection="assetList" item="asset" separator=";">
+            UPDATE ASSET_INFO 
+            SET ORIGINAL_VALUE = #{asset.originalValue},
+                NET_VALUE = #{asset.netValue},
+                MARKET_VALUE = #{asset.marketValue},
+                ASSESSMENT_VALUE = #{asset.assessmentValue},
+                UPDATE_TIME = 
+                <!-- MySQL当前时间 -->
+                <if test="_databaseId == 'mysql'">
+                    NOW()
+                </if>
+                <!-- 达梦数据库当前时间 -->
+                <if test="_databaseId == 'dm'">
+                    SYSDATE
+                </if>
+            WHERE ASSET_ID = #{asset.assetId} AND DELETED = 0
+        </foreach>
+    </update>
+
+    <!-- 删除过期资产记录 -->
+    <delete id="deleteExpiredAssetRecords">
+        DELETE FROM ASSET_INFO 
+        WHERE DELETED = 1 
+        AND UPDATE_TIME &lt; 
+        <!-- MySQL日期计算 -->
+        <if test="_databaseId == 'mysql'">
+            DATE_SUB(NOW(), INTERVAL #{days} DAY)
+        </if>
+        <!-- 达梦数据库日期计算 -->
+        <if test="_databaseId == 'dm'">
+            SYSDATE - #{days}
+        </if>
+    </delete>
+
+    <!-- 获取资产统计概览 -->
+    <select id="selectAssetStatisticsOverview" resultType="map">
+        SELECT 
+            COUNT(*) as totalAssets,
+            SUM(ORIGINAL_VALUE) as totalOriginalValue,
+            SUM(NET_VALUE) as totalNetValue,
+            SUM(MARKET_VALUE) as totalMarketValue,
+            AVG(ASSET_RETURN_RATE) as avgReturnRate,
+            AVG(ASSET_TURNOVER_RATE) as avgTurnoverRate,
+            AVG(ASSET_UTILIZATION_RATE) as avgUtilizationRate,
+            SUM(CASE WHEN IS_CORE_ASSET = 1 THEN 1 ELSE 0 END) as coreAssetCount,
+            SUM(CASE WHEN IS_STRATEGIC_ASSET = 1 THEN 1 ELSE 0 END) as strategicAssetCount,
+            SUM(CASE WHEN IS_IDLE_ASSET = 1 THEN 1 ELSE 0 END) as idleAssetCount,
+            SUM(CASE WHEN IS_PLEDGED = 1 THEN 1 ELSE 0 END) as pledgedAssetCount,
+            SUM(CASE WHEN ASSET_RISK_LEVEL IN ('HIGH', 'CRITICAL') THEN 1 ELSE 0 END) as highRiskAssetCount
+        FROM ASSET_INFO
+        WHERE DELETED = 0
+    </select>
+
+    <!-- 获取资产类型分布 -->
+    <select id="selectAssetTypeDistribution" resultType="map">
+        SELECT 
+            ASSET_TYPE as type,
+            COUNT(*) as count,
+            SUM(ORIGINAL_VALUE) as value
+        FROM ASSET_INFO
+        WHERE DELETED = 0
+        GROUP BY ASSET_TYPE
+        ORDER BY count DESC
+    </select>
+
+    <!-- 获取资产性质分布 -->
+    <select id="selectAssetNatureDistribution" resultType="map">
+        SELECT 
+            ASSET_NATURE as nature,
+            COUNT(*) as count,
+            SUM(ORIGINAL_VALUE) as value
+        FROM ASSET_INFO
+        WHERE DELETED = 0
+        GROUP BY ASSET_NATURE
+        ORDER BY count DESC
+    </select>
+
+    <!-- 获取资产状态分布 -->
+    <select id="selectAssetStatusDistribution" resultType="map">
+        SELECT 
+            ASSET_STATUS as status,
+            COUNT(*) as count,
+            SUM(ORIGINAL_VALUE) as value
+        FROM ASSET_INFO
+        WHERE DELETED = 0
+        GROUP BY ASSET_STATUS
+        ORDER BY count DESC
+    </select>
+
+    <!-- 获取资产质量分布 -->
+    <select id="selectAssetQualityDistribution" resultType="map">
+        SELECT 
+            ASSET_QUALITY_LEVEL as qualityLevel,
+            COUNT(*) as count,
+            SUM(ORIGINAL_VALUE) as value
+        FROM ASSET_INFO
+        WHERE DELETED = 0
+        GROUP BY ASSET_QUALITY_LEVEL
+        ORDER BY 
+            CASE ASSET_QUALITY_LEVEL
+                WHEN 'EXCELLENT' THEN 1
+                WHEN 'GOOD' THEN 2
+                WHEN 'AVERAGE' THEN 3
+                WHEN 'POOR' THEN 4
+                WHEN 'BAD' THEN 5
+                ELSE 6
+            END
+    </select>
+
+    <!-- 获取资产风险分布 -->
+    <select id="selectAssetRiskDistribution" resultType="map">
+        SELECT 
+            ASSET_RISK_LEVEL as riskLevel,
+            COUNT(*) as count,
+            SUM(ORIGINAL_VALUE) as value
+        FROM ASSET_INFO
+        WHERE DELETED = 0
+        GROUP BY ASSET_RISK_LEVEL
+        ORDER BY 
+            CASE ASSET_RISK_LEVEL
+                WHEN 'LOW' THEN 1
+                WHEN 'MEDIUM' THEN 2
+                WHEN 'HIGH' THEN 3
+                WHEN 'CRITICAL' THEN 4
+                ELSE 5
+            END
+    </select>
+
+    <!-- 导出资产信息列表 -->
+    <select id="exportAssetInfoList" resultType="map">
+        SELECT 
+            ASSET_ID as assetId,
+            ASSET_CODE as assetCode,
+            ASSET_NAME as assetName,
+            ENTERPRISE_NAME as enterpriseName,
+            ASSET_TYPE as assetType,
+            ASSET_CATEGORY as assetCategory,
+            ASSET_NATURE as assetNature,
+            ASSET_STATUS as assetStatus,
+            ORIGINAL_VALUE as originalValue,
+            NET_VALUE as netValue,
+            MARKET_VALUE as marketValue,
+            ASSET_RETURN_RATE as returnRate,
+            ASSET_TURNOVER_RATE as turnoverRate,
+            ASSET_UTILIZATION_RATE as utilizationRate,
+            ASSET_QUALITY_LEVEL as qualityLevel,
+            ASSET_RISK_LEVEL as riskLevel,
+            ASSET_LOCATION as location,
+            ASSET_REGION as region,
+            ASSET_INDUSTRY as industry,
+            ASSET_MANAGER as manager,
+            MANAGEMENT_DEPARTMENT as department,
+            ACQUISITION_DATE as acquisitionDate,
+            CREATE_TIME as createTime
+        FROM ASSET_INFO
+        <include refid="BaseWhereClause"/>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+</mapper>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.management.accountant.oracle.mapper.budget.BudgetVersionMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.management.accountant.oracle.entity.budget.BudgetVersion">
+        <id column="VERSION_ID" property="versionId"/>
+        <result column="VERSION_CODE" property="versionCode"/>
+        <result column="VERSION_NAME" property="versionName"/>
+        <result column="VERSION_NO" property="versionNo"/>
+        <result column="BUDGET_YEAR" property="budgetYear"/>
+        <result column="VERSION_TYPE" property="versionType"/>
+        <result column="VERSION_STATUS" property="versionStatus"/>
+        <result column="PARENT_VERSION_ID" property="parentVersionId"/>
+        <result column="IS_CURRENT" property="isCurrent"/>
+        <result column="EFFECTIVE_DATE" property="effectiveDate"/>
+        <result column="EXPIRY_DATE" property="expiryDate"/>
+        <result column="VERSION_DESCRIPTION" property="versionDescription"/>
+        <result column="CHANGE_LOG" property="changeLog"/>
+        <result column="REMARK" property="remark"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="CREATE_BY" property="createBy"/>
+        <result column="UPDATE_BY" property="updateBy"/>
+        <result column="DEL_FLAG" property="delFlag"/>
+        <result column="TENANT_ID" property="tenantId"/>
+    </resultMap>
+
+    <!-- 根据版本编码查询 -->
+    <select id="selectByVersionCode" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BUDGET_VERSION
+        WHERE VERSION_CODE = #{versionCode}
+        AND DEL_FLAG = 0
+    </select>
+
+    <!-- 查询当前版本 -->
+    <select id="selectCurrentVersion" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BUDGET_VERSION
+        WHERE BUDGET_YEAR = #{budgetYear}
+        AND IS_CURRENT = 1
+        AND DEL_FLAG = 0
+        LIMIT 1
+    </select>
+
+    <!-- 根据预算年度查询 -->
+    <select id="selectByBudgetYear" resultMap="BaseResultMap">
+        SELECT * FROM TBL_BUDGET_VERSION
+        WHERE BUDGET_YEAR = #{budgetYear}
+        AND DEL_FLAG = 0
+        ORDER BY VERSION_NO DESC
+    </select>
+
+    <!-- 更新当前版本标志 -->
+    <update id="updateCurrentFlag">
+        UPDATE TBL_BUDGET_VERSION
+        SET IS_CURRENT = #{isCurrent},
+            UPDATE_TIME = SYSDATE
+        WHERE VERSION_ID = #{versionId}
+    </update>
+
+    <!-- 批量删除 -->
+    <update id="batchDeleteByIds">
+        UPDATE TBL_BUDGET_VERSION
+        SET DEL_FLAG = 1
+        WHERE VERSION_ID IN
+        <foreach collection="versionIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+</mapper>
+

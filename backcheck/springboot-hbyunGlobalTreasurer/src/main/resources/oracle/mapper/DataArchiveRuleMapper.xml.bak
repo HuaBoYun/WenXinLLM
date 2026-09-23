@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.DataArchiveRuleMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.DataArchiveRule">
+        <id column="ID" property="id" />
+        <result column="RULE_CODE" property="ruleCode" />
+        <result column="RULE_NAME" property="ruleName" />
+        <result column="RULE_TYPE" property="ruleType" />
+        <result column="BUSINESS_MODULE" property="businessModule" />
+        <result column="ARCHIVE_TABLE_NAME" property="archiveTableName" />
+        <result column="FIELD_MAPPING" property="fieldMapping" />
+        <result column="ARCHIVE_CONDITION" property="archiveCondition" />
+        <result column="ARCHIVE_CYCLE" property="archiveCycle" />
+        <result column="RETENTION_MONTHS" property="retentionMonths" />
+        <result column="ARCHIVE_STATUS" property="archiveStatus" />
+        <result column="EXECUTION_FREQUENCY" property="executionFrequency" />
+        <result column="LAST_EXECUTE_TIME" property="lastExecuteTime" />
+        <result column="NEXT_EXECUTE_TIME" property="nextExecuteTime" />
+        <result column="IS_ENABLED" property="isEnabled" />
+        <result column="ORDER_NO" property="orderNo" />
+        <result column="REMARK" property="remark" />
+        <result column="STATUS" property="status" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="CREATE_USER" property="createUser" />
+        <result column="UPDATE_USER" property="updateUser" />
+        <result column="VERSION_NO" property="versionNo" />
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        ID, RULE_CODE, RULE_NAME, RULE_TYPE, BUSINESS_MODULE, ARCHIVE_TABLE_NAME,
+        FIELD_MAPPING, ARCHIVE_CONDITION, ARCHIVE_CYCLE, RETENTION_MONTHS,
+        ARCHIVE_STATUS, EXECUTION_FREQUENCY, LAST_EXECUTE_TIME, NEXT_EXECUTE_TIME,
+        IS_ENABLED, ORDER_NO, REMARK, STATUS, CREATE_TIME, UPDATE_TIME, CREATE_USER, UPDATE_USER, VERSION_NO
+    </sql>
+
+    <!-- 根据规则编码查询 -->
+    <select id="selectByRuleCode" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_DATA_ARCHIVE_RULE
+        WHERE RULE_CODE = #{ruleCode}
+    </select>
+
+    <!-- 根据规则类型查询 -->
+    <select id="selectByRuleType" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_DATA_ARCHIVE_RULE
+        WHERE RULE_TYPE = #{ruleType}
+          AND STATUS = '1'
+        ORDER BY ORDER_NO ASC, CREATE_TIME DESC
+    </select>
+
+    <!-- 根据业务模块查询 -->
+    <select id="selectByBusinessModule" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_DATA_ARCHIVE_RULE
+        WHERE BUSINESS_MODULE = #{businessModule}
+          AND STATUS = '1'
+        ORDER BY ORDER_NO ASC, CREATE_TIME DESC
+    </select>
+
+    <!-- 多条件查询归档规则列表 -->
+    <select id="selectByMultipleConditions" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_DATA_ARCHIVE_RULE
+        WHERE 1=1
+          AND STATUS = '1'
+        <if test="params.ruleCode != null and params.ruleCode != ''">
+            AND RULE_CODE LIKE '%' || #{params.ruleCode} || '%'
+        </if>
+        <if test="params.ruleName != null and params.ruleName != ''">
+            AND RULE_NAME LIKE '%' || #{params.ruleName} || '%'
+        </if>
+        <if test="params.ruleType != null and params.ruleType != ''">
+            AND RULE_TYPE = #{params.ruleType}
+        </if>
+        <if test="params.businessModule != null and params.businessModule != ''">
+            AND BUSINESS_MODULE = #{params.businessModule}
+        </if>
+        <if test="params.isEnabled != null and params.isEnabled != ''">
+            AND IS_ENABLED = #{params.isEnabled}
+        </if>
+        <if test="params.archiveStatus != null and params.archiveStatus != ''">
+            AND ARCHIVE_STATUS = #{params.archiveStatus}
+        </if>
+        ORDER BY ORDER_NO ASC, CREATE_TIME DESC
+    </select>
+
+    <!-- 检查规则编码是否存在 -->
+    <select id="checkRuleCodeExists" resultType="int">
+        SELECT COUNT(1)
+        FROM TBL_DATA_ARCHIVE_RULE
+        WHERE RULE_CODE = #{ruleCode}
+        <if test="excludeId != null and excludeId != ''">
+            AND ID != #{excludeId}
+        </if>
+    </select>
+
+    <!-- 查询归档统计信息 -->
+    <select id="selectArchiveStatistics" resultType="java.util.HashMap">
+        SELECT
+            COUNT(*) AS total_count,
+            SUM(CASE WHEN IS_ENABLED = '1' THEN 1 ELSE 0 END) AS enabled_count,
+            SUM(CASE WHEN IS_ENABLED = '0' THEN 1 ELSE 0 END) AS disabled_count,
+            SUM(CASE WHEN ARCHIVE_STATUS = 'PENDING' THEN 1 ELSE 0 END) AS pending_count,
+            SUM(CASE WHEN ARCHIVE_STATUS = 'RUNNING' THEN 1 ELSE 0 END) AS running_count,
+            SUM(CASE WHEN ARCHIVE_STATUS = 'COMPLETED' THEN 1 ELSE 0 END) AS completed_count,
+            SUM(CASE WHEN ARCHIVE_STATUS = 'FAILED' THEN 1 ELSE 0 END) AS failed_count,
+            SUM(CASE WHEN BUSINESS_MODULE = 'FINANCIAL' THEN 1 ELSE 0 END) AS financial_count,
+            SUM(CASE WHEN BUSINESS_MODULE = 'RISK' THEN 1 ELSE 0 END) AS risk_count,
+            SUM(CASE WHEN BUSINESS_MODULE = 'COMPLIANCE' THEN 1 ELSE 0 END) AS compliance_count
+        FROM TBL_DATA_ARCHIVE_RULE
+        WHERE STATUS = '1'
+    </select>
+
+    <!-- 查询启用的归档规则 -->
+    <select id="selectEnabledRules" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_DATA_ARCHIVE_RULE
+        WHERE STATUS = '1' AND IS_ENABLED = '1'
+        ORDER BY ORDER_NO ASC, CREATE_TIME DESC
+    </select>
+
+    <!-- 查询待执行任务 -->
+    <select id="selectPendingTasks" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_DATA_ARCHIVE_RULE
+        WHERE STATUS = '1'
+          AND IS_ENABLED = '1'
+          AND ARCHIVE_STATUS = 'PENDING'
+          AND NEXT_EXECUTE_TIME IS NOT NULL
+          AND NEXT_EXECUTE_TIME &lt;= SYSDATE
+        ORDER BY NEXT_EXECUTE_TIME ASC
+    </select>
+
+    <!-- 查询根据归档状态 -->
+    <select id="selectByArchiveStatus" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_DATA_ARCHIVE_RULE
+        WHERE ARCHIVE_STATUS = #{archiveStatus}
+          AND STATUS = '1'
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 查询即将到期需要执行的规则 -->
+    <select id="selectExpiringRules" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_DATA_ARCHIVE_RULE
+        WHERE STATUS = '1'
+          AND IS_ENABLED = '1'
+          AND ARCHIVE_CYCLE = 'MONTHLY'
+          AND RETENTION_MONTHS IS NOT NULL
+          AND LAST_EXECUTE_TIME IS NOT NULL
+          AND ADD_MONTHS(LAST_EXECUTE_TIME, RETENTION_MONTHS) &lt;= SYSDATE + 30
+        ORDER BY ADD_MONTHS(LAST_EXECUTE_TIME, RETENTION_MONTHS) ASC
+    </select>
+
+    <!-- 更新执行状态 -->
+    <update id="updateExecuteStatus">
+        UPDATE TBL_DATA_ARCHIVE_RULE
+        SET ARCHIVE_STATUS = #{status},
+            UPDATE_USER = #{updateUser},
+            UPDATE_TIME = SYSDATE
+        WHERE ID = #{ruleId}
+    </update>
+
+    <!-- 批量更新业务模块 -->
+    <update id="batchUpdateBusinessModule">
+        UPDATE TBL_DATA_ARCHIVE_RULE
+        SET BUSINESS_MODULE = #{businessModule},
+            UPDATE_USER = #{updateUser},
+            UPDATE_TIME = SYSDATE
+        WHERE ID IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+</mapper>

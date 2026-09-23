@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.TblGtUKeyInfoMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TblGtUKeyInfo">
+        <id column="UKEY_ID" property="ukeyId"/>
+        <result column="ACCOUNT_ID" property="accountId"/>
+        <result column="ACCOUNT_NAME" property="accountName"/>
+        <result column="ACCOUNT_NO" property="accountNo"/>
+        <result column="BANK_CODE" property="bankCode"/>
+        <result column="BANK_NAME" property="bankName"/>
+        <result column="UKEY_NO" property="ukeyNo"/>
+        <result column="UKEY_TYPE" property="ukeyType"/>
+        <result column="UKEY_STATUS" property="ukeyStatus"/>
+        <result column="CUSTODIAN_ID" property="custodianId"/>
+        <result column="CUSTODIAN_NAME" property="custodianName"/>
+        <result column="RECEIVE_DATE" property="receiveDate"/>
+        <result column="VALID_FROM" property="validFrom"/>
+        <result column="VALID_TO" property="validTo"/>
+        <result column="PASSWORD" property="password"/>
+        <result column="ATTACHMENTS" property="attachments"/>
+        <result column="REMARK" property="remark"/>
+        <result column="CREATE_USER" property="createUser"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_USER" property="updateUser"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        UKEY_ID, ACCOUNT_ID, ACCOUNT_NAME, ACCOUNT_NO, BANK_CODE, BANK_NAME,
+        UKEY_NO, UKEY_TYPE, UKEY_STATUS, CUSTODIAN_ID, CUSTODIAN_NAME,
+        RECEIVE_DATE, VALID_FROM, VALID_TO, PASSWORD, ATTACHMENTS, REMARK,
+        CREATE_USER, CREATE_TIME, UPDATE_USER, UPDATE_TIME
+    </sql>
+
+    <!-- 分页查询U盾信息列表 -->
+    <select id="selectPageList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_GT_UKEY_INFO
+        WHERE 1=1
+        <if test="accountName != null and accountName != ''">
+            AND ACCOUNT_NAME LIKE '%' || #{accountName} || '%'
+        </if>
+        <if test="ukeyNo != null and ukeyNo != ''">
+            AND UKEY_NO LIKE '%' || #{ukeyNo} || '%'
+        </if>
+        <if test="ukeyStatus != null and ukeyStatus != ''">
+            AND UKEY_STATUS = #{ukeyStatus}
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+</mapper>
+

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.oracle.mapper.RevenueAllocationMapper">
+
+    <!-- 分页查询收入分配列表 -->
+    <select id="selectAllocationList" resultType="java.util.Map">
+        SELECT * FROM (
+            SELECT
+                ALLOCATION_ID as "allocationId",
+                ALLOCATION_NO as "allocationNo",
+                ALLOCATION_TYPE as "allocationType",
+                ALLOCATION_PERIOD as "allocationPeriod",
+                TOTAL_AMOUNT as "totalAmount",
+                ALLOCATED_AMOUNT as "allocatedAmount",
+                REMAINING_AMOUNT as "remainingAmount",
+                ALLOCATION_STATUS as "allocationStatus",
+                ALLOCATION_DATE as "allocationDate",
+                ALLOCATION_RULE as "allocationRule",
+                CREATE_TIME as "createTime",
+                ROW_NUMBER() OVER (ORDER BY CREATE_TIME DESC) as rn
+            FROM T_REVENUE_ALLOCATION
+            WHERE IS_DELETED = 0
+            AND TENANT_ID = #{tenantId}
+            <if test="allocationNo != null and allocationNo != ''">
+                AND ALLOCATION_NO LIKE '%' || #{allocationNo} || '%'
+            </if>
+            <if test="allocationType != null">
+                AND ALLOCATION_TYPE = #{allocationType}
+            </if>
+            <if test="allocationStatus != null">
+                AND ALLOCATION_STATUS = #{allocationStatus}
+            </if>
+            <if test="allocationPeriod != null and allocationPeriod != ''">
+                AND ALLOCATION_PERIOD = #{allocationPeriod}
+            </if>
+        ) WHERE rn &gt; #{offset} AND rn &lt;= (#{offset} + #{pageSize})
+    </select>
+
+    <!-- 查询收入分配总数 -->
+    <select id="countAllocationList" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM T_REVENUE_ALLOCATION
+        WHERE IS_DELETED = 0
+        AND TENANT_ID = #{tenantId}
+        <if test="allocationNo != null and allocationNo != ''">
+            AND ALLOCATION_NO LIKE '%' || #{allocationNo} || '%'
+        </if>
+        <if test="allocationType != null">
+            AND ALLOCATION_TYPE = #{allocationType}
+        </if>
+        <if test="allocationStatus != null">
+            AND ALLOCATION_STATUS = #{allocationStatus}
+        </if>
+        <if test="allocationPeriod != null and allocationPeriod != ''">
+            AND ALLOCATION_PERIOD = #{allocationPeriod}
+        </if>
+    </select>
+
+    <!-- 插入收入分配记录 -->
+    <insert id="insert" parameterType="com.financial.sharing.oracle.entity.RevenueAllocationEntity">
+        INSERT INTO T_REVENUE_ALLOCATION (
+            ALLOCATION_ID,
+            ALLOCATION_NO,
+            ALLOCATION_TYPE,
+            ALLOCATION_PERIOD,
+            TOTAL_AMOUNT,
+            ALLOCATED_AMOUNT,
+            REMAINING_AMOUNT,
+            ALLOCATION_STATUS,
+            ALLOCATION_DATE,
+            ALLOCATION_RULE,
+            BOOK_ID,
+            TENANT_ID,
+            VERSION,
+            IS_DELETED,
+            CREATE_TIME,
+            UPDATE_TIME,
+            CREATOR,
+            UPDATER
+        ) VALUES (
+            #{allocationId},
+            #{allocationNo},
+            #{allocationType},
+            #{allocationPeriod},
+            #{totalAmount},
+            #{allocatedAmount},
+            #{remainingAmount},
+            #{allocationStatus},
+            #{allocationDate},
+            #{allocationRule},
+            #{bookId},
+            #{tenantId},
+            #{version},
+            #{isDeleted},
+            #{createTime},
+            #{updateTime},
+            #{creator},
+            #{updater}
+        )
+    </insert>
+
+</mapper>
+

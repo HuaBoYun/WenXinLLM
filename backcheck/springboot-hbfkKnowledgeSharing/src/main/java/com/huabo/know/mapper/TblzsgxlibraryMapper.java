@@ -1,0 +1,61 @@
+package com.huabo.know.mapper;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.hbfk.util.PageInfo;
+import com.huabo.know.entity.Tblzsgxlibrary;
+
+import org.apache.ibatis.annotations.*;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+public interface TblzsgxlibraryMapper extends BaseMapper<Tblzsgxlibrary> {
+
+    @Select("SELECT * FROM TBL_ZSGX_LIBRARY WHERE LIBRARYID = #{libraryid}")
+    Tblzsgxlibrary selectId(Long libraryid);
+
+    @SelectProvider(method="selectType",type=TblzsgxlibraryMapperSqlConfig.class)
+    List<Tblzsgxlibrary> selectType(PageInfo<Tblzsgxlibrary> pageInfo,Tblzsgxlibrary library, String type,BigDecimal orgid);
+
+    @SelectProvider(method="selectTypeCount",type=TblzsgxlibraryMapperSqlConfig.class)
+    Integer selectTypeCount(String type, Tblzsgxlibrary library,BigDecimal orgid);
+
+    @Delete("DELETE FROM TBL_ZSGX_LIBRARY WHERE LIBRARYID = #{libraryid}")
+    void deleteId(Long libraryid);
+    
+ 
+    @Insert("INSERT INTO TBL_ZSGX_LIBRARY_ATT(LIBRARYID,ATTID) VALUES (#{libraryid},#{attid})")
+	void insertAttInfoAtt(Long libraryid, String attid) throws Exception;
+
+
+    @Delete("DELETE FROM TBL_ZSGX_LIBRARY_ATT WHERE LIBRARYID = #{libraryid}")
+    void deleteattId(Long libraryid);
+    
+    //根据效力位阶分组统计数量
+    @Select("SELECT count(*) hzcount,XLLEVEL FROM TBL_ZSGX_LIBRARY where CREATEORGANID=#{orgid} and LRTYPE=#{lrtype}  GROUP BY XLLEVEL ")
+    List<Tblzsgxlibrary> selectbywj(BigDecimal orgid,String lrtype);
+    
+    //根据专题分类分组统计数量
+    @Select("SELECT count(*) hzcount,TOPLICCLASS FROM TBL_ZSGX_LIBRARY where CREATEORGANID=#{orgid} and LRTYPE=#{lrtype}  GROUP BY TOPLICCLASS ")
+    List<Tblzsgxlibrary> selectbyzt(BigDecimal orgid,String lrtype);
+    
+    //根据制定机关分组统计数量
+    @Select("SELECT count(*) hzcount,ZDORGAN FROM TBL_ZSGX_LIBRARY where CREATEORGANID=#{orgid} and LRTYPE=#{lrtype}  GROUP BY ZDORGAN ")
+    List<Tblzsgxlibrary> selectbyjg(BigDecimal orgid,String lrtype);
+    
+    //根据时效性分组统计数量
+    @Select("SELECT count(*) hzcount,TIMELINESS FROM TBL_ZSGX_LIBRARY where CREATEORGANID=#{orgid} and LRTYPE=#{lrtype} GROUP BY TIMELINESS ")
+    List<Tblzsgxlibrary> selectbysxx(BigDecimal orgid,String lrtype);
+    
+    //根据法规类别/文件夹名称分组统计数量
+    @Select("SELECT count(*) hzcount,FGCATEGORY FROM TBL_ZSGX_LIBRARY where CREATEORGANID=#{orgid} and LRTYPE=#{lrtype}  GROUP BY FGCATEGORY ")
+    List<Tblzsgxlibrary> selectbyfglb(BigDecimal orgid,String lrtype);
+    
+    //根据公布年份分组统计数量
+    @Select("SELECT count(*) hzcount,GBYEAR FROM TBL_ZSGX_LIBRARY where CREATEORGANID=#{orgid} and LRTYPE=#{lrtype} GROUP BY GBYEAR ")
+    List<Tblzsgxlibrary> selectbygbnf(BigDecimal orgid,String lrtype);
+
+    int updateByIdSelective(Tblzsgxlibrary tblzsgxlibrary);
+
+    int insertSelective(Tblzsgxlibrary tblzsgxlibrary);
+}

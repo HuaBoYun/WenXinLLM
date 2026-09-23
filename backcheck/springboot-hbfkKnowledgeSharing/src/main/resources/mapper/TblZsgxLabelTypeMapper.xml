@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.know.mapper.TblZsgxLabelTypeMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.huabo.know.entity.TblZsgxLabelType">
+        <id column="ID" property="id" />
+        <result column="TYPE_VALUE" property="typeValue" />
+        <result column="TYPE_NAME" property="typeName" />
+        <result column="SORT" property="sort" />
+        <result column="SELECTED" property="selected" />
+        <result column="CREATE_COMPANY" property="createCompany" />
+        <result column="CREATE_DEPT" property="createDept" />
+        <result column="CREATE_BY" property="createBy" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="UPDATE_BY" property="updateBy" />
+        <result column="DELETED" property="deleted" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        ID, TYPE_VALUE, TYPE_NAME, SORT, SELECTED, CREATE_COMPANY, CREATE_DEPT, CREATE_BY, CREATE_TIME, UPDATE_TIME, UPDATE_BY, DELETED
+    </sql>
+
+</mapper>

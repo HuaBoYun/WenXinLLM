@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.huabo.system.mapper.RiskAuditDimensionMapper">
+
+    <!-- 查询风险、内控、审计相关维度统计 -->
+    <select id="queryRiskAuditDimension" resultType="java.util.Map">
+        WITH months AS (
+            SELECT 
+                TO_CHAR(TRUNC(ADD_MONTHS(SYSDATE, -LEVEL + 1), 'MONTH'), 'YYYY-MM') AS YEAR_MONTH
+            FROM DUAL
+            CONNECT BY LEVEL &lt;= 12
+        )
+        SELECT 
+            m.YEAR_MONTH,
+            NVL(COUNT(DISTINCT r.OCCUREDDATE), 0) AS FX,
+            NVL(COUNT(DISTINCT b.CREATETIME), 0) AS NK,
+            NVL(COUNT(DISTINCT p.CREATETIME), 0) AS SJ
+        FROM months m
+        LEFT JOIN TBL_RISKEVENT r 
+            ON TO_CHAR(TRUNC(r.OCCUREDDATE, 'MONTH'), 'YYYY-MM') = m.YEAR_MONTH
+        LEFT JOIN TBL_NBSJ_BUG b 
+            ON TO_CHAR(TRUNC(b.CREATETIME, 'MONTH'), 'YYYY-MM') = m.YEAR_MONTH
+        LEFT JOIN TBL_NBSJ_PROJECT p
+            ON TO_CHAR(TRUNC(p.CREATETIME, 'MONTH'), 'YYYY-MM') = m.YEAR_MONTH
+        GROUP BY m.YEAR_MONTH
+        ORDER BY m.YEAR_MONTH
+    </select>
+
+</mapper>
+

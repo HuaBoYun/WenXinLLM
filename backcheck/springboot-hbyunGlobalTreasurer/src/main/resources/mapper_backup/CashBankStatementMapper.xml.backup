@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.CashBankStatementMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.CashBankStatement">
+        <id column="STATEMENT_ID" property="statementId" />
+        <result column="ACCOUNT_ID" property="accountId" />
+        <result column="ACCOUNT_NUMBER" property="accountNumber" />
+        <result column="STATEMENT_DATE" property="statementDate" />
+        <result column="TRANSACTION_DATE" property="transactionDate" />
+        <result column="TRANSACTION_NO" property="transactionNo" />
+        <result column="TRANSACTION_TYPE" property="transactionType" />
+        <result column="AMOUNT" property="amount" />
+        <result column="BALANCE" property="balance" />
+        <result column="DESCRIPTION" property="description" />
+        <result column="COUNTERPARTY_NAME" property="counterpartyName" />
+        <result column="COUNTERPARTY_ACCOUNT" property="counterpartyAccount" />
+        <result column="COUNTERPARTY_BANK" property="counterpartyBank" />
+        <result column="REFERENCE_NO" property="referenceNo" />
+        <result column="RECONCILE_STATUS" property="reconcileStatus" />
+        <result column="RECONCILE_DATE" property="reconcileDate" />
+        <result column="RECONCILE_USER" property="reconcileUser" />
+        <result column="REMARK" property="remark" />
+        <result column="ORG_ID" property="orgId" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="CREATE_USER" property="createUser" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="UPDATE_USER" property="updateUser" />
+        <!-- 扩展字段 -->
+        <result column="ACCOUNT_NAME" property="accountName" />
+        <result column="BANK_NAME" property="bankName" />
+        <result column="CURRENCY_CODE" property="currencyCode" />
+        <result column="RECONCILE_USER_NAME" property="reconcileUserName" />
+        <result column="CREATE_USER_NAME" property="createUserName" />
+        <result column="UPDATE_USER_NAME" property="updateUserName" />
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="Base_Column_List">
+        STATEMENT_ID, ACCOUNT_ID, ACCOUNT_NUMBER, STATEMENT_DATE, TRANSACTION_DATE,
+        TRANSACTION_NO, TRANSACTION_TYPE, AMOUNT, BALANCE, DESCRIPTION,
+        COUNTERPARTY_NAME, COUNTERPARTY_ACCOUNT, COUNTERPARTY_BANK, REFERENCE_NO,
+        RECONCILE_STATUS, RECONCILE_DATE, RECONCILE_USER, REMARK, ORG_ID,
+        CREATE_TIME, CREATE_USER, UPDATE_TIME, UPDATE_USER
+    </sql>
+
+    <!-- 扩展字段 -->
+    <sql id="Extended_Column_List">
+        s.STATEMENT_ID, s.ACCOUNT_ID, s.ACCOUNT_NUMBER, s.STATEMENT_DATE, s.TRANSACTION_DATE,
+        s.TRANSACTION_NO, s.TRANSACTION_TYPE, s.AMOUNT, s.BALANCE, s.DESCRIPTION,
+        s.COUNTERPARTY_NAME, s.COUNTERPARTY_ACCOUNT, s.COUNTERPARTY_BANK, s.REFERENCE_NO,
+        s.RECONCILE_STATUS, s.RECONCILE_DATE, s.RECONCILE_USER, s.REMARK, s.ORG_ID,
+        s.CREATE_TIME, s.CREATE_USER, s.UPDATE_TIME, s.UPDATE_USER,
+        a.ACCOUNT_NAME, a.BANK_NAME, a.CURRENCY_CODE,
+        ru.USER_NAME as RECONCILE_USER_NAME,
+        cu.USER_NAME as CREATE_USER_NAME,
+        uu.USER_NAME as UPDATE_USER_NAME
+    </sql>
+
+    <!-- 分页查询银行对账单 -->
+    <select id="selectStatementPage" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Extended_Column_List" />
+        FROM TBL_CASH_BANK_STATEMENTS s
+        LEFT JOIN TBL_ACCOUNT_INFO a ON s.ACCOUNT_ID = a.ACCOUNT_ID
+        LEFT JOIN SYS_USER ru ON s.RECONCILE_USER = ru.USER_ID
+        LEFT JOIN SYS_USER cu ON s.CREATE_USER = cu.USER_ID
+        LEFT JOIN SYS_USER uu ON s.UPDATE_USER = uu.USER_ID
+        <where>
+            <if test="query.accountId != null">
+                AND s.ACCOUNT_ID = #{query.accountId}
+            </if>
+            <if test="query.accountNumber != null and query.accountNumber != ''">
+                AND s.ACCOUNT_NUMBER LIKE CONCAT('%', #{query.accountNumber}, '%')
+            </if>
+            <if test="query.transactionNo != null and query.transactionNo != ''">
+                AND s.TRANSACTION_NO LIKE CONCAT('%', #{query.transactionNo}, '%')
+            </if>
+            <if test="query.transactionType != null and query.transactionType != ''">
+                AND s.TRANSACTION_TYPE = #{query.transactionType}
+            </if>
+            <if test="query.reconcileStatus != null and query.reconcileStatus != ''">
+                AND s.RECONCILE_STATUS = #{query.reconcileStatus}
+            </if>
+            <if test="query.counterpartyName != null and query.counterpartyName != ''">
+                AND s.COUNTERPARTY_NAME LIKE CONCAT('%', #{query.counterpartyName}, '%')
+            </if>
+            <if test="query.orgId != null">
+                AND s.ORG_ID = #{query.orgId}
+            </if>
+        </where>
+        ORDER BY s.STATEMENT_DATE DESC, s.CREATE_TIME DESC
+    </select>
+
+    <!-- 根据账户ID查询对账单列表 -->
+    <select id="selectByAccountId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_CASH_BANK_STATEMENTS
+        WHERE ACCOUNT_ID = #{accountId}
+        <if test="startDate != null">
+            AND STATEMENT_DATE >= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND STATEMENT_DATE <= #{endDate}
+        </if>
+        ORDER BY STATEMENT_DATE DESC, TRANSACTION_DATE DESC
+    </select>
+
+    <!-- 根据交易流水号查询对账单 -->
+    <select id="selectByTransactionNo" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_CASH_BANK_STATEMENTS
+        WHERE TRANSACTION_NO = #{transactionNo}
+        AND ACCOUNT_ID = #{accountId}
+        LIMIT 1
+    </select>
+
+    <!-- 根据对账状态查询对账单列表 -->
+    <select id="selectByReconcileStatus" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_CASH_BANK_STATEMENTS
+        WHERE RECONCILE_STATUS = #{reconcileStatus}
+        <if test="accountId != null">
+            AND ACCOUNT_ID = #{accountId}
+        </if>
+        <if test="orgId != null">
+            AND ORG_ID = #{orgId}
+        </if>
+        ORDER BY STATEMENT_DATE DESC
+    </select>
+
+    <!-- 根据日期范围查询对账单列表 -->
+    <select id="selectByDateRange" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_CASH_BANK_STATEMENTS
+        WHERE STATEMENT_DATE BETWEEN #{startDate} AND #{endDate}
+        <if test="accountId != null">
+            AND ACCOUNT_ID = #{accountId}
+        </if>
+        <if test="orgId != null">
+            AND ORG_ID = #{orgId}
+        </if>
+        ORDER BY STATEMENT_DATE DESC, TRANSACTION_DATE DESC
+    </select>
+
+    <!-- 更新对账状态 -->
+    <update id="updateReconcileStatus">
+        UPDATE TBL_CASH_BANK_STATEMENTS
+        SET RECONCILE_STATUS = #{reconcileStatus},
+            RECONCILE_USER = #{reconcileUser},
+            RECONCILE_DATE = #{reconcileDate},
+            UPDATE_TIME = CURRENT_TIMESTAMP
+        WHERE STATEMENT_ID = #{statementId}
+    </update>
+
+    <!-- 批量更新对账状态 -->
+    <update id="batchUpdateReconcileStatus">
+        UPDATE TBL_CASH_BANK_STATEMENTS
+        SET RECONCILE_STATUS = #{reconcileStatus},
+            RECONCILE_USER = #{reconcileUser},
+            RECONCILE_DATE = #{reconcileDate},
+            UPDATE_TIME = CURRENT_TIMESTAMP
+        WHERE STATEMENT_ID IN
+        <foreach collection="statementIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 统计对账状态数量 -->
+    <select id="countByReconcileStatus" resultType="long">
+        SELECT COUNT(*)
+        FROM TBL_CASH_BANK_STATEMENTS
+        WHERE RECONCILE_STATUS = #{reconcileStatus}
+        <if test="accountId != null">
+            AND ACCOUNT_ID = #{accountId}
+        </if>
+        <if test="orgId != null">
+            AND ORG_ID = #{orgId}
+        </if>
+    </select>
+
+    <!-- 获取账户最新余额 -->
+    <select id="selectLatestBalance" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_CASH_BANK_STATEMENTS
+        WHERE ACCOUNT_ID = #{accountId}
+        <if test="date != null">
+            AND STATEMENT_DATE <= #{date}
+        </if>
+        ORDER BY STATEMENT_DATE DESC, TRANSACTION_DATE DESC
+        LIMIT 1
+    </select>
+
+    <!-- 根据参考号查询对账单 -->
+    <select id="selectByReferenceNo" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_CASH_BANK_STATEMENTS
+        WHERE REFERENCE_NO = #{referenceNo}
+        AND ACCOUNT_ID = #{accountId}
+        ORDER BY STATEMENT_DATE DESC
+    </select>
+
+    <!-- 根据对方信息查询对账单 -->
+    <select id="selectByCounterparty" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_CASH_BANK_STATEMENTS
+        WHERE ACCOUNT_ID = #{accountId}
+        <if test="counterpartyName != null and counterpartyName != ''">
+            AND COUNTERPARTY_NAME LIKE CONCAT('%', #{counterpartyName}, '%')
+        </if>
+        <if test="counterpartyAccount != null and counterpartyAccount != ''">
+            AND COUNTERPARTY_ACCOUNT = #{counterpartyAccount}
+        </if>
+        ORDER BY STATEMENT_DATE DESC
+    </select>
+
+    <!-- 删除指定日期之前的对账单 -->
+    <delete id="deleteBeforeDate">
+        DELETE FROM TBL_CASH_BANK_STATEMENTS
+        WHERE STATEMENT_DATE < #{beforeDate}
+        AND ORG_ID = #{orgId}
+        AND RECONCILE_STATUS = 'RECONCILED'
+    </delete>
+
+    <!-- 获取未对账的异常记录 -->
+    <select id="selectExceptionRecords" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_CASH_BANK_STATEMENTS
+        WHERE RECONCILE_STATUS = 'UNRECONCILED'
+        AND STATEMENT_DATE <= DATE_SUB(CURRENT_DATE, INTERVAL #{days} DAY)
+        <if test="accountId != null">
+            AND ACCOUNT_ID = #{accountId}
+        </if>
+        <if test="orgId != null">
+            AND ORG_ID = #{orgId}
+        </if>
+        ORDER BY STATEMENT_DATE ASC
+    </select>
+
+    <!-- 根据金额范围查询对账单 -->
+    <select id="selectByAmountRange" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_CASH_BANK_STATEMENTS
+        WHERE ABS(AMOUNT) BETWEEN #{minAmount} AND #{maxAmount}
+        <if test="accountId != null">
+            AND ACCOUNT_ID = #{accountId}
+        </if>
+        <if test="orgId != null">
+            AND ORG_ID = #{orgId}
+        </if>
+        ORDER BY AMOUNT DESC
+    </select>
+
+    <!-- 获取对账汇总统计 -->
+    <select id="selectReconcileSummary" resultMap="BaseResultMap">
+        SELECT 
+            RECONCILE_STATUS,
+            COUNT(*) as STATEMENT_COUNT,
+            SUM(CASE WHEN TRANSACTION_TYPE = 'DEBIT' THEN AMOUNT ELSE 0 END) as DEBIT_AMOUNT,
+            SUM(CASE WHEN TRANSACTION_TYPE = 'CREDIT' THEN AMOUNT ELSE 0 END) as CREDIT_AMOUNT
+        FROM TBL_CASH_BANK_STATEMENTS
+        WHERE STATEMENT_DATE BETWEEN #{startDate} AND #{endDate}
+        <if test="accountId != null">
+            AND ACCOUNT_ID = #{accountId}
+        </if>
+        <if test="orgId != null">
+            AND ORG_ID = #{orgId}
+        </if>
+        GROUP BY RECONCILE_STATUS
+        ORDER BY RECONCILE_STATUS
+    </select>
+
+</mapper>

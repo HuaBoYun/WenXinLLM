@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.cybermonitor.mapper.CashFlowDataMapper">
+
+    <!-- 基础结果映射 -->
+    <resultMap id="BaseResultMap" type="com.huabo.cybermonitor.entity.CashFlowData">
+        <id column="CASH_FLOW_ID" property="cashFlowId" />
+        <result column="STATEMENT_ID" property="statementId" />
+        <result column="ENTERPRISE_ID" property="enterpriseId" />
+        <result column="ENTERPRISE_NAME" property="enterpriseName" />
+        <result column="REPORT_YEAR" property="reportYear" />
+        <result column="REPORT_PERIOD" property="reportPeriod" />
+        <result column="REPORT_DATE" property="reportDate" />
+        <result column="DATA_STATUS" property="dataStatus" />
+        <result column="DATA_SOURCE" property="dataSource" />
+        <!-- 经营活动现金流量 -->
+        <result column="OPERATING_CASH_INFLOW" property="operatingCashInflow" />
+        <result column="SALES_CASH_RECEIPTS" property="salesCashReceipts" />
+        <result column="TAX_REFUNDS_RECEIVED" property="taxRefundsReceived" />
+        <result column="OTHER_OPERATING_CASH_RECEIPTS" property="otherOperatingCashReceipts" />
+        <result column="OPERATING_CASH_OUTFLOW" property="operatingCashOutflow" />
+        <result column="PURCHASE_CASH_PAYMENTS" property="purchaseCashPayments" />
+        <result column="EMPLOYEE_CASH_PAYMENTS" property="employeeCashPayments" />
+        <result column="TAX_CASH_PAYMENTS" property="taxCashPayments" />
+        <result column="OTHER_OPERATING_CASH_PAYMENTS" property="otherOperatingCashPayments" />
+        <result column="OPERATING_CASH_FLOW_NET" property="operatingCashFlowNet" />
+        <!-- 投资活动现金流量 -->
+        <result column="INVESTING_CASH_INFLOW" property="investingCashInflow" />
+        <result column="INVESTMENT_RECOVERY_CASH" property="investmentRecoveryCash" />
+        <result column="INVESTMENT_INCOME_CASH" property="investmentIncomeCash" />
+        <result column="ASSET_DISPOSAL_CASH" property="assetDisposalCash" />
+        <result column="OTHER_INVESTING_CASH_RECEIPTS" property="otherInvestingCashReceipts" />
+        <result column="INVESTING_CASH_OUTFLOW" property="investingCashOutflow" />
+        <result column="FIXED_ASSET_CASH_PAYMENTS" property="fixedAssetCashPayments" />
+        <result column="INVESTMENT_CASH_PAYMENTS" property="investmentCashPayments" />
+        <result column="OTHER_INVESTING_CASH_PAYMENTS" property="otherInvestingCashPayments" />
+        <result column="INVESTING_CASH_FLOW_NET" property="investingCashFlowNet" />
+        <!-- 筹资活动现金流量 -->
+        <result column="FINANCING_CASH_INFLOW" property="financingCashInflow" />
+        <result column="CAPITAL_CONTRIBUTION_CASH" property="capitalContributionCash" />
+        <result column="BORROWING_CASH_RECEIPTS" property="borrowingCashReceipts" />
+        <result column="OTHER_FINANCING_CASH_RECEIPTS" property="otherFinancingCashReceipts" />
+        <result column="FINANCING_CASH_OUTFLOW" property="financingCashOutflow" />
+        <result column="DEBT_REPAYMENT_CASH" property="debtRepaymentCash" />
+        <result column="DIVIDEND_CASH_PAYMENTS" property="dividendCashPayments" />
+        <result column="INTEREST_CASH_PAYMENTS" property="interestCashPayments" />
+        <result column="OTHER_FINANCING_CASH_PAYMENTS" property="otherFinancingCashPayments" />
+        <result column="FINANCING_CASH_FLOW_NET" property="financingCashFlowNet" />
+        <!-- 现金流量汇总 -->
+        <result column="CASH_FLOW_NET_INCREASE" property="cashFlowNetIncrease" />
+        <result column="CASH_BEGINNING_BALANCE" property="cashBeginningBalance" />
+        <result column="CASH_ENDING_BALANCE" property="cashEndingBalance" />
+        <!-- 补充资料 -->
+        <result column="NET_PROFIT" property="netProfit" />
+        <result column="DEPRECIATION_AMORTIZATION" property="depreciationAmortization" />
+        <result column="ASSET_IMPAIRMENT_PROVISION" property="assetImpairmentProvision" />
+        <result column="WORKING_CAPITAL_CHANGES" property="workingCapitalChanges" />
+        <result column="OPERATING_REVENUE" property="operatingRevenue" />
+        <!-- 现金流量比率 -->
+        <result column="OPERATING_CASH_FLOW_TO_REVENUE" property="operatingCashFlowToRevenue" />
+        <result column="OPERATING_CASH_FLOW_TO_NET_PROFIT" property="operatingCashFlowToNetProfit" />
+        <result column="CASH_FLOW_RATIO" property="cashFlowRatio" />
+        <result column="CASH_FLOW_ADEQUACY_RATIO" property="cashFlowAdequacyRatio" />
+        <!-- 审计和控制字段 -->
+        <result column="CREATE_BY" property="createBy" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_BY" property="updateBy" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="DELETED" property="deleted" />
+        <result column="VERSION" property="version" />
+    </resultMap>
+
+    <!-- 基础SQL片段 -->
+    <sql id="selectCashFlowDataVo">
+        SELECT CASH_FLOW_ID, STATEMENT_ID, ENTERPRISE_ID, ENTERPRISE_NAME, REPORT_YEAR, REPORT_PERIOD, 
+               REPORT_DATE, DATA_STATUS, DATA_SOURCE, OPERATING_CASH_INFLOW, SALES_CASH_RECEIPTS, 
+               TAX_REFUNDS_RECEIVED, OTHER_OPERATING_CASH_RECEIPTS, OPERATING_CASH_OUTFLOW, 
+               PURCHASE_CASH_PAYMENTS, EMPLOYEE_CASH_PAYMENTS, TAX_CASH_PAYMENTS, OTHER_OPERATING_CASH_PAYMENTS, 
+               OPERATING_CASH_FLOW_NET, INVESTING_CASH_INFLOW, INVESTMENT_RECOVERY_CASH, INVESTMENT_INCOME_CASH, 
+               ASSET_DISPOSAL_CASH, OTHER_INVESTING_CASH_RECEIPTS, INVESTING_CASH_OUTFLOW, 
+               FIXED_ASSET_CASH_PAYMENTS, INVESTMENT_CASH_PAYMENTS, OTHER_INVESTING_CASH_PAYMENTS, 
+               INVESTING_CASH_FLOW_NET, FINANCING_CASH_INFLOW, CAPITAL_CONTRIBUTION_CASH, BORROWING_CASH_RECEIPTS, 
+               OTHER_FINANCING_CASH_RECEIPTS, FINANCING_CASH_OUTFLOW, DEBT_REPAYMENT_CASH, DIVIDEND_CASH_PAYMENTS, 
+               INTEREST_CASH_PAYMENTS, OTHER_FINANCING_CASH_PAYMENTS, FINANCING_CASH_FLOW_NET, 
+               CASH_FLOW_NET_INCREASE, CASH_BEGINNING_BALANCE, CASH_ENDING_BALANCE, NET_PROFIT, 
+               DEPRECIATION_AMORTIZATION, ASSET_IMPAIRMENT_PROVISION, WORKING_CAPITAL_CHANGES, OPERATING_REVENUE, 
+               OPERATING_CASH_FLOW_TO_REVENUE, OPERATING_CASH_FLOW_TO_NET_PROFIT, CASH_FLOW_RATIO, 
+               CASH_FLOW_ADEQUACY_RATIO, CREATE_BY, CREATE_TIME, UPDATE_BY, UPDATE_TIME, DELETED, VERSION
+        FROM CASH_FLOW_DATA
+    </sql>
+
+    <!-- 查询现金流量表数据列表 -->
+    <select id="selectCashFlowDataList" parameterType="com.huabo.cybermonitor.vo.CashFlowDataQueryVO" resultMap="BaseResultMap">
+        <include refid="selectCashFlowDataVo"/>
+        <where>
+            DELETED = 0
+            <if test="enterpriseId != null and enterpriseId != ''">
+                AND ENTERPRISE_ID = #{enterpriseId}
+            </if>
+            <if test="enterpriseName != null and enterpriseName != ''">
+                AND ENTERPRISE_NAME LIKE CONCAT('%', #{enterpriseName}, '%')
+            </if>
+            <if test="reportYear != null">
+                AND REPORT_YEAR = #{reportYear}
+            </if>
+            <if test="reportPeriod != null">
+                AND REPORT_PERIOD = #{reportPeriod}
+            </if>
+            <if test="dataStatus != null and dataStatus != ''">
+                AND DATA_STATUS = #{dataStatus}
+            </if>
+            <if test="startDate != null">
+                AND REPORT_DATE >= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND REPORT_DATE &lt;= #{endDate}
+            </if>
+        </where>
+        ORDER BY REPORT_YEAR DESC, REPORT_PERIOD DESC, CREATE_TIME DESC
+    </select>
+
+    <!-- 经营活动现金流量分析 -->
+    <select id="analyzeOperatingCashFlow" resultType="java.util.Map">
+        SELECT 
+            REPORT_YEAR,
+            REPORT_PERIOD,
+            OPERATING_CASH_INFLOW,
+            OPERATING_CASH_OUTFLOW,
+            OPERATING_CASH_FLOW_NET,
+            SALES_CASH_RECEIPTS,
+            PURCHASE_CASH_PAYMENTS,
+            OPERATING_REVENUE,
+            NET_PROFIT,
+            OPERATING_CASH_FLOW_TO_REVENUE,
+            OPERATING_CASH_FLOW_TO_NET_PROFIT,
+            CASE 
+                WHEN OPERATING_CASH_FLOW_NET > 0 AND NET_PROFIT > 0 THEN 'HEALTHY'
+                WHEN OPERATING_CASH_FLOW_NET > 0 AND NET_PROFIT &lt;= 0 THEN 'CASH_POSITIVE'
+                WHEN OPERATING_CASH_FLOW_NET &lt;= 0 AND NET_PROFIT > 0 THEN 'PROFIT_POSITIVE'
+                ELSE 'POOR'
+            END as cashFlowQuality
+        FROM CASH_FLOW_DATA 
+        WHERE ENTERPRISE_ID = #{enterpriseId} 
+          AND REPORT_YEAR BETWEEN #{startYear} AND #{endYear}
+          AND DELETED = 0
+        ORDER BY REPORT_YEAR, REPORT_PERIOD
+    </select>
+
+    <!-- 投资活动现金流量分析 -->
+    <select id="analyzeInvestingCashFlow" resultType="java.util.Map">
+        SELECT 
+            REPORT_YEAR,
+            REPORT_PERIOD,
+            INVESTING_CASH_INFLOW,
+            INVESTING_CASH_OUTFLOW,
+            INVESTING_CASH_FLOW_NET,
+            FIXED_ASSET_CASH_PAYMENTS,
+            INVESTMENT_CASH_PAYMENTS,
+            INVESTMENT_RECOVERY_CASH,
+            INVESTMENT_INCOME_CASH,
+            CASE 
+                WHEN INVESTING_CASH_FLOW_NET &lt; 0 THEN 'EXPANSION'
+                WHEN INVESTING_CASH_FLOW_NET > 0 THEN 'CONTRACTION'
+                ELSE 'STABLE'
+            END as investmentPhase
+        FROM CASH_FLOW_DATA 
+        WHERE ENTERPRISE_ID = #{enterpriseId} 
+          AND REPORT_YEAR BETWEEN #{startYear} AND #{endYear}
+          AND DELETED = 0
+        ORDER BY REPORT_YEAR, REPORT_PERIOD
+    </select>
+
+    <!-- 筹资活动现金流量分析 -->
+    <select id="analyzeFinancingCashFlow" resultType="java.util.Map">
+        SELECT 
+            REPORT_YEAR,
+            REPORT_PERIOD,
+            FINANCING_CASH_INFLOW,
+            FINANCING_CASH_OUTFLOW,
+            FINANCING_CASH_FLOW_NET,
+            CAPITAL_CONTRIBUTION_CASH,
+            BORROWING_CASH_RECEIPTS,
+            DEBT_REPAYMENT_CASH,
+            DIVIDEND_CASH_PAYMENTS,
+            CASE 
+                WHEN FINANCING_CASH_FLOW_NET > 0 THEN 'FINANCING'
+                WHEN FINANCING_CASH_FLOW_NET &lt; 0 THEN 'REPAYMENT'
+                ELSE 'BALANCED'
+            END as financingPhase
+        FROM CASH_FLOW_DATA 
+        WHERE ENTERPRISE_ID = #{enterpriseId} 
+          AND REPORT_YEAR BETWEEN #{startYear} AND #{endYear}
+          AND DELETED = 0
+        ORDER BY REPORT_YEAR, REPORT_PERIOD
+    </select>
+
+    <!-- 现金流量质量分析 -->
+    <select id="analyzeCashFlowQuality" resultType="java.util.Map">
+        SELECT 
+            REPORT_YEAR,
+            REPORT_PERIOD,
+            OPERATING_CASH_FLOW_NET,
+            INVESTING_CASH_FLOW_NET,
+            FINANCING_CASH_FLOW_NET,
+            CASH_FLOW_NET_INCREASE,
+            NET_PROFIT,
+            OPERATING_CASH_FLOW_TO_NET_PROFIT,
+            CASE 
+                WHEN OPERATING_CASH_FLOW_NET > 0 AND INVESTING_CASH_FLOW_NET &lt; 0 AND FINANCING_CASH_FLOW_NET &lt; 0 THEN 'MATURE'
+                WHEN OPERATING_CASH_FLOW_NET > 0 AND INVESTING_CASH_FLOW_NET &lt; 0 AND FINANCING_CASH_FLOW_NET > 0 THEN 'GROWTH'
+                WHEN OPERATING_CASH_FLOW_NET &lt; 0 AND INVESTING_CASH_FLOW_NET &lt; 0 AND FINANCING_CASH_FLOW_NET > 0 THEN 'STARTUP'
+                WHEN OPERATING_CASH_FLOW_NET &lt; 0 AND INVESTING_CASH_FLOW_NET > 0 AND FINANCING_CASH_FLOW_NET &lt; 0 THEN 'DECLINE'
+                ELSE 'OTHER'
+            END as businessLifeCycle,
+            CASE 
+                WHEN OPERATING_CASH_FLOW_TO_NET_PROFIT >= 1.2 THEN 'HIGH'
+                WHEN OPERATING_CASH_FLOW_TO_NET_PROFIT >= 0.8 THEN 'MEDIUM'
+                ELSE 'LOW'
+            END as cashFlowQualityLevel
+        FROM CASH_FLOW_DATA 
+        WHERE ENTERPRISE_ID = #{enterpriseId} 
+          AND REPORT_YEAR BETWEEN #{startYear} AND #{endYear}
+          AND DELETED = 0
+        ORDER BY REPORT_YEAR, REPORT_PERIOD
+    </select>
+
+    <!-- 现金流量趋势分析 -->
+    <select id="analyzeCashFlowTrend" resultType="java.util.Map">
+        SELECT 
+            REPORT_YEAR,
+            REPORT_PERIOD,
+            OPERATING_CASH_FLOW_NET,
+            LAG(OPERATING_CASH_FLOW_NET) OVER (ORDER BY REPORT_YEAR, REPORT_PERIOD) as prevOperatingCashFlow,
+            CASE 
+                WHEN LAG(OPERATING_CASH_FLOW_NET) OVER (ORDER BY REPORT_YEAR, REPORT_PERIOD) != 0 
+                THEN ROUND((OPERATING_CASH_FLOW_NET - LAG(OPERATING_CASH_FLOW_NET) OVER (ORDER BY REPORT_YEAR, REPORT_PERIOD)) 
+                     / ABS(LAG(OPERATING_CASH_FLOW_NET) OVER (ORDER BY REPORT_YEAR, REPORT_PERIOD)) * 100, 2)
+                ELSE NULL
+            END as operatingCashFlowGrowthRate,
+            CASH_ENDING_BALANCE,
+            LAG(CASH_ENDING_BALANCE) OVER (ORDER BY REPORT_YEAR, REPORT_PERIOD) as prevCashBalance,
+            CASE 
+                WHEN LAG(CASH_ENDING_BALANCE) OVER (ORDER BY REPORT_YEAR, REPORT_PERIOD) > 0 
+                THEN ROUND((CASH_ENDING_BALANCE - LAG(CASH_ENDING_BALANCE) OVER (ORDER BY REPORT_YEAR, REPORT_PERIOD)) 
+                     / LAG(CASH_ENDING_BALANCE) OVER (ORDER BY REPORT_YEAR, REPORT_PERIOD) * 100, 2)
+                ELSE NULL
+            END as cashBalanceGrowthRate
+        FROM CASH_FLOW_DATA 
+        WHERE ENTERPRISE_ID = #{enterpriseId} 
+          AND REPORT_YEAR BETWEEN #{startYear} AND #{endYear}
+          AND DELETED = 0
+        ORDER BY REPORT_YEAR, REPORT_PERIOD
+    </select>
+
+    <!-- 现金流量规模分布统计 -->
+    <select id="getCashFlowScaleDistributionStatistics" resultType="java.util.Map">
+        SELECT 
+            CASE 
+                WHEN ABS(OPERATING_CASH_FLOW_NET) >= 1000000000 THEN 'LARGE'
+                WHEN ABS(OPERATING_CASH_FLOW_NET) >= 100000000 THEN 'MEDIUM'
+                WHEN ABS(OPERATING_CASH_FLOW_NET) >= 10000000 THEN 'SMALL'
+                ELSE 'MICRO'
+            END as cashFlowScale,
+            COUNT(*) as count,
+            AVG(OPERATING_CASH_FLOW_NET) as avgOperatingCashFlow,
+            AVG(OPERATING_CASH_FLOW_TO_REVENUE) as avgCashFlowToRevenue,
+            COUNT(CASE WHEN OPERATING_CASH_FLOW_NET > 0 THEN 1 END) as positiveCount,
+            COUNT(CASE WHEN OPERATING_CASH_FLOW_NET &lt; 0 THEN 1 END) as negativeCount
+        FROM CASH_FLOW_DATA 
+        WHERE REPORT_YEAR BETWEEN #{startYear} AND #{endYear}
+          AND DELETED = 0
+        GROUP BY 
+            CASE 
+                WHEN ABS(OPERATING_CASH_FLOW_NET) >= 1000000000 THEN 'LARGE'
+                WHEN ABS(OPERATING_CASH_FLOW_NET) >= 100000000 THEN 'MEDIUM'
+                WHEN ABS(OPERATING_CASH_FLOW_NET) >= 10000000 THEN 'SMALL'
+                ELSE 'MICRO'
+            END
+        ORDER BY avgOperatingCashFlow DESC
+    </select>
+
+    <!-- 现金流量表统计概览 -->
+    <select id="getCashFlowStatisticsOverview" resultType="java.util.Map" databaseId="mysql">
+        SELECT 
+            COUNT(*) as totalCount,
+            COUNT(CASE WHEN DATA_STATUS = 'VERIFIED' THEN 1 END) as verifiedCount,
+            COUNT(CASE WHEN OPERATING_CASH_FLOW_NET > 0 THEN 1 END) as positiveOperatingCashFlowCount,
+            COUNT(CASE WHEN OPERATING_CASH_FLOW_NET &lt; 0 THEN 1 END) as negativeOperatingCashFlowCount,
+            AVG(OPERATING_CASH_FLOW_NET) as avgOperatingCashFlow,
+            AVG(CASH_ENDING_BALANCE) as avgCashBalance,
+            AVG(OPERATING_CASH_FLOW_TO_REVENUE) as avgCashFlowToRevenue,
+            AVG(OPERATING_CASH_FLOW_TO_NET_PROFIT) as avgCashFlowToNetProfit,
+            DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s') as statisticsTime
+        FROM CASH_FLOW_DATA 
+        WHERE DELETED = 0
+    </select>
+
+    <select id="getCashFlowStatisticsOverview" resultType="java.util.Map" databaseId="dm">
+        SELECT 
+            COUNT(*) as totalCount,
+            COUNT(CASE WHEN DATA_STATUS = 'VERIFIED' THEN 1 END) as verifiedCount,
+            COUNT(CASE WHEN OPERATING_CASH_FLOW_NET > 0 THEN 1 END) as positiveOperatingCashFlowCount,
+            COUNT(CASE WHEN OPERATING_CASH_FLOW_NET &lt; 0 THEN 1 END) as negativeOperatingCashFlowCount,
+            AVG(OPERATING_CASH_FLOW_NET) as avgOperatingCashFlow,
+            AVG(CASH_ENDING_BALANCE) as avgCashBalance,
+            AVG(OPERATING_CASH_FLOW_TO_REVENUE) as avgCashFlowToRevenue,
+            AVG(OPERATING_CASH_FLOW_TO_NET_PROFIT) as avgCashFlowToNetProfit,
+            TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') as statisticsTime
+        FROM CASH_FLOW_DATA 
+        WHERE DELETED = 0
+    </select>
+
+    <!-- 重新计算现金流量比率 -->
+    <update id="recalculateCashFlowRatios">
+        UPDATE CASH_FLOW_DATA 
+        SET OPERATING_CASH_FLOW_TO_REVENUE = CASE 
+                WHEN OPERATING_REVENUE > 0 THEN ROUND(OPERATING_CASH_FLOW_NET / OPERATING_REVENUE * 100, 2)
+                ELSE NULL
+            END,
+            OPERATING_CASH_FLOW_TO_NET_PROFIT = CASE 
+                WHEN NET_PROFIT > 0 THEN ROUND(OPERATING_CASH_FLOW_NET / NET_PROFIT, 2)
+                ELSE NULL
+            END,
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>
+        WHERE CASH_FLOW_ID = #{cashFlowId}
+        AND DELETED = 0
+    </update>
+
+</mapper>

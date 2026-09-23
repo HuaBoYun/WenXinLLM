@@ -1,0 +1,252 @@
+package com.huabo.audit.controller;
+
+import java.math.BigDecimal;
+
+import javax.annotation.Resource;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.hbfk.entity.Pamas;
+import com.hbfk.sdk.log.annotation.OperationLog;
+import com.hbfk.sdk.log.enums.OperationType;
+import com.hbfk.util.JsonBean;
+import com.hbfk.util.ResponseFormat;
+import com.huabo.audit.oracle.vo.TBlNbsjSheetVo;
+import com.huabo.audit.service.OperationService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
+
+/**
+ * 智能审计操作控制器
+ * <p>提供智能审计的操作管理接口</p>
+ *
+ * @author hbyun
+ */
+@RestController
+@RequestMapping("/operation")
+@Slf4j
+@Tag(name="智能审计操作接口",description="智能审计操作接口")
+public class OperationController {
+
+	@Resource
+	public OperationService operationService;
+	
+	/**
+	 * @Title: manuscript 
+	* @Description: 发送至底稿
+	* @param modelTye 类型，例如nbsj_yigl
+	* @param pamas
+	* @return ModelAndView
+	* @throws
+	 */
+	@OperationLog(
+			success = "疑点至底稿",
+			busType = "智能审计",
+			fail = "疑点至底稿",
+			operationType = OperationType.ADD,
+			subType = "审计实施—疑点管理操作发送至底稿"
+	)
+	@Operation(summary = "操作发送至底稿")
+	@GetMapping(value = "/manuscript/{modelTye}")
+	public JsonBean manuscript(
+			@Parameter(name = "token", description = "登录用户token", required = true) @RequestHeader("token")String token,
+			@Parameter(name = "modelTye", description = "操作模块判断，疑点管理-nbsj_yigl", required = true)@PathVariable String modelTye,Pamas pamas){
+		JsonBean jsonBean = null;
+		try {
+			jsonBean = this.operationService.dealSendDigao(token,modelTye,pamas);
+		} catch (Exception e) {
+			ResponseFormat.retParam(1,1000,e.getMessage());
+		}
+		return jsonBean;
+	}
+	
+	
+	
+	/**
+	 * @Title: manuscript 
+	* @Description: 发送至底稿附件获取数据
+	* @param modelTye 类型，例如nbsj_yigl
+	* @param pamas
+	* @return ModelAndView
+	* @throws
+	 */
+	@OperationLog(
+			success = "获取底稿列表",
+			busType = "智能审计",
+			fail = "获取底稿列表",
+			operationType = OperationType.SELECT,
+			subType = "审计实施—疑点管理操作发送至底稿附件以获取底稿列表"
+	)
+	@Operation(summary = "操作发送至底稿附件 获取底稿列表")
+	@GetMapping(value = "/manuscript/gzdg/{modelTye}")
+	public JsonBean manuscript_gzdg(
+			@Parameter(name = "token", description = "登录用户token", required = true) @RequestHeader("token")String token,TBlNbsjSheetVo tBlNbsjSheetVo,
+			@Parameter(name = "modelTye", description = "操作模块判断，疑点管理-nbsj_yigl", required = true)@PathVariable String modelTye,Pamas pamas,
+			@Parameter(name = "pageNumber", description = "分页当前页数", required = false) @RequestParam(value = "pageNumber", required = false, defaultValue = "1") Integer pageNumber,
+			@Parameter(name = "pageSize", description = "每页记录数", required = false) @RequestParam(value = "pageSize", required = false, defaultValue = "15") Integer pageSize) throws Exception{
+		JsonBean jsonBean = null;
+		try {
+			jsonBean = this.operationService.dealSendDigaoListFile(token,modelTye,pamas,pageNumber,pageSize,tBlNbsjSheetVo);
+		} catch (Exception e) {
+			return  ResponseFormat.retParam(1,1000,e.getMessage());
+		}
+		return jsonBean;
+	}
+	
+	/**
+	 * @Title: manuscript 
+	* @Description: 发送至底稿附件获取数据
+	* @param modelTye 类型，例如nbsj_yigl
+	* @param pamas
+	* @return ModelAndView
+	* @throws
+	 */
+	@OperationLog(
+			success = "疑点至底稿附件",
+			busType = "智能审计",
+			fail = "疑点至底稿附件",
+			operationType = OperationType.ADD,
+			subType = "审计实施—疑点管理操作发送至底稿附件"
+	)
+	@Operation(summary = "操作发送至底稿附件 保存附件关系方法")
+	@GetMapping(value = "/manuscript/att/{modelTye}")
+	public JsonBean saveatt(@Parameter(name = "token", description = "登录用户token", required = true) @RequestHeader("token")String token,
+			@Parameter(name = "workId", description = "选择底稿主键", required = true) @RequestParam(value = "workId", required = true) BigDecimal workId
+			,@Parameter(name = "modelTye", description = "操作模块判断，疑点管理-nbsj_yigl", required = true)@PathVariable String modelTye,Pamas pamas) {
+		
+		JsonBean jsonBean = null;
+		try {
+			jsonBean = this.operationService.saveSendDigaoListFile(token,modelTye,pamas,workId);
+		} catch (Exception e) {
+			ResponseFormat.retParam(1,1000,e.getMessage());
+		}
+		return jsonBean;
+	}
+	
+	/**
+	 * @Title: manuscript 
+	* @Description: 发送至底稿
+	* @param modelTye 类型，例如nbsj_yigl
+	* @param pamas
+	* @return ModelAndView
+	* @throws
+	 */
+	@OperationLog(
+			success = "疑点至疑点",
+			busType = "智能审计",
+			fail = "疑点至疑点",
+			operationType = OperationType.ADD,
+			subType = "审计实施—疑点管理-更多-操作——发送至疑点"
+	)
+	@Operation(summary = "操作发送至疑点")
+	@GetMapping(value = "/doubtful/{modelTye}")
+	public JsonBean doubtful(
+			@Parameter(name = "token", description = "登录用户token", required = true) @RequestHeader("token")String token,
+			@Parameter(name = "modelTye", description = "操作模块判断，疑点管理-nbsj_yigl", required = true)@PathVariable String modelTye,Pamas pamas){
+		JsonBean jsonBean = null;
+		try {
+			jsonBean = this.operationService.dealSendDoubtful(token,modelTye,pamas);
+		} catch (Exception e) {
+			ResponseFormat.retParam(1,1000,e.getMessage());
+		}
+		return jsonBean;
+	}
+	
+	
+	
+	/**
+	 * @Title: manuscript 
+	* @Description: 发送至缺陷
+	* @param modelTye 类型，例如nbsj_yigl
+	* @param pamas
+	* @return ModelAndView
+	* @throws
+	 */
+	@OperationLog(
+			success = "疑点至缺陷",
+			busType = "智能审计",
+			fail = "疑点至缺陷",
+			operationType = OperationType.ADD,
+			subType = "审计实施—疑点管理-更多-操作——发送至缺陷"
+	)
+	@Operation(summary = "操作发送至缺陷")
+	@GetMapping(value = "/defect/{modelTye}")
+	public JsonBean defect(
+			@Parameter(name = "token", description = "登录用户token", required = true) @RequestHeader("token")String token,
+			@Parameter(name = "modelTye", description = "操作模块判断，疑点管理-nbsj_yigl", required = true)@PathVariable String modelTye,Pamas pamas){
+		JsonBean jsonBean = null;
+		try {
+			jsonBean = this.operationService.dealSendDefect(token,modelTye,pamas);
+		} catch (Exception e) {
+			ResponseFormat.retParam(1,1000,e.getMessage());
+		}
+		return jsonBean;
+	}
+	
+	/**
+	 * @Title: manuscript 
+	* @Description: 发送至底稿
+	* @param modelTye 类型，例如nbsj_yigl
+	* @param pamas
+	* @return ModelAndView
+	* @throws
+	 */
+	@OperationLog(
+			success = "疑点至风险",
+			busType = "智能审计",
+			fail = "疑点至风险",
+			operationType = OperationType.ADD,
+			subType = "审计实施—疑点管理-更多-操作——发送至风险"
+	)
+	@Operation(summary = "操作发送至风险")
+	@GetMapping(value = "/risk/{modelTye}")
+	public JsonBean risk(
+			@Parameter(name = "token", description = "登录用户token", required = true) @RequestHeader("token")String token,
+			@Parameter(name = "modelTye", description = "操作模块判断，疑点管理-nbsj_yigl", required = true)@PathVariable String modelTye,Pamas pamas){
+		JsonBean jsonBean = null;
+		try {
+			jsonBean = this.operationService.dealSendDoubtful(token,modelTye,pamas);
+		} catch (Exception e) {
+			ResponseFormat.retParam(1,1000,e.getMessage());
+		}
+		return jsonBean;
+	}
+	
+	/**
+	 * @Title: manuscript 
+	* @Description: 发送至底稿
+	* @param modelTye 类型，例如nbsj_yigl
+	* @param pamas
+	* @return ModelAndView
+	* @throws
+	 */
+	@OperationLog(
+			success = "疑点至审计取证单",
+			busType = "智能审计",
+			fail = "疑点至审计取证单",
+			operationType = OperationType.ADD,
+			subType = "审计实施—疑点管理-更多-操作——发送至审计取证单"
+	)
+	@Operation(summary = "操作发送至审计取证单")
+	@GetMapping(value = "/evidence/{modelTye}")
+	public JsonBean evidence(
+			@Parameter(name = "token", description = "登录用户token", required = true) @RequestHeader("token")String token,
+			@Parameter(name = "modelTye", description = "操作模块判断，疑点管理-nbsj_yigl", required = true)@PathVariable String modelTye,Pamas pamas){
+		JsonBean jsonBean = null;
+		try {
+			jsonBean = this.operationService.dealSendEvidence(token,modelTye,pamas);
+		} catch (Exception e) {
+			ResponseFormat.retParam(1,1000,e.getMessage());
+		}
+		return jsonBean;
+	}
+	
+}

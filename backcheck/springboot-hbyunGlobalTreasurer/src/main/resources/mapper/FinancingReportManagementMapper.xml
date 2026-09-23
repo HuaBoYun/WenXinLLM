@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.FinancingReportManagementMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TblReportRecord">
+        <id column="RECORD_ID" property="recordId"/>
+        <result column="TEMPLATE_ID" property="templateId"/>
+        <result column="REPORT_NAME" property="reportName"/>
+        <result column="REPORT_TYPE" property="reportType"/>
+        <result column="GENERATION_STATUS" property="generationStatus"/>
+        <result column="FILE_PATH" property="filePath"/>
+        <result column="FILE_SIZE" property="fileSize"/>
+        <result column="GENERATION_TIME" property="generationTime"/>
+        <result column="GENERATED_BY" property="generatedBy"/>
+        <result column="GENERATED_BY_NAME" property="generatedByName"/>
+        <result column="COMPANY_ID" property="companyId"/>
+        <result column="COMPANY_NAME" property="companyName"/>
+        <result column="DELETE_FLAG" property="deleteFlag"/>
+        <result column="CREATED_TIME" property="createdTime"/>
+        <result column="REMARK" property="remark"/>
+        <result column="PERIOD_TYPE" property="periodType"/>
+        <result column="PERIOD_START_DATE" property="periodStartDate"/>
+        <result column="PERIOD_END_DATE" property="periodEndDate"/>
+        <result column="UPDATED_TIME" property="updatedTime"/>
+        <result column="DOWNLOAD_COUNT" property="downloadCount"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        RECORD_ID, TEMPLATE_ID, REPORT_NAME, REPORT_TYPE, GENERATION_STATUS,
+        FILE_PATH, FILE_SIZE, GENERATION_TIME, GENERATED_BY, GENERATED_BY_NAME,
+        COMPANY_ID, COMPANY_NAME, DELETE_FLAG, CREATED_TIME, REMARK,
+        PERIOD_TYPE, PERIOD_START_DATE, PERIOD_END_DATE, UPDATED_TIME, DOWNLOAD_COUNT
+    </sql>
+
+    <!-- 插入报表记录 -->
+    <insert id="insert" parameterType="com.global.treasurer.entity.TblReportRecord">
+        INSERT INTO TBL_REPORT_RECORD (
+            RECORD_ID, TEMPLATE_ID, REPORT_NAME, REPORT_TYPE, GENERATION_STATUS,
+            FILE_PATH, FILE_SIZE, GENERATION_TIME, GENERATED_BY, GENERATED_BY_NAME,
+            COMPANY_ID, COMPANY_NAME, DELETE_FLAG, CREATED_TIME, REMARK,
+            PERIOD_TYPE, PERIOD_START_DATE, PERIOD_END_DATE, UPDATED_TIME, DOWNLOAD_COUNT
+        ) VALUES (
+            #{recordId}, #{templateId}, #{reportName}, #{reportType}, #{generationStatus},
+            #{filePath}, #{fileSize}, #{generationTime}, #{generatedBy}, #{generatedByName},
+            #{companyId}, #{companyName}, #{deleteFlag}, #{createdTime}, #{remark},
+            #{periodType}, #{periodStartDate}, #{periodEndDate}, #{updatedTime}, #{downloadCount}
+        )
+    </insert>
+
+    <!-- 更新报表记录 -->
+    <update id="updateById" parameterType="com.global.treasurer.entity.TblReportRecord">
+        UPDATE TBL_REPORT_RECORD
+        <set>
+            <if test="templateId != null">TEMPLATE_ID = #{templateId},</if>
+            <if test="reportName != null">REPORT_NAME = #{reportName},</if>
+            <if test="reportType != null">REPORT_TYPE = #{reportType},</if>
+            <if test="generationStatus != null">GENERATION_STATUS = #{generationStatus},</if>
+            <if test="filePath != null">FILE_PATH = #{filePath},</if>
+            <if test="fileSize != null">FILE_SIZE = #{fileSize},</if>
+            <if test="generationTime != null">GENERATION_TIME = #{generationTime},</if>
+            <if test="generatedBy != null">GENERATED_BY = #{generatedBy},</if>
+            <if test="generatedByName != null">GENERATED_BY_NAME = #{generatedByName},</if>
+            <if test="companyId != null">COMPANY_ID = #{companyId},</if>
+            <if test="companyName != null">COMPANY_NAME = #{companyName},</if>
+            <if test="deleteFlag != null">DELETE_FLAG = #{deleteFlag},</if>
+            <if test="remark != null">REMARK = #{remark},</if>
+            <if test="periodType != null">PERIOD_TYPE = #{periodType},</if>
+            <if test="periodStartDate != null">PERIOD_START_DATE = #{periodStartDate},</if>
+            <if test="periodEndDate != null">PERIOD_END_DATE = #{periodEndDate},</if>
+            <if test="downloadCount != null">DOWNLOAD_COUNT = #{downloadCount},</if>
+            UPDATED_TIME = SYSDATE
+        </set>
+        WHERE RECORD_ID = #{recordId}
+    </update>
+
+    <!-- 根据ID查询报表记录 -->
+    <select id="selectReportById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_REPORT_RECORD
+        WHERE RECORD_ID = #{recordId} AND DELETE_FLAG = 0
+    </select>
+
+    <!-- 分页查询报表列表 -->
+    <select id="selectReportList" resultMap="BaseResultMap" parameterType="map">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_REPORT_RECORD
+        WHERE DELETE_FLAG = 0
+        <if test="reportName != null and reportName != ''">
+            AND REPORT_NAME LIKE '%' || #{reportName} || '%'
+        </if>
+        <if test="reportType != null and reportType != ''">
+            AND REPORT_TYPE = #{reportType}
+        </if>
+        <if test="generationStatus != null and generationStatus != ''">
+            AND GENERATION_STATUS = #{generationStatus}
+        </if>
+        <if test="templateId != null">
+            AND TEMPLATE_ID = #{templateId}
+        </if>
+        <if test="companyId != null">
+            AND COMPANY_ID = #{companyId}
+        </if>
+        <if test="generatedBy != null">
+            AND GENERATED_BY = #{generatedBy}
+        </if>
+        <if test="generationTimeStart != null">
+            AND GENERATION_TIME &gt;= #{generationTimeStart}
+        </if>
+        <if test="generationTimeEnd != null">
+            AND GENERATION_TIME &lt;= #{generationTimeEnd}
+        </if>
+        ORDER BY GENERATION_TIME DESC
+    </select>
+
+    <!-- 查询报表模板列表 -->
+    <select id="selectTemplateList" resultType="map">
+        SELECT
+            TEMPLATE_ID as templateId,
+            TEMPLATE_NAME as templateName,
+            TEMPLATE_CODE as templateCode,
+            TEMPLATE_TYPE as templateType,
+            STATUS as status
+        FROM TBL_REPORT_TEMPLATE
+        WHERE DELETE_FLAG = 0 AND STATUS = '1'
+        ORDER BY CREATED_TIME DESC
+    </select>
+
+    <!-- 批量删除报表记录 -->
+    <update id="batchDeleteByIds">
+        UPDATE TBL_REPORT_RECORD
+        SET DELETE_FLAG = 1, CREATED_TIME = SYSDATE
+        WHERE RECORD_ID IN
+        <foreach collection="recordIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 查询报表统计信息 -->
+    <select id="selectReportStatistics" resultType="map">
+        SELECT
+            COUNT(*) AS "totalCount",
+            NVL(SUM(CASE WHEN GENERATION_STATUS = 'COMPLETED' THEN 1 ELSE 0 END), 0) AS "completedCount",
+            NVL(SUM(CASE WHEN GENERATION_STATUS = 'GENERATING' THEN 1 ELSE 0 END), 0) AS "generatingCount",
+            NVL(SUM(CASE WHEN GENERATION_STATUS = 'FAILED' THEN 1 ELSE 0 END), 0) AS "failedCount",
+            NVL(SUM(DOWNLOAD_COUNT), 0) AS "totalDownloads",
+            NVL(SUM(FILE_SIZE), 0) AS "totalSize"
+        FROM TBL_REPORT_RECORD
+        WHERE DELETE_FLAG = 0
+        <if test="companyId != null">
+            AND COMPANY_ID = #{companyId}
+        </if>
+    </select>
+
+    <!-- 更新生成状态 -->
+    <update id="updateGenerationStatus">
+        UPDATE TBL_REPORT_RECORD
+        SET GENERATION_STATUS = #{status}, CREATED_TIME = SYSDATE
+        WHERE RECORD_ID = #{recordId}
+    </update>
+
+    <!-- 查询最新生成的报表 -->
+    <select id="selectLatestReports" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_REPORT_RECORD
+        WHERE DELETE_FLAG = 0
+        AND GENERATION_STATUS = 'COMPLETED'
+        <if test="companyId != null">
+            AND COMPANY_ID = #{companyId}
+        </if>
+        <if test="reportType != null and reportType != ''">
+            AND REPORT_TYPE = #{reportType}
+        </if>
+        ORDER BY GENERATION_TIME DESC
+        <if test="limit != null">
+            FETCH NEXT #{limit} ROWS ONLY
+        </if>
+    </select>
+
+</mapper>

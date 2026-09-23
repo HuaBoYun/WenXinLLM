@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.DecisionModelMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.DecisionModel">
+        <id column="MODEL_ID" property="modelId" />
+        <result column="MODEL_CODE" property="modelCode" />
+        <result column="MODEL_NAME" property="modelName" />
+        <result column="MODEL_TYPE" property="modelType" />
+        <result column="ALGORITHM_TYPE" property="algorithmType" />
+        <result column="MODEL_STATUS" property="modelStatus" />
+        <result column="ACCURACY" property="accuracy" />
+        <result column="LAST_TRAIN_TIME" property="lastTrainTime" />
+        <result column="MODEL_DESCRIPTION" property="modelDescription" />
+        <result column="INPUT_PARAMETERS" property="inputParameters" />
+        <result column="REMARK" property="remark" />
+        <result column="ORG_ID" property="orgId" />
+        <result column="CREATE_BY" property="createBy" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_BY" property="updateBy" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="DEL_FLAG" property="delFlag" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        MODEL_ID, MODEL_CODE, MODEL_NAME, MODEL_TYPE, ALGORITHM_TYPE, MODEL_STATUS,
+        ACCURACY, LAST_TRAIN_TIME, MODEL_DESCRIPTION, INPUT_PARAMETERS, REMARK,
+        ORG_ID, CREATE_BY, CREATE_TIME, UPDATE_BY, UPDATE_TIME, DEL_FLAG
+    </sql>
+
+    <!-- 根据条件查询决策模型列表 -->
+    <select id="selectByCondition" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TBL_DECISION_MODEL
+        WHERE DEL_FLAG = '0'
+        <if test="modelCode != null and modelCode != ''">
+            AND MODEL_CODE LIKE '%' || #{modelCode} || '%'
+        </if>
+        <if test="modelName != null and modelName != ''">
+            AND MODEL_NAME LIKE '%' || #{modelName} || '%'
+        </if>
+        <if test="modelType != null and modelType != ''">
+            AND MODEL_TYPE = #{modelType}
+        </if>
+        <if test="algorithmType != null and algorithmType != ''">
+            AND ALGORITHM_TYPE = #{algorithmType}
+        </if>
+        <if test="modelStatus != null and modelStatus != ''">
+            AND MODEL_STATUS = #{modelStatus}
+        </if>
+        <if test="orgId != null">
+            AND ORG_ID = #{orgId}
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+</mapper>

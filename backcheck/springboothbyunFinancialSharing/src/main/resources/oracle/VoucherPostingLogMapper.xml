@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.oracle.mapper.VoucherPostingLogMapper">
+
+    <!-- 凭证过账日志结果映射 -->
+    <resultMap id="BaseResultMap" type="map">
+        <id column="LOG_ID" property="logId" jdbcType="BIGINT"/>
+        <result column="VOUCHER_ID" property="voucherId" jdbcType="BIGINT"/>
+        <result column="VOUCHER_NO" property="voucherNo" jdbcType="VARCHAR"/>
+        <result column="OPERATION_TYPE" property="operationType" jdbcType="VARCHAR"/>
+        <result column="OPERATION_STATUS" property="operationStatus" jdbcType="VARCHAR"/>
+        <result column="ERROR_MESSAGE" property="errorMessage" jdbcType="VARCHAR"/>
+        <result column="REMARK" property="remark" jdbcType="VARCHAR"/>
+        <result column="OPERATOR_ID" property="operatorId" jdbcType="BIGINT"/>
+        <result column="OPERATOR_NAME" property="operatorName" jdbcType="VARCHAR"/>
+        <result column="OPERATION_TIME" property="operationTime" jdbcType="TIMESTAMP"/>
+        <result column="BOOK_ID" property="bookId" jdbcType="BIGINT"/>
+        <result column="TENANT_ID" property="tenantId" jdbcType="BIGINT"/>
+        <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 根据凭证ID查询过账日志列表 -->
+    <select id="selectLogsByVoucherId" resultMap="BaseResultMap">
+        SELECT
+            LOG_ID,
+            VOUCHER_ID,
+            VOUCHER_NO,
+            OPERATION_TYPE,
+            OPERATION_STATUS,
+            ERROR_MESSAGE,
+            REMARK,
+            OPERATOR_ID,
+            OPERATOR_NAME,
+            OPERATION_TIME,
+            BOOK_ID,
+            TENANT_ID,
+            CREATE_TIME
+        FROM TBL_VOUCHER_POSTING_LOG
+        WHERE VOUCHER_ID = #{voucherId}
+        ORDER BY OPERATION_TIME DESC
+    </select>
+
+    <!-- 查询过账日志总数 -->
+    <select id="selectLogsCountByVoucherId" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM TBL_VOUCHER_POSTING_LOG
+        WHERE VOUCHER_ID = #{voucherId}
+    </select>
+
+    <!-- 插入过账日志 -->
+    <insert id="insertPostingLog">
+        INSERT INTO TBL_VOUCHER_POSTING_LOG (
+            LOG_ID,
+            VOUCHER_ID,
+            VOUCHER_NO,
+            OPERATION_TYPE,
+            OPERATION_STATUS,
+            ERROR_MESSAGE,
+            REMARK,
+            OPERATOR_ID,
+            OPERATOR_NAME,
+            OPERATION_TIME,
+            BOOK_ID,
+            TENANT_ID,
+            CREATE_TIME
+        ) VALUES (
+            SEQ_VOUCHER_POSTING_LOG.NEXTVAL,
+            #{logData.voucherId},
+            #{logData.voucherNo},
+            #{logData.operationType},
+            #{logData.operationStatus},
+            #{logData.errorMessage},
+            #{logData.remark},
+            #{logData.operatorId},
+            #{logData.operatorName},
+            SYSDATE,
+            #{logData.bookId},
+            #{logData.tenantId},
+            SYSDATE
+        )
+    </insert>
+
+    <!-- 根据日志ID查询详情 -->
+    <select id="selectLogById" resultMap="BaseResultMap">
+        SELECT
+            LOG_ID,
+            VOUCHER_ID,
+            VOUCHER_NO,
+            OPERATION_TYPE,
+            OPERATION_STATUS,
+            ERROR_MESSAGE,
+            REMARK,
+            OPERATOR_ID,
+            OPERATOR_NAME,
+            OPERATION_TIME,
+            BOOK_ID,
+            TENANT_ID,
+            CREATE_TIME
+        FROM TBL_VOUCHER_POSTING_LOG
+        WHERE LOG_ID = #{logId}
+    </select>
+
+    <!-- 分页查询过账日志 -->
+    <select id="selectLogsByPage" resultMap="BaseResultMap">
+        SELECT
+            LOG_ID,
+            VOUCHER_ID,
+            VOUCHER_NO,
+            OPERATION_TYPE,
+            OPERATION_STATUS,
+            ERROR_MESSAGE,
+            REMARK,
+            OPERATOR_ID,
+            OPERATOR_NAME,
+            OPERATION_TIME,
+            BOOK_ID,
+            TENANT_ID,
+            CREATE_TIME
+        FROM TBL_VOUCHER_POSTING_LOG
+        WHERE 1=1
+        <if test="param.voucherId != null">
+            AND VOUCHER_ID = #{param.voucherId}
+        </if>
+        <if test="param.operationType != null and param.operationType != ''">
+            AND OPERATION_TYPE = #{param.operationType}
+        </if>
+        <if test="param.operationStatus != null and param.operationStatus != ''">
+            AND OPERATION_STATUS = #{param.operationStatus}
+        </if>
+        <if test="param.bookId != null">
+            AND BOOK_ID = #{param.bookId}
+        </if>
+        <if test="param.tenantId != null">
+            AND TENANT_ID = #{param.tenantId}
+        </if>
+        ORDER BY OPERATION_TIME DESC
+        OFFSET #{param.offset} ROWS FETCH NEXT #{param.pageSize} ROWS ONLY
+    </select>
+
+    <!-- 查询分页总数 -->
+    <select id="selectLogsCountByPage" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM TBL_VOUCHER_POSTING_LOG
+        WHERE 1=1
+        <if test="param.voucherId != null">
+            AND VOUCHER_ID = #{param.voucherId}
+        </if>
+        <if test="param.operationType != null and param.operationType != ''">
+            AND OPERATION_TYPE = #{param.operationType}
+        </if>
+        <if test="param.operationStatus != null and param.operationStatus != ''">
+            AND OPERATION_STATUS = #{param.operationStatus}
+        </if>
+        <if test="param.bookId != null">
+            AND BOOK_ID = #{param.bookId}
+        </if>
+        <if test="param.tenantId != null">
+            AND TENANT_ID = #{param.tenantId}
+        </if>
+    </select>
+
+</mapper>
+

@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.oracle.mapper.BondFinancingMapper">
+
+    <resultMap id="BaseResultMap" type="com.global.treasurer.oracle.entity.TblBondFinancing">
+        <id column="BOND_ID" property="bondId"/>
+        <result column="BOND_CODE" property="bondCode"/>
+        <result column="BOND_NAME" property="bondName"/>
+        <result column="BOND_TYPE" property="bondType"/>
+        <result column="ISSUE_PRICE" property="issuePrice"/>
+        <result column="FACE_VALUE" property="faceValue"/>
+        <result column="COUPON_RATE" property="couponRate"/>
+        <result column="ISSUE_AMOUNT" property="issueAmount"/>
+        <result column="ACTUAL_AMOUNT" property="actualAmount"/>
+        <result column="ISSUE_START_DATE" property="issueStartDate"/>
+        <result column="ISSUE_END_DATE" property="issueEndDate"/>
+        <result column="MATURITY_DATE" property="maturityDate"/>
+        <result column="TERM" property="term"/>
+        <result column="PAYMENT_FREQUENCY" property="paymentFrequency"/>
+        <result column="LISTING_EXCHANGE" property="listingExchange"/>
+        <result column="UNDERWRITER" property="underwriter"/>
+        <result column="RATING_AGENCY" property="ratingAgency"/>
+        <result column="CREDIT_RATING" property="creditRating"/>
+        <result column="ISSUE_STATUS" property="issueStatus"/>
+        <result column="REMAINING_AMOUNT" property="remainingAmount"/>
+        <result column="TOTAL_INTEREST_PAID" property="totalInterestPaid"/>
+        <result column="CURRENCY" property="currency"/>
+        <result column="OPERATOR" property="operator"/>
+        <result column="REMARK" property="remark"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="CREATE_BY" property="createBy"/>
+        <result column="UPDATE_BY" property="updateBy"/>
+        <result column="DELETE_FLAG" property="deleteFlag"/>
+    </resultMap>
+
+    <resultMap id="DTOResultMap" type="com.global.treasurer.dto.BondFinancingDTO">
+        <id column="BOND_ID" property="bondId"/>
+        <result column="BOND_CODE" property="bondCode"/>
+        <result column="BOND_NAME" property="bondName"/>
+        <result column="BOND_TYPE" property="bondType"/>
+        <result column="ISSUE_PRICE" property="issuePrice"/>
+        <result column="FACE_VALUE" property="faceValue"/>
+        <result column="COUPON_RATE" property="couponRate"/>
+        <result column="ISSUE_AMOUNT" property="issueAmount"/>
+        <result column="ACTUAL_AMOUNT" property="actualAmount"/>
+        <result column="ISSUE_START_DATE" property="issueStartDate"/>
+        <result column="ISSUE_END_DATE" property="issueEndDate"/>
+        <result column="MATURITY_DATE" property="maturityDate"/>
+        <result column="TERM" property="term"/>
+        <result column="PAYMENT_FREQUENCY" property="paymentFrequency"/>
+        <result column="LISTING_EXCHANGE" property="listingExchange"/>
+        <result column="UNDERWRITER" property="underwriter"/>
+        <result column="RATING_AGENCY" property="ratingAgency"/>
+        <result column="CREDIT_RATING" property="creditRating"/>
+        <result column="ISSUE_STATUS" property="issueStatus"/>
+        <result column="REMAINING_AMOUNT" property="remainingAmount"/>
+        <result column="TOTAL_INTEREST_PAID" property="totalInterestPaid"/>
+        <result column="CURRENCY" property="currency"/>
+        <result column="OPERATOR" property="operator"/>
+        <result column="REMARK" property="remark"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        BOND_ID, BOND_CODE, BOND_NAME, BOND_TYPE, ISSUE_PRICE, FACE_VALUE, COUPON_RATE,
+        ISSUE_AMOUNT, ACTUAL_AMOUNT, ISSUE_START_DATE, ISSUE_END_DATE, MATURITY_DATE,
+        TERM, PAYMENT_FREQUENCY, LISTING_EXCHANGE, UNDERWRITER, RATING_AGENCY,
+        CREDIT_RATING, ISSUE_STATUS, REMAINING_AMOUNT, TOTAL_INTEREST_PAID, CURRENCY,
+        OPERATOR, REMARK, CREATE_TIME, UPDATE_TIME, CREATE_BY, UPDATE_BY, DELETE_FLAG
+    </sql>
+
+    <sql id="Query_Where_Clause">
+        <where>
+            DELETE_FLAG = 0
+            <if test="bondCode != null and bondCode != ''">
+                AND BOND_CODE LIKE CONCAT('%', #{bondCode}, '%')
+            </if>
+            <if test="bondName != null and bondName != ''">
+                AND BOND_NAME LIKE CONCAT('%', #{bondName}, '%')
+            </if>
+            <if test="bondType != null">
+                AND BOND_TYPE = #{bondType}
+            </if>
+            <if test="issueStatus != null">
+                AND ISSUE_STATUS = #{issueStatus}
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND ISSUE_START_DATE >= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND ISSUE_END_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectBondList" resultMap="DTOResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_BOND_FINANCING
+        <include refid="Query_Where_Clause"/>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <select id="selectBondById" resultMap="DTOResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_BOND_FINANCING
+        WHERE BOND_ID = #{bondId} AND DELETE_FLAG = 0
+    </select>
+
+    <insert id="insertBond" parameterType="com.global.treasurer.oracle.entity.TblBondFinancing">
+        <selectKey keyProperty="bondId" resultType="java.lang.Long" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        INSERT INTO TBL_BOND_FINANCING (
+            BOND_CODE, BOND_NAME, BOND_TYPE, ISSUE_PRICE, FACE_VALUE, COUPON_RATE,
+            ISSUE_AMOUNT, ACTUAL_AMOUNT, ISSUE_START_DATE, ISSUE_END_DATE, MATURITY_DATE,
+            TERM, PAYMENT_FREQUENCY, LISTING_EXCHANGE, UNDERWRITER, RATING_AGENCY,
+            CREDIT_RATING, ISSUE_STATUS, REMAINING_AMOUNT, TOTAL_INTEREST_PAID, CURRENCY,
+            OPERATOR, REMARK, CREATE_TIME, UPDATE_TIME, CREATE_BY, UPDATE_BY, DELETE_FLAG
+        ) VALUES (
+            #{bondCode}, #{bondName}, #{bondType}, #{issuePrice}, #{faceValue}, #{couponRate},
+            #{issueAmount}, #{actualAmount}, #{issueStartDate}, #{issueEndDate}, #{maturityDate},
+            #{term}, #{paymentFrequency}, #{listingExchange}, #{underwriter}, #{ratingAgency},
+            #{creditRating}, #{issueStatus}, #{remainingAmount}, #{totalInterestPaid}, #{currency},
+            #{operator}, #{remark}, #{createTime}, #{updateTime}, #{createBy}, #{updateBy}, 0
+        )
+    </insert>
+
+    <update id="updateBond" parameterType="com.global.treasurer.oracle.entity.TblBondFinancing">
+        UPDATE TBL_BOND_FINANCING
+        <set>
+            <if test="bondCode != null">BOND_CODE = #{bondCode},</if>
+            <if test="bondName != null">BOND_NAME = #{bondName},</if>
+            <if test="bondType != null">BOND_TYPE = #{bondType},</if>
+            <if test="issuePrice != null">ISSUE_PRICE = #{issuePrice},</if>
+            <if test="faceValue != null">FACE_VALUE = #{faceValue},</if>
+            <if test="couponRate != null">COUPON_RATE = #{couponRate},</if>
+            <if test="issueAmount != null">ISSUE_AMOUNT = #{issueAmount},</if>
+            <if test="actualAmount != null">ACTUAL_AMOUNT = #{actualAmount},</if>
+            <if test="issueStartDate != null">ISSUE_START_DATE = #{issueStartDate},</if>
+            <if test="issueEndDate != null">ISSUE_END_DATE = #{issueEndDate},</if>
+            <if test="maturityDate != null">MATURITY_DATE = #{maturityDate},</if>
+            <if test="term != null">TERM = #{term},</if>
+            <if test="paymentFrequency != null">PAYMENT_FREQUENCY = #{paymentFrequency},</if>
+            <if test="listingExchange != null">LISTING_EXCHANGE = #{listingExchange},</if>
+            <if test="underwriter != null">UNDERWRITER = #{underwriter},</if>
+            <if test="ratingAgency != null">RATING_AGENCY = #{ratingAgency},</if>
+            <if test="creditRating != null">CREDIT_RATING = #{creditRating},</if>
+            <if test="issueStatus != null">ISSUE_STATUS = #{issueStatus},</if>
+            <if test="remainingAmount != null">REMAINING_AMOUNT = #{remainingAmount},</if>
+            <if test="totalInterestPaid != null">TOTAL_INTEREST_PAID = #{totalInterestPaid},</if>
+            <if test="currency != null">CURRENCY = #{currency},</if>
+            <if test="operator != null">OPERATOR = #{operator},</if>
+            <if test="remark != null">REMARK = #{remark},</if>
+            <if test="updateTime != null">UPDATE_TIME = #{updateTime},</if>
+            <if test="updateBy != null">UPDATE_BY = #{updateBy},</if>
+        </set>
+        WHERE BOND_ID = #{bondId}
+    </update>
+
+    <update id="deleteBond">
+        UPDATE TBL_BOND_FINANCING
+        SET DELETE_FLAG = 1, UPDATE_TIME = CURRENT_TIMESTAMP
+        WHERE BOND_ID = #{bondId}
+    </update>
+
+    <select id="selectBondStatistics" resultMap="DTOResultMap">
+        SELECT
+            COUNT(*) as ISSUE_AMOUNT,
+            SUM(CASE WHEN ISSUE_STATUS = 0 THEN 1 ELSE 0 END) as REMAINING_AMOUNT,
+            SUM(CASE WHEN ISSUE_STATUS = 1 THEN 1 ELSE 0 END) as TOTAL_INTEREST_PAID,
+            SUM(ISSUE_AMOUNT) as TERM
+        FROM TBL_BOND_FINANCING
+        WHERE DELETE_FLAG = 0
+        <include refid="Query_Where_Clause"/>
+    </select>
+
+</mapper>

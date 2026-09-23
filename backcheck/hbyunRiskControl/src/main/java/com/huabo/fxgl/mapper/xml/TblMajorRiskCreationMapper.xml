@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.fxgl.mapper.TblMajorRiskCreationMapper">
+
+	 <select id="getMajorRiskCreateList" resultType="com.huabo.fxgl.entity.TblMajorRiskCreate">
+		 select * from TBL_MAJORRISKCREATE where 1=1 
+		  <if test="nd!=null and nd!=''">
+		    and riskyear LIKE
+			concat(concat('%',#{nd}),'%')
+		 </if>
+		  <if test="jd!=null and jd!=''">
+		   and quartername  LIKE
+			concat(concat('%',#{jd}),'%')
+		 </if>
+		 <if test="sql!=null and sql!=''">
+		 ${sql}
+		 </if>
+		  order by id desc 
+	</select>  
+	 
+	 
+</mapper>

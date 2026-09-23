@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.audit.oracle.mapper.ProjectProposalEvaluationMapper">
+  
+   <resultMap type="com.huabo.audit.oracle.entity.ProjectProposalEvaluationEntity" id="evaluationResult" autoMapping="true">
+    <id column="ID" jdbcType="DECIMAL" property="id"/>
+    <result column="CREATETIME" jdbcType="DATE" property="createTime"/>
+   <association property="createStaff" javaType="com.huabo.audit.oracle.entity.TblStaff" resultMap="com.huabo.audit.oracle.mapper.TblStaffMapper.staffResult"></association>
+   </resultMap>
+   
+  <select id="findList" resultMap="evaluationResult">
+		 SELECT * FROM TBL_YQNS_PROJECT_EVALUATION E  LEFT join TBL_STAFF S on E.CREATEUSER=S.STAFFID  WHERE 1=1
+		 
+		 <if test="queryParam.createUser!=null and queryParam.createUser!= ''">
+		  	AND (E.CREATEUSER = #{queryParam.createUser} 
+		 
+		 
+			  <if test="queryParam.deptids!=null and queryParam.deptids.size()>0 ">
+	             or E.CREATEUSER in (SELECT STAFFID FROM TBL_USER_ORGRELATION WHERE DEPTID IN 
+				
+				 <foreach collection="queryParam.deptids" open="(" close=")" item="item" separator=",">
+				     #{item}
+				  </foreach>
+				)
+	         </if>
+		 )
+		 
+		  </if>
+		 
+         <if test="queryParam.projectName!=null and queryParam.projectName!= ''">
+           AND E.PROJECTNAME LIKE concat(concat('%',#{queryParam.projectName}),'%')
+         </if>
+         
+         <if test="queryParam.projectPurpose!=null and queryParam.projectPurpose!= ''">
+           AND E.PROJECTPURPOSE LIKE concat(concat('%',#{queryParam.projectPurpose}),'%')
+         </if>
+
+         <if test="queryParam.projectType!=null and queryParam.projectType !='' ">
+           AND E.PROJECTTYPE = #{queryParam.projectType}
+         </if>
+          <if test="queryParam.ids!=null  ">
+              AND E.ID in ( select EVAID from TBL_YQNS_NDTB_GL where TBID in
+              <foreach item="id" index="index" collection="queryParam.ids"
+                       open="(" separator="," close=")">
+                  #{id}
+              </foreach>
+              )
+          </if>
+         
+          <if test="queryParam.tbid!=null ">
+            AND E.ID in (select EVAID from TBL_YQNS_NDTB_GL where TBID= #{queryParam.tbid} )
+         </if>
+         
+         
+          <!--字符串需要判断空字符串 大于等于查询-->
+        <if test="queryParam.startyear != null">
+            AND E.CREATETIME &gt;= #{queryParam.startyear}
+        </if>
+        <!--字符串需要判断空字符串 小于等于查询--> 
+        <if test="queryParam.endyear != null">
+           AND E.CREATETIME &lt;=  #{queryParam.endyear } 
+        </if>
+         
+		  order by  projectType,sortNumber desc 
+	</select>
+	
+	<select id="selectById" resultMap="evaluationResult">
+		 SELECT * FROM TBL_YQNS_PROJECT_EVALUATION E  LEFT join TBL_STAFF S on E.CREATEUSER=S.STAFFID  WHERE 1=1
+         <if test="id!=null">
+           AND E.ID= #{id}
+         </if>
+	</select>
+	
+	  <select id="getLxZxsjList" resultMap="evaluationResult">
+		 SELECT * FROM TBL_YQNS_PROJECT_EVALUATION E  LEFT join TBL_STAFF S on E.CREATEUSER=S.STAFFID  WHERE 1=1 and E.ISSHOWLIST=1
+		  
+         <if test="queryParam.projectName!=null and queryParam.projectName!= ''">
+           AND E.PROJECTNAME LIKE #{queryParam.projectName}
+         </if>
+         
+         <if test="queryParam.projectType!=null and queryParam.projectType !='' ">
+           AND E.PROJECTTYPE = #{queryParam.projectType}
+         </if>
+         
+             <if test="queryParam.projectPurpose!=null and queryParam.projectPurpose!= ''">
+           AND E.PROJECTPURPOSE LIKE concat(concat('%',#{queryParam.projectPurpose}),'%')
+         </if>
+         
+              <if test="queryParam.concernsContent!=null and queryParam.concernsContent!= ''">
+           AND E.CONCERNSCONTENT LIKE concat(concat('%',#{queryParam.concernsContent}),'%')
+         </if>
+         
+           <if test="queryParam.departmentId!=null and queryParam.departmentId !='' ">
+           AND E.DEPARTMENTID = #{queryParam.departmentId}
+         </if>
+         
+           <if test="queryParam.status != null">
+            AND E.ID IN (SELECT EVAID FROM TBL_YQNS_NDTB_GL WHERE TBID IN (SELECT TBID FROM TBL_YQNS_NDTB WHERE STATUS = #{queryParam.status} ))
+         </if>
+         
+         <if test="queryParam.sourceType == 1">
+            AND  E.ID NOT IN (SELECT GLID FROM TBL_YQNS_JHGL_JHCG_GL WHERE GLTYPE IN ('11','12'))
+         </if>
+         
+         <if test="queryParam.sourceType == 2">
+            AND  E.ID NOT IN (SELECT GLID FROM TBL_YQNS_JHGL_JHCHUG_GL WHERE GLTYPE IN ('11','12'))  AND E.ID IN (SELECT GLID FROM TBL_YQNS_JHGL_JHCG_GL WHERE GLTYPE IN ('11','12') AND JHCGID = #{queryParam.jhid} ) 
+         </if>
+         
+         <if test="queryParam.sourceType == 3">
+            AND  E.ID NOT IN (SELECT GLID FROM TBL_YQNS_JHGL_JH_GL WHERE GLTYPE IN ('11','12'))  AND E.ID IN (SELECT GLID FROM TBL_YQNS_JHGL_JHCHUG_GL WHERE GLTYPE IN ('11','12') AND JHCHUGID = #{queryParam.jhid} )
+         </if>
+         
+		order by E.ID desc 
+	</select>
+	
+	<select id="findByIds" resultMap="evaluationResult">
+		select * from   TBL_YQNS_PROJECT_EVALUATION  E  LEFT join TBL_STAFF S on E.CREATEUSER=S.STAFFID   WHERE 1=1
+		  <if test="ids!=null and ids.size()>0">
+	     and ID IN
+	    <foreach collection="ids" open="(" close=")" item="item" separator=",">
+	     #{item}
+	    </foreach>
+	   </if>
+	</select>
+
+</mapper>

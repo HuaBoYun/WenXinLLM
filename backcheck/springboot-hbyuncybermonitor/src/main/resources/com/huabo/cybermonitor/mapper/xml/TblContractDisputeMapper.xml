@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.cybermonitor.mapper.TblContractDisputeMapper">
+
+    <select id="selectPageList" resultType="com.huabo.cybermonitor.entity.TblContractDispute">
+        SELECT * FROM TBL_CONTRACT_DISPUTE
+        <where>
+            <if test="query.companyId != null and query.companyId != ''">AND COMPANY_ID = #{query.companyId}</if>
+            <if test="query.disputeType != null and query.disputeType != ''">AND DISPUTE_TYPE = #{query.disputeType}</if>
+            <if test="query.disputeStatus != null and query.disputeStatus != ''">AND DISPUTE_STATUS = #{query.disputeStatus}</if>
+            <if test="query.contractName != null and query.contractName != ''">AND CONTRACT_NAME LIKE CONCAT('%', #{query.contractName}, '%')</if>
+        </where>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 纠纷统计分析 -->
+    <select id="selectDisputeStats" resultType="java.util.Map">
+        SELECT DISPUTE_TYPE, DISPUTE_STATUS, COUNT(*) AS cnt,
+               SUM(DISPUTE_AMOUNT) AS totalAmount
+        FROM TBL_CONTRACT_DISPUTE
+        <where><if test="companyId != null and companyId != ''">AND COMPANY_ID = #{companyId}</if></where>
+        GROUP BY DISPUTE_TYPE, DISPUTE_STATUS
+    </select>
+
+</mapper>
+

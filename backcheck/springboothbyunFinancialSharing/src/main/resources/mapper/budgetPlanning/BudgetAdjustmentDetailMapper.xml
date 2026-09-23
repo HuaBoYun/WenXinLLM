@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.budgetPlanning.mapper.BudgetAdjustmentDetailMapper">
+
+    <!-- 根据调整单ID查询明细列表 -->
+    <select id="selectByAdjustmentId" resultType="com.financial.sharing.budgetPlanning.entity.TblBudgetAdjustmentDetail">
+        SELECT 
+            DETAIL_ID,
+            ADJUSTMENT_ID,
+            DATA_ID,
+            SUBJECT_CODE,
+            SUBJECT_NAME,
+            ORGANIZATION_CODE,
+            ORGANIZATION_NAME,
+            DIMENSION1_CODE,
+            DIMENSION1_NAME,
+            DIMENSION2_CODE,
+            DIMENSION2_NAME,
+            ORIGINAL_VALUE,
+            ADJUSTMENT_VALUE,
+            ADJUSTED_VALUE,
+            ADJUSTMENT_REASON,
+            CREATE_USER,
+            CREATE_TIME
+        FROM TBL_BUDGET_ADJUSTMENT_DETAIL
+        WHERE ADJUSTMENT_ID = #{adjustmentId}
+        ORDER BY CREATE_TIME ASC
+    </select>
+
+    <!-- 批量插入明细 -->
+    <insert id="batchInsert">
+        INSERT INTO TBL_BUDGET_ADJUSTMENT_DETAIL (
+            DETAIL_ID,
+            ADJUSTMENT_ID,
+            DATA_ID,
+            SUBJECT_CODE,
+            SUBJECT_NAME,
+            ORGANIZATION_CODE,
+            ORGANIZATION_NAME,
+            DIMENSION1_CODE,
+            DIMENSION1_NAME,
+            DIMENSION2_CODE,
+            DIMENSION2_NAME,
+            ORIGINAL_VALUE,
+            ADJUSTMENT_VALUE,
+            ADJUSTED_VALUE,
+            ADJUSTMENT_REASON,
+            ORG_ID,
+            CREATE_USER,
+            CREATE_TIME,
+            UPDATE_USER,
+            UPDATE_TIME
+        ) VALUES
+        <foreach collection="detailList" item="item" separator=",">
+            (
+                #{item.detailId},
+                #{item.adjustmentId},
+                #{item.dataId},
+                #{item.subjectCode},
+                #{item.subjectName},
+                #{item.organizationCode},
+                #{item.organizationName},
+                #{item.dimension1Code},
+                #{item.dimension1Name},
+                #{item.dimension2Code},
+                #{item.dimension2Name},
+                #{item.originalValue},
+                #{item.adjustmentValue},
+                #{item.adjustedValue},
+                #{item.adjustmentReason},
+                #{item.orgId},
+                #{item.createUser},
+                #{item.createTime},
+                #{item.updateUser},
+                #{item.updateTime}
+            )
+        </foreach>
+    </insert>
+
+    <!-- 根据调整单ID删除明细 -->
+    <delete id="deleteByAdjustmentId">
+        DELETE FROM TBL_BUDGET_ADJUSTMENT_DETAIL
+        WHERE ADJUSTMENT_ID = #{adjustmentId}
+    </delete>
+
+</mapper>
+

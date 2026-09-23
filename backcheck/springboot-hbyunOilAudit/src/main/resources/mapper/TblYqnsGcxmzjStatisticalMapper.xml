@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.audit.oracle.mapper.TblYqnsGcxmzjStatisticalMapper">
+
+
+    <select id="selectTblYqnsGcxmzjJsdwStatisticalList"
+            resultType="com.huabo.audit.oracle.dto.TblYqnsGcxmzjJsdwStatisticalDto">
+        SELECT gc.JSDW, count(gc.HTBH) HTBHCOUNT, sum(gc.esscjewy) ESSCJESUM
+        FROM TBL_YQNS_GCXMZJ_ZJB zjb
+                 LEFT JOIN TBL_YQNS_GCXMZJ gc ON zjb.GCXMZJID = gc.GCXMZJID
+        WHERE TO_CHAR(gc.CJSJ,'YYYY-MM-DD')  LIKE '${queryYear}%' and  zjb.PARENTID is null
+        GROUP BY gc.JSDW
+    </select>
+
+    <select id="selectTblYqnsGcxmzjJsdwStatisticalToOne"
+            resultType="com.huabo.audit.oracle.dto.TblYqnsGcxmzjJsdwStatisticalToOneDto">
+        SELECT gc.GCXMZJID, gc.HTBH,gc.GCMC,gc.JSDW,gc.SGDW,zjb.NWB,zjb.EDJE ,gc.ESSCJE
+        FROM TBL_YQNS_GCXMZJ_ZJB zjb
+                     LEFT JOIN TBL_YQNS_GCXMZJ gc ON zjb.GCXMZJID = gc.GCXMZJID
+        WHERE  gc.JSDW =#{jsdw} and  TO_CHAR(gc.CJSJ,'YYYY-MM-DD')  LIKE '${queryYear}%'
+    </select>
+
+
+
+
+    <select id="selectTblYqnsGcxmzjSgdwStatisticalList"
+            resultType="com.huabo.audit.oracle.dto.TblYqnsGcxmzjSgdwStatisticalDto">
+
+        SELECT
+        gc.SGDW,
+        COUNT(1) AS HTBHCOUNT,
+        SUM(gc.esscjewy) AS EDJESUM,
+        SUM(CASE WHEN gc.esscjewy >= 900 THEN 1 ELSE 0 END) AS COUNTOVERNINEHUND,
+        SUM(CASE WHEN gc.esscjewy >= 900 THEN gc.esscjewy ELSE 0 END) AS SUMOVERNINEHUND,
+        SUM(CASE WHEN gc.esscjewy >= 100 AND gc.esscjewy &lt; 900 THEN 1 ELSE 0 END) AS COUNTHUNDTONINEHUND,
+        SUM(CASE WHEN gc.esscjewy >= 100 AND gc.esscjewy &lt; 900 THEN gc.esscjewy ELSE 0 END) AS SUMHUNDTONINEHUND,
+        SUM(CASE WHEN gc.esscjewy >= 50 AND gc.esscjewy &lt; 100 THEN 1 ELSE 0 END) AS COUNTFIFTYTOHUND,
+        SUM(CASE WHEN gc.esscjewy >= 50 AND gc.esscjewy &lt; 100 THEN gc.esscjewy ELSE 0 END) AS SUMFIFTYTOHUND,
+        SUM(CASE WHEN gc.esscjewy >= 20 AND gc.esscjewy &lt; 50 THEN 1 ELSE 0 END) AS COUNTTWENTYTOFIFTY,
+        SUM(CASE WHEN gc.esscjewy >= 20 AND gc.esscjewy &lt; 50 THEN gc.esscjewy ELSE 0 END) AS SUMTWENTYTOFIFTY,
+        SUM(CASE WHEN gc.esscjewy &lt; 20 THEN 1 ELSE 0 END) AS COUNTUNDERTWENTY,
+        SUM(CASE WHEN gc.esscjewy &lt; 20 THEN gc.esscjewy ELSE 0 END) AS SUMUNDERTWENTY
+        FROM (
+        	select 
+			CASE WHEN  ZJB.NWB in ('工程建设公司','工程建设') THEN '工程建设公司'
+			  WHEN zjb.NWB in ('外部单位','外部') THEN '外部单位' ELSE '内部多径单位小计'
+			
+			END SGDW, gc.esscjewy
+			 from  TBL_YQNS_GCXMZJ_ZJB zjb         LEFT JOIN TBL_YQNS_GCXMZJ gc ON  zjb.GCXMZJID = gc.GCXMZJID  
+			 WHERE TO_CHAR(gc.CJSJ,'YYYY-MM-DD')  LIKE '${queryYear}%' and  zjb.PARENTID is null
+        ) gc  GROUP BY  gc.SGDW
+    </select>
+
+
+    <select id="selectTblYqnsGcxmzjNwbStatisticalList"
+            resultType="com.huabo.audit.oracle.dto.TblYqnsGcxmzjNwbStatisticalDto">
+
+        SELECT gc.JSDW, count(gc.HTBH) HTBHCOUNT, sum(gc.esscjewy) EDJESUM,
+               SUM(CASE WHEN gc.esscjewy &gt;= 0 THEN 1 ELSE 0 END) -   SUM(CASE WHEN zjb.NWB in ('工程建设公司','工程建设') THEN 1 ELSE 0 END) AS ESSCJECOUNT,
+               SUM(gc.esscjewy) -  SUM(CASE WHEN zjb.NWB in ('工程建设公司','工程建设') THEN gc.esscjewy ELSE 0 END)  AS ESSCJESUM,
+               SUM(CASE WHEN zjb.NWB in ('外部单位','外部') THEN 1 ELSE 0 END) AS EXTERNALUNITCOUNT,
+               SUM(CASE WHEN zjb.NWB = '外部单位' THEN gc.esscjewy ELSE 0 END) AS EXTERNALUNITSUM,
+               SUM(CASE WHEN zjb.NWB IN ('腾飞', '内部多径单位', '昆仑投资') THEN 1 ELSE 0 END) AS TENGFEIORINTERNALCOUNT,
+               SUM(CASE WHEN zjb.NWB IN ('腾飞', '内部多径单位', '昆仑投资') THEN gc.esscjewy ELSE 0 END) AS TENGFEIORINTERNALSUM,
+               SUM(CASE WHEN zjb.NWB = '内部多径单位' THEN 1 ELSE 0 END) AS INTERNALMULTIPATHCOUNT,
+               SUM(CASE WHEN zjb.NWB = '内部多径单位' THEN gc.esscjewy ELSE 0 END) AS INTERNALMULTIPATHSUM,
+               SUM(CASE WHEN zjb.NWB in ('腾飞','昆仑投资') THEN 1 ELSE 0 END) AS TENGFEICOUNT,
+               SUM(CASE WHEN zjb.NWB in ('腾飞','昆仑投资')  THEN gc.esscjewy ELSE 0 END) AS TENGFEISUM,
+               SUM(CASE WHEN zjb.NWB in ('工程建设公司','工程建设') THEN 1 ELSE 0 END) AS ENGINEERINGCONSTRUCTIONCOUNT,
+               SUM(CASE WHEN zjb.NWB in ('工程建设公司','工程建设') THEN gc.esscjewy ELSE 0 END) AS ENGINEERINGCONSTRUCTIONSUM
+        FROM TBL_YQNS_GCXMZJ_ZJB zjb
+                 LEFT JOIN TBL_YQNS_GCXMZJ gc ON zjb.GCXMZJID = gc.GCXMZJID
+        WHERE TO_CHAR(gc.CJSJ,'YYYY-MM-DD')  LIKE '${queryYear}%' and  zjb.PARENTID is null
+        GROUP BY gc.JSDW
+    </select>
+
+
+    <select id="selectTblYqnsGcxmzjSampleStatisticalList"
+            resultType="com.huabo.audit.oracle.dto.TblYqnsGcxmzjSampleStatisticalDto">
+
+
+    SELECT
+        gc.JSDW,
+         zjb.NWB,
+        <include refid="nwbCountStatisticalField"></include>
+    FROM
+        <include refid="nwbCountStatistical_NWB"></include> zjb
+    LEFT JOIN
+         TBL_YQNS_GCXMZJ gc ON zjb.GCXMZJID = gc.GCXMZJID
+     LEFT JOIN
+            TBL_YQNS_GCXMZJ_NWB_SORT nwb ON zjb.NWB = nwb.NWB
+    WHERE TO_CHAR(gc.CJSJ,'YYYY-MM-DD')  LIKE '${queryYear}%' and  zjb.PARENTID is null
+    GROUP BY
+         gc.JSDW,zjb.NWB
+    ORDER BY gc.JSDW,SORT
+
+    </select>
+
+
+
+    <select id="selectSampleNwbCountStatisticalList"
+            resultType="com.huabo.audit.oracle.dto.TblYqnsGcxmzjSampleStatisticalDto">
+
+        SELECT
+                '合计' JSDW,
+                zjb.NWB,
+                <include refid="nwbCountStatisticalField"></include>
+        FROM
+       <include refid="nwbCountStatistical_NWB"></include> zjb
+                        LEFT JOIN
+                        TBL_YQNS_GCXMZJ gc ON zjb.GCXMZJID = gc.GCXMZJID
+                        LEFT JOIN  TBL_YQNS_GCXMZJ_NWB_SORT nwb ON zjb.NWB = nwb.NWB
+        WHERE TO_CHAR(gc.CJSJ,'YYYY-MM-DD')  LIKE '${queryYear}%' and  zjb.PARENTID is null
+        GROUP BY
+                zjb.NWB
+        ORDER BY SORT
+
+    </select>
+
+
+
+
+    <sql id="nwbCountStatisticalField">
+    max( nwb.SORT ) as SORT,
+--     ROUND(SUM(CASE WHEN gc.esscjewy >= 0 THEN 1 ELSE 0 END)/ COUNT(1),2)  AS SAMPLINGRATIO,
+--      SUM(CASE WHEN zjb.NWB not in ('工程建设公司','工程建设')  THEN 1 ELSE 0 END)  ESSCJECOUNT,
+    SUM(CASE WHEN gc.esscjewy >= 0 THEN  gc.ESSCJE  ELSE 0 END) AS ESSCJESUM,
+    COUNT(1) AS HTBHCOUNT,
+    SUM(gc.esscjewy) AS EDJESUM,
+    SUM(CASE WHEN gc.esscjewy >= 900 THEN 1 ELSE 0 END) AS COUNTOVERNINEHUND,
+    SUM(CASE WHEN gc.esscjewy >= 900 THEN gc.esscjewy ELSE 0 END) AS SUMOVERNINEHUND,
+    SUM(CASE WHEN gc.esscjewy >= 100 AND gc.esscjewy &lt; 900 THEN 1 ELSE 0 END) AS COUNTHUNDTONINEHUND,
+    SUM(CASE WHEN gc.esscjewy >= 100 AND gc.esscjewy &lt; 900 THEN gc.esscjewy ELSE 0 END) AS SUMHUNDTONINEHUND,
+    SUM(CASE WHEN gc.esscjewy >= 50 AND gc.esscjewy &lt; 100 THEN 1 ELSE 0 END) AS COUNTFIFTYTOHUND,
+    SUM(CASE WHEN gc.esscjewy >= 50 AND gc.esscjewy &lt; 100 THEN gc.esscjewy ELSE 0 END) AS SUMFIFTYTOHUND,
+    SUM(CASE WHEN gc.esscjewy >= 20 AND gc.esscjewy &lt; 50 THEN 1 ELSE 0 END) AS COUNTTWENTYTOFIFTY,
+    SUM(CASE WHEN gc.esscjewy >= 20 AND gc.esscjewy &lt; 50 THEN gc.esscjewy ELSE 0 END) AS SUMTWENTYTOFIFTY,
+    SUM(CASE WHEN gc.esscjewy &lt; 20 or gc.esscjewy IS NULL   THEN 1 ELSE 0 END) AS COUNTUNDERTWENTY,
+    SUM(CASE WHEN gc.esscjewy &lt; 20 THEN gc.esscjewy ELSE 0 END) AS SUMUNDERTWENTY
+    </sql>
+
+    <sql id="nwbCountStatistical_NWB">
+        (
+            SELECT
+                CASE
+                    WHEN NWB in ('腾飞','昆仑投资') THEN '腾飞'
+                    WHEN NWB = '内部多径单位' THEN '内部多径单位'
+                    WHEN NWB in ('工程建设公司','工程建设') THEN '工程建设公司'
+                    WHEN NWB in ('外部单位','外部') THEN '外部单位'
+                    ELSE '外部单位'
+                    END NWB,
+                GCXMZJID,PARENTID
+            FROM
+                TBL_YQNS_GCXMZJ_ZJB)
+    </sql>
+</mapper>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.treasuryCommon.BusinessRuleManageMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.treasuryCommon.BusinessRuleManage">
+        <id column="ID" property="id" />
+        <result column="RULE_CODE" property="ruleCode" />
+        <result column="RULE_NAME" property="ruleName" />
+        <result column="RULE_DESCRIPTION" property="ruleDescription" />
+        <result column="RULE_TYPE" property="ruleType" />
+        <result column="BUSINESS_MODULE" property="businessModule" />
+        <result column="RULE_EXPRESSION" property="ruleExpression" />
+        <result column="RULE_CONDITION" property="ruleCondition" />
+        <result column="RULE_ACTION" property="ruleAction" />
+        <result column="PRIORITY_LEVEL" property="priorityLevel" />
+        <result column="IS_ENABLED" property="isEnabled" />
+        <result column="ORG_ID" property="orgId" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="CREATE_USER" property="createUser" />
+        <result column="UPDATE_USER" property="updateUser" />
+        <result column="REMARK" property="remark" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        ID, RULE_CODE, RULE_NAME, RULE_DESCRIPTION, RULE_TYPE, BUSINESS_MODULE,
+        RULE_EXPRESSION, RULE_CONDITION, RULE_ACTION, PRIORITY_LEVEL, IS_ENABLED,
+        ORG_ID, CREATE_TIME, UPDATE_TIME, CREATE_USER, UPDATE_USER, REMARK
+    </sql>
+
+    <!-- 根据规则编码和组织ID查询业务规则 -->
+    <select id="selectByRuleCodeAndOrgId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TBL_BUSINESS_RULE_MANAGE
+        WHERE RULE_CODE = #{ruleCode} AND ORG_ID = #{orgId}
+        LIMIT 1
+    </select>
+
+    <!-- 根据规则类型和组织ID查询业务规则列表 -->
+    <select id="selectByRuleTypeAndOrgId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TBL_BUSINESS_RULE_MANAGE
+        WHERE RULE_TYPE = #{ruleType} AND ORG_ID = #{orgId}
+        ORDER BY PRIORITY_LEVEL ASC, CREATE_TIME DESC
+    </select>
+
+    <!-- 根据业务模块和组织ID查询业务规则列表 -->
+    <select id="selectByBusinessModuleAndOrgId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TBL_BUSINESS_RULE_MANAGE
+        WHERE BUSINESS_MODULE = #{businessModule} AND ORG_ID = #{orgId}
+        ORDER BY PRIORITY_LEVEL ASC, CREATE_TIME DESC
+    </select>
+
+    <!-- 根据优先级范围查询业务规则列表 -->
+    <select id="selectByPriorityRange" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TBL_BUSINESS_RULE_MANAGE
+        WHERE PRIORITY_LEVEL >= #{minPriority}
+        AND PRIORITY_LEVEL &lt;= #{maxPriority}
+        AND ORG_ID = #{orgId}
+        ORDER BY PRIORITY_LEVEL ASC, CREATE_TIME DESC
+    </select>
+
+    <!-- 根据启用状态和组织ID查询业务规则列表 -->
+    <select id="selectByIsEnabledAndOrgId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TBL_BUSINESS_RULE_MANAGE
+        WHERE IS_ENABLED = #{isEnabled} AND ORG_ID = #{orgId}
+        ORDER BY PRIORITY_LEVEL ASC, CREATE_TIME DESC
+    </select>
+
+    <!-- 根据条件统计业务规则数量 -->
+    <select id="countByCondition" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM TBL_BUSINESS_RULE_MANAGE
+        WHERE ORG_ID = #{orgId}
+        <if test="ruleType != null and ruleType != ''">
+            AND RULE_TYPE = #{ruleType}
+        </if>
+        <if test="businessModule != null and businessModule != ''">
+            AND BUSINESS_MODULE = #{businessModule}
+        </if>
+        <if test="isEnabled != null">
+            AND IS_ENABLED = #{isEnabled}
+        </if>
+    </select>
+
+    <!-- 更新业务规则状态 -->
+    <update id="updateStatus">
+        UPDATE TBL_BUSINESS_RULE_MANAGE
+        SET IS_ENABLED = #{isEnabled},
+            UPDATE_TIME = #{updateTime},
+            UPDATE_USER = #{updateUser}
+        WHERE ID = #{id}
+        AND ORG_ID = (SELECT ORG_ID FROM TBL_BUSINESS_RULE_MANAGE WHERE ID = #{id})
+    </update>
+
+    <!-- 批量删除业务规则 -->
+    <delete id="batchDelete">
+        DELETE FROM TBL_BUSINESS_RULE_MANAGE
+        WHERE ID IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND ORG_ID = #{orgId}
+    </delete>
+
+    <!-- 根据关键词模糊查询业务规则 -->
+    <select id="selectByKeyword" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM TBL_BUSINESS_RULE_MANAGE
+        WHERE ORG_ID = #{orgId}
+        AND (
+            RULE_CODE LIKE CONCAT('%', #{keyword}, '%')
+            OR RULE_NAME LIKE CONCAT('%', #{keyword}, '%')
+            OR RULE_DESCRIPTION LIKE CONCAT('%', #{keyword}, '%')
+            OR RULE_EXPRESSION LIKE CONCAT('%', #{keyword}, '%')
+        )
+        ORDER BY PRIORITY_LEVEL ASC, CREATE_TIME DESC
+    </select>
+
+</mapper>

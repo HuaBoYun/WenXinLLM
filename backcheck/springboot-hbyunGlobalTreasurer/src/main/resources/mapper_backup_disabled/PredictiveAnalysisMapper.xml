@@ -1,0 +1,535 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.PredictiveAnalysisMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.PredictiveAnalysis">
+        <id column="ANALYSISID" property="analysisId" />
+        <result column="ANALYSISNO" property="analysisNo" />
+        <result column="ANALYSISNAME" property="analysisName" />
+        <result column="PREDICTIONTYPE" property="predictionType" />
+        <result column="MODELID" property="modelId" />
+        <result column="INPUTDATA" property="inputData" />
+        <result column="PREDICTIONPERIOD" property="predictionPeriod" />
+        <result column="PREDICTIONHORIZON" property="predictionHorizon" />
+        <result column="PREDICTIONRESULT" property="predictionResult" />
+        <result column="CONFIDENCELEVEL" property="confidenceLevel" />
+        <result column="CONFIDENCEINTERVAL" property="confidenceInterval" />
+        <result column="ACCURACY" property="accuracy" />
+        <result column="ANALYSISDATE" property="analysisDate" />
+        <result column="ANALYSISTIME" property="analysisTime" />
+        <result column="VALIDATIONDATE" property="validationDate" />
+        <result column="ACTUALRESULT" property="actualResult" />
+        <result column="DEVIATIONANALYSIS" property="deviationAnalysis" />
+        <result column="ANALYSISSTATUS" property="analysisStatus" />
+        <result column="REMARK" property="remark" />
+        <result column="ORGID" property="orgId" />
+        <result column="CREATETIME" property="createTime" />
+        <result column="CREATEUSER" property="createUser" />
+        <result column="UPDATETIME" property="updateTime" />
+        <result column="UPDATEUSER" property="updateUser" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        ANALYSISID, ANALYSISNO, ANALYSISNAME, PREDICTIONTYPE, MODELID, INPUTDATA, PREDICTIONPERIOD,
+        PREDICTIONHORIZON, PREDICTIONRESULT, CONFIDENCELEVEL, CONFIDENCEINTERVAL, ACCURACY,
+        ANALYSISDATE, ANALYSISTIME, VALIDATIONDATE, ACTUALRESULT, DEVIATIONANALYSIS, ANALYSISSTATUS,
+        REMARK, ORGID, CREATETIME, CREATEUSER, UPDATETIME, UPDATEUSER
+    </sql>
+
+    <!-- 分页查询预测分析 -->
+    <select id="selectPredictiveAnalysisPage" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_PREDICTIVE_ANALYSIS
+        <where>
+            <if test="params.orgId != null">
+                AND ORGID = #{params.orgId}
+            </if>
+            <if test="params.analysisNo != null and params.analysisNo != ''">
+                AND ANALYSISNO LIKE CONCAT('%', #{params.analysisNo}, '%')
+            </if>
+            <if test="params.analysisName != null and params.analysisName != ''">
+                AND ANALYSISNAME LIKE CONCAT('%', #{params.analysisName}, '%')
+            </if>
+            <if test="params.predictionType != null and params.predictionType != ''">
+                AND PREDICTIONTYPE = #{params.predictionType}
+            </if>
+            <if test="params.modelId != null">
+                AND MODELID = #{params.modelId}
+            </if>
+            <if test="params.analysisStatus != null and params.analysisStatus != ''">
+                AND ANALYSISSTATUS = #{params.analysisStatus}
+            </if>
+            <if test="params.predictionPeriod != null and params.predictionPeriod != ''">
+                AND PREDICTIONPERIOD = #{params.predictionPeriod}
+            </if>
+            <if test="params.startDate != null">
+                AND ANALYSISDATE >= #{params.startDate}
+            </if>
+            <if test="params.endDate != null">
+                AND ANALYSISDATE &lt;= #{params.endDate}
+            </if>
+            <if test="params.minAccuracy != null">
+                AND ACCURACY >= #{params.minAccuracy}
+            </if>
+            <if test="params.maxAccuracy != null">
+                AND ACCURACY &lt;= #{params.maxAccuracy}
+            </if>
+        </where>
+        ORDER BY CREATETIME DESC
+    </select>
+
+    <!-- 根据分析编号查询 -->
+    <select id="selectByAnalysisNo" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_PREDICTIVE_ANALYSIS
+        WHERE ANALYSISNO = #{analysisNo} AND ORGID = #{orgId}
+    </select>
+
+    <!-- 检查分析编号唯一性 -->
+    <select id="checkAnalysisNoUniqueness" resultType="int">
+        SELECT COUNT(1)
+        FROM TBL_PREDICTIVE_ANALYSIS
+        WHERE ANALYSISNO = #{analysisNo} AND ORGID = #{orgId}
+        <if test="excludeId != null">
+            AND ANALYSISID != #{excludeId}
+        </if>
+    </select>
+
+    <!-- 根据预测类型查询 -->
+    <select id="selectByPredictionType" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_PREDICTIVE_ANALYSIS
+        WHERE PREDICTIONTYPE = #{predictionType} AND ORGID = #{orgId}
+        ORDER BY ANALYSISDATE DESC
+    </select>
+
+    <!-- 根据模型ID查询 -->
+    <select id="selectByModelId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_PREDICTIVE_ANALYSIS
+        WHERE MODELID = #{modelId} AND ORGID = #{orgId}
+        ORDER BY ANALYSISDATE DESC
+    </select>
+
+    <!-- 根据分析状态查询 -->
+    <select id="selectByAnalysisStatus" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_PREDICTIVE_ANALYSIS
+        WHERE ANALYSISSTATUS = #{analysisStatus} AND ORGID = #{orgId}
+        ORDER BY ANALYSISDATE DESC
+    </select>
+
+    <!-- 查询待执行的预测分析 -->
+    <select id="selectPendingAnalysis" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_PREDICTIVE_ANALYSIS
+        WHERE ANALYSISSTATUS = 'PENDING' AND ORGID = #{orgId}
+        ORDER BY CREATETIME ASC
+    </select>
+
+    <!-- 查询正在执行的预测分析 -->
+    <select id="selectRunningAnalysis" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_PREDICTIVE_ANALYSIS
+        WHERE ANALYSISSTATUS = 'RUNNING' AND ORGID = #{orgId}
+        ORDER BY ANALYSISTIME DESC
+    </select>
+
+    <!-- 查询已完成的预测分析 -->
+    <select id="selectCompletedAnalysis" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_PREDICTIVE_ANALYSIS
+        WHERE ANALYSISSTATUS = 'COMPLETED' AND ORGID = #{orgId}
+        ORDER BY ANALYSISDATE DESC
+    </select>
+
+    <!-- 查询执行失败的预测分析 -->
+    <select id="selectFailedAnalysis" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_PREDICTIVE_ANALYSIS
+        WHERE ANALYSISSTATUS = 'FAILED' AND ORGID = #{orgId}
+        ORDER BY UPDATETIME DESC
+    </select>
+
+    <!-- 查询最近的预测分析 -->
+    <select id="selectRecentAnalysis" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_PREDICTIVE_ANALYSIS
+        WHERE ORGID = #{orgId}
+        AND ANALYSISDATE >= CURRENT_DATE - INTERVAL '#{days}' DAY
+        ORDER BY ANALYSISDATE DESC
+    </select>
+
+    <!-- 查询高准确率的预测分析 -->
+    <select id="selectHighAccuracyAnalysis" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_PREDICTIVE_ANALYSIS
+        WHERE ORGID = #{orgId}
+        AND ACCURACY >= #{minAccuracy}
+        AND ANALYSISSTATUS = 'COMPLETED'
+        ORDER BY ACCURACY DESC
+    </select>
+
+    <!-- 查询过期的预测分析 -->
+    <select id="selectExpiredAnalysis" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_PREDICTIVE_ANALYSIS
+        WHERE ORGID = #{orgId}
+        AND ANALYSISDATE + PREDICTIONHORIZON &lt; CURRENT_DATE
+        ORDER BY ANALYSISDATE ASC
+    </select>
+
+    <!-- 查询即将到期的预测分析 -->
+    <select id="selectExpiringAnalysis" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_PREDICTIVE_ANALYSIS
+        WHERE ORGID = #{orgId}
+        AND ANALYSISDATE + PREDICTIONHORIZON BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '#{days}' DAY
+        ORDER BY ANALYSISDATE ASC
+    </select>
+
+    <!-- 更新分析状态 -->
+    <update id="updateAnalysisStatus">
+        UPDATE TBL_PREDICTIVE_ANALYSIS
+        SET ANALYSISSTATUS = #{analysisStatus},
+            UPDATETIME = CURRENT_TIMESTAMP,
+            UPDATEUSER = #{updateUser}
+        WHERE ANALYSISID = #{analysisId}
+    </update>
+
+    <!-- 更新预测结果 -->
+    <update id="updatePredictionResult">
+        UPDATE TBL_PREDICTIVE_ANALYSIS
+        SET PREDICTIONRESULT = #{predictionResult},
+            UPDATETIME = CURRENT_TIMESTAMP,
+            UPDATEUSER = #{updateUser}
+        WHERE ANALYSISID = #{analysisId}
+    </update>
+
+    <!-- 更新实际结果 -->
+    <update id="updateActualResult">
+        UPDATE TBL_PREDICTIVE_ANALYSIS
+        SET ACTUALRESULT = #{actualResult},
+            VALIDATIONDATE = CURRENT_DATE,
+            UPDATETIME = CURRENT_TIMESTAMP,
+            UPDATEUSER = #{updateUser}
+        WHERE ANALYSISID = #{analysisId}
+    </update>
+
+    <!-- 更新准确率 -->
+    <update id="updateAccuracy">
+        UPDATE TBL_PREDICTIVE_ANALYSIS
+        SET ACCURACY = #{accuracy},
+            UPDATETIME = CURRENT_TIMESTAMP,
+            UPDATEUSER = #{updateUser}
+        WHERE ANALYSISID = #{analysisId}
+    </update>
+
+    <!-- 批量更新分析状态 -->
+    <update id="batchUpdateAnalysisStatus">
+        UPDATE TBL_PREDICTIVE_ANALYSIS
+        SET ANALYSISSTATUS = #{analysisStatus},
+            UPDATETIME = CURRENT_TIMESTAMP,
+            UPDATEUSER = #{updateUser}
+        WHERE ANALYSISID IN
+        <foreach collection="analysisIds" item="analysisId" open="(" separator="," close=")">
+            #{analysisId}
+        </foreach>
+    </update>
+
+    <!-- 获取预测分析统计信息 -->
+    <select id="selectPredictiveAnalysisStatistics" resultType="map">
+        SELECT 
+            COUNT(*) AS totalCount,
+            COUNT(CASE WHEN ANALYSISSTATUS = 'PENDING' THEN 1 END) AS pendingCount,
+            COUNT(CASE WHEN ANALYSISSTATUS = 'RUNNING' THEN 1 END) AS runningCount,
+            COUNT(CASE WHEN ANALYSISSTATUS = 'COMPLETED' THEN 1 END) AS completedCount,
+            COUNT(CASE WHEN ANALYSISSTATUS = 'FAILED' THEN 1 END) AS failedCount,
+            AVG(ACCURACY) AS avgAccuracy,
+            MAX(ACCURACY) AS maxAccuracy,
+            MIN(ACCURACY) AS minAccuracy,
+            COUNT(CASE WHEN ACCURACY >= 90 THEN 1 END) AS highAccuracyCount,
+            COUNT(CASE WHEN ACCURACY >= 80 AND ACCURACY < 90 THEN 1 END) AS mediumAccuracyCount,
+            COUNT(CASE WHEN ACCURACY < 80 THEN 1 END) AS lowAccuracyCount
+        FROM TBL_PREDICTIVE_ANALYSIS
+        WHERE ORGID = #{orgId}
+        <if test="startDate != null">
+            AND ANALYSISDATE >= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND ANALYSISDATE &lt;= #{endDate}
+        </if>
+    </select>
+
+    <!-- 获取预测类型分布 -->
+    <select id="selectPredictionTypeDistribution" resultType="map">
+        SELECT 
+            PREDICTIONTYPE AS predictionType,
+            COUNT(*) AS count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM TBL_PREDICTIVE_ANALYSIS WHERE ORGID = #{orgId}), 2) AS percentage,
+            AVG(ACCURACY) AS avgAccuracy
+        FROM TBL_PREDICTIVE_ANALYSIS
+        WHERE ORGID = #{orgId}
+        GROUP BY PREDICTIONTYPE
+        ORDER BY count DESC
+    </select>
+
+    <!-- 获取分析状态分布 -->
+    <select id="selectAnalysisStatusDistribution" resultType="map">
+        SELECT
+            ANALYSISSTATUS AS analysisStatus,
+            COUNT(*) AS count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM TBL_PREDICTIVE_ANALYSIS WHERE ORGID = #{orgId}), 2) AS percentage
+        FROM TBL_PREDICTIVE_ANALYSIS
+        WHERE ORGID = #{orgId}
+        GROUP BY ANALYSISSTATUS
+        ORDER BY count DESC
+    </select>
+
+    <!-- 获取模型使用统计 -->
+    <select id="selectModelUsageStatistics" resultType="map">
+        SELECT
+            MODELID AS modelId,
+            COUNT(*) AS usageCount,
+            AVG(ACCURACY) AS avgAccuracy,
+            COUNT(CASE WHEN ANALYSISSTATUS = 'COMPLETED' THEN 1 END) AS completedCount,
+            COUNT(CASE WHEN ANALYSISSTATUS = 'FAILED' THEN 1 END) AS failedCount
+        FROM TBL_PREDICTIVE_ANALYSIS
+        WHERE ORGID = #{orgId}
+        GROUP BY MODELID
+        ORDER BY usageCount DESC
+    </select>
+
+    <!-- 获取准确率统计 -->
+    <select id="selectAccuracyStatistics" resultType="map">
+        SELECT
+            CASE
+                WHEN ACCURACY >= 90 THEN 'EXCELLENT'
+                WHEN ACCURACY >= 80 THEN 'GOOD'
+                WHEN ACCURACY >= 70 THEN 'AVERAGE'
+                ELSE 'POOR'
+            END AS accuracyLevel,
+            COUNT(*) AS count,
+            AVG(ACCURACY) AS avgAccuracy,
+            MIN(ACCURACY) AS minAccuracy,
+            MAX(ACCURACY) AS maxAccuracy
+        FROM TBL_PREDICTIVE_ANALYSIS
+        WHERE ORGID = #{orgId} AND ACCURACY IS NOT NULL
+        GROUP BY
+            CASE
+                WHEN ACCURACY >= 90 THEN 'EXCELLENT'
+                WHEN ACCURACY >= 80 THEN 'GOOD'
+                WHEN ACCURACY >= 70 THEN 'AVERAGE'
+                ELSE 'POOR'
+            END
+        ORDER BY avgAccuracy DESC
+    </select>
+
+    <!-- 获取预测趋势分析 -->
+    <select id="selectPredictionTrend" resultType="map">
+        SELECT
+            ANALYSISDATE AS analysisDate,
+            COUNT(*) AS analysisCount,
+            AVG(ACCURACY) AS avgAccuracy,
+            COUNT(CASE WHEN ANALYSISSTATUS = 'COMPLETED' THEN 1 END) AS completedCount
+        FROM TBL_PREDICTIVE_ANALYSIS
+        WHERE ORGID = #{orgId}
+        <if test="predictionType != null and predictionType != ''">
+            AND PREDICTIONTYPE = #{predictionType}
+        </if>
+        <if test="startDate != null">
+            AND ANALYSISDATE >= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND ANALYSISDATE &lt;= #{endDate}
+        </if>
+        GROUP BY ANALYSISDATE
+        ORDER BY ANALYSISDATE ASC
+    </select>
+
+    <!-- 获取预测性能分析 -->
+    <select id="selectPredictionPerformance" resultType="map">
+        SELECT
+            PREDICTIONTYPE AS predictionType,
+            COUNT(*) AS totalPredictions,
+            COUNT(CASE WHEN ANALYSISSTATUS = 'COMPLETED' THEN 1 END) AS completedPredictions,
+            COUNT(CASE WHEN ANALYSISSTATUS = 'FAILED' THEN 1 END) AS failedPredictions,
+            AVG(ACCURACY) AS avgAccuracy,
+            AVG(PREDICTIONHORIZON) AS avgPredictionHorizon,
+            COUNT(CASE WHEN ACTUALRESULT IS NOT NULL THEN 1 END) AS validatedPredictions
+        FROM TBL_PREDICTIVE_ANALYSIS
+        WHERE ORGID = #{orgId}
+        <if test="startDate != null">
+            AND ANALYSISDATE >= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND ANALYSISDATE &lt;= #{endDate}
+        </if>
+        GROUP BY PREDICTIONTYPE
+        ORDER BY avgAccuracy DESC
+    </select>
+
+    <!-- 查询预测对比数据 -->
+    <select id="selectPredictionComparison" resultType="map">
+        SELECT
+            ANALYSISID AS analysisId,
+            ANALYSISNO AS analysisNo,
+            ANALYSISNAME AS analysisName,
+            PREDICTIONTYPE AS predictionType,
+            ACCURACY AS accuracy,
+            ANALYSISDATE AS analysisDate,
+            ANALYSISSTATUS AS analysisStatus
+        FROM TBL_PREDICTIVE_ANALYSIS
+        WHERE ANALYSISID IN
+        <foreach collection="analysisIds" item="analysisId" open="(" separator="," close=")">
+            #{analysisId}
+        </foreach>
+        ORDER BY ACCURACY DESC
+    </select>
+
+    <!-- 查询预测历史数据 -->
+    <select id="selectPredictionHistory" resultType="map">
+        SELECT
+            ANALYSISDATE AS analysisDate,
+            ANALYSISNAME AS analysisName,
+            ACCURACY AS accuracy,
+            ANALYSISSTATUS AS analysisStatus,
+            PREDICTIONHORIZON AS predictionHorizon
+        FROM TBL_PREDICTIVE_ANALYSIS
+        WHERE PREDICTIONTYPE = #{predictionType} AND ORGID = #{orgId}
+        <if test="startDate != null">
+            AND ANALYSISDATE >= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND ANALYSISDATE &lt;= #{endDate}
+        </if>
+        ORDER BY ANALYSISDATE DESC
+    </select>
+
+    <!-- 查询预测准确率排行 -->
+    <select id="selectAccuracyRanking" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_PREDICTIVE_ANALYSIS
+        WHERE ORGID = #{orgId}
+        AND ACCURACY IS NOT NULL
+        AND ANALYSISSTATUS = 'COMPLETED'
+        ORDER BY ACCURACY DESC
+        <if test="limit != null">
+            LIMIT #{limit}
+        </if>
+    </select>
+
+    <!-- 查询模型预测效果 -->
+    <select id="selectModelPredictionEffectiveness" resultType="map">
+        SELECT
+            COUNT(*) AS totalPredictions,
+            AVG(ACCURACY) AS avgAccuracy,
+            COUNT(CASE WHEN ACCURACY >= 90 THEN 1 END) AS excellentCount,
+            COUNT(CASE WHEN ACCURACY >= 80 AND ACCURACY < 90 THEN 1 END) AS goodCount,
+            COUNT(CASE WHEN ACCURACY < 80 THEN 1 END) AS poorCount,
+            COUNT(CASE WHEN ANALYSISSTATUS = 'COMPLETED' THEN 1 END) AS completedCount,
+            COUNT(CASE WHEN ANALYSISSTATUS = 'FAILED' THEN 1 END) AS failedCount
+        FROM TBL_PREDICTIVE_ANALYSIS
+        WHERE MODELID = #{modelId} AND ORGID = #{orgId}
+    </select>
+
+    <!-- 查询预测偏差分析 -->
+    <select id="selectPredictionDeviationAnalysis" resultType="map">
+        SELECT
+            PREDICTIONTYPE AS predictionType,
+            COUNT(CASE WHEN DEVIATIONANALYSIS IS NOT NULL THEN 1 END) AS deviationCount,
+            AVG(ACCURACY) AS avgAccuracy,
+            COUNT(*) AS totalCount
+        FROM TBL_PREDICTIVE_ANALYSIS
+        WHERE ORGID = #{orgId}
+        AND ACTUALRESULT IS NOT NULL
+        <if test="startDate != null">
+            AND VALIDATIONDATE >= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND VALIDATIONDATE &lt;= #{endDate}
+        </if>
+        GROUP BY PREDICTIONTYPE
+        ORDER BY avgAccuracy DESC
+    </select>
+
+    <!-- 查询预测覆盖率统计 -->
+    <select id="selectPredictionCoverageStatistics" resultType="map">
+        SELECT
+            COUNT(*) AS totalPredictions,
+            COUNT(CASE WHEN PREDICTIONRESULT IS NOT NULL THEN 1 END) AS predictionsWithResults,
+            COUNT(CASE WHEN ACTUALRESULT IS NOT NULL THEN 1 END) AS validatedPredictions,
+            COUNT(CASE WHEN DEVIATIONANALYSIS IS NOT NULL THEN 1 END) AS deviationAnalyzed,
+            ROUND(COUNT(CASE WHEN PREDICTIONRESULT IS NOT NULL THEN 1 END) * 100.0 / COUNT(*), 2) AS resultCoverage,
+            ROUND(COUNT(CASE WHEN ACTUALRESULT IS NOT NULL THEN 1 END) * 100.0 / COUNT(*), 2) AS validationCoverage
+        FROM TBL_PREDICTIVE_ANALYSIS
+        WHERE ORGID = #{orgId}
+    </select>
+
+    <!-- 查询预测质量评估 -->
+    <select id="selectPredictionQualityAssessment" resultType="map">
+        SELECT
+            PREDICTIONTYPE AS predictionType,
+            COUNT(*) AS totalCount,
+            AVG(ACCURACY) AS avgAccuracy,
+            AVG(CONFIDENCELEVEL) AS avgConfidenceLevel,
+            COUNT(CASE WHEN ACCURACY >= 85 THEN 1 END) AS highQualityCount,
+            ROUND(COUNT(CASE WHEN ACCURACY >= 85 THEN 1 END) * 100.0 / COUNT(*), 2) AS qualityRate
+        FROM TBL_PREDICTIVE_ANALYSIS
+        WHERE ORGID = #{orgId}
+        AND ANALYSISSTATUS = 'COMPLETED'
+        <if test="startDate != null">
+            AND ANALYSISDATE >= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND ANALYSISDATE &lt;= #{endDate}
+        </if>
+        GROUP BY PREDICTIONTYPE
+        ORDER BY qualityRate DESC
+    </select>
+
+    <!-- 删除过期预测数据 -->
+    <delete id="deleteExpiredPredictions">
+        DELETE FROM TBL_PREDICTIVE_ANALYSIS
+        WHERE ORGID = #{orgId}
+        AND CREATETIME &lt; CURRENT_DATE - INTERVAL '#{retentionDays}' DAY
+        AND ANALYSISSTATUS IN ('COMPLETED', 'FAILED')
+    </delete>
+
+    <!-- 清理预测缓存数据 -->
+    <update id="cleanPredictionCacheData">
+        UPDATE TBL_PREDICTIVE_ANALYSIS
+        SET INPUTDATA = NULL,
+            PREDICTIONRESULT = NULL
+        WHERE ORGID = #{orgId}
+        AND ANALYSISDATE &lt; CURRENT_DATE - INTERVAL '90' DAY
+    </update>
+
+    <!-- 查询预测异常数据 -->
+    <select id="selectAbnormalPredictions" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_PREDICTIVE_ANALYSIS
+        WHERE ORGID = #{orgId}
+        AND (
+            (ACCURACY IS NOT NULL AND ACCURACY &lt; 0) OR
+            (ACCURACY IS NOT NULL AND ACCURACY > 100) OR
+            (PREDICTIONHORIZON IS NOT NULL AND PREDICTIONHORIZON &lt;= 0) OR
+            (CONFIDENCELEVEL IS NOT NULL AND (CONFIDENCELEVEL &lt; 0 OR CONFIDENCELEVEL > 100))
+        )
+        ORDER BY UPDATETIME DESC
+    </select>
+
+    <!-- 查询未验证的预测 -->
+    <select id="selectUnvalidatedPredictions" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_PREDICTIVE_ANALYSIS
+        WHERE ORGID = #{orgId}
+        AND ANALYSISSTATUS = 'COMPLETED'
+        AND ACTUALRESULT IS NULL
+        AND ANALYSISDATE + PREDICTIONHORIZON &lt; CURRENT_DATE
+        ORDER BY ANALYSISDATE ASC
+    </select>
+
+</mapper>

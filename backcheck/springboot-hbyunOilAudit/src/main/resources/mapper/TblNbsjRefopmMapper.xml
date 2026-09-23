@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.audit.oracle.mapper.TblNbsjRefopmMapper">
+    <select id="findNbsjReformList" resultType="com.huabo.audit.oracle.entity.TblNbsjRefopm">
+        SELECT DISTINCT concat(BUG.BUGID,'__b') problemid, BUG.BUGNUMBER code,o.orgname company,'缺陷'
+        source,BUG.DISCOVERPERSON discoverer,bug.BUGDESCRIPTE details FROM TBL_NBSJ_BUG bug
+        LEFT JOIN TBL_ORGANIZATION o ON o.orgid = BUG.BUGDEPARTMENT
+        <where>
+            BUG.NEEDREFORM = '是' AND BUG.INBUGIDB IS NULL and BUG.BUGBYSYSTEM like '%nb%'
+            <!--字符串需要判断空字符串 精准查询-->
+            <if test="selectidIdsstr != null and selectidIdsstr != ''">
+                AND BUG.BUGID NOT IN (#{selectidIdsstr})
+            </if>
+            <!--字符串需要判断空字符串 精准查询-->
+            <if test="re.code != null and re.code != ''">
+                and BUG.BUGNUMBER like concat(concat('%',#{re.code}),'%')
+            </if>
+            <!--字符串需要判断空字符串 精准查询-->
+            <if test="projectid != null and projectid != ''">
+                and BUG.PROJECTID = #{projectid}
+            </if>
+            UNION ALL
+            SELECT DISTINCT concat(QU.QUESTIONID,'__p') problemid, AA.SHEETCODE code,aa.orgIdNames company,'审计发现'
+            source, AA.REALNAME discoverer,substr(aa.AUDITDISCOVERABLE,400,1) details
+            FROM TBL_NBSJ_QUESTION qu LEFT JOIN (SELECT SH.SHEETID, SA.REALNAME, SH.PROJECTID, SH.SHEETCODE,
+            SH.CREATESTAFF, ORG.ORGNAME,SH.AUDITDISCOVERABLE,sh.orgIdNames
+            FROM TBL_NBSJ_SHEET sh LEFT JOIN TBL_STAFF sa ON SH.CREATESTAFF = SA.STAFFID LEFT JOIN TBL_ORGANIZATION org
+            ON sh.AUDITORG = ORG.ORGID) aa ON QU.SHEETID = AA.SHEETID
+            WHERE 1 = 1 AND QU.RECSTATUS = 1 AND AA.PROJECTID = #{projectid}
+            <if test="selectidIdsstr != null and selectidIdsstr != ''">
+                AND QU.QUESTIONID NOT IN (#{selectidIdsstr})
+            </if>
+            <!--字符串需要判断空字符串 精准查询-->
+            <if test="re.code != null and re.code != ''">
+                and SHEETCODE like concat(concat('%',#{re.code}),'%')
+            </if>
+        </where>
+        ORDER BY problemid
+    </select>
+
+    <select id="findNbsjReformBySolutinFa" resultType="com.huabo.audit.oracle.entity.TblNbsjRefopm">
+        SELECT DISTINCT concat(BUG.BUGID,'__b') problemid,BUG.BUGNUMBER code,o.orgname company,'缺陷'
+        source,BUG.DISCOVERPERSON
+        discoverer,sa.REALNAME zgzxxrname,
+        bug.BUGDESCRIPTE details,RE.STATUS STATUS,re.REFORMID
+        REFORMID,RE.REFORMRESULT,RE.REFORMMEASURE,RE.REFORMCARRYOUT
+        FROM TBL_NBSJ_BUG bug LEFT JOIN TBL_NBSJ_REFOPM re ON BUG.BUGID = RE.BUGID LEFT JOIN TBL_ORGANIZATION o ON
+        o.orgid = BUG.BUGDEPARTMENT
+        LEFT JOIN TBL_STAFF sa ON re.PERONINCHARGE = SA.STAFFID
+        <where>
+            BUG.NEEDREFORM = '是' AND BUG.INBUGIDB IS NULL AND RE.STATUS != 0 AND (RE.LASTREFORMSTATUS is null or
+            RE.LASTREFORMSTATUS = 1) AND SOLUTIONID = #{solutionid}
+            <!--字符串需要判断空字符串 精准查询-->
+            <if test="re.code != null and re.code != ''">
+                and BUG.BUGNUMBER like concat(concat('%',#{re.code}),'%')
+            </if>
+            UNION ALL
+            SELECT DISTINCT concat(QU.QUESTIONID,'__p') problemid, AA.SHEETCODE code,aa.orgname company,'审计发现'
+            source,AA.REALNAME discoverer,
+            bb.REALNAME zgzxxrname,substr(aa.AUDITDISCOVERABLE,400,1) details,bb.STATUS STATUS,
+            bb.REFORMID REFORMID,bb.REFORMRESULT,bb.REFORMMEASURE,bb.REFORMCARRYOUT
+            FROM TBL_NBSJ_QUESTION qu
+            LEFT JOIN (SELECT
+            SH.SHEETID,SA.REALNAME,SH.PROJECTID,SH.SHEETCODE,SH.CREATESTAFF,ORG.ORGNAME,SH.AUDITDISCOVERABLE FROM
+            TBL_NBSJ_SHEET sh
+            LEFT JOIN TBL_STAFF sa ON SH.CREATESTAFF = SA.STAFFID LEFT JOIN TBL_ORGANIZATION org ON sh.AUDITORG =
+            ORG.ORGID ) aa ON QU.SHEETID = AA.SHEETID
+            LEFT JOIN ( SELECT
+            RE.QUESTIONID,SA.REALNAME,RE.STATUS,RE.LASTREFORMSTATUS,RE.SOLUTIONID,re.REFORMID,RE.REFORMRESULT,RE.REFORMMEASURE,RE.REFORMCARRYOUT
+            FROM TBL_NBSJ_REFOPM re LEFT JOIN TBL_STAFF sa ON re.PERONINCHARGE = SA.STAFFID ) bb ON BB.QUESTIONID
+            =QU.QUESTIONID
+            WHERE 1 = 1 AND QU.RECSTATUS = 1 AND bb.status <![CDATA[<>]]> 0 and (bb.LASTREFORMSTATUS is null or
+            bb.LASTREFORMSTATUS=1)
+            and bb.SOLUTIONID= #{solutionid}
+            <!--字符串需要判断空字符串 精准查询-->
+            <if test="re.code != null and re.code != ''">
+                and SHEETCODE like concat(concat('%',#{re.code}),'%')
+            </if>
+        </where>
+        ORDER BY problemid
+    </select>
+
+    <select id="findNbsjReformBySolution" resultType="com.huabo.audit.oracle.entity.TblNbsjRefopm">
+        SELECT DISTINCT concat(BUG.BUGID,'__b') problemid,BUG.BUGNUMBER code,o.orgname company,'缺陷'
+        source,BUG.DISCOVERPERSON discoverer,sa.REALNAME zgzxxrname,bug.BUGDESCRIPTE details,RE.STATUS
+        STATUS,re.REFORMID REFORMID,RE.REFORMRESULT,RE.REFORMMEASURE,RE.REFORMCARRYOUT
+        FROM TBL_NBSJ_BUG bug LEFT JOIN TBL_NBSJ_REFOPM re ON BUG.BUGID = RE.BUGID LEFT JOIN TBL_ORGANIZATION o ON
+        o.orgid = BUG.BUGDEPARTMENT
+        LEFT JOIN TBL_STAFF sa ON re.PERONINCHARGE = SA.STAFFID
+        <where>
+            BUG.NEEDREFORM = '是' AND BUG.INBUGIDB IS NULL AND SOLUTIONID = #{solutionid}
+            <!--字符串需要判断空字符串 精准查询-->
+            <if test="re.code != null and re.code != ''">
+                and BUG.BUGNUMBER like concat(concat('%',#{re.code}),'%')
+            </if>
+            <choose>
+                <when test="type != null and type == '1'">
+                    AND RE.STATUS <![CDATA[<>]]> 0 AND (RE.LASTREFORMSTATUS is null or RE.LASTREFORMSTATUS=1)
+                </when>
+                <when test="type != null and type == '2'">
+                    AND RE.STATUS <![CDATA[<>]]> 0 AND RE.LASTREFORMSTATUS=1 and re.status <![CDATA[<>]]> 3 AND
+                    sa.staffid = #{re.peronincharge}
+                </when>
+            </choose>
+            UNION ALL
+            SELECT DISTINCT concat(QU.QUESTIONID,'__p') problemid, AA.SHEETCODE code,aa.ORGIDNAMES company,'审计发现'
+            source,AA.REALNAME discoverer,bb.REALNAME zgzxxrname,substr(aa.AUDITDISCOVERABLE,400,1) details,bb.STATUS
+            STATUS,bb.REFORMID REFORMID,bb.REFORMRESULT,bb.REFORMMEASURE,bb.REFORMCARRYOUT
+            FROM TBL_NBSJ_QUESTION qu LEFT JOIN ( SELECT
+            SH.SHEETID,SA.REALNAME,SH.PROJECTID,SH.SHEETCODE,SH.CREATESTAFF,ORG.ORGNAME,SH.AUDITDISCOVERABLE,SH.ORGIDNAMES
+            FROM TBL_NBSJ_SHEET sh
+            LEFT JOIN TBL_STAFF sa ON SH.CREATESTAFF = SA.STAFFID LEFT JOIN TBL_ORGANIZATION org ON sh.AUDITORG =
+            ORG.ORGID ) aa ON QU.SHEETID = AA.SHEETID
+            LEFT JOIN ( SELECT
+            RE.QUESTIONID,SA.REALNAME,RE.STATUS,RE.LASTREFORMSTATUS,RE.SOLUTIONID,re.REFORMID,re.PERONINCHARGE,RE.REFORMRESULT,RE.REFORMMEASURE,RE.REFORMCARRYOUT
+            FROM TBL_NBSJ_REFOPM re LEFT JOIN TBL_STAFF sa ON re.PERONINCHARGE = SA.STAFFID ) bb ON BB.QUESTIONID =
+            QU.QUESTIONID
+            WHERE 1 = 1 AND QU.RECSTATUS = 1 and bb.SOLUTIONID= #{solutionid}
+            <if test="re.code != null and re.code != ''">
+                and SHEETCODE like concat(concat('%',#{re.code}),'%')
+            </if>
+            <choose>
+                <when test="type != null and type == '1'">
+                    AND bb.status != 0 and ( bb.LASTREFORMSTATUS is null or bb.LASTREFORMSTATUS =1)
+                </when>
+                <when test="type != null and type == '2'">
+                    AND bb.status != 0 and bb.LASTREFORMSTATUS =1 AND bb.status <![CDATA[<>]]> 3 AND
+                    bb.PERONINCHARGE = #{re.peronincharge}
+                </when>
+            </choose>
+        </where>
+        ORDER BY problemid
+    </select>
+
+    <select id="findNbsjReformBySolutionPageInfowxh" resultType="com.huabo.audit.oracle.entity.TblNbsjRefopm">
+        select * from ( SELECT DISTINCT concat(BUG.BUGID,'__b') problemid,BUG.BUGNUMBER code,o.orgname company,'缺陷'
+        source,BUG.DISCOVERPERSON discoverer,sa.REALNAME zgzxxrname,bug.BUGDESCRIPTE details,RE.STATUS
+        STATUS,re.REFORMID REFORMID,re.zgjgresult, re.WXHSTATUS,pro.PRJOECTNAME,pro.AUDITORGID,re.SOLUTIONID
+        FROM TBL_NBSJ_BUG bug LEFT JOIN TBL_NBSJ_PROJECT pro on BUG.PROJECTID=PRO.PROJECTID LEFT JOIN TBL_NBSJ_REFOPM re
+        ON BUG.BUGID = RE.BUGID LEFT JOIN TBL_ORGANIZATION o ON o.orgid = BUG.BUGDEPARTMENT
+        LEFT JOIN TBL_STAFF sa ON re.PERONINCHARGE = SA.STAFFID
+        <where>
+            BUG.NEEDREFORM = '是' AND BUG.INBUGIDB IS NULL AND ( (re.STATUS =3 and re.LASTREFORMSTATUS =1 AND
+            re.reformresult is not null and re.zgjgresult != '已完成整改' ) or ( re.WXHSTATUS=1 and re.LASTREFORMSTATUS =1
+            ) )
+            <!--字符串需要判断空字符串 精准查询-->
+            <if test="re.code != null and re.code != ''">
+                and BUG.BUGNUMBER like concat(concat('%',#{re.code}),'%')
+            </if>
+            <if test="re.projectname != null and re.projectname != ''">
+                and pro.PRJOECTNAME like concat(concat('%',#{re.projectname}),'%')
+            </if>
+            <if test="re.company != null and re.company != ''">
+                and pro.AUDITORGID = #{re.company}
+            </if>
+            UNION ALL
+            SELECT DISTINCT concat(QU.QUESTIONID,'__p') problemid, AA.SHEETCODE code,aa.orgname company,'审计发现'
+            source,AA.REALNAME discoverer,bb.REALNAME zgzxxrname,substr(aa.AUDITDISCOVERABLE,400,1) details,bb.STATUS
+            STATUS,bb.REFORMID,bb.zgjgresult,bb.WXHSTATUS,aa.PRJOECTNAME,aa.AUDITORGID,bb.SOLUTIONID
+            FROM TBL_NBSJ_QUESTION qu LEFT JOIN ( SELECT
+            SH.SHEETID,SA.REALNAME,SH.PROJECTID,SH.SHEETCODE,SH.CREATESTAFF,ORG.ORGNAME,SH.AUDITDISCOVERABLE,SH.ORGIDNAMES
+            FROM TBL_NBSJ_SHEET sh
+            FROM TBL_NBSJ_QUESTION qu LEFT JOIN ( SELECT
+            SH.SHEETID,SA.REALNAME,SH.PROJECTID,SH.SHEETCODE,SH.CREATESTAFF,ORG.ORGNAME,SH.AUDITDISCOVERABLE,PRO.PRJOECTNAME,PRO.AUDITORGID
+            FROM TBL_NBSJ_SHEET sh
+            LEFT JOIN TBL_NBSJ_PROJECT pro on SH.PROJECTID=PRO.PROJECTID LEFT JOIN ( SELECT
+            RE.QUESTIONID,SA.REALNAME,RE.STATUS,RE.LASTREFORMSTATUS,RE.SOLUTIONID,re.REFORMID,re.PERONINCHARGE,RE.REFORMRESULT,RE.REFORMMEASURE,RE.REFORMCARRYOUT
+            FROM TBL_NBSJ_REFOPM re
+            LEFT JOIN TBL_STAFF sa ON re.PERONINCHARGE = SA.STAFFID ) bb ON BB.QUESTIONID = QU.QUESTIONID
+            LEFT JOIN TBL_STAFF sa ON SH.CREATESTAFF = SA.STAFFID LEFT JOIN TBL_ORGANIZATION org ON sh.AUDITORG =
+            ORG.ORGID ) aa ON QU.SHEETID = AA.SHEETID
+            LEFT JOIN ( SELECT
+            RE.QUESTIONID,SA.REALNAME,RE.STATUS,RE.LASTREFORMSTATUS,RE.SOLUTIONID,re.REFORMID,re.PERONINCHARGE,re.zgjgresult,re.WXHSTATUS
+            FROM TBL_NBSJ_REFOPM re LEFT JOIN TBL_STAFF sa ON re.PERONINCHARGE = SA.STAFFID ) bb ON BB.QUESTIONID =
+            QU.QUESTIONID WHERE 1 = 1 AND QU.RECSTATUS = 1 and bb.SOLUTIONID= #{solutionid}
+            WHERE 1 = 1 AND QU.RECSTATUS = 1 AND ((QU.RECSTATUS = 1 AND bb.STATUS =3 and bb.LASTREFORMSTATUS =1 AND
+            bb.zgjgresult is not null and bb.zgjgresult <![CDATA[<>]]> '已完成整改' ) or ( QU.RECSTATUS = 1 AND bb.WXHSTATUS=1 and
+            bb.LASTREFORMSTATUS =1 ) )
+            <if test="re.code != null and re.code != ''">
+                and SHEETCODE like concat(concat('%',#{re.code}),'%')
+            </if>
+            <if test="re.projectname != null and re.projectname != ''">
+                and PRJOECTNAME like concat(concat('%',#{re.projectname}),'%')
+            </if>
+            <if test="re.company != null and re.company != ''">
+                and AUDITORGID = #{re.company}
+            </if>
+        </where>
+        ORDER BY problemid
+    </select>
+
+    <select id="findNbsjReformByAllPageInfo" resultType="com.huabo.audit.oracle.entity.TblNbsjRefopm">
+        SELECT RE.REFORMID,PRO.PRJOECTNAME,CASE WHEN SH.ORGIDS=NULL THEN ST.REALNAME ELSE SH.ORGIDNAMES END
+        oegname,SH.SHEETCODE,substr(sh.AUDITDISCOVERABLE,400,1)
+        auditDiscoverable,RE.REFORMRESULT,RE.REFORMMEASURE,STA.REALNAME,RE.STATUS
+        from TBL_NBSJ_REFOPM re
+        LEFT JOIN TBL_NBSJ_PROJECT pro on RE.PROJECTID=PRO.PROJECTID
+        LEFT JOIN TBL_STAFF sta on RE.PERONINCHARGE=STA.STAFFID
+        LEFT JOIN TBL_NBSJ_QUESTION qu on re.QUESTIONID=QU.QUESTIONID
+        LEFT JOIN TBL_NBSJ_SHEET sh on QU.SHEETID=SH.SHEETID
+        LEFT JOIN TBL_STAFF st on SH.AUDITSTAFFID=ST.STAFFID
+        LEFT JOIN TBL_ORGANIZATION org on SH.AUDITORG=ORG.ORGID
+        <where>
+            RE.LASTREFORMSTATUS=1 AND RE.PROJECTID is not NULL
+            <if test="projectname != null and projectname != ''">
+                and PRO.PRJOECTNAME like concat(concat('%',#{projectname}),'%')
+            </if>
+            <if test="code != null and code != ''">
+                and SHEETCODE like concat(concat('%',#{code}),'%')
+            </if>
+            <if test="auditorg != null and auditorg != ''">
+                and (sh.AUDITORG = #{auditorg} or sh.AUDITSTAFFID = #{auditorg} )
+            </if>
+        </where>
+        order BY REFORMID
+    </select>
+</mapper>

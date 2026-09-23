@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.TblSealUsageRecordMapper">
+
+    <!-- 结果映射 - 基于 01_create_seal_usage_record.sql 表结构 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TblSealUsageRecord">
+        <id column="ID" property="id" />
+        <result column="RECORD_NUMBER" property="recordNumber" />
+        <result column="SEAL_ID" property="sealId" />
+        <result column="SEAL_CODE" property="sealCode" />
+        <result column="SEAL_NAME" property="sealName" />
+        <result column="OPERATOR_ID" property="operatorId" />
+        <result column="OPERATOR_NAME" property="operatorName" />
+        <result column="BUSINESS_TYPE" property="businessType" />
+        <result column="BUSINESS_NUMBER" property="businessNumber" />
+        <result column="USAGE_STATUS" property="usageStatus" />
+        <result column="USAGE_TIME" property="usageTime" />
+        <result column="USAGE_DESCRIPTION" property="usageDescription" />
+        <result column="APPROVER" property="approver" />
+        <result column="APPROVAL_TIME" property="approvalTime" />
+        <result column="REMARK" property="remark" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_TIME" property="updateTime" />
+    </resultMap>
+
+    <!-- 基础列定义 -->
+    <sql id="Base_Column_List">
+        ID, RECORD_NUMBER, SEAL_ID, SEAL_CODE, SEAL_NAME,
+        OPERATOR_ID, OPERATOR_NAME, BUSINESS_TYPE, BUSINESS_NUMBER,
+        USAGE_STATUS, USAGE_TIME, USAGE_DESCRIPTION, APPROVER,
+        APPROVAL_TIME, REMARK, CREATE_TIME, UPDATE_TIME
+    </sql>
+
+    <!-- 根据ID查询 -->
+    <select id="selectByPrimaryId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_SEAL_USAGE_RECORD
+        WHERE ID = #{id}
+    </select>
+
+    <!--
+        注意：selectList 和 selectPage 方法由 MyBatis-Plus BaseMapper 内置提供
+        不需要在 XML 中重复定义，否则会导致 SQL 冲突
+        MyBatis-Plus 会自动根据 Entity 的 @TableField 注解生成正确的 SQL
+    -->
+
+    <!-- 条件查询 -->
+    <select id="selectByCondition" parameterType="map" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_SEAL_USAGE_RECORD
+        <where>
+            <if test="sealCode != null and sealCode != ''">
+                AND SEAL_CODE LIKE '%' || #{sealCode} || '%'
+            </if>
+            <if test="sealName != null and sealName != ''">
+                AND SEAL_NAME LIKE '%' || #{sealName} || '%'
+            </if>
+            <if test="operatorName != null and operatorName != ''">
+                AND OPERATOR_NAME LIKE '%' || #{operatorName} || '%'
+            </if>
+            <if test="businessType != null and businessType != ''">
+                AND BUSINESS_TYPE = #{businessType}
+            </if>
+            <if test="usageStatus != null and usageStatus != ''">
+                AND USAGE_STATUS = #{usageStatus}
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND USAGE_TIME &gt;= TO_TIMESTAMP(#{startDate}, 'YYYY-MM-DD HH24:MI:SS')
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND USAGE_TIME &lt;= TO_TIMESTAMP(#{endDate}, 'YYYY-MM-DD HH24:MI:SS')
+            </if>
+        </where>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 统计总数 -->
+    <select id="countTotal" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM TBL_SEAL_USAGE_RECORD
+    </select>
+
+    <!-- 统计今日使用次数 -->
+    <select id="countToday" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM TBL_SEAL_USAGE_RECORD
+        WHERE TRUNC(USAGE_TIME) = TRUNC(SYSDATE)
+    </select>
+
+    <!-- 统计本月使用次数 -->
+    <select id="countMonth" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM TBL_SEAL_USAGE_RECORD
+        WHERE USAGE_TIME &gt;= TRUNC(SYSDATE, 'MM')
+    </select>
+
+    <!-- 按状态统计 -->
+    <select id="countByStatus" resultType="java.util.Map">
+        SELECT USAGE_STATUS as status, COUNT(*) as count
+        FROM TBL_SEAL_USAGE_RECORD
+        GROUP BY USAGE_STATUS
+    </select>
+
+    <!-- 按业务类型统计 -->
+    <select id="countByBusinessType" resultType="java.util.Map">
+        SELECT BUSINESS_TYPE as businessType, COUNT(*) as count
+        FROM TBL_SEAL_USAGE_RECORD
+        GROUP BY BUSINESS_TYPE
+    </select>
+
+    <!-- 获取下一个ID -->
+    <select id="getNextId" resultType="java.lang.Long">
+        SELECT NVL(MAX(ID), 0) + 1 FROM TBL_SEAL_USAGE_RECORD
+    </select>
+
+</mapper>

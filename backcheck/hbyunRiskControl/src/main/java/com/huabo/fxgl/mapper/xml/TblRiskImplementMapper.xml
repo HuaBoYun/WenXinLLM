@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.fxgl.mapper.TblRiskImplementMapper">
+
+<!--  -->
+	 <select id="selectAllList" resultType="com.huabo.fxgl.entity.TblRiskImplementEntity">
+		 select  a.ORGNAME as ImpLssuedUnitName,t.REALNAME as ImpLssuedStaffidName,r.* from TBL_RISK_IMPLEMENT r 
+        <!--s.REALNAME as ImpWayStaffName,o.orgname as ImpWayDeptName,g.orgname as ImpDutyUnitName,   left join TBL_ORGANIZATION o on r.IMP_WAY_DEPT=o.ORGID     left join TBL_STAFF s on r.IMP_WAY_STAFF=s.STAFFID   left join TBL_ORGANIZATION g on  r.IMP_DUTY_UNIT=g.ORGID  --> 
+        left join TBL_ORGANIZATION a on  r.IMP_LSSUED_UNIT=a.ORGID  
+        left join TBL_STAFF t on r.IMP_LSSUED_STAFFID=t.STAFFID where 1=1  
+		<if test="queryParam.impRiskName!=null and queryParam.impRiskName!='' ">
+			and IMP_RISK_NAME  LIKE concat(concat('%',#{queryParam.impRiskName} ),'%')
+		</if>
+		<if test="queryParam.majorId!=null and queryParam.majorId!='' ">
+			and majorId=#{queryParam.majorId}
+		</if>
+	      <if test="ids!=null and ids.length>0">
+	        and id in 
+	     <foreach collection="ids" item="item" open="(" close=")" separator=",">
+	      #{item}	   
+	     </foreach>
+	     </if>
+	     <if test="queryParam.impLssuedStaffid!=null and queryParam.impLssuedStaffid!='' ">
+			  and ( IMP_LSSUED_STAFFID=#{queryParam.impLssuedStaffid} or TRANSFERSTAFFID=#{queryParam.impLssuedStaffid})
+		</if>
+	     	<if test="queryParam.impLssuedUnit!=null and queryParam.impLssuedUnit!='' ">
+			  and IMP_LSSUED_UNIT=#{queryParam.impLssuedUnit}
+		</if>
+	  
+		order by id
+	</select>  
+	 
+	
+	
+	 <select id="selectAllSummaryList" resultType="com.huabo.fxgl.entity.TblRiskImplementEntity">
+		 select  c.quartername as jd,a.ORGNAME as ImpLssuedUnitName
+         , t.REALNAME as ImpLssuedStaffidName,r.* from TBL_RISK_IMPLEMENT r 
+          left join TBL_MAJORRISK_BRANCHCREATE c on c.id=r.majorid
+         left join  TBL_MAJORRISKCREATE cr on cr.id=c.majorid
+        left join TBL_ORGANIZATION a on  r.IMP_LSSUED_UNIT=a.ORGID  
+        left join TBL_STAFF t on r.IMP_LSSUED_STAFFID=t.STAFFID where 1=1  and r.toreport=1
+		<if test="queryParam.impRiskName!=null and queryParam.impRiskName!='' ">
+			and IMP_RISK_NAME  LIKE concat(concat('%',#{queryParam.impRiskName} ),'%')
+		</if>
+		<if test="queryParam.jd!=null and queryParam.jd!='' ">
+			and c.quartername  LIKE concat(concat('%',#{queryParam.jd} ),'%')
+		</if>
+		<if test="queryParam.impLssuedUnitName!=null and queryParam.impLssuedUnitName!='' ">
+			and a.ORGNAME  LIKE concat(concat('%',#{queryParam.impLssuedUnitName} ),'%')
+		</if>
+	      <if test="ids!=null and ids.length>0">
+	        and r.id in 
+	     <foreach collection="ids" item="item" open="(" close=")" separator=",">
+	      #{item}	   
+	     </foreach>
+	     </if>
+	     <if test="sql!=null and sql!=''">
+	     ${sql}
+	     </if>
+	     <!-- 是否需要判断是总公司的？ -->
+		        order by imp_risk_name,id desc
+	</select>  
+	
+	
+	 <select id="selectAllSummaryListOrder" resultType="com.huabo.fxgl.entity.TblRiskImplementEntity">
+		 select  c.QUARTERNAME as jd,c.RISKYEAR as nd,a.ORGNAME as ImpLssuedUnitName
+         ,t.REALNAME as ImpLssuedStaffidName,r.*  
+         from TBL_RISK_IMPLEMENT r 
+        left join TBL_MAJORRISK_BRANCHCREATE c on c.id=r.majorId
+        left join  TBL_MAJORRISKCREATE cr on cr.id=c.majorid
+        left join TBL_ORGANIZATION a on  r.IMP_LSSUED_UNIT=a.ORGID  
+        left join TBL_STAFF t on r.IMP_LSSUED_STAFFID=t.STAFFID where 1=1  and r.toreport=1
+		<if test="queryParam.impRiskName!=null and queryParam.impRiskName!='' ">
+			and IMP_RISK_NAME  LIKE concat(concat('%',#{queryParam.impRiskName} ),'%')
+		</if>
+		<if test="queryParam.impLssuedUnitName!=null and queryParam.impLssuedUnitName!='' ">
+			and a.ORGNAME  LIKE concat(concat('%',#{queryParam.impLssuedUnitName} ),'%')
+		</if>
+	      <if test="ids!=null and ids.length>0">
+	        and r.id in 
+	     <foreach collection="ids" item="item" open="(" close=")" separator=",">
+	      #{item}	   
+	     </foreach>
+	     </if>
+	    <if test="queryParam.impWayStaffName!=null and queryParam.impWayStaffName!='' ">
+			and r.IMP_WAY_STAFFNAME  LIKE concat(concat('%',#{queryParam.impWayStaffName} ),'%')
+		</if>
+		<if test="queryParam.impWayDeptName!=null and queryParam.impWayDeptName!='' ">
+			and r.IMP_WAY_DEPTNAME  LIKE concat(concat('%',#{queryParam.impWayDeptName} ),'%')
+		</if>
+		<if test="queryParam.impRiskDetails!=null and queryParam.impRiskDetails!='' ">
+			and r.IMP_RISK_DETAILS  LIKE concat(concat('%',#{queryParam.impRiskDetails} ),'%')
+		</if>
+		<if test="queryParam.impThisControl!=null and queryParam.impThisControl!='' ">
+			and r.IMP_THIS_CONTROL   LIKE concat(concat('%',#{queryParam.impThisControl} ),'%')
+		</if>
+		<if test="queryParam.nd!=null  and queryParam.nd!='' ">
+			and c.RISKYEAR  LIKE concat(concat('%',#{queryParam.nd} ),'%')
+		</if>
+		<if test="queryParam.jd!=null and queryParam.jd!='' ">
+			and c.QUARTERNAME  LIKE concat(concat('%',#{queryParam.jd} ),'%')
+		</if>
+		  <if test="sql!=null and sql!=''">
+	     ${sql}
+	     </if>
+		        order by imp_risk_name,id desc
+	</select>  
+	
+	
+	 <select id="selectAllSummaryListOrderByName" resultType="com.huabo.fxgl.entity.TblRiskImplementEntity">
+		 select  c.QUARTERNAME as jd,c.RISKYEAR as nd,a.ORGNAME as ImpLssuedUnitName
+         ,t.REALNAME as ImpLssuedStaffidName,r.*  
+         from TBL_RISK_IMPLEMENT r 
+           left join TBL_MAJORRISK_BRANCHCREATE c on c.id=r.majorId
+        left join TBL_ORGANIZATION a on  r.IMP_LSSUED_UNIT=a.ORGID  
+        left join TBL_STAFF t on r.IMP_LSSUED_STAFFID=t.STAFFID where 1=1  and r.toreport=1
+		<if test="impRiskName!=null and impRiskName!='' ">
+			and IMP_RISK_NAME =#{impRiskName} 
+		</if>
+		        order by imp_risk_name,id desc
+	</select>  
+	
+</mapper>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.LetterOfCreditMapper">
+
+    <resultMap id="LetterOfCreditVOResult" type="com.global.treasurer.vo.LetterOfCreditVO">
+        <id property="lcId" column="LC_ID"/>
+        <result property="lcNumber" column="LC_NUMBER"/>
+        <result property="lcType" column="LC_TYPE"/>
+        <result property="lcAmount" column="LC_AMOUNT"/>
+        <result property="currency" column="CURRENCY"/>
+        <result property="issueDate" column="ISSUE_DATE"/>
+        <result property="expiryDate" column="EXPIRY_DATE"/>
+        <result property="applicant" column="APPLICANT"/>
+        <result property="beneficiary" column="BENEFICIARY"/>
+        <result property="issuingBank" column="ISSUING_BANK"/>
+        <result property="advisingBank" column="ADVISING_BANK"/>
+        <result property="lcStatus" column="LC_STATUS"/>
+        <result property="remark" column="REMARK"/>
+        <result property="createBy" column="CREATE_BY"/>
+        <result property="createTime" column="CREATE_TIME"/>
+        <result property="updateTime" column="UPDATE_TIME"/>
+    </resultMap>
+
+    <select id="selectLetterOfCreditList" parameterType="com.global.treasurer.dto.LetterOfCreditQueryDTO" resultMap="LetterOfCreditVOResult">
+        SELECT LC_ID, LC_NUMBER, LC_TYPE, LC_AMOUNT, CURRENCY, ISSUE_DATE, EXPIRY_DATE,
+               APPLICANT, BENEFICIARY, ISSUING_BANK, ADVISING_BANK, LC_STATUS,
+               REMARK, CREATE_BY, CREATE_TIME, UPDATE_TIME
+        FROM TBL_LETTER_OF_CREDIT
+        WHERE DELETE_FLAG = 0
+        <if test="lcNumber != null and lcNumber != ''">
+            AND LC_NUMBER LIKE CONCAT('%', #{lcNumber}, '%')
+        </if>
+        <if test="lcType != null and lcType != ''">
+            AND LC_TYPE = #{lcType}
+        </if>
+        <if test="lcStatus != null and lcStatus != ''">
+            AND LC_STATUS = #{lcStatus}
+        </if>
+        <if test="applicant != null and applicant != ''">
+            AND APPLICANT LIKE CONCAT('%', #{applicant}, '%')
+        </if>
+        <if test="beneficiary != null and beneficiary != ''">
+            AND BENEFICIARY LIKE CONCAT('%', #{beneficiary}, '%')
+        </if>
+        <if test="issuingBank != null and issuingBank != ''">
+            AND ISSUING_BANK LIKE CONCAT('%', #{issuingBank}, '%')
+        </if>
+        <if test="startDate != null">
+            AND CREATE_TIME &gt;= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND CREATE_TIME &lt;= #{endDate}
+        </if>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <select id="selectLetterOfCreditById" parameterType="Long" resultMap="LetterOfCreditVOResult">
+        SELECT LC_ID, LC_NUMBER, LC_TYPE, LC_AMOUNT, CURRENCY, ISSUE_DATE, EXPIRY_DATE,
+               APPLICANT, BENEFICIARY, ISSUING_BANK, ADVISING_BANK, LC_STATUS,
+               REMARK, CREATE_BY, CREATE_TIME, UPDATE_TIME
+        FROM TBL_LETTER_OF_CREDIT
+        WHERE LC_ID = #{lcId} AND DELETE_FLAG = 0
+    </select>
+
+    <update id="deleteLetterOfCreditByIds">
+        UPDATE TBL_LETTER_OF_CREDIT SET DELETE_FLAG = 1, UPDATE_TIME = SYSDATE
+        WHERE LC_ID IN
+        <foreach item="id" collection="lcIds" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+</mapper>
+

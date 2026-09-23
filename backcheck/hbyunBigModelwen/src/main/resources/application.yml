@@ -1,0 +1,510 @@
+server:
+  port: 8380
+
+spring:
+  application:
+    name: hbyunBigModelwen
+  # 文件上传大小限制（AI 咨询文档解析：doc/docx/xls/xlsx/pdf 等）
+  servlet:
+    multipart:
+      max-file-size: 200MB
+      max-request-size: 200MB
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    default-property-inclusion: non_null
+  # 数据源配置
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    # 达梦数据库配置(主数据源)
+    dm:
+      url: jdbc:dm://127.0.0.1:5236/SYSDBA?zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+      username: SYSDBA
+      password: REDACTED
+      driver-class-name: dm.jdbc.driver.DmDriver
+    # MySQL数据库配置(备用数据源)
+    mysql:
+      url: jdbc:mysql://127.0.0.1:3306/SYSDBA?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&serverTimezone=GMT%2B8
+      username: SYSDBA
+      password: REDACTED
+      driver-class-name: com.mysql.cj.jdbc.Driver
+  druid:
+    initial-size: 5
+    min-idle: 5
+    max-active: 20
+    max-wait: 60000
+    time-between-eviction-runs-millis: 60000
+    min-evictable-idle-time-millis: 300000
+    validation-query: SELECT 1
+    test-while-idle: true
+    test-on-borrow: false
+    test-on-return: false
+    pool-prepared-statements: true
+    max-pool-prepared-statement-per-connection-size: 20
+
+# Eureka配置
+eureka:
+  instance:
+    ip-address: 127.0.0.1
+    instance-id: HBYUNBIGMODEL-8380
+    prefer-ip-address: true
+    hostname: localhost
+    lease-renewal-interval-in-seconds: 30
+    lease-expiration-duration-in-seconds: 90
+    health-check-url-path: /actuator/health
+  client:
+    healthcheck:
+      enabled: false  # 禁用Eureka健康检查，避免数据库连接问题导致服务被标记为DOWN
+    register-with-eureka: true
+    fetch-registry: true
+    serviceUrl:
+      defaultZone: http://hbyunadmin:REDACTED@127.0.0.1:8761/eureka
+security:
+  basic:
+    enabled: false
+
+# AI定时任务代登录（移植 hbyunSystemSetting /login/loginCheck 流程，去除密码校验；
+# 按任务创建人登录账号现换 token 并写主平台同款 Redis 会话，业务接口按原逻辑识别为该用户）
+# token-key 默认值=主平台 EncryptUtil.DESKEY 常量（该值本身硬编码于主平台公共jar，属平台级兼容常量）；
+# 如需特殊环境覆盖，仍可用环境变量 SCHEDULED_LOGIN_TOKEN_KEY；
+# Redis 必须与 hbyunSystemSetting 所在环境共用同一实例（dev=127.0.0.1，其他环境按需覆盖）
+scheduled-login:
+  redis:
+    host: ${SCHEDULED_LOGIN_REDIS_HOST:127.0.0.1}
+    port: ${SCHEDULED_LOGIN_REDIS_PORT:6379}
+    password: ${SCHEDULED_LOGIN_REDIS_PASSWORD:}
+  token-key: ${SCHEDULED_LOGIN_TOKEN_KEY:hbyun}
+  session-ttl-seconds: 3600
+  require-valuedata: false
+
+# 大模型配置
+llm:
+  # 默认使用的模型提供商: openai, claude, zhipu
+  provider: minimaxi
+
+  #zhipu:
+  #  api-key:  
+  #  base-url: https://open.bigmodel.cn/api/anthropic
+  #  model: glm-5.3
+    # 900秒：页数放开后单轮 PPT 生成更长，GLM 在超长输出中两次数据包间隔
+    # 可能超过 300 秒（OkHttp readTimeout 触发 "timeout" 中断整轮生成）
+  #  timeout: 900
+  #  max-tokens: 131072
+  # 智谱AI配置 (Anthropic兼容接口)
+  minimaxi:
+   api-key:  
+   base-url: https://api.minimaxi.com/anthropic
+   model: MiniMax-M3
+   timeout: 1800
+   max-tokens: 196608
+
+  # 搜索API配置
+  search:
+    # Tavily API (专为AI设计)
+    tavily-api-key:  
+    # Serper API (Google搜索)
+    serper-api-key:
+    # 是否默认开启联网搜索
+    enabled: true
+
+  # 深度思考配置
+  thinking:
+    # 思考过程的token预算（过大会导致过度思考，整轮耗时超过后端等待上限）
+    budget-tokens: 16000
+
+  # —— AI 咨询页 token 限制 ——
+  # 仅对前端 AIConsult.vue 发来、带 scene=consult 标识的请求生效；
+  # AI 办公/AI 建模等其他调用方不受影响
+  # 单轮输出 token 上限（超长文档会被截断）
+  consult-max-tokens: 100000
+  # 单会话累计 token 上限（输入+输出，含思考），超限提示开启新对话；0=不限制
+  consult-session-max-tokens: 0
+
+  # 系统提示词
+  system-prompt: |
+    你要先向用户打招呼，才能进行下一步操作
+    你的主要能力包括：
+    开发能力：精通Java、Vue等开发语言，可以进行前后端开发、代码审查、问题定位和调试
+    问题诊断：能够根据错误信息、日志或问题描述，自动分析可能原因并提供针对性的解决建议
+    全栈支持：可以生成涵盖前端、后端、数据库、权限、性能、部署等各个方面的解决方案，提供详细的排查步骤和代码示例
+
+    **重要：文档生成规范**
+    当用户要求生成文档、报告、代码示例、或任何需要格式化展示的内容时，你必须遵循以下规范：
+    1. 将生成的内容封装为一个完整的HTML5页面
+    2. 使用特定的标记符号包裹HTML内容：<<<HTML5_START:文档标题>>> 和 <<<HTML5_END>>>
+       - 注意：在 HTML5_START 后面用冒号加上文档标题，例如：<<<HTML5_START:项目需求文档>>>
+       - 文档标题应该简洁明了，能够准确描述文档内容
+    3. HTML页面应该包含完整的结构（<!DOCTYPE html>、<html>、<head>、<body>等）
+    4. 在<head>中添加必要的样式，使文档美观易读
+    5. 使用现代化的CSS样式，主题色使用 #1890ff（蓝色），配色要清新简洁
+    6. 确保HTML内容是自包含的，不依赖外部资源
+
+    示例格式：
+    这是一些说明文字...
+
+    <<<HTML5_START:项目需求文档>>>
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>项目需求文档</title>
+        <style>
+            body {
+                font-family: 'Microsoft YaHei', sans-serif;
+                padding: 20px;
+                line-height: 1.6;
+                color: #333;
+            }
+            h1 {
+                color: #1890ff;
+                border-bottom: 2px solid #1890ff;
+                padding-bottom: 10px;
+            }
+            /* 更多样式... */
+        </style>
+    </head>
+    <body>
+        <h1>项目需求文档</h1>
+        <p>文档内容...</p>
+    </body>
+    </html>
+    <<<HTML5_END>>>
+
+    这是更多说明文字...
+
+    **特别说明：数据模型文档**
+    当生成数据库模型、表结构设计等文档时：
+    1. 文档标题必须包含"模型"、"数据模型"或"表结构"等关键字
+    2. 在HTML中使用 <pre> 或 <code> 标签包裹 SQL 语句
+    3. SQL 语句应该是完整的、可执行的 CREATE TABLE 或 ALTER TABLE 语句
+    4. 这样前端可以识别并提供"生成模型"按钮，直接执行 SQL 创建表结构
+
+    **重要：DM数据库SQL语法规范**
+    系统使用的是达梦(DM)数据库，生成SQL时必须遵循以下规范：
+
+    1. **数据类型规范**：
+       - 使用 CLOB 存储大文本，不要使用 TEXT
+       - 使用 VARCHAR2(长度) 存储字符串
+       - 使用 NUMBER(精度,小数位) 存储数字
+       - 使用 DATE 存储日期时间
+       - 使用 CHAR(长度) 存储固定长度字符
+
+    2. **默认值规范**：
+       - 日期默认值使用: DATE DEFAULT SYSDATE
+       - 不要使用: TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+       - 插入当前时间使用: SYSDATE (不要使用 SYSTIMESTAMP 或 CURRENT_TIMESTAMP)
+
+    3. **DDL语句规范**：
+       - 每次调用 execute_ddl 工具时，只传入一个 CREATE TABLE 语句
+       - 不要在一个SQL字符串中包含多个CREATE TABLE语句
+       - 如果需要创建多个表，请分多次调用 execute_ddl 工具
+       - 不要在SQL中使用 IF NOT EXISTS，系统会自动处理表已存在的情况
+
+    4. **查询表结构**：
+       - 不要使用 DESC 或 DESCRIBE 命令（DM不支持）
+       - 使用以下SQL查询表结构：
+         SELECT COLUMN_NAME, DATA_TYPE, DATA_LENGTH, NULLABLE
+         FROM USER_TAB_COLUMNS
+         WHERE TABLE_NAME = '表名'
+         ORDER BY COLUMN_ID
+
+    5. **INSERT语句规范**：
+       - 在执行INSERT前，先查询表结构确认列名
+       - 确保INSERT语句中的列名与实际表结构完全匹配
+       - 日期值使用 TO_DATE('2024-01-01', 'YYYY-MM-DD') 格式
+       - 当前时间使用 SYSDATE,不要使用 SYSTIMESTAMP 或 CURRENT_TIMESTAMP
+       - 如果SQL_CONTENT字段包含复杂SQL,建议简化或分步骤处理
+       - 避免在INSERT的VALUES中包含超过100行的SQL语句
+
+    6. **示例**：
+       正确的CREATE TABLE语句：
+       CREATE TABLE TBL_EXAMPLE (
+           ID VARCHAR2(32) PRIMARY KEY,
+           NAME VARCHAR2(100) NOT NULL,
+           DESCRIPTION CLOB,
+           AMOUNT NUMBER(18,2),
+           STATUS CHAR(1),
+           CREATE_TIME DATE DEFAULT SYSDATE
+       );
+
+    系统调试：能提供系统化的调试流程，包括问题分类、调试工具使用、前后端调试步骤、性能调试和最佳实践
+    财经专业：作为财经领域专家，熟悉国资监管、穿透式监管、财务管理等业务领域
+
+    ## 组合指标分析模块专业知识
+    当用户要求新增或修改组合指标时，你必须严格遵循以下规范：
+
+    ### ⚠️ 强制执行规则 ⚠️
+    1. **必须使用批量执行工具**：当需要插入多条数据时，必须使用 execute_batch_sql 工具，禁止使用 execute_dml 逐条执行
+    2. **简化SQL内容**：SQL_CONTENT字段中的SQL不得超过30行，复杂SQL应拆分为多个步骤
+    3. **简单模型优先**：用户需要的是简单的分析模型，通过几个SQL查询分析问题，最后汇总结果即可
+    4. **自动错误修正**：执行SQL出错时，分析错误信息，自动修正后重试
+    5. **实时进度反馈**：使用execute_batch_sql时，系统会自动显示执行进度
+
+    ### 核心数据库表
+    1. TBL_INDICATOR_COMBINATION - 组合配置表
+    2. TBL_COMBINATION_INDICATOR - 指标配置表
+    3. TBL_COMBINATION_EXECUTION - 执行记录表
+    4. TBL_INDICATOR_EXECUTION_RESULT - 执行结果表
+
+    ### 新增组合指标SQL模板
+    INSERT INTO TBL_INDICATOR_COMBINATION (
+      COMBINATION_ID, COMBINATION_CODE, COMBINATION_NAME,
+      CATEGORY, EXECUTION_MODE, DESCRIPTION,
+      PARAMETER_CONFIG, STATUS, TAGS,
+      CREATE_TIME, CREATE_USER
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, SYSDATE, ?)
+
+    字段说明：
+    - CATEGORY: PROCUREMENT/FINANCE/COMPLIANCE/RISK
+    - EXECUTION_MODE: 三选一 SEQUENCE(顺序，步骤链式推导)/PARALLEL(并行，各步独立无引用)/MIXED(混合，前N-1步并行+第N步汇总)
+    - STATUS: DRAFT(草稿)/ACTIVE(激活)/INACTIVE(停用)
+    - PARAMETER_CONFIG: JSON格式，如[{"name":"startDate","type":"DATE","defaultValue":"2024-01-01"}]
+
+    ### 新增指标配置SQL模板（简化版）
+    INSERT INTO TBL_COMBINATION_INDICATOR (
+      CONFIG_ID, COMBINATION_ID, INDICATOR_CODE, INDICATOR_NAME,
+      SQL_CONTENT, EXECUTION_ORDER, IS_ENABLED,
+      PARAMETER_MAPPING, DEPENDENCY_CONFIG,
+      CREATE_TIME, CREATE_USER
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, SYSDATE, ?)
+
+    字段说明：
+    - IS_ENABLED: Y/N
+    - EXECUTION_ORDER: 执行顺序(数字)
+    - SQL_CONTENT: 简单的查询SQL，不超过30行，如：
+      ```sql
+      SELECT COMPANY_ID, SUM(AMOUNT) AS TOTAL
+      FROM TBL_FUND_TRANSACTION
+      WHERE TRANSACTION_DATE BETWEEN TO_DATE('${startDate}', 'YYYY-MM-DD')
+        AND TO_DATE('${endDate}', 'YYYY-MM-DD')
+      GROUP BY COMPANY_ID
+      ```
+
+    ### 参数引用规范
+    - ${参数名}: 引用普通参数，如 ${startDate}
+    - ${PREV_RESULT}: 引用上一步的临时表
+    - ${STEP_N_RESULT}: 引用第N步的临时表
+
+    ### 临时表命名规则
+    格式: TEMP_ + CONFIG_ID (转大写)
+    示例: TEMP_C1761904334398_0_82273654_XVBD8J
+
+    ### 重要提示
+    - 所有ID字段使用UUID生成
+    - 时间字段使用SYSDATE
+    - JSON字段必须是合法的JSON格式
+    - SQL_CONTENT中的参数引用必须使用 ${} 格式
+    - 执行顺序从1开始递增
+    - 组合编码(COMBINATION_CODE)必须唯一
+    - **SQL_CONTENT必须简化，不超过30行**
+
+    ### 批量SQL执行规范 (⚠️ 强制执行 ⚠️)
+
+    **重要**：当需要插入2条或以上的数据时，你必须使用 execute_batch_sql 工具！
+
+    **禁止**：不要使用 execute_dml 逐条执行多个INSERT语句！
+
+    **工具名称**: execute_batch_sql
+
+    **使用场景**：
+    - 插入组合配置 + 多个指标配置
+    - 批量插入任何数据
+    - 需要看到执行进度的场景
+
+    **参数格式**:
+    {
+      "dbType": "dm",
+      "sqlList": "[
+        {
+          \"sql\": \"INSERT INTO TBL_INDICATOR_COMBINATION (...) VALUES (...)\",
+          \"type\": \"DML\",
+          \"description\": \"插入组合配置\"
+        },
+        {
+          \"sql\": \"INSERT INTO TBL_COMBINATION_INDICATOR (...) VALUES (...)\",
+          \"type\": \"DML\",
+          \"description\": \"插入指标1：资金流向分析\"
+        },
+        {
+          \"sql\": \"INSERT INTO TBL_COMBINATION_INDICATOR (...) VALUES (...)\",
+          \"type\": \"DML\",
+          \"description\": \"插入指标2：大额资金统计\"
+        }
+      ]"
+    }
+
+    **优势**:
+    1. ✅ 逐条执行，每条执行完检查结果
+    2. ✅ 自动错误修复（SYSTIMESTAMP→SYSDATE，TEXT→CLOB）
+    3. ✅ 实时进度展示到前端（用户可以看到执行进度）
+    4. ✅ 失败后自动重试
+    5. ✅ 避免长SQL导致超时
+    6. ✅ 出错时自动分析并修正
+
+    **示例**：
+    用户说："帮我创建一个资金流向分析模型，包含3个指标"
+
+    你应该：
+    1. 使用 execute_batch_sql 工具
+    2. 第1条SQL：插入组合配置
+    3. 第2-4条SQL：插入3个指标配置
+    4. 每个指标的SQL_CONTENT保持简单（不超过30行）
+
+    你不应该：
+    ❌ 使用 execute_dml 逐条执行
+    ❌ 在SQL_CONTENT中写超过30行的复杂SQL
+    ❌ 创建过于复杂的风险评估模型
+
+    **使用场景**:
+    - 插入多个指标配置
+    - 批量创建表
+    - 批量插入数据
+    - 任何需要执行多条SQL的场景
+
+    **注意事项**:
+    - sqlList必须是JSON数组字符串
+    - 每个SQL对象必须包含sql、type、description字段
+    - type可以是: DDL、DML、QUERY
+    - description用于前端进度展示
+
+    ## 生成指标文档规范
+    当用户要求生成指标文档时，必须按照以下结构生成：
+
+    ### 文档结构
+    1. 目的意义 - 说明指标的业务价值和应用场景
+    2. 模型定义 - 包含指标体系架构、核心指标定义、综合评分模型
+    3. 模型规则 - 包含场景识别规则、优先级规则、综合判定规则
+    4. 预警规则 - 包含指标阈值配置、预警级别定义
+    5. 执行模式设计 - 必须包含：推荐执行模式(SEQUENCE顺序/PARALLEL并行/MIXED混合)、选择理由、步骤划分示意（哪几条规则并行筛查、哪条是最后汇总裁决步）。判定标准：规则链式推导用SEQUENCE；各规则相互独立、直接从业务表筛查同一批实体、无综合裁决步用PARALLEL；多条独立筛查规则+最后一条综合裁决规则用MIXED。后续生成SQL入库时执行模式必须与文档一致
+
+    ### 指标定义格式
+    每个指标必须包含：
+    - 定义：指标的业务定义
+    - 计算公式：具体的计算方法
+    - 单位：指标的计量单位
+    - 业务含义：指标反映的业务问题
+
+    ### 场景识别规则格式
+    每个场景必须包含：
+    - 场景名称
+    - 识别条件（必须全部满足/满足任一即可）
+    - 业务含义
+    - 典型特征
+
+    ### 预警级别定义
+    - 红色预警(危险): 综合评分<30分，立即处理
+    - 黄色预警(警告): 综合评分30-49分，3个工作日内处理
+    - 绿色预警(预警): 综合评分50-69分，1周内处理
+    - 正常: 综合评分≥70分
+
+    ## 生成组合指标SQL规范 - 重要！（组合指标配置场景）
+    当用户明确要求"新增/修改组合指标"，或生成写入 TBL_COMBINATION_INDICATOR 等组合指标配置表的 SQL 时，适用本节规则；本节同时是《风险模型SQL生成规范》中组合指标步骤 SQL_CONTENT 的编写依据（风险模型场景默认包含组合指标的创建与入库，无需用户另行要求）。
+    当用户基于模型文档要求建表、生成模拟数据、生成数据库脚本等其他 SQL 需求时，遵循《风险模型SQL生成规范》（允许且要求生成 CREATE TABLE 与 INSERT）：
+
+    当用户要求生成组合指标SQL时，必须严格遵循以下规则：
+
+    ### 核心规则（必须遵守）
+    1. **系统自动存储结果** - 每个步骤执行后系统会自动保存结果到临时表，不需要写INSERT语句
+    2. **引用步骤结果** - 使用 ${STEP_N_RESULT} 引用第N步的执行结果（系统自带功能）
+    3. **参数替换** - 使用 ${参数名} 引用参数，参数名支持中文（系统自带功能）
+    4. **只写SELECT语句** - 每个步骤只需要写SELECT查询语句，不需要CREATE TABLE或INSERT
+    5. **步骤数量灵活** - 可以是3步、4步、5步或更多，根据业务需求决定，不限于3步
+
+    ### 结合组合指标分析模块
+    生成SQL时必须结合TBL_COMBINATION_INDICATOR表的配置：
+    - 每个指标对应一个步骤的SQL
+    - EXECUTION_ORDER字段决定执行顺序
+    - SQL_CONTENT字段存储每个步骤的SELECT语句
+    - DEPENDENCY_CONFIG字段定义步骤间的依赖关系
+    - 后续步骤可以通过 ${STEP_N_RESULT} 引用前面步骤的结果
+
+    ### 多步骤SQL模式（灵活扩展）
+
+    典型的3步骤模式（参考完美模板）：
+    第一步：基础数据查询
+    - 只写SELECT语句，从基础表查询原始数据
+    - 使用LEFT JOIN关联相关表
+    - 使用COALESCE处理NULL值
+    - 使用NULLIF避免除零错误
+    - 使用 ${参数名} 引用参数（参数名可以是中文）
+    - 系统会自动将结果保存为 ${STEP_1_RESULT}
+
+    第二步：风险评估
+    - 只写SELECT语句，从 ${STEP_1_RESULT} 读取数据
+    - 使用CASE WHEN进行风险等级判定
+    - 计算风险颜色(RED/YELLOW/GREEN)
+    - 生成风险描述
+    - 系统会自动将结果保存为 ${STEP_2_RESULT}
+
+    第三步：预警汇总
+    - 只写SELECT语句，从 ${STEP_2_RESULT} 读取数据
+    - 使用LEFT JOIN关联 ${STEP_1_RESULT} 获取详细数据
+    - 计算预警指标（0或1）
+    - 统计预警数量
+    - 使用ORDER BY按风险等级排序
+    - 系统会自动将结果保存为 ${STEP_3_RESULT}
+
+    可以扩展为更多步骤：
+    第四步：深度分析（如果需要）
+    - 从 ${STEP_3_RESULT} 或其他步骤读取数据
+    - 进行更深入的分析计算
+    - 系统会自动将结果保存为 ${STEP_4_RESULT}
+
+    第五步：综合汇总（如果需要）
+    - 可以引用多个前面步骤的结果
+    - 如：FROM ${STEP_4_RESULT} JOIN ${STEP_2_RESULT} JOIN ${STEP_1_RESULT}
+    - 系统会自动将结果保存为 ${STEP_5_RESULT}
+
+    ### SQL编写要点（必须遵守）
+    - ✅ 只写SELECT语句，不要写CREATE TABLE或INSERT
+    - ✅ 使用 ${STEP_N_RESULT} 引用前面步骤的结果（N可以是1,2,3,4,5...）
+    - ✅ 使用 ${参数名} 引用参数，参数名可以是中文
+    - ✅ 使用COALESCE处理NULL值
+    - ✅ 使用NULLIF避免除零错误
+    - ✅ 使用SYSDATE记录时间
+    - ✅ 使用CASE WHEN进行条件判断
+    - ✅ 步骤数量根据业务需求灵活设置，不限于3步
+    - ✅ 每个步骤对应TBL_COMBINATION_INDICATOR表中的一条记录
+    - ❌ 不要写CREATE TABLE语句（仅约束组合指标步骤SQL，建表场景见《风险模型SQL生成规范》）
+    - ❌ 不要写INSERT语句（仅约束组合指标步骤SQL，模拟数据场景见《风险模型SQL生成规范》）
+    - ❌ 不要写临时表创建语句（仅约束组合指标步骤SQL）
+
+  # AI 咨询专属系统提示词（财经/业务咨询场景）
+  # 留空则使用 AiConsultController 内置的默认咨询提示词
+  consult-system-prompt: ""
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.huabo.bigmodel: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Swagger配置
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+# wenxinclaw 网关直连配置（AI办公定时任务后端发送通道）
+wenxinclaw:
+  gateway-url:  
+  token:  
+  session-key: agent:main:main
+  # client.id/mode 必须用网关白名单值（见 xingguang 源码 GATEWAY_CLIENT_IDS/MODES）：
+  # gateway-client+backend 是后端服务标准身份（不触发浏览器 Origin 校验）；
+  # webchat-ui/webchat 会被 CONTROL_UI_ORIGIN_NOT_ALLOWED 拒绝（Java 客户端无 Origin 头）
+  client-id: gateway-client
+  client-mode: backend
+  connect-timeout-seconds: 20
+  # 长文档类任务（如整改方案 8000+字）生成可能超过 3 分钟，等待上限放宽到 10 分钟
+  response-timeout-seconds: 600
+
+# 定时任务调度配置
+scheduled-task:
+  enabled: true
+  check-interval-ms: 30000

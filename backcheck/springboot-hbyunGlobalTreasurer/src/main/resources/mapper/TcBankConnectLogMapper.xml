@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.TcBankConnectLogMapper">
+
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TcBankConnectLog">
+        <id column="LOG_ID" property="logId"/>
+        <result column="REQUEST_ID" property="requestId"/>
+        <result column="INTERFACE_TYPE" property="interfaceType"/>
+        <result column="REQUEST_TIME" property="requestTime"/>
+        <result column="REQUEST_URL" property="requestUrl"/>
+        <result column="REQUEST_METHOD" property="requestMethod"/>
+        <result column="REQUEST_HEADERS" property="requestHeaders"/>
+        <result column="REQUEST_BODY" property="requestBody"/>
+        <result column="RESPONSE_TIME" property="responseTime"/>
+        <result column="RESPONSE_STATUS" property="responseStatus"/>
+        <result column="RESPONSE_HEADERS" property="responseHeaders"/>
+        <result column="RESPONSE_BODY" property="responseBody"/>
+        <result column="IS_SUCCESSFUL" property="isSuccessful"/>
+        <result column="ERROR_MESSAGE" property="errorMessage"/>
+        <result column="ELAPSED_TIME" property="elapsedTime"/>
+        <result column="CONNECTION_CONFIG_ID" property="connectionConfigId"/>
+        <result column="BANK_NAME" property="bankName"/>
+        <result column="ACCOUNT_ID" property="accountId"/>
+        <result column="OPERATION_TYPE" property="operationType"/>
+        <result column="CLIENT_IP" property="clientIp"/>
+        <result column="CREATE_TIME" property="createTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        LOG_ID, REQUEST_ID, INTERFACE_TYPE, REQUEST_TIME, REQUEST_URL, REQUEST_METHOD,
+        REQUEST_HEADERS, REQUEST_BODY, RESPONSE_TIME, RESPONSE_STATUS, RESPONSE_HEADERS, RESPONSE_BODY,
+        IS_SUCCESSFUL, ERROR_MESSAGE, ELAPSED_TIME, CONNECTION_CONFIG_ID, BANK_NAME,
+        ACCOUNT_ID, OPERATION_TYPE, CLIENT_IP, CREATE_TIME
+    </sql>
+
+    <select id="selectByConditions" resultMap="BaseResultMap" parameterType="map">
+        SELECT <include refid="Base_Column_List"/> FROM TC_BANK_CONNECT_LOG
+        <where>
+            <if test="params.requestId != null and params.requestId != ''">
+                AND REQUEST_ID LIKE CONCAT('%', #{params.requestId}, '%')
+            </if>
+            <if test="params.interfaceType != null and params.interfaceType != ''">
+                AND INTERFACE_TYPE = #{params.interfaceType}
+            </if>
+            <if test="params.isSuccessful != null">
+                AND IS_SUCCESSFUL = #{params.isSuccessful}
+            </if>
+            <if test="params.bankName != null and params.bankName != ''">
+                AND BANK_NAME LIKE CONCAT('%', #{params.bankName}, '%')
+            </if>
+            <if test="params.operationType != null and params.operationType != ''">
+                AND OPERATION_TYPE = #{params.operationType}
+            </if>
+            <if test="params.connectionConfigId != null">
+                AND CONNECTION_CONFIG_ID = #{params.connectionConfigId}
+            </if>
+            <if test="params.startTime != null">
+                AND REQUEST_TIME &gt;= #{params.startTime}
+            </if>
+            <if test="params.endTime != null">
+                AND REQUEST_TIME &lt;= #{params.endTime}
+            </if>
+        </where>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <select id="selectByRequestId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/> FROM TC_BANK_CONNECT_LOG WHERE REQUEST_ID = #{requestId}
+    </select>
+
+    <select id="selectStatistics" resultType="map">
+        SELECT COUNT(*) as total,
+               SUM(CASE WHEN IS_SUCCESSFUL = 1 THEN 1 ELSE 0 END) as successCount,
+               SUM(CASE WHEN IS_SUCCESSFUL = 0 THEN 1 ELSE 0 END) as failCount,
+               SUM(CASE WHEN IS_SUCCESSFUL = 1 THEN ELAPSED_TIME ELSE 0 END) as totalElapsed,
+               SUM(CASE WHEN IS_SUCCESSFUL = 1 THEN 1 ELSE 0 END) as successRate
+        FROM TC_BANK_CONNECT_LOG
+    </select>
+
+    <select id="selectCountByInterfaceType" resultType="map">
+        SELECT INTERFACE_TYPE as interfaceType, COUNT(*) as count
+        FROM TC_BANK_CONNECT_LOG GROUP BY INTERFACE_TYPE
+    </select>
+
+    <select id="selectCountByStatus" resultType="map">
+        SELECT IS_SUCCESSFUL as status, COUNT(*) as count
+        FROM TC_BANK_CONNECT_LOG GROUP BY IS_SUCCESSFUL
+    </select>
+
+    <select id="selectFailedLogs" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/> FROM TC_BANK_CONNECT_LOG
+        WHERE IS_SUCCESSFUL = 0 ORDER BY REQUEST_TIME DESC
+        <if test="limit != null">FETCH FIRST #{limit} ROWS ONLY</if>
+    </select>
+
+    <delete id="deleteByDays">
+        DELETE FROM TC_BANK_CONNECT_LOG WHERE CREATE_TIME &lt; SYSDATE - #{days}
+    </delete>
+</mapper>
+

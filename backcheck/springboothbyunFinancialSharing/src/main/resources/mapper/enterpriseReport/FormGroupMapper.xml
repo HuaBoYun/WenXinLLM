@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.enterpriseReport.mapper.FormGroupMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.financial.sharing.enterpriseReport.entity.TblFormGroup">
+        <id column="GROUP_ID" property="groupId" />
+        <result column="DIRECTORY_ID" property="directoryId" />
+        <result column="GROUP_CODE" property="groupCode" />
+        <result column="GROUP_NAME" property="groupName" />
+        <result column="FIXED_DIMENSIONS" property="fixedDimensions" />
+        <result column="PARAMETER_DIMENSIONS" property="parameterDimensions" />
+        <result column="PERIOD_TYPE" property="periodType" />
+        <result column="SORT_NO" property="sortNo" />
+        <result column="STATUS" property="status" />
+        <result column="TENANT_ID" property="tenantId" />
+        <result column="CREATE_USER" property="createUser" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_USER" property="updateUser" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="DIRECTORY_NAME" property="directoryName" />
+    </resultMap>
+
+    <!-- 查询表单组列表(关联目录名称) -->
+    <select id="selectFormGroupList" resultMap="BaseResultMap">
+        SELECT 
+            g.GROUP_ID,
+            g.DIRECTORY_ID,
+            g.GROUP_CODE,
+            g.GROUP_NAME,
+            g.FIXED_DIMENSIONS,
+            g.PARAMETER_DIMENSIONS,
+            g.PERIOD_TYPE,
+            g.SORT_NO,
+            g.STATUS,
+            g.TENANT_ID,
+            g.CREATE_USER,
+            g.CREATE_TIME,
+            g.UPDATE_USER,
+            g.UPDATE_TIME,
+            d.DIRECTORY_NAME
+        FROM TBL_FORM_GROUP g
+        LEFT JOIN TBL_FORM_DIRECTORY d ON g.DIRECTORY_ID = d.DIRECTORY_ID
+        WHERE g.TENANT_ID = #{tenantId}
+        <if test="directoryId != null and directoryId != ''">
+            AND g.DIRECTORY_ID = #{directoryId}
+        </if>
+        <if test="groupName != null and groupName != ''">
+            AND g.GROUP_NAME LIKE CONCAT('%', #{groupName}, '%')
+        </if>
+        <if test="status != null and status != ''">
+            AND g.STATUS = #{status}
+        </if>
+        ORDER BY g.SORT_NO ASC, g.CREATE_TIME ASC
+    </select>
+
+    <!-- 检查表单组编码是否存在 -->
+    <select id="checkGroupCodeExists" resultType="int">
+        SELECT COUNT(*)
+        FROM TBL_FORM_GROUP
+        WHERE GROUP_CODE = #{groupCode}
+        AND TENANT_ID = #{tenantId}
+        <if test="excludeGroupId != null and excludeGroupId != ''">
+            AND GROUP_ID != #{excludeGroupId}
+        </if>
+    </select>
+
+</mapper>
+

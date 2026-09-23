@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.mysql.mapper.AuxiliaryItemMapper">
+
+    <!-- 分页查询辅助核算项 -->
+    <select id="selectAuxiliaryItemPage" resultType="com.financial.sharing.vo.result.AuxiliaryItemVO">
+        SELECT
+            a.auxiliary_id as auxiliaryId,
+            a.auxiliary_code as auxiliaryCode,
+            a.auxiliary_name as auxiliaryName,
+            a.auxiliary_type as auxiliaryType,
+            a.parent_id as parentId,
+            p.auxiliary_name as parentName,
+            CASE
+                WHEN a.parent_id IS NULL THEN 1
+                ELSE (SELECT COUNT(*) FROM t_auxiliary_item p2 WHERE p2.auxiliary_id = a.parent_id AND p2.is_deleted = 0) + 1
+            END as auxiliaryLevel,
+            a.is_leaf as isLeaf,
+            a.is_enabled as isEnabled,
+            a.sort_order as sortOrder,
+            a.book_id as bookId,
+            a.tenant_id as tenantId,
+            a.version as version,
+            a.create_time as createTime,
+            a.update_time as updateTime,
+            a.creator as creator,
+            a.updater as updater
+        FROM t_auxiliary_item a
+        LEFT JOIN t_auxiliary_item p ON a.parent_id = p.auxiliary_id AND p.is_deleted = 0
+        WHERE a.is_deleted = 0
+        <if test="param.bookId != null">
+            AND a.book_id = #{param.bookId}
+        </if>
+        <if test="param.tenantId != null">
+            AND a.tenant_id = #{param.tenantId}
+        </if>
+        <if test="param.auxiliaryCode != null and param.auxiliaryCode != ''">
+            AND a.auxiliary_code LIKE CONCAT('%', #{param.auxiliaryCode}, '%')
+        </if>
+        <if test="param.auxiliaryName != null and param.auxiliaryName != ''">
+            AND a.auxiliary_name LIKE CONCAT('%', #{param.auxiliaryName}, '%')
+        </if>
+        <if test="param.auxiliaryType != null and param.auxiliaryType != ''">
+            AND a.auxiliary_type = #{param.auxiliaryType}
+        </if>
+        <if test="param.parentId != null">
+            AND a.parent_id = #{param.parentId}
+        </if>
+        <if test="param.isLeaf != null">
+            AND a.is_leaf = #{param.isLeaf}
+        </if>
+        <if test="param.isEnabled != null">
+            AND a.is_enabled = #{param.isEnabled}
+        </if>
+        ORDER BY a.auxiliary_type ASC, a.sort_order ASC, a.auxiliary_code ASC
+    </select>
+
+    <!-- 根据编码查询辅助核算项 -->
+    <select id="selectByCode" resultType="com.financial.sharing.mysql.entity.AuxiliaryItemEntity">
+        SELECT * FROM t_auxiliary_item
+        WHERE is_deleted = 0
+        AND auxiliary_code = #{auxiliaryCode}
+        AND auxiliary_type = #{auxiliaryType}
+        AND book_id = #{bookId}
+        AND tenant_id = #{tenantId}
+        <if test="excludeId != null">
+            AND auxiliary_id != #{excludeId}
+        </if>
+        LIMIT 1
+    </select>
+
+    <!-- 根据上级ID查询子项列表 -->
+    <select id="selectByParentId" resultType="com.financial.sharing.vo.result.AuxiliaryItemVO">
+        SELECT
+            auxiliary_id as auxiliaryId,
+            auxiliary_code as auxiliaryCode,
+            auxiliary_name as auxiliaryName,
+            auxiliary_type as auxiliaryType,
+            parent_id as parentId,
+            is_leaf as isLeaf,
+            is_enabled as isEnabled,
+            sort_order as sortOrder,
+            book_id as bookId,
+            tenant_id as tenantId,
+            version as version,
+            create_time as createTime,
+            update_time as updateTime,
+            creator as creator,
+            updater as updater
+        FROM t_auxiliary_item
+        WHERE is_deleted = 0
+        AND book_id = #{bookId}
+        AND tenant_id = #{tenantId}
+        <if test="parentId != null">
+            AND parent_id = #{parentId}
+        </if>
+        <if test="parentId == null">
+            AND parent_id IS NULL
+        </if>
+        ORDER BY sort_order ASC, auxiliary_code ASC
+    </select>
+
+    <!-- 获取辅助核算项树形结构 -->
+    <select id="selectAuxiliaryItemTree" resultType="com.financial.sharing.vo.result.AuxiliaryItemVO">
+        SELECT
+            auxiliary_id as auxiliaryId,
+            auxiliary_code as auxiliaryCode,
+            auxiliary_name as auxiliaryName,
+            auxiliary_type as auxiliaryType,
+            parent_id as parentId,
+            is_leaf as isLeaf,
+            is_enabled as isEnabled,
+            sort_order as sortOrder,
+            book_id as bookId,
+            tenant_id as tenantId,
+            version as version,
+            create_time as createTime,
+            update_time as updateTime,
+            creator as creator,
+            updater as updater
+        FROM t_auxiliary_item
+        WHERE is_deleted = 0
+        AND book_id = #{bookId}
+        AND tenant_id = #{tenantId}
+        AND is_enabled = 1
+        <if test="auxiliaryType != null and auxiliaryType != ''">
+            AND auxiliary_type = #{auxiliaryType}
+        </if>
+        ORDER BY auxiliary_type ASC, sort_order ASC, auxiliary_code ASC
+    </select>
+
+    <!-- 根据类型查询辅助核算项 -->
+    <select id="selectByType" resultType="com.financial.sharing.vo.result.AuxiliaryItemVO">
+        SELECT
+            auxiliary_id as auxiliaryId,
+            auxiliary_code as auxiliaryCode,
+            auxiliary_name as auxiliaryName,
+            auxiliary_type as auxiliaryType,
+            parent_id as parentId,
+            is_leaf as isLeaf,
+            is_enabled as isEnabled,
+            sort_order as sortOrder,
+            book_id as bookId,
+            tenant_id as tenantId,
+            version as version,
+            create_time as createTime,
+            update_time as updateTime,
+            creator as creator,
+            updater as updater
+        FROM t_auxiliary_item
+        WHERE is_deleted = 0
+        AND auxiliary_type = #{auxiliaryType}
+        AND book_id = #{bookId}
+        AND tenant_id = #{tenantId}
+        AND is_enabled = 1
+        ORDER BY sort_order ASC, auxiliary_code ASC
+    </select>
+
+    <!-- 批量启用/禁用辅助核算项 -->
+    <update id="batchUpdateStatus">
+        UPDATE t_auxiliary_item
+        SET is_enabled = #{isEnabled},
+            update_time = NOW()
+            <if test="updater != null">
+                , updater = #{updater}
+            </if>
+        WHERE auxiliary_id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND is_deleted = 0
+    </update>
+
+    <!-- 批量删除辅助核算项 -->
+    <update id="batchDelete">
+        UPDATE t_auxiliary_item
+        SET is_deleted = 1,
+            update_time = NOW()
+            <if test="updater != null">
+                , updater = #{updater}
+            </if>
+        WHERE auxiliary_id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND is_deleted = 0
+    </update>
+
+    <!-- 检查是否有子项 -->
+    <select id="countChildrenByParentId" resultType="int">
+        SELECT COUNT(*)
+        FROM t_auxiliary_item
+        WHERE is_deleted = 0
+        AND parent_id = #{auxiliaryId}
+        <if test="tenantId != null">
+            AND tenant_id = #{tenantId}
+        </if>
+    </select>
+
+    <!-- 更新末级标识 -->
+    <update id="updateLeafFlag">
+        UPDATE t_auxiliary_item
+        SET is_leaf = #{isLeaf},
+            update_time = NOW()
+            <if test="updater != null">
+                , updater = #{updater}
+            </if>
+        WHERE auxiliary_id = #{auxiliaryId}
+        AND is_deleted = 0
+    </update>
+
+    <!-- 获取辅助核算类型列表 -->
+    <select id="selectAuxiliaryTypes" resultType="string">
+        SELECT DISTINCT auxiliary_type
+        FROM t_auxiliary_item
+        WHERE is_deleted = 0
+        AND book_id = #{bookId}
+        AND tenant_id = #{tenantId}
+        ORDER BY auxiliary_type ASC
+    </select>
+
+    <!-- 分页查询辅助核算项目 - 适配PageHelper分页 -->
+    <select id="getAuxiliaryItemList" resultType="com.financial.sharing.vo.result.AuxiliaryItemVO">
+        SELECT
+            a.auxiliary_id as auxiliaryId,
+            a.auxiliary_code as auxiliaryCode,
+            a.auxiliary_name as auxiliaryName,
+            a.auxiliary_type as auxiliaryType,
+            a.parent_id as parentId,
+            p.auxiliary_name as parentName,
+            CASE
+                WHEN a.parent_id IS NULL THEN 1
+                ELSE 2
+            END as auxiliaryLevel,
+            a.is_leaf as isLeaf,
+            a.is_enabled as isEnabled,
+            a.sort_order as sortOrder,
+            a.book_id as bookId,
+            a.tenant_id as tenantId,
+            a.version as version,
+            a.create_time as createTime,
+            a.update_time as updateTime,
+            a.creator as creator,
+            a.updater as updater
+        FROM t_auxiliary_item a
+        LEFT JOIN t_auxiliary_item p ON a.parent_id = p.auxiliary_id AND p.is_deleted = 0
+        WHERE a.is_deleted = 0
+        <if test="param.bookId != null">
+            AND a.book_id = #{param.bookId}
+        </if>
+        <if test="param.tenantId != null">
+            AND a.tenant_id = #{param.tenantId}
+        </if>
+        <if test="param.auxiliaryCode != null and param.auxiliaryCode != ''">
+            AND a.auxiliary_code LIKE CONCAT('%', #{param.auxiliaryCode}, '%')
+        </if>
+        <if test="param.auxiliaryName != null and param.auxiliaryName != ''">
+            AND a.auxiliary_name LIKE CONCAT('%', #{param.auxiliaryName}, '%')
+        </if>
+        <if test="param.auxiliaryType != null and param.auxiliaryType != ''">
+            AND a.auxiliary_type = #{param.auxiliaryType}
+        </if>
+        <if test="param.parentId != null">
+            AND a.parent_id = #{param.parentId}
+        </if>
+        <if test="param.isLeaf != null">
+            AND a.is_leaf = #{param.isLeaf}
+        </if>
+        <if test="param.isEnabled != null">
+            AND a.is_enabled = #{param.isEnabled}
+        </if>
+        ORDER BY a.auxiliary_type ASC, a.sort_order ASC, a.auxiliary_code ASC
+    </select>
+
+    <!-- 根据类型查询 - 兼容任务要求 -->
+    <select id="getByType" resultType="com.financial.sharing.mysql.entity.AuxiliaryItemEntity">
+        SELECT * FROM t_auxiliary_item
+        WHERE is_deleted = 0
+        AND auxiliary_type = #{auxiliaryType}
+        AND book_id = #{bookId}
+        ORDER BY sort_order ASC, auxiliary_code ASC
+    </select>
+
+    <!-- 查询树形结构 - 兼容任务要求 -->
+    <select id="getTreeStructure" resultType="com.financial.sharing.mysql.entity.AuxiliaryItemEntity">
+        SELECT * FROM t_auxiliary_item
+        WHERE is_deleted = 0
+        AND book_id = #{bookId}
+        <if test="parentId != null">
+            AND parent_id = #{parentId}
+        </if>
+        <if test="parentId == null">
+            AND parent_id IS NULL
+        </if>
+        ORDER BY sort_order ASC, auxiliary_code ASC
+    </select>
+
+    <!-- 根据ID删除 - 兼容任务要求 -->
+    <update id="deleteById">
+        UPDATE t_auxiliary_item
+        SET is_deleted = 1,
+            update_time = NOW()
+        WHERE auxiliary_id = #{auxiliaryId}
+          AND is_deleted = 0
+    </update>
+
+</mapper>

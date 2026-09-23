@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.system.mapper.TblRoleMapper">
+
+
+  <select id="findByRidList" resultType="com.huabo.system.entity.TblRole">
+
+      SELECT * FROM TBL_ROLE WHERE RID IN
+      <foreach item="rid" collection="ridList" open="(" separator="," close=")">
+          #{rid}
+      </foreach>
+  </select>
+
+
+</mapper>

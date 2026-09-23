@@ -1,0 +1,460 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.cybermonitor.mapper.RiskIncidentMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.huabo.cybermonitor.entity.RiskIncident">
+        <id column="RISK_INCIDENT_ID" property="riskIncidentId" />
+        <result column="INCIDENT_NUMBER" property="incidentNumber" />
+        <result column="ENTERPRISE_ID" property="enterpriseId" />
+        <result column="ENTERPRISE_NAME" property="enterpriseName" />
+        <result column="INCIDENT_TITLE" property="incidentTitle" />
+        <result column="INCIDENT_TYPE" property="incidentType" />
+        <result column="INCIDENT_CATEGORY" property="incidentCategory" />
+        <result column="INCIDENT_DESCRIPTION" property="incidentDescription" />
+        <result column="OCCURRENCE_TIME" property="occurrenceTime" />
+        <result column="DISCOVERY_TIME" property="discoveryTime" />
+        <result column="REPORTING_TIME" property="reportingTime" />
+        <result column="INCIDENT_LOCATION" property="incidentLocation" />
+        <result column="AFFECTED_SYSTEMS" property="affectedSystems" />
+        <result column="AFFECTED_BUSINESS" property="affectedBusiness" />
+        <result column="SEVERITY_LEVEL" property="severityLevel" />
+        <result column="RISK_LEVEL" property="riskLevel" />
+        <result column="RISK_SCORE" property="riskScore" />
+        <result column="IMPACT_SCOPE" property="impactScope" />
+        <result column="POTENTIAL_LOSS" property="potentialLoss" />
+        <result column="ACTUAL_LOSS" property="actualLoss" />
+        <result column="DIRECT_LOSS" property="directLoss" />
+        <result column="INDIRECT_LOSS" property="indirectLoss" />
+        <result column="PROCESSING_STATUS" property="processingStatus" />
+        <result column="PROCESSING_START_TIME" property="processingStartTime" />
+        <result column="PROCESSING_END_TIME" property="processingEndTime" />
+        <result column="RESOLUTION_SUMMARY" property="resolutionSummary" />
+        <result column="PREVENTIVE_MEASURES" property="preventiveMeasures" />
+        <result column="EMERGENCY_RESPONSE_LEVEL" property="emergencyResponseLevel" />
+        <result column="RESPONSE_TEAM" property="responseTeam" />
+        <result column="RESPONSE_LEADER" property="responseLeader" />
+        <result column="RESPONSE_ACTIONS" property="responseActions" />
+        <result column="RESPONSE_START_TIME" property="responseStartTime" />
+        <result column="RESPONSE_END_TIME" property="responseEndTime" />
+        <result column="CLOSURE_REASON" property="closureReason" />
+        <result column="CLOSURE_TIME" property="closureTime" />
+        <result column="LESSONS_LEARNED" property="lessonsLearned" />
+        <result column="FOLLOW_UP_ACTIONS" property="followUpActions" />
+        <result column="REPORT_BY" property="reportBy" />
+        <result column="PROCESS_BY" property="processBy" />
+        <result column="RESOLVE_BY" property="resolveBy" />
+        <result column="CLOSE_BY" property="closeBy" />
+        <result column="CREATE_BY" property="createBy" />
+        <result column="CREATE_TIME" property="createTime" />
+        <result column="UPDATE_BY" property="updateBy" />
+        <result column="UPDATE_TIME" property="updateTime" />
+        <result column="DELETED" property="deleted" />
+        <result column="VERSION" property="version" />
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="Base_Column_List">
+        RISK_INCIDENT_ID, INCIDENT_NUMBER, ENTERPRISE_ID, ENTERPRISE_NAME, INCIDENT_TITLE,
+        INCIDENT_TYPE, INCIDENT_CATEGORY, INCIDENT_DESCRIPTION, OCCURRENCE_TIME, DISCOVERY_TIME,
+        REPORTING_TIME, INCIDENT_LOCATION, AFFECTED_SYSTEMS, AFFECTED_BUSINESS, SEVERITY_LEVEL,
+        RISK_LEVEL, RISK_SCORE, IMPACT_SCOPE, POTENTIAL_LOSS, ACTUAL_LOSS, DIRECT_LOSS,
+        INDIRECT_LOSS, PROCESSING_STATUS, PROCESSING_START_TIME, PROCESSING_END_TIME,
+        RESOLUTION_SUMMARY, PREVENTIVE_MEASURES, EMERGENCY_RESPONSE_LEVEL, RESPONSE_TEAM,
+        RESPONSE_LEADER, RESPONSE_ACTIONS, RESPONSE_START_TIME, RESPONSE_END_TIME,
+        CLOSURE_REASON, CLOSURE_TIME, LESSONS_LEARNED, FOLLOW_UP_ACTIONS, REPORT_BY,
+        PROCESS_BY, RESOLVE_BY, CLOSE_BY, CREATE_BY, CREATE_TIME, UPDATE_BY, UPDATE_TIME,
+        DELETED, VERSION
+    </sql>
+
+    <!-- 查询条件 -->
+    <sql id="Query_Where_Clause">
+        <where>
+            DELETED = 0
+            <if test="enterpriseId != null and enterpriseId != ''">
+                AND ENTERPRISE_ID = #{enterpriseId}
+            </if>
+            <if test="enterpriseName != null and enterpriseName != ''">
+                AND ENTERPRISE_NAME LIKE CONCAT('%', #{enterpriseName}, '%')
+            </if>
+            <if test="incidentType != null and incidentType != ''">
+                AND INCIDENT_TYPE = #{incidentType}
+            </if>
+            <if test="incidentCategory != null and incidentCategory != ''">
+                AND INCIDENT_CATEGORY = #{incidentCategory}
+            </if>
+            <if test="severityLevel != null and severityLevel != ''">
+                AND SEVERITY_LEVEL = #{severityLevel}
+            </if>
+            <if test="riskLevel != null and riskLevel != ''">
+                AND RISK_LEVEL = #{riskLevel}
+            </if>
+            <if test="processingStatus != null and processingStatus != ''">
+                AND PROCESSING_STATUS = #{processingStatus}
+            </if>
+            <if test="emergencyResponseLevel != null and emergencyResponseLevel != ''">
+                AND EMERGENCY_RESPONSE_LEVEL = #{emergencyResponseLevel}
+            </if>
+            <if test="incidentTitle != null and incidentTitle != ''">
+                AND INCIDENT_TITLE LIKE CONCAT('%', #{incidentTitle}, '%')
+            </if>
+            <if test="incidentNumber != null and incidentNumber != ''">
+                AND INCIDENT_NUMBER LIKE CONCAT('%', #{incidentNumber}, '%')
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND OCCURRENCE_TIME >= #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND OCCURRENCE_TIME &lt;= #{endDate}
+            </if>
+            <if test="minLoss != null">
+                AND ACTUAL_LOSS >= #{minLoss}
+            </if>
+            <if test="maxLoss != null">
+                AND ACTUAL_LOSS &lt;= #{maxLoss}
+            </if>
+        </where>
+    </sql>
+
+    <!-- 分页查询风险事件列表 -->
+    <select id="selectRiskIncidentList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_RISK_INCIDENT
+        <include refid="Query_Where_Clause" />
+        ORDER BY OCCURRENCE_TIME DESC, CREATE_TIME DESC
+    </select>
+
+    <!-- 根据ID查询(旧表-已废弃) -->
+    <select id="selectByIdOldTable" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM TBL_RISK_INCIDENT
+        WHERE RISK_INCIDENT_ID = #{id} AND DELETED = 0
+    </select>
+
+    <!-- 新增风险事件 -->
+    <insert id="insertToOldTable">
+        INSERT INTO TBL_RISK_INCIDENT (
+            RISK_INCIDENT_ID, INCIDENT_NUMBER, ENTERPRISE_ID, ENTERPRISE_NAME, INCIDENT_TITLE,
+            INCIDENT_TYPE, INCIDENT_CATEGORY, INCIDENT_DESCRIPTION, OCCURRENCE_TIME, DISCOVERY_TIME,
+            REPORTING_TIME, INCIDENT_LOCATION, AFFECTED_SYSTEMS, AFFECTED_BUSINESS, SEVERITY_LEVEL,
+            RISK_LEVEL, RISK_SCORE, IMPACT_SCOPE, POTENTIAL_LOSS, PROCESSING_STATUS,
+            EMERGENCY_RESPONSE_LEVEL, REPORT_BY, CREATE_BY, CREATE_TIME, DELETED, VERSION
+        ) VALUES (
+            #{riskIncidentId}, #{incidentNumber}, #{enterpriseId}, #{enterpriseName}, #{incidentTitle},
+            #{incidentType}, #{incidentCategory}, #{incidentDescription}, #{occurrenceTime}, #{discoveryTime},
+            #{reportingTime}, #{incidentLocation}, #{affectedSystems}, #{affectedBusiness}, #{severityLevel},
+            #{riskLevel}, #{riskScore}, #{impactScope}, #{potentialLoss}, #{processingStatus},
+            #{emergencyResponseLevel}, #{reportBy}, #{createBy}, 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>, 
+            0, 1
+        )
+    </insert>
+
+    <!-- 更新风险事件 -->
+    <update id="updateByIdOldTable">
+        UPDATE TBL_RISK_INCIDENT
+        SET ENTERPRISE_ID = #{enterpriseId},
+            ENTERPRISE_NAME = #{enterpriseName},
+            INCIDENT_TITLE = #{incidentTitle},
+            INCIDENT_TYPE = #{incidentType},
+            INCIDENT_CATEGORY = #{incidentCategory},
+            INCIDENT_DESCRIPTION = #{incidentDescription},
+            OCCURRENCE_TIME = #{occurrenceTime},
+            DISCOVERY_TIME = #{discoveryTime},
+            INCIDENT_LOCATION = #{incidentLocation},
+            AFFECTED_SYSTEMS = #{affectedSystems},
+            AFFECTED_BUSINESS = #{affectedBusiness},
+            SEVERITY_LEVEL = #{severityLevel},
+            IMPACT_SCOPE = #{impactScope},
+            POTENTIAL_LOSS = #{potentialLoss},
+            UPDATE_BY = #{updateBy},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            VERSION = VERSION + 1
+        WHERE RISK_INCIDENT_ID = #{riskIncidentId} AND DELETED = 0
+    </update>
+
+    <!-- 逻辑删除 -->
+    <update id="deleteByIdOldTable">
+        UPDATE TBL_RISK_INCIDENT
+        SET DELETED = 1,
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>
+        WHERE RISK_INCIDENT_ID = #{id} AND DELETED = 0
+    </update>
+
+    <!-- 开始处理事件 -->
+    <update id="startProcessing">
+        UPDATE TBL_RISK_INCIDENT
+        SET PROCESSING_STATUS = 'IN_PROGRESS',
+            PROCESSING_START_TIME = #{processingStartTime},
+            PROCESS_BY = #{startBy},
+            UPDATE_BY = #{startBy},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            VERSION = VERSION + 1
+        WHERE RISK_INCIDENT_ID = #{riskIncidentId} AND DELETED = 0
+    </update>
+
+    <!-- 启动应急响应 -->
+    <update id="initiateEmergencyResponse">
+        UPDATE TBL_RISK_INCIDENT
+        SET EMERGENCY_RESPONSE_LEVEL = #{responseLevel},
+            RESPONSE_LEADER = #{responseLeader},
+            RESPONSE_TEAM = #{responseTeam},
+            RESPONSE_ACTIONS = #{responseActions},
+            RESPONSE_START_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            UPDATE_BY = #{initiateBy},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            VERSION = VERSION + 1
+        WHERE RISK_INCIDENT_ID = #{riskIncidentId} AND DELETED = 0
+    </update>
+
+    <!-- 解决事件 -->
+    <update id="resolveIncident">
+        UPDATE TBL_RISK_INCIDENT
+        SET PROCESSING_STATUS = 'RESOLVED',
+            PROCESSING_END_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            RESOLUTION_SUMMARY = #{resolutionSummary},
+            PREVENTIVE_MEASURES = #{preventiveMeasures},
+            RESOLVE_BY = #{resolveBy},
+            UPDATE_BY = #{resolveBy},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            VERSION = VERSION + 1
+        WHERE RISK_INCIDENT_ID = #{riskIncidentId} AND DELETED = 0
+    </update>
+
+    <!-- 关闭事件 -->
+    <update id="closeIncident">
+        UPDATE TBL_RISK_INCIDENT
+        SET PROCESSING_STATUS = 'CLOSED',
+            CLOSURE_REASON = #{closureReason},
+            CLOSURE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            CLOSE_BY = #{closeBy},
+            UPDATE_BY = #{closeBy},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            VERSION = VERSION + 1
+        WHERE RISK_INCIDENT_ID = #{riskIncidentId} AND DELETED = 0
+    </update>
+
+    <!-- 更新经济损失评估 -->
+    <update id="updateEconomicLoss">
+        UPDATE TBL_RISK_INCIDENT
+        SET ACTUAL_LOSS = #{actualLoss},
+            DIRECT_LOSS = #{directLoss},
+            INDIRECT_LOSS = #{indirectLoss},
+            UPDATE_BY = #{assessBy},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            VERSION = VERSION + 1
+        WHERE RISK_INCIDENT_ID = #{riskIncidentId} AND DELETED = 0
+    </update>
+
+    <!-- 批量更新状态 -->
+    <update id="batchUpdateIncidentStatus">
+        UPDATE TBL_RISK_INCIDENT
+        SET PROCESSING_STATUS = #{processingStatus},
+            UPDATE_BY = #{updateBy},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>,
+            VERSION = VERSION + 1
+        WHERE RISK_INCIDENT_ID IN
+        <foreach collection="riskIncidentIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND DELETED = 0
+    </update>
+
+    <!-- 批量逻辑删除 -->
+    <update id="batchDelete">
+        UPDATE TBL_RISK_INCIDENT
+        SET DELETED = 1,
+            UPDATE_BY = #{deleteBy},
+            UPDATE_TIME = 
+            <choose>
+                <when test="_databaseId == 'mysql'">NOW()</when>
+                <otherwise>SYSDATE</otherwise>
+            </choose>
+        WHERE RISK_INCIDENT_ID IN
+        <foreach collection="riskIncidentIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND DELETED = 0
+    </update>
+
+    <!-- 获取综合统计数据 -->
+    <select id="getComprehensiveStatistics" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as totalIncidents,
+            COUNT(CASE WHEN PROCESSING_STATUS = 'REPORTED' THEN 1 END) as reportedCount,
+            COUNT(CASE WHEN PROCESSING_STATUS = 'IN_PROGRESS' THEN 1 END) as inProgressCount,
+            COUNT(CASE WHEN PROCESSING_STATUS = 'RESOLVED' THEN 1 END) as resolvedCount,
+            COUNT(CASE WHEN PROCESSING_STATUS = 'CLOSED' THEN 1 END) as closedCount,
+            COUNT(CASE WHEN SEVERITY_LEVEL = 'CRITICAL' THEN 1 END) as criticalCount,
+            COUNT(CASE WHEN SEVERITY_LEVEL = 'HIGH' THEN 1 END) as highSeverityCount,
+            COUNT(CASE WHEN EMERGENCY_RESPONSE_LEVEL IS NOT NULL THEN 1 END) as emergencyResponseCount,
+            ROUND(AVG(RISK_SCORE), 2) as avgRiskScore,
+            SUM(ACTUAL_LOSS) as totalActualLoss,
+            SUM(DIRECT_LOSS) as totalDirectLoss,
+            SUM(INDIRECT_LOSS) as totalIndirectLoss
+        FROM TBL_RISK_INCIDENT
+        WHERE DELETED = 0
+        <if test="enterpriseId != null and enterpriseId != ''">
+            AND ENTERPRISE_ID = #{enterpriseId}
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND OCCURRENCE_TIME >= #{startDate}
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND OCCURRENCE_TIME &lt;= #{endDate}
+        </if>
+    </select>
+
+    <!-- 获取事件趋势分析 -->
+    <select id="getIncidentTrendAnalysis" resultType="java.util.Map">
+        SELECT 
+            <choose>
+                <when test="granularity == 'DAILY'">
+                    <choose>
+                        <when test="_databaseId == 'mysql'">
+                            DATE_FORMAT(OCCURRENCE_TIME, '%Y-%m-%d') as period
+                        </when>
+                        <otherwise>
+                            TO_CHAR(OCCURRENCE_TIME, 'YYYY-MM-DD') as period
+                        </otherwise>
+                    </choose>
+                </when>
+                <when test="granularity == 'WEEKLY'">
+                    <choose>
+                        <when test="_databaseId == 'mysql'">
+                            DATE_FORMAT(OCCURRENCE_TIME, '%Y-%u') as period
+                        </when>
+                        <otherwise>
+                            TO_CHAR(OCCURRENCE_TIME, 'YYYY-IW') as period
+                        </otherwise>
+                    </choose>
+                </when>
+                <otherwise>
+                    <choose>
+                        <when test="_databaseId == 'mysql'">
+                            DATE_FORMAT(OCCURRENCE_TIME, '%Y-%m') as period
+                        </when>
+                        <otherwise>
+                            TO_CHAR(OCCURRENCE_TIME, 'YYYY-MM') as period
+                        </otherwise>
+                    </choose>
+                </otherwise>
+            </choose>,
+            COUNT(*) as incidentCount,
+            COUNT(CASE WHEN SEVERITY_LEVEL = 'CRITICAL' THEN 1 END) as criticalCount,
+            COUNT(CASE WHEN SEVERITY_LEVEL = 'HIGH' THEN 1 END) as highCount,
+            SUM(ACTUAL_LOSS) as totalLoss,
+            ROUND(AVG(RISK_SCORE), 2) as avgRiskScore
+        FROM TBL_RISK_INCIDENT
+        WHERE DELETED = 0
+        <if test="startDate != null and startDate != ''">
+            AND OCCURRENCE_TIME >= #{startDate}
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND OCCURRENCE_TIME &lt;= #{endDate}
+        </if>
+        <if test="enterpriseId != null and enterpriseId != ''">
+            AND ENTERPRISE_ID = #{enterpriseId}
+        </if>
+        GROUP BY period
+        ORDER BY period
+    </select>
+
+    <!-- 获取事件分类统计 -->
+    <select id="getIncidentCategoryStatistics" resultType="java.util.Map">
+        SELECT 
+            INCIDENT_TYPE as incidentType,
+            INCIDENT_CATEGORY as incidentCategory,
+            COUNT(*) as count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM TBL_RISK_INCIDENT WHERE DELETED = 0), 2) as percentage,
+            SUM(ACTUAL_LOSS) as totalLoss,
+            ROUND(AVG(RISK_SCORE), 2) as avgRiskScore
+        FROM TBL_RISK_INCIDENT
+        WHERE DELETED = 0
+        <if test="enterpriseId != null and enterpriseId != ''">
+            AND ENTERPRISE_ID = #{enterpriseId}
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND OCCURRENCE_TIME >= #{startDate}
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND OCCURRENCE_TIME &lt;= #{endDate}
+        </if>
+        GROUP BY INCIDENT_TYPE, INCIDENT_CATEGORY
+        ORDER BY count DESC
+    </select>
+
+    <!-- 生成事件编号 -->
+    <select id="generateIncidentNumber" resultType="java.lang.String">
+        SELECT 
+        <choose>
+            <when test="_databaseId == 'mysql'">
+                CONCAT('INC', DATE_FORMAT(NOW(), '%Y%m%d'), 
+                LPAD(IFNULL(MAX(CAST(SUBSTRING(INCIDENT_NUMBER, 12) AS UNSIGNED)), 0) + 1, 4, '0'))
+            </when>
+            <otherwise>
+                'INC' || TO_CHAR(SYSDATE, 'YYYYMMDD') || 
+                LPAD(NVL(MAX(TO_NUMBER(SUBSTR(INCIDENT_NUMBER, 12))), 0) + 1, 4, '0')
+            </otherwise>
+        </choose>
+        FROM TBL_RISK_INCIDENT
+        WHERE INCIDENT_NUMBER LIKE 
+        <choose>
+            <when test="_databaseId == 'mysql'">
+                CONCAT('INC', DATE_FORMAT(NOW(), '%Y%m%d'), '%')
+            </when>
+            <otherwise>
+                'INC' || TO_CHAR(SYSDATE, 'YYYYMMDD') || '%'
+            </otherwise>
+        </choose>
+        AND DELETED = 0
+    </select>
+
+</mapper>

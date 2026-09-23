@@ -1,0 +1,415 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.cybermonitor.mapper.BudgetManagementMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.huabo.cybermonitor.entity.BudgetManagement">
+        <id column="BUDGET_ID" property="budgetId"/>
+        <result column="ENTERPRISE_ID" property="enterpriseId"/>
+        <result column="ENTERPRISE_NAME" property="enterpriseName"/>
+        <result column="BUDGET_TYPE" property="budgetType"/>
+        <result column="BUDGET_NAME" property="budgetName"/>
+        <result column="BUDGET_DESCRIPTION" property="budgetDescription"/>
+        <result column="BUDGET_YEAR" property="budgetYear"/>
+        <result column="BUDGET_PERIOD" property="budgetPeriod"/>
+        <result column="BUDGET_START_DATE" property="budgetStartDate"/>
+        <result column="BUDGET_END_DATE" property="budgetEndDate"/>
+        <result column="BUDGET_STATUS" property="budgetStatus"/>
+        <result column="BUDGET_VERSION" property="budgetVersion"/>
+        <result column="TOTAL_BUDGET_AMOUNT" property="totalBudgetAmount"/>
+        <result column="REVENUE_BUDGET" property="revenueBudget"/>
+        <result column="EXPENSE_BUDGET" property="expenseBudget"/>
+        <result column="INVESTMENT_BUDGET" property="investmentBudget"/>
+        <result column="CASH_BUDGET" property="cashBudget"/>
+        <result column="PERSONNEL_BUDGET" property="personnelBudget"/>
+        <result column="OPERATING_BUDGET" property="operatingBudget"/>
+        <result column="CAPITAL_BUDGET" property="capitalBudget"/>
+        <result column="EXECUTED_AMOUNT" property="executedAmount"/>
+        <result column="EXECUTION_PROGRESS" property="executionProgress"/>
+        <result column="EXECUTION_RATE" property="executionRate"/>
+        <result column="REMAINING_BUDGET" property="remainingBudget"/>
+        <result column="BUDGET_VARIANCE" property="budgetVariance"/>
+        <result column="VARIANCE_RATE" property="varianceRate"/>
+        <result column="BUDGET_MANAGER" property="budgetManager"/>
+        <result column="BUDGET_DEPARTMENT" property="budgetDepartment"/>
+        <result column="BUDGET_PARTICIPANTS" property="budgetParticipants"/>
+        <result column="COMPILATION_START_TIME" property="compilationStartTime"/>
+        <result column="COMPILATION_END_TIME" property="compilationEndTime"/>
+        <result column="COMPILATION_METHOD" property="compilationMethod"/>
+        <result column="COMPILATION_BASIS" property="compilationBasis"/>
+        <result column="COMPILATION_PRINCIPLES" property="compilationPrinciples"/>
+        <result column="APPROVAL_STATUS" property="approvalStatus"/>
+        <result column="APPROVAL_PROCESS" property="approvalProcess"/>
+        <result column="FIRST_APPROVER" property="firstApprover"/>
+        <result column="FIRST_APPROVAL_TIME" property="firstApprovalTime"/>
+        <result column="FIRST_APPROVAL_OPINION" property="firstApprovalOpinion"/>
+        <result column="FINAL_APPROVER" property="finalApprover"/>
+        <result column="FINAL_APPROVAL_TIME" property="finalApprovalTime"/>
+        <result column="FINAL_APPROVAL_OPINION" property="finalApprovalOpinion"/>
+        <result column="EXECUTION_START_TIME" property="executionStartTime"/>
+        <result column="MONITORING_FREQUENCY" property="monitoringFrequency"/>
+        <result column="LAST_MONITORING_TIME" property="lastMonitoringTime"/>
+        <result column="NEXT_MONITORING_TIME" property="nextMonitoringTime"/>
+        <result column="MONITORING_MANAGER" property="monitoringManager"/>
+        <result column="EXECUTION_QUALITY_SCORE" property="executionQualityScore"/>
+        <result column="EXECUTION_EFFICIENCY_SCORE" property="executionEfficiencyScore"/>
+        <result column="EXECUTION_COMPLIANCE_SCORE" property="executionComplianceScore"/>
+        <result column="EXECUTION_INNOVATION_SCORE" property="executionInnovationScore"/>
+        <result column="ADJUSTMENT_COUNT" property="adjustmentCount"/>
+        <result column="LAST_ADJUSTMENT_TIME" property="lastAdjustmentTime"/>
+        <result column="ADJUSTMENT_REASON" property="adjustmentReason"/>
+        <result column="ADJUSTMENT_CONTENT" property="adjustmentContent"/>
+        <result column="ADJUSTMENT_AMOUNT" property="adjustmentAmount"/>
+        <result column="ADJUSTMENT_APPROVER" property="adjustmentApprover"/>
+        <result column="ADJUSTMENT_APPROVAL_TIME" property="adjustmentApprovalTime"/>
+        <result column="ADJUSTMENT_RATIONALITY" property="adjustmentRationality"/>
+        <result column="ADJUSTMENT_TIMELINESS" property="adjustmentTimeliness"/>
+        <result column="ADJUSTMENT_EFFECTIVENESS" property="adjustmentEffectiveness"/>
+        <result column="ADJUSTMENT_INNOVATION" property="adjustmentInnovation"/>
+        <result column="RISK_ASSESSMENT" property="riskAssessment"/>
+        <result column="RISK_LEVEL" property="riskLevel"/>
+        <result column="RISK_CONTROL_MEASURES" property="riskControlMeasures"/>
+        <result column="PERFORMANCE_TARGETS" property="performanceTargets"/>
+        <result column="PERFORMANCE_INDICATORS" property="performanceIndicators"/>
+        <result column="PERFORMANCE_EVALUATION_RESULT" property="performanceEvaluationResult"/>
+        <result column="IMPROVEMENT_SUGGESTIONS" property="improvementSuggestions"/>
+        <result column="BEST_PRACTICES" property="bestPractices"/>
+        <result column="LESSONS_LEARNED" property="lessonsLearned"/>
+        <result column="CAPABILITY_ENHANCEMENT" property="capabilityEnhancement"/>
+        <result column="RELATED_ATTACHMENTS" property="relatedAttachments"/>
+        <result column="REMARKS" property="remarks"/>
+        <result column="EXT_FIELD1" property="extField1"/>
+        <result column="EXT_FIELD2" property="extField2"/>
+        <result column="EXT_FIELD3" property="extField3"/>
+        <result column="CREATE_BY" property="createBy"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_BY" property="updateBy"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="DEL_FLAG" property="delFlag"/>
+    </resultMap>
+
+    <!-- 通用查询条件 -->
+    <sql id="Query_Where_Clause">
+        WHERE DEL_FLAG = '0'
+        <if test="queryVo.enterpriseId != null and queryVo.enterpriseId != '' and queryVo.enterpriseId != 'ALL'">
+            AND (ENTERPRISE_ID = #{queryVo.enterpriseId} OR ENTERPRISE_ID = 'ALL')
+        </if>
+        <if test="queryVo.budgetType != null and queryVo.budgetType != ''">
+            AND BUDGET_TYPE = #{queryVo.budgetType}
+        </if>
+        <if test="queryVo.budgetName != null and queryVo.budgetName != ''">
+            AND BUDGET_NAME LIKE '%' || #{queryVo.budgetName} || '%'
+        </if>
+        <if test="queryVo.budgetYear != null">
+            AND BUDGET_YEAR = #{queryVo.budgetYear}
+        </if>
+        <if test="queryVo.budgetStatus != null and queryVo.budgetStatus != ''">
+            AND BUDGET_STATUS = #{queryVo.budgetStatus}
+        </if>
+        <if test="queryVo.approvalStatus != null and queryVo.approvalStatus != ''">
+            AND APPROVAL_STATUS = #{queryVo.approvalStatus}
+        </if>
+        <if test="queryVo.budgetManager != null and queryVo.budgetManager != ''">
+            AND BUDGET_MANAGER = #{queryVo.budgetManager}
+        </if>
+        <if test="queryVo.budgetDepartment != null and queryVo.budgetDepartment != ''">
+            AND BUDGET_DEPARTMENT = #{queryVo.budgetDepartment}
+        </if>
+        <if test="queryVo.riskLevel != null and queryVo.riskLevel != ''">
+            AND RISK_LEVEL = #{queryVo.riskLevel}
+        </if>
+    </sql>
+
+    <!-- 分页查询预算管理 -->
+    <select id="selectBudgetManagementPage" resultMap="BaseResultMap">
+        SELECT * FROM GZCT_BUDGET_MANAGEMENT
+        <include refid="Query_Where_Clause"/>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据企业ID获取预算管理统计 -->
+    <select id="selectStatisticsByEnterpriseId" resultType="map">
+        SELECT
+            COUNT(*) as totalBudgets,
+            SUM(CASE WHEN BUDGET_STATUS IN ('待编制', '编制中') THEN 1 ELSE 0 END) as compilationBudgets,
+            SUM(CASE WHEN BUDGET_STATUS = '执行中' THEN 1 ELSE 0 END) as executionBudgets,
+            SUM(CASE WHEN BUDGET_STATUS = '已完成' THEN 1 ELSE 0 END) as completedBudgets,
+            COALESCE(SUM(TOTAL_BUDGET_AMOUNT), 0) as totalAmount,
+            COALESCE(SUM(EXECUTED_AMOUNT), 0) as executedAmount,
+            COALESCE(SUM(REMAINING_BUDGET), 0) as remainingAmount,
+            CASE WHEN SUM(TOTAL_BUDGET_AMOUNT) > 0 THEN ROUND(SUM(EXECUTED_AMOUNT) / SUM(TOTAL_BUDGET_AMOUNT) * 100, 2) ELSE 0 END as executionRate
+        FROM GZCT_BUDGET_MANAGEMENT
+        WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0'
+    </select>
+
+    <!-- 根据企业ID获取预算类型分布 -->
+    <select id="selectBudgetTypeDistribution" resultType="map">
+        SELECT
+            BUDGET_TYPE as budgetType,
+            COUNT(*) as count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM GZCT_BUDGET_MANAGEMENT WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0'), 2) as percentage
+        FROM GZCT_BUDGET_MANAGEMENT
+        WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0'
+        GROUP BY BUDGET_TYPE
+        ORDER BY count DESC
+    </select>
+
+    <!-- 根据企业ID获取预算状态分布 -->
+    <select id="selectBudgetStatusDistribution" resultType="map">
+        SELECT
+            BUDGET_STATUS as budgetStatus,
+            COUNT(*) as count,
+            ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM GZCT_BUDGET_MANAGEMENT WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0'), 2) as percentage
+        FROM GZCT_BUDGET_MANAGEMENT
+        WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0'
+        GROUP BY BUDGET_STATUS
+        ORDER BY count DESC
+    </select>
+
+    <!-- 根据企业ID获取审批状态分布 -->
+    <select id="selectApprovalStatusDistribution" resultType="map">
+        SELECT
+            APPROVAL_STATUS as approvalStatus,
+            COUNT(*) as count
+        FROM GZCT_BUDGET_MANAGEMENT
+        WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0'
+        GROUP BY APPROVAL_STATUS
+        ORDER BY count DESC
+    </select>
+
+    <!-- 根据企业ID获取执行率分布 -->
+    <select id="selectExecutionRateDistribution" resultType="map">
+        SELECT
+            CASE
+                WHEN EXECUTION_RATE >= 90 THEN '90%以上'
+                WHEN EXECUTION_RATE >= 70 THEN '70%-90%'
+                WHEN EXECUTION_RATE >= 50 THEN '50%-70%'
+                WHEN EXECUTION_RATE >= 30 THEN '30%-50%'
+                ELSE '30%以下'
+            END as rateRange,
+            COUNT(*) as count
+        FROM GZCT_BUDGET_MANAGEMENT
+        WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0' AND EXECUTION_RATE IS NOT NULL
+        GROUP BY
+            CASE
+                WHEN EXECUTION_RATE >= 90 THEN '90%以上'
+                WHEN EXECUTION_RATE >= 70 THEN '70%-90%'
+                WHEN EXECUTION_RATE >= 50 THEN '50%-70%'
+                WHEN EXECUTION_RATE >= 30 THEN '30%-50%'
+                ELSE '30%以下'
+            END
+        ORDER BY count DESC
+    </select>
+
+    <!-- 批量更新预算状态 -->
+    <update id="batchUpdateBudgetStatus">
+        UPDATE GZCT_BUDGET_MANAGEMENT
+        SET BUDGET_STATUS = #{status}, UPDATE_BY = #{updateBy}, UPDATE_TIME = CURRENT_TIMESTAMP
+        WHERE BUDGET_ID IN
+        <foreach collection="budgetIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND DEL_FLAG = '0'
+    </update>
+
+    <!-- 批量更新审批状态 -->
+    <update id="batchUpdateApprovalStatus">
+        UPDATE GZCT_BUDGET_MANAGEMENT
+        SET APPROVAL_STATUS = #{status}, UPDATE_BY = #{updateBy}, UPDATE_TIME = CURRENT_TIMESTAMP
+        WHERE BUDGET_ID IN
+        <foreach collection="budgetIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND DEL_FLAG = '0'
+    </update>
+
+    <!-- 批量删除预算管理（逻辑删除） -->
+    <update id="batchDeleteBudgetManagement">
+        UPDATE GZCT_BUDGET_MANAGEMENT
+        SET DEL_FLAG = '1', UPDATE_BY = #{updateBy}, UPDATE_TIME = CURRENT_TIMESTAMP
+        WHERE BUDGET_ID IN
+        <foreach collection="budgetIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 根据企业ID获取即将到期的预算 -->
+    <select id="selectUpcomingBudgets" resultMap="BaseResultMap">
+        SELECT * FROM GZCT_BUDGET_MANAGEMENT
+        WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0'
+          AND BUDGET_STATUS = '执行中'
+          AND BUDGET_END_DATE BETWEEN CURRENT_DATE AND CURRENT_DATE + #{days}
+        ORDER BY BUDGET_END_DATE ASC
+    </select>
+
+    <!-- 根据企业ID获取逾期的预算 -->
+    <select id="selectOverdueBudgets" resultMap="BaseResultMap">
+        SELECT * FROM GZCT_BUDGET_MANAGEMENT
+        WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0'
+          AND BUDGET_STATUS = '执行中'
+          AND BUDGET_END_DATE &lt; CURRENT_DATE
+        ORDER BY BUDGET_END_DATE ASC
+    </select>
+
+    <!-- 根据企业ID获取待审批的预算 -->
+    <select id="selectPendingApprovalBudgets" resultMap="BaseResultMap">
+        SELECT * FROM GZCT_BUDGET_MANAGEMENT
+        WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0'
+          AND APPROVAL_STATUS = '待审批'
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 根据企业ID获取执行异常的预算 -->
+    <select id="selectAbnormalExecutionBudgets" resultMap="BaseResultMap">
+        SELECT * FROM GZCT_BUDGET_MANAGEMENT
+        WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0'
+          AND BUDGET_STATUS = '执行中'
+          AND (EXECUTION_RATE > 100 OR VARIANCE_RATE > 10)
+        ORDER BY VARIANCE_RATE DESC
+    </select>
+
+    <!-- 根据企业ID获取需要调整的预算 -->
+    <select id="selectBudgetsNeedingAdjustment" resultMap="BaseResultMap">
+        SELECT * FROM GZCT_BUDGET_MANAGEMENT
+        WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0'
+          AND BUDGET_STATUS = '执行中'
+          AND (VARIANCE_RATE > 5 OR VARIANCE_RATE &lt; -5)
+        ORDER BY ABS(VARIANCE_RATE) DESC
+    </select>
+
+    <!-- 以下统计方法为简化实现，返回基本统计数据 -->
+    <select id="selectBudgetExecutionTrend" resultType="map">
+        SELECT
+            BUDGET_PERIOD as period,
+            COALESCE(SUM(EXECUTED_AMOUNT), 0) as executedAmount,
+            COALESCE(SUM(TOTAL_BUDGET_AMOUNT), 0) as budgetAmount
+        FROM GZCT_BUDGET_MANAGEMENT
+        WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0'
+        GROUP BY BUDGET_PERIOD
+        ORDER BY BUDGET_PERIOD
+    </select>
+
+    <select id="selectBudgetVarianceTrend" resultType="map">
+        SELECT
+            BUDGET_PERIOD as period,
+            COALESCE(SUM(BUDGET_VARIANCE), 0) as variance
+        FROM GZCT_BUDGET_MANAGEMENT
+        WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0'
+        GROUP BY BUDGET_PERIOD
+        ORDER BY BUDGET_PERIOD
+    </select>
+
+    <select id="selectBudgetAdjustmentStatistics" resultType="map">
+        SELECT
+            COUNT(*) as totalAdjustments,
+            COALESCE(SUM(ADJUSTMENT_AMOUNT), 0) as totalAdjustmentAmount
+        FROM GZCT_BUDGET_MANAGEMENT
+        WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0' AND ADJUSTMENT_COUNT > 0
+    </select>
+
+    <select id="selectBudgetAdjustmentTrend" resultType="map">
+        SELECT
+            BUDGET_PERIOD as period,
+            COALESCE(SUM(ADJUSTMENT_AMOUNT), 0) as adjustmentAmount
+        FROM GZCT_BUDGET_MANAGEMENT
+        WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0' AND ADJUSTMENT_AMOUNT IS NOT NULL
+        GROUP BY BUDGET_PERIOD
+        ORDER BY BUDGET_PERIOD
+    </select>
+
+    <select id="selectDepartmentBudgetStatistics" resultType="map">
+        SELECT BUDGET_DEPARTMENT as department, COUNT(*) as count, COALESCE(SUM(TOTAL_BUDGET_AMOUNT), 0) as totalAmount
+        FROM GZCT_BUDGET_MANAGEMENT WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0' GROUP BY BUDGET_DEPARTMENT ORDER BY count DESC
+    </select>
+
+    <select id="selectManagerBudgetStatistics" resultType="map">
+        SELECT BUDGET_MANAGER as manager, COUNT(*) as count, COALESCE(SUM(TOTAL_BUDGET_AMOUNT), 0) as totalAmount
+        FROM GZCT_BUDGET_MANAGEMENT WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0' GROUP BY BUDGET_MANAGER ORDER BY count DESC
+    </select>
+
+    <select id="selectApproverStatistics" resultType="map">
+        SELECT FINAL_APPROVER as approver, COUNT(*) as count
+        FROM GZCT_BUDGET_MANAGEMENT WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0' AND FINAL_APPROVER IS NOT NULL GROUP BY FINAL_APPROVER ORDER BY count DESC
+    </select>
+
+    <select id="selectCompilationMethodStatistics" resultType="map">
+        SELECT COMPILATION_METHOD as method, COUNT(*) as count
+        FROM GZCT_BUDGET_MANAGEMENT WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0' AND COMPILATION_METHOD IS NOT NULL GROUP BY COMPILATION_METHOD
+    </select>
+
+    <select id="selectMonitoringFrequencyStatistics" resultType="map">
+        SELECT MONITORING_FREQUENCY as frequency, COUNT(*) as count
+        FROM GZCT_BUDGET_MANAGEMENT WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0' AND MONITORING_FREQUENCY IS NOT NULL GROUP BY MONITORING_FREQUENCY
+    </select>
+
+    <select id="selectBudgetExecutionEfficiencyAnalysis" resultType="map">
+        SELECT BUDGET_TYPE as budgetType, AVG(EXECUTION_EFFICIENCY_SCORE) as avgScore
+        FROM GZCT_BUDGET_MANAGEMENT WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0' GROUP BY BUDGET_TYPE
+    </select>
+
+    <select id="selectBudgetControlEffectivenessAnalysis" resultType="map">
+        SELECT BUDGET_TYPE as budgetType, AVG(EXECUTION_COMPLIANCE_SCORE) as avgScore
+        FROM GZCT_BUDGET_MANAGEMENT WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0' GROUP BY BUDGET_TYPE
+    </select>
+
+    <select id="selectRiskAssessmentAnalysis" resultType="map">
+        SELECT RISK_LEVEL as riskLevel, COUNT(*) as count
+        FROM GZCT_BUDGET_MANAGEMENT WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0' AND RISK_LEVEL IS NOT NULL GROUP BY RISK_LEVEL
+    </select>
+
+    <select id="selectPerformanceEvaluationAnalysis" resultType="map">
+        SELECT PERFORMANCE_EVALUATION_RESULT as result, COUNT(*) as count
+        FROM GZCT_BUDGET_MANAGEMENT WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0' AND PERFORMANCE_EVALUATION_RESULT IS NOT NULL GROUP BY PERFORMANCE_EVALUATION_RESULT
+    </select>
+
+    <select id="selectBudgetImprovementSuggestions" resultType="map">
+        SELECT IMPROVEMENT_SUGGESTIONS as suggestion, COUNT(*) as count
+        FROM GZCT_BUDGET_MANAGEMENT WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0' AND IMPROVEMENT_SUGGESTIONS IS NOT NULL GROUP BY IMPROVEMENT_SUGGESTIONS
+    </select>
+
+    <select id="selectBestPracticeCases" resultType="map">
+        SELECT BEST_PRACTICES as practice, COUNT(*) as count
+        FROM GZCT_BUDGET_MANAGEMENT WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0' AND BEST_PRACTICES IS NOT NULL GROUP BY BEST_PRACTICES
+    </select>
+
+    <select id="selectCapabilityEnhancementSuggestions" resultType="map">
+        SELECT CAPABILITY_ENHANCEMENT as suggestion, COUNT(*) as count
+        FROM GZCT_BUDGET_MANAGEMENT WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0' AND CAPABILITY_ENHANCEMENT IS NOT NULL GROUP BY CAPABILITY_ENHANCEMENT
+    </select>
+
+    <select id="selectBudgetRevenueStatistics" resultType="map">
+        SELECT COALESCE(SUM(REVENUE_BUDGET), 0) as totalBudget, COALESCE(SUM(EXECUTED_AMOUNT), 0) as totalExecuted
+        FROM GZCT_BUDGET_MANAGEMENT WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0' AND BUDGET_TYPE = '收入预算'
+    </select>
+
+    <select id="selectBudgetExpenseStatistics" resultType="map">
+        SELECT COALESCE(SUM(EXPENSE_BUDGET), 0) as totalBudget, COALESCE(SUM(EXECUTED_AMOUNT), 0) as totalExecuted
+        FROM GZCT_BUDGET_MANAGEMENT WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0' AND BUDGET_TYPE = '支出预算'
+    </select>
+
+    <select id="selectBudgetInvestmentStatistics" resultType="map">
+        SELECT COALESCE(SUM(INVESTMENT_BUDGET), 0) as totalBudget, COALESCE(SUM(EXECUTED_AMOUNT), 0) as totalExecuted
+        FROM GZCT_BUDGET_MANAGEMENT WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0' AND BUDGET_TYPE = '投资预算'
+    </select>
+
+    <select id="selectBudgetCashStatistics" resultType="map">
+        SELECT COALESCE(SUM(CASH_BUDGET), 0) as totalBudget
+        FROM GZCT_BUDGET_MANAGEMENT WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0'
+    </select>
+
+    <select id="selectBudgetPersonnelStatistics" resultType="map">
+        SELECT COALESCE(SUM(PERSONNEL_BUDGET), 0) as totalBudget
+        FROM GZCT_BUDGET_MANAGEMENT WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0'
+    </select>
+
+    <select id="selectBudgetOperatingStatistics" resultType="map">
+        SELECT COALESCE(SUM(OPERATING_BUDGET), 0) as totalBudget
+        FROM GZCT_BUDGET_MANAGEMENT WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0'
+    </select>
+
+    <select id="selectBudgetCapitalStatistics" resultType="map">
+        SELECT COALESCE(SUM(CAPITAL_BUDGET), 0) as totalBudget
+        FROM GZCT_BUDGET_MANAGEMENT WHERE (ENTERPRISE_ID = #{enterpriseId} OR ENTERPRISE_ID = 'ALL') AND DEL_FLAG = '0'
+    </select>
+
+</mapper>

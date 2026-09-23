@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.oracle.mapper.RevenueRecognitionMapper">
+
+    <!-- 插入收入确认记录 -->
+    <insert id="insert" parameterType="com.financial.sharing.oracle.entity.RevenueRecognitionEntity">
+        <selectKey keyProperty="recognitionId" resultType="java.lang.Long" order="BEFORE">
+            SELECT TRUNC(DBMS_RANDOM.VALUE(1000000000000, 9999999999999)) FROM DUAL
+        </selectKey>
+        INSERT INTO T_REVENUE_RECOGNITION (
+            RECOGNITION_ID,
+            CONTRACT_ID,
+            RECOGNITION_TYPE,
+            RECOGNITION_PERIOD,
+            RECOGNITION_DATE,
+            RECOGNITION_AMOUNT,
+            CUMULATIVE_AMOUNT,
+            RECOGNITION_RATE,
+            PERFORMANCE_PROGRESS,
+            RECOGNITION_BASIS,
+            VOUCHER_ID,
+            BOOK_ID,
+            TENANT_ID,
+            VERSION,
+            IS_DELETED,
+            CREATE_TIME,
+            UPDATE_TIME,
+            CREATOR,
+            UPDATER
+        ) VALUES (
+            #{recognitionId},
+            #{contractId},
+            #{recognitionType},
+            #{recognitionPeriod},
+            #{recognitionDate},
+            #{recognitionAmount},
+            #{cumulativeAmount},
+            #{recognitionRate},
+            #{performanceProgress},
+            #{recognitionBasis},
+            #{voucherId},
+            #{bookId},
+            #{tenantId},
+            #{version},
+            #{isDeleted},
+            #{createTime},
+            #{updateTime},
+            #{creator},
+            #{updater}
+        )
+    </insert>
+
+    <!-- 查询收入确认列表 -->
+    <select id="selectRevenueRecognitionList" resultType="java.util.HashMap">
+        SELECT
+            rr.RECOGNITION_ID as recognitionId,
+            rr.CONTRACT_ID as contractId,
+            rc.CONTRACT_NO as contractNo,
+            rc.CONTRACT_NAME as contractName,
+            rr.RECOGNITION_PERIOD as recognitionPeriod,
+            rr.RECOGNITION_DATE as recognitionDate,
+            rr.RECOGNITION_AMOUNT as recognitionAmount,
+            rr.CUMULATIVE_AMOUNT as cumulativeAmount,
+            rr.RECOGNITION_RATE as recognitionRate,
+            rr.PERFORMANCE_PROGRESS as performanceProgress,
+            rr.RECOGNITION_TYPE as recognitionType,
+            CASE rr.RECOGNITION_TYPE
+                WHEN 1 THEN '自动确认'
+                WHEN 2 THEN '手动确认'
+                ELSE '未知'
+            END as recognitionTypeName,
+            rr.RECOGNITION_BASIS as recognitionBasis,
+            rr.VOUCHER_ID as voucherId,
+            rr.CREATE_TIME as createTime,
+            rr.UPDATE_TIME as updateTime
+        FROM T_REVENUE_RECOGNITION rr
+        LEFT JOIN T_REVENUE_CONTRACT rc ON rr.CONTRACT_ID = rc.CONTRACT_ID
+        <where>
+            rr.IS_DELETED = 0
+            <if test="param.contractNo != null and param.contractNo != ''">
+                AND rc.CONTRACT_NO LIKE '%' || #{param.contractNo} || '%'
+            </if>
+            <if test="param.contractName != null and param.contractName != ''">
+                AND rc.CONTRACT_NAME LIKE '%' || #{param.contractName} || '%'
+            </if>
+            <if test="param.recognitionPeriod != null and param.recognitionPeriod != ''">
+                AND rr.RECOGNITION_PERIOD = #{param.recognitionPeriod}
+            </if>
+            <if test="param.recognitionType != null">
+                AND rr.RECOGNITION_TYPE = #{param.recognitionType}
+            </if>
+            <if test="param.startDate != null and param.endDate != null">
+                AND rr.RECOGNITION_DATE BETWEEN #{param.startDate} AND #{param.endDate}
+            </if>
+        </where>
+        ORDER BY rr.RECOGNITION_DATE DESC, rr.CREATE_TIME DESC
+    </select>
+
+    <!-- 根据ID查询收入确认详情 -->
+    <select id="selectRevenueRecognitionById" resultType="java.util.HashMap">
+        SELECT
+            rr.RECOGNITION_ID as recognitionId,
+            rr.CONTRACT_ID as contractId,
+            rc.CONTRACT_NO as contractNo,
+            rc.CONTRACT_NAME as contractName,
+            rc.CONTRACT_AMOUNT as contractAmount,
+            rc.CUSTOMER_ID as customerId,
+            rr.RECOGNITION_PERIOD as recognitionPeriod,
+            rr.RECOGNITION_DATE as recognitionDate,
+            rr.RECOGNITION_AMOUNT as recognitionAmount,
+            rr.CUMULATIVE_AMOUNT as cumulativeAmount,
+            rr.RECOGNITION_RATE as recognitionRate,
+            rr.PERFORMANCE_PROGRESS as performanceProgress,
+            rr.RECOGNITION_TYPE as recognitionType,
+            CASE rr.RECOGNITION_TYPE
+                WHEN 1 THEN '自动确认'
+                WHEN 2 THEN '手动确认'
+                ELSE '未知'
+            END as recognitionTypeName,
+            rr.RECOGNITION_BASIS as recognitionBasis,
+            rr.VOUCHER_ID as voucherId,
+            rr.BOOK_ID as bookId,
+            rr.TENANT_ID as tenantId,
+            rr.CREATE_TIME as createTime,
+            rr.UPDATE_TIME as updateTime,
+            rr.CREATOR as creator,
+            rr.UPDATER as updater,
+            (rc.CONTRACT_AMOUNT - rr.CUMULATIVE_AMOUNT) as remainingRevenue
+        FROM T_REVENUE_RECOGNITION rr
+        LEFT JOIN T_REVENUE_CONTRACT rc ON rr.CONTRACT_ID = rc.CONTRACT_ID
+        WHERE rr.RECOGNITION_ID = #{recognitionId}
+          AND rr.IS_DELETED = 0
+    </select>
+
+    <!-- 根据收入确认ID查询关联凭证 -->
+    <select id="selectVoucherByRecognitionId" resultType="java.util.HashMap">
+        SELECT
+            v.VOUCHER_ID as voucherId,
+            v.VOUCHER_NO as voucherNo,
+            v.VOUCHER_TYPE as voucherType,
+            CASE v.VOUCHER_TYPE
+                WHEN 1 THEN '收款凭证'
+                WHEN 2 THEN '付款凭证'
+                WHEN 3 THEN '转账凭证'
+                WHEN 4 THEN '记账凭证'
+                ELSE '其他'
+            END as voucherTypeName,
+            v.VOUCHER_DATE as voucherDate,
+            v.ACCOUNTING_PERIOD as accountingPeriod,
+            v.DEBIT_AMOUNT as debitAmount,
+            v.CREDIT_AMOUNT as creditAmount,
+            v.SUMMARY as summary,
+            v.VOUCHER_STATUS as voucherStatus,
+            CASE v.VOUCHER_STATUS
+                WHEN 0 THEN '草稿'
+                WHEN 1 THEN '已审核'
+                WHEN 2 THEN '已过账'
+                WHEN 3 THEN '已作废'
+                ELSE '未知'
+            END as voucherStatusName,
+            v.CREATOR_NAME as creatorName,
+            v.CREATE_TIME as createTime,
+            v.AUDITOR_NAME as auditorName,
+            v.AUDIT_TIME as auditTime
+        FROM T_VOUCHER v
+        INNER JOIN T_REVENUE_RECOGNITION rr ON rr.VOUCHER_ID = v.VOUCHER_ID
+        WHERE rr.RECOGNITION_ID = #{recognitionId}
+          AND rr.IS_DELETED = 0
+          AND v.IS_DELETED = 0
+    </select>
+
+</mapper>
+

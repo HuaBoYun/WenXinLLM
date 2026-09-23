@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.mapper.TblBillRecognitionLogMapper">
+
+    <select id="selectByConfigId" resultType="com.financial.sharing.entity.TblBillRecognitionLog">
+        SELECT * FROM TBL_BILL_RECOGNITION_LOG WHERE CONFIG_ID = #{configId} ORDER BY RECOGNITION_TIME DESC
+    </select>
+
+    <select id="selectByBusiness" resultType="com.financial.sharing.entity.TblBillRecognitionLog">
+        SELECT * FROM TBL_BILL_RECOGNITION_LOG
+        WHERE BUSINESS_TYPE = #{businessType} AND BUSINESS_ID = #{businessId}
+        ORDER BY RECOGNITION_TIME DESC
+    </select>
+
+    <select id="selectByRecognitionStatus" resultType="com.financial.sharing.entity.TblBillRecognitionLog">
+        SELECT * FROM TBL_BILL_RECOGNITION_LOG WHERE RECOGNITION_STATUS = #{recognitionStatus} ORDER BY RECOGNITION_TIME DESC
+    </select>
+
+    <select id="selectByTimeRange" resultType="com.financial.sharing.entity.TblBillRecognitionLog">
+        SELECT * FROM TBL_BILL_RECOGNITION_LOG
+        WHERE RECOGNITION_TIME <![CDATA[>=]]> #{startTime} AND RECOGNITION_TIME <![CDATA[<=]]> #{endTime}
+        ORDER BY RECOGNITION_TIME DESC
+    </select>
+
+    <select id="selectByRecognitionUser" resultType="com.financial.sharing.entity.TblBillRecognitionLog">
+        SELECT * FROM TBL_BILL_RECOGNITION_LOG WHERE RECOGNITION_USER = #{recognitionUser} ORDER BY RECOGNITION_TIME DESC
+    </select>
+
+    <select id="selectRecentLogs" resultType="com.financial.sharing.entity.TblBillRecognitionLog">
+        SELECT * FROM TBL_BILL_RECOGNITION_LOG ORDER BY RECOGNITION_TIME DESC
+        <if test="limit != null">
+            FETCH FIRST #{limit} ROWS ONLY
+        </if>
+    </select>
+
+</mapper>

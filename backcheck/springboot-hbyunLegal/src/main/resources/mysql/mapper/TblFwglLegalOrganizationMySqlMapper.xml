@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.legal.mysql.mapper.TblFwglLegalOrganizationMySqlMapper">
+  <resultMap id="BaseResultMap" type="com.huabo.legal.mysql.entity.TblFwglLegalOrganizationMySql">
+    <!--@mbg.generated generated on Sat Sep 10 18:45:24 CST 2022.-->
+    <!--@Table hbgrctest.tbl_fwgl_legal_organization-->
+    <id column="ORGANIZATIONID" jdbcType="INTEGER" property="organizationId" />
+    <result column="ORGANIZATIONNAME" jdbcType="VARCHAR" property="organizationName" />
+    <result column="WORKUNITID" jdbcType="INTEGER" property="workUnitId" />
+    <result column="BELONGGROUPID" jdbcType="INTEGER" property="belongGroupId" />
+    <result column="NATURE" jdbcType="VARCHAR" property="nature" />
+    <result column="RESPONSIBLEPERSON" jdbcType="VARCHAR" property="responsiblePerson" />
+    <result column="RESPONSIBLEPERSONPHONE" jdbcType="VARCHAR" property="responsiblePersonPhone" />
+    <result column="CONTACT" jdbcType="VARCHAR" property="contact" />
+    <result column="CONTACTPHONE" jdbcType="VARCHAR" property="contactPhone" />
+    <result column="CONTACTMOBILEPHONE" jdbcType="VARCHAR" property="contactMobilePhone" />
+    <result column="CONTACTEMAIL" jdbcType="VARCHAR" property="contactEmail" />
+    <result column="MAKINGPEOPLE" jdbcType="VARCHAR" property="makingPeople" />
+    <result column="MAKINGTIME" jdbcType="TIMESTAMP" property="makingTime" />
+    <result column="AUDITPERSON" jdbcType="VARCHAR" property="auditPerson" />
+    <result column="AUDITTIME" jdbcType="TIMESTAMP" property="auditTime" />
+    <result column="ANNUAL" jdbcType="VARCHAR" property="annual" />
+    <result column="ORGANIZATIONEXTID" jdbcType="VARCHAR" property="organizationExtId" />
+    <result column="STATE" jdbcType="INTEGER" property="state" />
+    <result column="CREATOR" jdbcType="VARCHAR" property="creator" />
+    <result column="WORKUNIT" jdbcType="VARCHAR" property="workUnit" />
+    <result column="BELONGGROUP" jdbcType="VARCHAR" property="belongGroup" />
+    <result column="CREATEDTIME" jdbcType="TIMESTAMP" property="createdTime" />
+    <result column="UPDATEDTIME" jdbcType="TIMESTAMP" property="updatedTime" />
+  </resultMap>
+</mapper>

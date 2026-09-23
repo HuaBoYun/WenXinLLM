@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.contract.mapper.QualityInspectionMapper">
+
+    <!-- 结果映射 - 根据达梦数据库 quality_inspection 表结构 -->
+    <resultMap id="BaseResultMap" type="com.huabo.contract.entity.QualityInspection">
+        <id column="id" property="id" />
+        <result column="project_id" property="projectId" />
+        <result column="task_id" property="taskId" />
+        <result column="inspection_no" property="inspectionNo" />
+        <result column="inspection_name" property="inspectionName" />
+        <result column="inspection_type" property="inspectionType" />
+        <result column="inspection_date" property="inspectionDate" />
+        <result column="inspector_id" property="inspectorId" />
+        <result column="inspection_scope" property="inspectionScope" />
+        <result column="inspection_standards" property="inspectionStandards" />
+        <result column="inspection_methods" property="inspectionMethods" />
+        <result column="inspection_results" property="inspectionResults" />
+        <result column="check_result" property="checkResult" />
+        <result column="identified_issues" property="identifiedIssues" />
+        <result column="rectification_requirements" property="rectificationRequirements" />
+        <result column="rectification_deadline" property="rectificationDeadline" />
+        <result column="rectification_person_id" property="rectificationPersonId" />
+        <result column="rectification_status" property="rectificationStatus" />
+        <result column="rectification_completion_date" property="rectificationCompletionDate" />
+        <result column="rectification_description" property="rectificationDescription" />
+        <result column="recheck_person_id" property="recheckPersonId" />
+        <result column="recheck_date" property="recheckDate" />
+        <result column="recheck_result" property="recheckResult" />
+        <result column="recheck_comments" property="recheckComments" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 基础字段 - 根据达梦数据库实际字段 -->
+    <sql id="Base_Column_List">
+        id, project_id, task_id, inspection_no, inspection_name, inspection_type, inspection_date,
+        inspector_id, inspection_scope, inspection_standards, inspection_methods, inspection_results,
+        check_result, identified_issues, rectification_requirements, rectification_deadline,
+        rectification_person_id, rectification_status, rectification_completion_date, rectification_description,
+        recheck_person_id, recheck_date, recheck_result, recheck_comments, create_time, update_time
+    </sql>
+
+    <!-- 分页查询质量检查记录列表 -->
+    <select id="selectQualityInspectionPage" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM quality_inspection
+        WHERE 1=1
+        <if test="param.projectId != null">
+            AND project_id = #{param.projectId}
+        </if>
+        <if test="param.inspectionNo != null and param.inspectionNo != ''">
+            AND inspection_no LIKE '%' || #{param.inspectionNo} || '%'
+        </if>
+        <if test="param.inspectionName != null and param.inspectionName != ''">
+            AND inspection_name LIKE '%' || #{param.inspectionName} || '%'
+        </if>
+        <if test="param.inspectionType != null">
+            AND inspection_type = #{param.inspectionType}
+        </if>
+        <if test="param.inspectorId != null">
+            AND inspector_id = #{param.inspectorId}
+        </if>
+        <if test="param.checkResult != null">
+            AND check_result = #{param.checkResult}
+        </if>
+        <if test="param.rectificationStatus != null">
+            AND rectification_status = #{param.rectificationStatus}
+        </if>
+        <if test="param.rectificationPersonId != null">
+            AND rectification_person_id = #{param.rectificationPersonId}
+        </if>
+        <if test="param.recheckPersonId != null">
+            AND recheck_person_id = #{param.recheckPersonId}
+        </if>
+        <if test="param.recheckResult != null">
+            AND recheck_result = #{param.recheckResult}
+        </if>
+        <if test="param.inspectionStartDate != null">
+            AND inspection_date >= #{param.inspectionStartDate}
+        </if>
+        <if test="param.inspectionEndDate != null">
+            AND inspection_date &lt;= #{param.inspectionEndDate}
+        </if>
+        <if test="param.rectificationDeadlineStart != null">
+            AND rectification_deadline >= #{param.rectificationDeadlineStart}
+        </if>
+        <if test="param.rectificationDeadlineEnd != null">
+            AND rectification_deadline &lt;= #{param.rectificationDeadlineEnd}
+        </if>
+        <if test="param.createStartTime != null">
+            AND create_time >= #{param.createStartTime}
+        </if>
+        <if test="param.createEndTime != null">
+            AND create_time &lt;= #{param.createEndTime}
+        </if>
+        <if test="param.keyword != null and param.keyword != ''">
+            AND (inspection_no LIKE '%' || #{param.keyword} || '%'
+                 OR inspection_name LIKE '%' || #{param.keyword} || '%'
+                 OR inspection_scope LIKE '%' || #{param.keyword} || '%'
+                 OR identified_issues LIKE '%' || #{param.keyword} || '%')
+        </if>
+        ORDER BY create_time DESC, id DESC
+    </select>
+
+    <!-- 根据项目ID查询质量检查记录列表 -->
+    <select id="selectByProjectId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM quality_inspection
+        WHERE project_id = #{projectId}
+        ORDER BY inspection_date DESC, create_time DESC
+    </select>
+
+    <!-- 根据检查类型查询质量检查记录列表 -->
+    <select id="selectByInspectionType" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM quality_inspection
+        WHERE inspection_type = #{inspectionType}
+        ORDER BY inspection_date DESC
+    </select>
+
+    <!-- 根据检查结果查询质量检查记录列表 -->
+    <select id="selectByCheckResult" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM quality_inspection
+        WHERE check_result = #{checkResult}
+        ORDER BY inspection_date DESC
+    </select>
+
+    <!-- 根据整改状态查询质量检查记录列表 -->
+    <select id="selectByRectificationStatus" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM quality_inspection
+        WHERE rectification_status = #{rectificationStatus}
+        ORDER BY rectification_deadline ASC
+    </select>
+
+    <!-- 根据整改负责人ID查询质量检查记录列表 -->
+    <select id="selectByRectificationResponsibleId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM quality_inspection
+        WHERE rectification_person_id = #{rectificationResponsibleId}
+        ORDER BY inspection_date DESC
+    </select>
+
+    <!-- 根据复查结果查询质量检查记录列表 -->
+    <select id="selectByRecheckResult" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM quality_inspection
+        WHERE recheck_result = #{recheckResult}
+        ORDER BY recheck_date DESC
+    </select>
+
+    <!-- 根据检查员ID查询质量检查记录列表 -->
+    <select id="selectByInspectorLeaderId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM quality_inspection
+        WHERE inspector_id = #{inspectorLeaderId}
+        ORDER BY inspection_date DESC
+    </select>
+
+    <!-- 根据检查结果统计数量 -->
+    <select id="countByCheckResult" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM quality_inspection
+        WHERE check_result = #{checkResult}
+    </select>
+
+    <!-- 根据整改状态统计数量 -->
+    <select id="countByRectificationStatus" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM quality_inspection
+        WHERE rectification_status = #{rectificationStatus}
+    </select>
+
+    <!-- 根据项目ID统计平均得分 -->
+    <select id="calculateAverageScore" resultType="java.lang.Double">
+        SELECT 0.0
+    </select>
+
+    <!-- 根据项目ID统计合格率 -->
+    <select id="calculatePassRate" resultType="java.lang.Double">
+        SELECT
+        CASE
+            WHEN COUNT(*) = 0 THEN 0.0
+            ELSE ROUND(COUNT(CASE WHEN check_result = 1 THEN 1 END) * 100.0 / COUNT(*), 2)
+        END
+        FROM quality_inspection
+        WHERE project_id = #{projectId}
+    </select>
+
+    <!-- 查询质量检查统计信息 -->
+    <select id="selectQualityInspectionStatistics" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM quality_inspection
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据关键词搜索质量检查记录 -->
+    <select id="searchByKeyword" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM quality_inspection
+        WHERE 1=1
+        <if test="keyword != null and keyword != ''">
+            AND (inspection_no LIKE '%' || #{keyword} || '%'
+                 OR inspection_name LIKE '%' || #{keyword} || '%'
+                 OR inspection_scope LIKE '%' || #{keyword} || '%'
+                 OR identified_issues LIKE '%' || #{keyword} || '%')
+        </if>
+        ORDER BY create_time DESC
+        <if test="limit != null and limit > 0">
+            LIMIT #{limit}
+        </if>
+    </select>
+
+    <!-- 查询即将到期的整改任务 -->
+    <select id="selectUpcomingRectificationDeadlines" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM quality_inspection
+        WHERE rectification_status IN (1, 2)
+        AND rectification_deadline BETWEEN SYSDATE AND SYSDATE + #{days}
+        ORDER BY rectification_deadline ASC
+    </select>
+
+    <!-- 查询不合格的质量检查记录 -->
+    <select id="selectUnqualified" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM quality_inspection
+        WHERE check_result = 2
+        ORDER BY inspection_date DESC
+    </select>
+
+    <!-- 查询有严重问题的质量检查记录 -->
+    <select id="selectWithSeriousIssues" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM quality_inspection
+        WHERE identified_issues IS NOT NULL
+        AND identified_issues != ''
+        ORDER BY inspection_date DESC
+    </select>
+
+    <!-- 查询待整改的质量检查记录 -->
+    <select id="selectPendingRectification" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM quality_inspection
+        WHERE rectification_status = 1
+        ORDER BY rectification_deadline ASC
+    </select>
+
+    <!-- 查询整改逾期的质量检查记录 -->
+    <select id="selectRectificationOverdue" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM quality_inspection
+        WHERE rectification_status IN (1, 2)
+        AND rectification_deadline &lt; SYSDATE
+        ORDER BY rectification_deadline ASC
+    </select>
+
+    <!-- 查询优良等级的质量检查记录 -->
+    <select id="selectExcellentGrade" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM quality_inspection
+        WHERE check_result = 1
+        ORDER BY inspection_date DESC
+    </select>
+
+    <!-- 根据日期范围查询质量检查记录 -->
+    <select id="selectByDateRange" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM quality_inspection
+        WHERE 1=1
+        <if test="startDate != null">
+            AND inspection_date >= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND inspection_date &lt;= #{endDate}
+        </if>
+        ORDER BY inspection_date DESC
+    </select>
+
+    <!-- 根据得分范围查询质量检查记录 -->
+    <select id="selectByScoreRange" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM quality_inspection
+        WHERE 1=1
+        ORDER BY inspection_date DESC
+    </select>
+
+    <!-- 批量更新整改状态 -->
+    <update id="batchUpdateRectificationStatus">
+        UPDATE quality_inspection
+        SET rectification_status = #{rectificationStatus},
+            update_time = SYSDATE
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 批量更新检查结果 -->
+    <update id="batchUpdateCheckResult">
+        UPDATE quality_inspection
+        SET check_result = #{checkResult},
+            update_time = SYSDATE
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+</mapper>

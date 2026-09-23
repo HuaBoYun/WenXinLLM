@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.RepaymentPlanMapper">
+
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TblRepaymentPlan">
+        <id column="PLAN_ID" property="planId"/>
+        <result column="LOAN_ID" property="loanId"/>
+        <result column="CONTRACT_ID" property="contractId"/>
+        <result column="PERIOD_NO" property="periodNo"/>
+        <result column="DUE_DATE" property="dueDate"/>
+        <result column="PRINCIPAL_AMOUNT" property="principalAmount"/>
+        <result column="INTEREST_AMOUNT" property="interestAmount"/>
+        <result column="TOTAL_AMOUNT" property="totalAmount"/>
+        <result column="PAID_PRINCIPAL" property="paidPrincipal"/>
+        <result column="PAID_INTEREST" property="paidInterest"/>
+        <result column="PAID_TOTAL" property="paidTotal"/>
+        <result column="REMAINING_PRINCIPAL" property="remainingPrincipal"/>
+        <result column="PAYMENT_DATE" property="paymentDate"/>
+        <result column="PAYMENT_STATUS" property="paymentStatus"/>
+        <result column="OVERDUE_DAYS" property="overdueDays"/>
+        <result column="OVERDUE_INTEREST" property="overdueInterest"/>
+        <result column="CURRENCY_CODE" property="currencyCode"/>
+        <result column="COMPANY_ID" property="companyId"/>
+        <result column="COMPANY_NAME" property="companyName"/>
+        <result column="DELETE_FLAG" property="deleteFlag"/>
+        <result column="CREATED_BY" property="createdBy"/>
+        <result column="CREATED_TIME" property="createdTime"/>
+        <result column="UPDATED_BY" property="updatedBy"/>
+        <result column="UPDATED_TIME" property="updatedTime"/>
+        <result column="REMARK" property="remark"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        PLAN_ID, LOAN_ID, CONTRACT_ID, PERIOD_NO, DUE_DATE, PRINCIPAL_AMOUNT, INTEREST_AMOUNT,
+        TOTAL_AMOUNT, PAID_PRINCIPAL, PAID_INTEREST, PAID_TOTAL, REMAINING_PRINCIPAL,
+        PAYMENT_DATE, PAYMENT_STATUS, OVERDUE_DAYS, OVERDUE_INTEREST, CURRENCY_CODE,
+        COMPANY_ID, COMPANY_NAME, DELETE_FLAG, CREATED_BY, CREATED_TIME, UPDATED_BY, UPDATED_TIME, REMARK
+    </sql>
+
+    <select id="selectPlanList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_REPAYMENT_PLAN
+        WHERE DELETE_FLAG = 0
+        <if test="params.loanId != null">
+            AND LOAN_ID = #{params.loanId}
+        </if>
+        <if test="params.contractId != null">
+            AND CONTRACT_ID = #{params.contractId}
+        </if>
+        <if test="params.paymentStatus != null and params.paymentStatus != ''">
+            AND PAYMENT_STATUS = #{params.paymentStatus}
+        </if>
+        ORDER BY PERIOD_NO ASC
+    </select>
+
+    <select id="selectByLoanId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_REPAYMENT_PLAN
+        WHERE DELETE_FLAG = 0 AND LOAN_ID = #{loanId}
+        ORDER BY PERIOD_NO ASC
+    </select>
+
+    <select id="selectByContractId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_REPAYMENT_PLAN
+        WHERE DELETE_FLAG = 0 AND CONTRACT_ID = #{contractId}
+        ORDER BY PERIOD_NO ASC
+    </select>
+
+    <select id="selectPendingPlans" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_REPAYMENT_PLAN
+        WHERE DELETE_FLAG = 0 AND LOAN_ID = #{loanId}
+        AND PAYMENT_STATUS IN ('PENDING', 'PARTIAL')
+        ORDER BY DUE_DATE ASC
+    </select>
+
+    <select id="selectOverduePlans" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_REPAYMENT_PLAN
+        WHERE DELETE_FLAG = 0 AND LOAN_ID = #{loanId}
+        AND PAYMENT_STATUS = 'OVERDUE'
+        ORDER BY DUE_DATE ASC
+    </select>
+
+    <select id="countByLoanId" resultType="int">
+        SELECT COUNT(*) FROM TBL_REPAYMENT_PLAN
+        WHERE DELETE_FLAG = 0 AND LOAN_ID = #{loanId}
+    </select>
+
+    <update id="deleteByLoanId">
+        UPDATE TBL_REPAYMENT_PLAN SET DELETE_FLAG = 1
+        WHERE LOAN_ID = #{loanId}
+    </update>
+
+</mapper>
+

@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.financialdata.mapper.AccSumMapper">
+
+    <!--对象映射-->
+    <resultMap id="BaseResultMap" type="com.huabo.financialdata.entity.entity.AccSum">
+        <id column="ACCID" jdbcType="VARCHAR" property="ACCID"/>
+        <id column="accName" jdbcType="VARCHAR" property="accName"/>
+        <result column="QCMD" jdbcType="BIGINT" property="QCMD"/>
+        <result column="QCMC" jdbcType="BIGINT" property="QCMC"/>
+        <result column="BQMD" jdbcType="BIGINT" property="BQMD"/>
+        <result column="BQMC" jdbcType="BIGINT" property="BQMC"/>
+        <result column="QMMD" jdbcType="BIGINT" property="QMMD"/>
+        <result column="QMMC" jdbcType="BIGINT" property="QMMC"/>
+        <result column="FNAME" jdbcType="VARCHAR" property="FNAME"/>
+        <result column="QCMD_F" jdbcType="BIGINT" property="QCMD_F"/>
+        <result column="QCMC_F" jdbcType="BIGINT" property="QCMC_F"/>
+        <result column="BQMD_F" jdbcType="BIGINT" property="BQMD_F"/>
+        <result column="BQMC_F" jdbcType="BIGINT" property="BQMC_F"/>
+        <result column="QMMD_F" jdbcType="BIGINT" property="QMMD_F"/>
+        <result column="QMMC_F" jdbcType="BIGINT" property="QMMC_F"/>
+        <result column="NUM" jdbcType="INTEGER" property="NUM"/>
+        <result column="AYEAR" jdbcType="INTEGER" property="AYEAR"/>
+        <result column="AMONTH" jdbcType="INTEGER" property="AMONTH"/>
+        <result column="LJMD" jdbcType="BIGINT" property="LJMD"/>
+        <result column="LJMC" jdbcType="BIGINT" property="LJMC"/>
+        <result column="LJMD_F" jdbcType="BIGINT" property="LJMD_F"/>
+        <result column="LJMC_F" jdbcType="BIGINT" property="LJMC_F"/>
+        <result column="QCDC" jdbcType="VARCHAR" property="QCDC"/>
+        <result column="QMDC" jdbcType="VARCHAR" property="QMDC"/>
+    </resultMap>
+
+    <!-- 公共：基础字段 -->
+    <sql id="Base_Column_List">
+        s
+        .
+        ACCID
+        ,a.ACCNAME1 accName,
+        s.QCMD,s.QCMC,s.BQMD,s.BQMC,s.QMMD,s.QMMC,s.FNAME,
+        s.QCMD_F,s.QCMC_F,s.BQMD_F,s.BQMC_F,s.QMMD_F,s.QMMC_F,s.NUM,
+        s.AYEAR,s.AMONTH,s.LJMD,s.LJMC,s.LJMD_F,s.LJMC_F,s.QCDC,s.QMDC
+    </sql>
+
+    <!-- 公共：通用查询条件 -->
+    <sql id="conditions">
+        <if test="ACCID != null and ACCID != ''">
+        	<if test="status == '包含'">and s.ACCID like '%${ACCID}%'</if>
+            <if test="status == '不包含'">and s.ACCID not like '%${ACCID}%'</if>
+            <if test="status != '包含' and status != '不包含'">
+            	and s.ACCID
+            	<include refid="statusList"/>
+            	#{ACCID}
+            </if>
+        
+        </if>
+        <if test="accName != null and accName != ''">
+            <if test="status == '包含'">and ACCNAME1 like '%${accName}%'</if>
+            <if test="status == '不包含'">and ACCNAME1 not like '%${accName}%'</if>
+            <if test="status != '包含' and status != '不包含'">and ACCNAME1
+                <include refid="statusList"/>
+                #{accName}
+            </if>
+        </if>
+        <if test="minMonth != null">
+            <![CDATA[
+				and	s.AMONTH  >= #{minMonth}
+			]]>
+        </if>
+        <if test="maxMonth != null">
+            <![CDATA[
+				and	s.AMONTH  <= #{maxMonth}
+			]]>
+        </if>
+        <if test="AYEAR != null and AYEAR != ''">and s.AYEAR = ${AYEAR}</if>
+
+        <if test="QCMD != null ">and QCMD
+            <include refid="statusList"/>
+            ${QCMD}
+        </if>
+        <if test="QCMC != null ">and QCMC
+            <include refid="statusList"/>
+            ${QCMC}
+        </if>
+        <if test="BQMD != null">and BQMD
+            <include refid="statusList"/>
+            ${BQMD}
+        </if>
+        <if test="BQMC != null ">and BQMC
+            <include refid="statusList"/>
+            ${BQMC}
+        </if>
+        <if test="QMMD != null ">and QMMD
+            <include refid="statusList"/>
+            ${QMMD}
+        </if>
+        <if test="QMMC != null ">and QMMC
+            <include refid="statusList"/>
+            ${QMMC}
+        </if>
+
+    </sql>
+
+    <sql id="statusList">
+        <if test="status == '等于'">=</if>
+        <if test="status == '不等于'">!=</if>
+        <if test="status == '小于'">  <![CDATA[ < ]]> </if>
+        <if test="status == '小于等于'"> <![CDATA[ <= ]]> </if>
+        <if test="status == '大于'">></if>
+        <if test="status == '大于等于'">>=</if>
+    </sql>
+
+    <!--按条件查询-->
+    <select id="selectByCondition" parameterType="com.huabo.financialdata.entity.entity.AccSumQuery"
+            resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from ${dbSource}.TBL_ACC_SUM s
+        left join ${dbSource}.TBL_ACCOUNT a ON s.ACCID = A.ACCID AND A.AYEAR = S.AYEAR
+        <where>
+            <include refid="conditions"/>
+        </where>
+        <if test="orderByClause != null and orderByClause != ''">ORDER BY ${orderByClause}</if>
+    </select>
+
+
+    <select id="selectMaxMonth" resultType="java.lang.Integer"
+            parameterType="com.huabo.financialdata.entity.vo.accBkpf.AccBkpfRequestVo">
+        SELECT NVL(MAX(AMONTH), 0)
+        FROM ${dbSource}.TBL_ACC_BSEG${bookYear}
+    </select>
+
+    <select id="findAccSumTotal" parameterType="com.huabo.financialdata.entity.vo.accSumTotal.AccSumTotalRequestVo"
+            resultType="com.huabo.financialdata.entity.vo.accSumTotal.AccSumTotalResponseVo">
+        SELECT
+        s.ACCID as accid, A .ACCNAME1 as accName,s.AMONTH as aMonth, s.QCMD as qcmd, s.QCMC as qcmc,
+        s.BQMD as bqmd, s.BQMC as bqmc, s.LJMD as ljmd,s.LJMC as ljmc, s.QMMD as qmmd, S.QMMC as qmmc, s.QMDC as qmdc,
+        s.Ayear as aYear
+        FROM
+        ${dbSource}.TBL_ACC_SUM s
+        LEFT JOIN ${dbSource}.TBL_ACCOUNT A ON s.ACCID = A .ACCID AND A .AYEAR = S.AYEAR
+        WHERE 1=1
+        <if test="ayear != null and ayear != ''">
+            and s.AYEAR = #{ayear}
+        </if>
+        <if test="type == 'AMONTH'">
+            AND AMONTH >= #{minMonth}
+            AND AMONTH <![CDATA[ <= ]]>  #{maxMonth}
+        </if>
+        <if test="accid != null and accid != ''">
+            <if test="status == '包含'">
+                and A.ACCID LIKE '%${accid}%'
+            </if>
+            <if test="status == '不包含'">
+                and A.ACCID not LIKE '%${accid}%'
+            </if>
+            <if test="status != '包含' and status != '不包含'">
+                and A.ACCID ${status} #{accid}
+            </if>
+        </if>
+        <if test="accNameOne != null and accNameOne != ''">
+            <if test="status == '包含'">
+                and A.ACCNAME1 LIKE '%${accNameOne}%'
+            </if>
+            <if test="status == '不包含' ">
+                and A.ACCNAME1 not LIKE '%${accNameOne}%'
+            </if>
+            <if test="status != '包含' and status != '不包含'">
+                and A .ACCNAME1 ${status} #{accNameOne}
+            </if>
+        </if>
+        order by s.AMONTH asc,s.ACCID asc
+    </select>
+
+    <select id="findTotalCount" parameterType="com.huabo.financialdata.entity.vo.accSumTotal.AccSumTotalRequestVo"
+            resultType="java.lang.Integer">
+        select COUNT (*)
+        FROM ${dbSource}.TBL_ACC_SUM s
+        LEFT JOIN ${dbSource}.TBL_ACCOUNT A ON s.ACCID = A .ACCID AND A .AYEAR = S.AYEAR
+        WHERE 1=1
+        <if test="ayear != null and ayear != ''">
+            and s.AYEAR = #{ayear}
+        </if>
+        <if test="type == 'AMONTH'">
+            AND AMONTH >= #{minMonth}
+            AND AMONTH <![CDATA[ <= ]]>  #{maxMonth}
+        </if>
+        <if test="accid != null and accid != ''">
+            <if test="status == '包含'">
+                and A.ACCID LIKE '%${accid}%'
+            </if>
+            <if test="status == '不包含'">
+                and A.ACCID not LIKE '%${accid}%'
+            </if>
+            <if test="status != '包含' and status != '不包含'">
+                and A.ACCID ${status} #{accid}
+            </if>
+        </if>
+        <if test="accNameOne != null and accNameOne != ''">
+            <if test="status == '包含'">
+                and A.ACCNAME1 LIKE '%${accNameOne}%'
+            </if>
+            <if test="status == '不包含' ">
+                and A.ACCNAME1 not LIKE '%${accNameOne}%'
+            </if>
+            <if test="status != '包含' and status != '不包含'">
+                and A .ACCNAME1 ${status} #{accNameOne}
+            </if>
+        </if>
+    </select>
+
+	<select id="selectListByExportKmyeb" parameterType="com.huabo.financialdata.entity.vo.export.ExportRequestVo"
+            resultMap="BaseResultMap">
+        SELECT
+		        s.ACCID
+		        ,a.ACCNAME1 accName,
+		        s.QCMD,s.QCMC,s.BQMD,s.BQMC,s.QMMD,s.QMMC,s.FNAME,
+		        s.QCMD_F,s.QCMC_F,s.BQMD_F,s.BQMC_F,s.QMMD_F,s.QMMC_F,s.NUM,
+		        s.AYEAR,s.AMONTH,s.LJMD,s.LJMC,s.LJMD_F,s.LJMC_F,s.QCDC,s.QMDC
+		        from ${dbSource}.TBL_ACC_SUM s
+		        left join ${dbSource}.TBL_ACCOUNT a ON s.ACCID = A.ACCID AND A.AYEAR = S.AYEAR
+				WHERE S.AYEAR = #{year} AND ${sqlStr}
+		ORDER BY s.ACCID,s.AMONTH
+    </select>
+</mapper>

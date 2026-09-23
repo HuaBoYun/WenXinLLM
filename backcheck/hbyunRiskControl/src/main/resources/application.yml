@@ -1,0 +1,39 @@
+server:
+  port: 8082
+  max-http-form-post-size: 10MB
+  # Jetty 连接超时配置：CJBDI 外部接口响应慢（涉诉/失信等可达 120s+），需要放宽超时
+  jetty:
+    connection-idle-timeout: 180000   # 连接空闲超时 180秒（默认30秒）
+    threads:
+      max: 200
+      min: 10
+  
+spring:
+  profiles:
+    active: dev
+  servlet:
+    multipart:
+      enabled: true
+      #maxFileSize  单文件大小限制
+      max-file-size: 200MB
+      #maxRequestSize   总上传大小限制
+      max-request-size: 200000MB
+  main:
+    allow-circular-references: true
+  springdoc:
+    swagger-ui:
+      enabled: true
+    api-docs:
+      enabled: true
+
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+  show-actuator: true
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json

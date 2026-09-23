@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.cybermonitor.mapper.TblContractRecordMapper">
+
+    <select id="selectPageList" resultType="com.huabo.cybermonitor.entity.TblContractRecord">
+        SELECT * FROM TBL_CONTRACT_RECORD
+        <where>
+            <if test="query.companyId != null and query.companyId != ''">AND COMPANY_ID = #{query.companyId}</if>
+            <if test="query.contractName != null and query.contractName != ''">AND CONTRACT_NAME LIKE CONCAT('%', #{query.contractName}, '%')</if>
+            <if test="query.contractType != null and query.contractType != ''">AND CONTRACT_TYPE = #{query.contractType}</if>
+            <if test="query.contractStatus != null and query.contractStatus != ''">AND CONTRACT_STATUS = #{query.contractStatus}</if>
+            <if test="query.dataSource != null and query.dataSource != ''">AND DATA_SOURCE = #{query.dataSource}</if>
+        </where>
+        ORDER BY CREATE_TIME DESC
+    </select>
+
+    <!-- 合同金额统计 -->
+    <select id="selectContractStats" resultType="java.util.Map">
+        SELECT CONTRACT_TYPE, COUNT(*) AS cnt,
+               SUM(CONTRACT_AMOUNT) AS totalAmount,
+               SUM(CASE WHEN CONTRACT_STATUS = 'EXECUTING' THEN CONTRACT_AMOUNT ELSE 0 END) AS executingAmount
+        FROM TBL_CONTRACT_RECORD
+        <where><if test="companyId != null and companyId != ''">AND COMPANY_ID = #{companyId}</if></where>
+        GROUP BY CONTRACT_TYPE
+    </select>
+
+</mapper>
+

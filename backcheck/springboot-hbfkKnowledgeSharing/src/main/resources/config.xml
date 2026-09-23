@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>         
+<Accounts>   
+    <!-- 短信验证配置 -->
+    <message type="GRC07">
+	    <!-- key -->
+	    <accessKeyId>DCn2gqTNhnr14UQS</accessKeyId>
+	    <!-- 秘钥 -->
+	    <accessKeySecret>Fbw29EYcwWSbc4CxNsDl9TPb9EBOiz</accessKeySecret>
+	    <!--管控宝注册模板  -->
+	    <registertemplateCode>SMS_171859489</registertemplateCode>
+	    <!--管控宝修改密码模板  -->
+	    <updatePwdtemplateCode>SMS_130975177</updatePwdtemplateCode>
+	    <!-- 短信签名 -->
+	    <signName>华博云管控宝</signName>
+    </message>
+    
+</Accounts>

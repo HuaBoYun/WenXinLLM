@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.consolidationReport.mapper.ConsolidatedReportMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.financial.sharing.consolidationReport.entity.TblConsolidatedReport">
+        <id column="REPORT_ID" property="reportId"/>
+        <result column="MODEL_ID" property="modelId"/>
+        <result column="PERIOD" property="period"/>
+        <result column="REPORT_TYPE" property="reportType"/>
+        <result column="ITEM_CODE" property="itemCode"/>
+        <result column="ITEM_NAME" property="itemName"/>
+        <result column="ITEM_LEVEL" property="itemLevel"/>
+        <result column="PARENT_CODE" property="parentCode"/>
+        <result column="PARENT_AMOUNT" property="parentAmount"/>
+        <result column="SUBSIDIARY_AMOUNT" property="subsidiaryAmount"/>
+        <result column="ELIMINATION_AMOUNT" property="eliminationAmount"/>
+        <result column="CONSOLIDATED_AMOUNT" property="consolidatedAmount"/>
+        <result column="SORT_ORDER" property="sortOrder"/>
+        <result column="STATUS" property="status"/>
+        <result column="TENANT_ID" property="tenantId"/>
+        <result column="CREATE_USER" property="createUser"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_USER" property="updateUser"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="MODEL_NAME" property="modelName"/>
+    </resultMap>
+
+    <!-- 查询合并报表列表 -->
+    <select id="selectReportList" resultMap="BaseResultMap">
+        SELECT
+            r.REPORT_ID,
+            r.MODEL_ID,
+            r.PERIOD,
+            r.REPORT_TYPE,
+            r.ITEM_CODE,
+            r.ITEM_NAME,
+            r.ITEM_LEVEL,
+            r.PARENT_CODE,
+            r.PARENT_AMOUNT,
+            r.SUBSIDIARY_AMOUNT,
+            r.ELIMINATION_AMOUNT,
+            r.CONSOLIDATED_AMOUNT,
+            r.SORT_ORDER,
+            r.STATUS,
+            r.TENANT_ID,
+            r.CREATE_USER,
+            r.CREATE_TIME,
+            r.UPDATE_USER,
+            r.UPDATE_TIME,
+            m.MODEL_NAME
+        FROM TBL_CONSOLIDATED_REPORT r
+        LEFT JOIN TBL_CONSOLIDATION_MODEL m ON r.MODEL_ID = m.MODEL_ID
+        <where>
+            <if test="param.modelId != null and param.modelId != ''">
+                AND r.MODEL_ID = #{param.modelId}
+            </if>
+            <if test="param.period != null and param.period != ''">
+                AND r.PERIOD = #{param.period}
+            </if>
+            <if test="param.reportType != null and param.reportType != ''">
+                AND r.REPORT_TYPE = #{param.reportType}
+            </if>
+            <if test="param.status != null and param.status != ''">
+                AND r.STATUS = #{param.status}
+            </if>
+        </where>
+        ORDER BY r.REPORT_TYPE, r.SORT_ORDER, r.ITEM_CODE
+    </select>
+
+    <!-- 根据模型ID、期间和报表类型删除合并报表 -->
+    <delete id="deleteByModelIdAndPeriodAndType">
+        DELETE FROM TBL_CONSOLIDATED_REPORT
+        WHERE MODEL_ID = #{modelId}
+        AND PERIOD = #{period}
+        <if test="reportType != null and reportType != ''">
+            AND REPORT_TYPE = #{reportType}
+        </if>
+    </delete>
+
+    <!-- 批量插入合并报表 -->
+    <insert id="batchInsert">
+        INSERT INTO TBL_CONSOLIDATED_REPORT (
+            REPORT_ID,
+            MODEL_ID,
+            PERIOD,
+            REPORT_TYPE,
+            ITEM_CODE,
+            ITEM_NAME,
+            ITEM_LEVEL,
+            PARENT_CODE,
+            PARENT_AMOUNT,
+            SUBSIDIARY_AMOUNT,
+            ELIMINATION_AMOUNT,
+            CONSOLIDATED_AMOUNT,
+            SORT_ORDER,
+            STATUS,
+            TENANT_ID,
+            CREATE_USER,
+            CREATE_TIME,
+            UPDATE_USER,
+            UPDATE_TIME
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.reportId},
+                #{item.modelId},
+                #{item.period},
+                #{item.reportType},
+                #{item.itemCode},
+                #{item.itemName},
+                #{item.itemLevel},
+                #{item.parentCode},
+                #{item.parentAmount},
+                #{item.subsidiaryAmount},
+                #{item.eliminationAmount},
+                #{item.consolidatedAmount},
+                #{item.sortOrder},
+                #{item.status},
+                #{item.tenantId},
+                #{item.createUser},
+                #{item.createTime},
+                #{item.updateUser},
+                #{item.updateTime}
+            )
+        </foreach>
+    </insert>
+
+    <!-- 根据模型ID和期间查询报表类型列表 -->
+    <select id="selectReportTypeList" resultType="string">
+        SELECT DISTINCT REPORT_TYPE
+        FROM TBL_CONSOLIDATED_REPORT
+        WHERE MODEL_ID = #{modelId}
+        AND PERIOD = #{period}
+        ORDER BY REPORT_TYPE
+    </select>
+
+</mapper>
+

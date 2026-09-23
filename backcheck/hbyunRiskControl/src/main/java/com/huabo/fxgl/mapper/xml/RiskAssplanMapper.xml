@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huabo.fxgl.mapper.RiskAssplanMapper">
+    <resultMap id="RM_RISK_ASSPLAN" type="RiskAssplan" autoMapping="true">
+        <id column="assplanid" property="assplanid"></id>
+        <association property="organization" javaType="Organization" column="unit" select="com.huabo.fxgl.mapper.OrganizationMapper.selectById"></association>
+        <association property="assessmentstd" javaType="RiskAssessmentstd" column="assstdid" select="com.huabo.fxgl.mapper.RiskAssessmentstdMapper.selectById"></association>
+        <collection property="riskAssplanRiskList" ofType="RiskAssplanRisk" column="assplanid" fetchType="eager"
+                    select="com.huabo.fxgl.mapper.RiskAssplanRiskMapper.findRiskAssplanRisk"></collection>
+    </resultMap>
+    
+       <resultMap id="RM_RISK_ASSPLAN_ORG" type="RiskAssplan" autoMapping="true">
+        <id column="assplanid" property="assplanid"></id>
+        <association property="organization" javaType="Organization" column="unit" select="com.huabo.fxgl.mapper.OrganizationMapper.selectById"></association>
+    </resultMap>
+
+    <resultMap id="RM_RISK_ASSPLAN_NO_DETAIL" type="RiskAssplan" autoMapping="true">
+        <id column="assplanid" property="assplanid"></id>
+        <association property="organization" javaType="Organization" column="unit" select="com.huabo.fxgl.mapper.OrganizationMapper.selectById"></association>
+        <!--<association property="assessmentstd" javaType="RiskAssessmentstd" column="assstdid" select="com.huabo.fxgl.mapper.RiskAssessmentstdMapper.selectById"></association>-->
+        <collection property="riskAssplanRiskList" ofType="RiskAssplanRisk" column="assplanid" fetchType="eager"
+                    select="com.huabo.fxgl.mapper.RiskAssplanRiskMapper.findRiskAssplanRisk"></collection>
+    </resultMap>
+
+   <select id="findBysqlObj"  resultType="Integer">
+       SELECT COUNT(*) from TBL_RISK_ASSPLAN
+                       <where>
+                           plancode = #{plancode}
+                           AND UNIT IN (SELECT ORGID FROM TBL_ORGANIZATION WHERE  1=1
+                           <if test="idsStr!=null and idsStr!=''">
+                             and FATHERORGID in ( ${idsStr})
+                           </if>
+                           UNION ALL SELECT ${orgid}  FROM DUAL)
+                       </where>
+
+   </select>
+   
+   <resultMap type="java.util.Map" id="ReportType">
+	 <result column="name" property="name" />
+	 <result column="value" property="value" />
+	</resultMap>
+
+	<select id="getRiskPointTask" resultMap="ReportType">
+		select   case when planstatus=1 then '未评估' when planstatus=2 then '评估中'
+		when planstatus=3 then '已评估' else '未下发' end as name ,count(1) as value
+		from TBL_RISK_ASSPLAN_RISK r
+		left join TBL_RISK_ASSPLAN p on p.assplanid=r.assplanid
+		left join TBL_RISK s on s.riskid=r.riskid
+		where s.unit is not null
+			<if test="company!=null  and company!=''">
+			and p.unit=#{company}
+		</if>
+		group by planstatus order by planstatus
+	</select>
+	
+	<select id="getRiskPointTaskNew" resultMap="ReportType">
+		SELECT 
+  '已评估' as name,
+  COUNT(DISTINCT t1.riskid) as value
+  from TBL_RISK_ASSPLAN_RISK t1
+  left join TBL_RISK_ASSPLAN p on p.assplanid=t1.assplanid
+  left join tbl_risk r1 on r1.RISKID=t1.RISKID
+		where p.unit is not null and p.unit=#{company} and ( r1.riskstatus !=0 or r1.riskstatus is null)
+ and planstatus =3
+UNION ALL
+SELECT 
+  '评估中' as name,
+  COUNT(DISTINCT t2.riskid) as value
+   from TBL_RISK_ASSPLAN_RISK t2
+  left join TBL_RISK_ASSPLAN p on p.assplanid=t2.assplanid
+  left join tbl_risk r1 on r1.RISKID=t2.RISKID
+		where p.unit is not null and p.unit=#{company} and ( r1.riskstatus !=0 or r1.riskstatus is null)
+ and planstatus =2
+  AND NOT EXISTS (
+    SELECT 1 
+    FROM TBL_RISK_ASSPLAN_RISK  t3  left join TBL_RISK_ASSPLAN p on p.assplanid=t3.assplanid
+    WHERE t3.riskid = t2.riskid 
+      AND p.planstatus =3
+  )
+UNION ALL
+SELECT 
+  '未评估' as name,
+  COUNT(DISTINCT t4.riskid) as value
+from TBL_RISK_ASSPLAN_RISK t4
+  left join TBL_RISK_ASSPLAN p on p.assplanid=t4.assplanid
+  left join tbl_risk r1 on r1.RISKID=t4.RISKID
+		where p.unit is not null and p.unit=#{company} and ( r1.riskstatus !=0 or r1.riskstatus is null)
+ and planstatus =1
+  AND NOT EXISTS (
+    SELECT 1 
+    FROM TBL_RISK_ASSPLAN_RISK  t5  left join TBL_RISK_ASSPLAN p on p.assplanid=t5.assplanid
+    WHERE t5.riskid = t4.riskid 
+      AND p.planstatus IN (2, 3)
+  )
+
+
+	</select>
+
+
+	<select id="selectAllList" resultType="com.huabo.fxgl.entity.RiskAssplan">
+		 select 	a.* ,o.orgname as orgName from TBL_RISK_ASSPLAN a 
+		 left join tbl_organization o on o.orgid=a.unit
+		 where 1=1
+            <if test="sql!=null and sql!=''">
+            ${sql}
+            </if>
+            and
+            ${ew.sqlSegment}
+	</select>
+	
+	<select id="riplanTrackList" resultType="com.huabo.fxgl.entity.RiskAssplan">
+		 select a.*,o.orgname,og.orgname as deptname  from TBL_RISK_ASSPLAN a 
+		 left join tbl_organization o on a.unit=o.orgid 
+		  left join tbl_organization og on a.linkdeptid=og.orgid 
+		 where 1=1
+            <if test="sql!=null and sql!=''">
+            ${sql}
+            </if>
+            and
+            ${ew.sqlSegment}
+	</select>
+	
+	
+</mapper>

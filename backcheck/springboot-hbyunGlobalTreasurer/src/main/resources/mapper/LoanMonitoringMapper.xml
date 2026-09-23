@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.LoanMonitoringMapper">
+
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TblLoanMonitoring">
+        <id column="MONITORING_ID" property="monitoringId"/>
+        <result column="LOAN_ID" property="loanId"/>
+        <result column="ALERT_TYPE" property="alertType"/>
+        <result column="ALERT_LEVEL" property="alertLevel"/>
+        <result column="ALERT_TITLE" property="alertTitle"/>
+        <result column="ALERT_MESSAGE" property="alertMessage"/>
+        <result column="ALERT_DATE" property="alertDate"/>
+        <result column="DUE_DATE" property="dueDate"/>
+        <result column="OVERDUE_DAYS" property="overdueDays"/>
+        <result column="OVERDUE_AMOUNT" property="overdueAmount"/>
+        <result column="ALERT_STATUS" property="alertStatus"/>
+        <result column="HANDLER_ID" property="handlerId"/>
+        <result column="HANDLER_NAME" property="handlerName"/>
+        <result column="HANDLE_DATE" property="handleDate"/>
+        <result column="HANDLE_OPINION" property="handleOpinion"/>
+        <result column="COMPANY_ID" property="companyId"/>
+        <result column="COMPANY_NAME" property="companyName"/>
+        <result column="DELETE_FLAG" property="deleteFlag"/>
+        <result column="CREATED_BY" property="createdBy"/>
+        <result column="CREATED_TIME" property="createdTime"/>
+        <result column="UPDATED_BY" property="updatedBy"/>
+        <result column="UPDATED_TIME" property="updatedTime"/>
+        <result column="REMARK" property="remark"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        MONITORING_ID, LOAN_ID, ALERT_TYPE, ALERT_LEVEL, ALERT_TITLE, ALERT_MESSAGE,
+        ALERT_DATE, DUE_DATE, OVERDUE_DAYS, OVERDUE_AMOUNT, ALERT_STATUS, HANDLER_ID,
+        HANDLER_NAME, HANDLE_DATE, HANDLE_OPINION, COMPANY_ID, COMPANY_NAME, DELETE_FLAG,
+        CREATED_BY, CREATED_TIME, UPDATED_BY, UPDATED_TIME, REMARK
+    </sql>
+
+    <select id="selectMonitoringList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_LOAN_MONITORING
+        WHERE DELETE_FLAG = 0
+        <if test="params.loanId != null">
+            AND LOAN_ID = #{params.loanId}
+        </if>
+        <if test="params.alertType != null and params.alertType != ''">
+            AND ALERT_TYPE = #{params.alertType}
+        </if>
+        <if test="params.alertLevel != null and params.alertLevel != ''">
+            AND ALERT_LEVEL = #{params.alertLevel}
+        </if>
+        <if test="params.alertStatus != null and params.alertStatus != ''">
+            AND ALERT_STATUS = #{params.alertStatus}
+        </if>
+        ORDER BY ALERT_DATE DESC
+    </select>
+
+    <select id="selectByLoanId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_LOAN_MONITORING
+        WHERE DELETE_FLAG = 0 AND LOAN_ID = #{loanId}
+        ORDER BY ALERT_DATE DESC
+    </select>
+
+    <select id="selectPendingAlerts" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_LOAN_MONITORING
+        WHERE DELETE_FLAG = 0 AND LOAN_ID = #{loanId}
+        AND ALERT_STATUS = 'PENDING'
+        ORDER BY ALERT_LEVEL DESC, ALERT_DATE DESC
+    </select>
+
+    <select id="countPendingAlerts" resultType="int">
+        SELECT COUNT(*) FROM TBL_LOAN_MONITORING
+        WHERE DELETE_FLAG = 0 AND LOAN_ID = #{loanId}
+        AND ALERT_STATUS = 'PENDING'
+    </select>
+
+    <select id="countByLoanId" resultType="int">
+        SELECT COUNT(*) FROM TBL_LOAN_MONITORING
+        WHERE DELETE_FLAG = 0 AND LOAN_ID = #{loanId}
+    </select>
+
+</mapper>
+

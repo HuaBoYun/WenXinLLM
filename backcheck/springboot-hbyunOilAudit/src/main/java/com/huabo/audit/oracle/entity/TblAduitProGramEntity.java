@@ -1,0 +1,101 @@
+package com.huabo.audit.oracle.entity;
+
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.Set;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.huabo.audit.config.IgnoreSwaggerParameter;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+
+@TableName("TBL_NBSJ_AUDITPROGRAM")
+@Data
+@Schema(name="实体类")
+public class TblAduitProGramEntity {
+	
+	public static final Integer TEMP_NUMBER=0;//审计模板
+	public static final Integer ZY_NUMBER=1;//审计指引
+	
+	@TableId(value = "programId", type= IdType.AUTO)
+    @Schema
+    private BigDecimal programId;
+
+    @TableField(value = "target")
+    @Schema(hidden=true)
+    @IgnoreSwaggerParameter
+    private TblTargetTypeEntity target;
+    
+    @TableField(value = "businessType")
+    @Schema
+    private String businessType;
+    
+    @TableField(value = "status")
+    @Schema
+    private Integer status;
+    
+	@TableField(value = "suditProcess")
+    @Schema
+    private String suditProcess;
+	
+	@TableField(value = "riskSource")
+    @Schema
+    private String riskSource;
+	
+	@TableField(value = "riskPoint")
+    @Schema
+    private String riskPoint;
+	
+	@TableField(value = "control")
+    @Schema
+    private String control;
+	
+	@TableField(value = "progamcode")
+    @Schema
+    private String progamcode;
+	
+	@TableField(value = "bioData")
+    @Schema
+    private String bioData;
+	
+	@TableField(value = "updateTime")
+    @Schema(hidden=true)
+    private Date updateTime;
+	
+	@TableField(value = "createTime")
+    @Schema(hidden=true)
+    private Date createTime;
+	
+	@TableField(value = "nbsjTemplete")
+    @Schema(hidden=true)
+	@IgnoreSwaggerParameter
+    private TblNbsjTempleteEntity nbsjTemplete;
+	
+	@TableField(value = "authorizations")
+    @Schema(hidden=true)
+	@IgnoreSwaggerParameter
+    private Set<TblNbsjAuthorizationEntity> authorizations;
+	
+	@TableField(value = "staff")
+    @Schema(hidden=true)
+	@IgnoreSwaggerParameter
+    private TblStaff staff;
+	
+	@TableField(value = "TARGETID")
+    @Schema
+    private BigDecimal targetId;
+	
+	@TableField(value = "TEMPID")
+    @Schema
+    private BigDecimal tempId;
+	
+	@TableField(value = "")
+    @Schema(hidden=true)
+    private String renyuan;
+	
+}

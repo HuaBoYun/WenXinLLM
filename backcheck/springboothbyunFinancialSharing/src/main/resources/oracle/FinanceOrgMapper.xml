@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.financial.sharing.oracle.mapper.FinanceOrgMapper">
+    
+    <!-- 查询组织列表 -->
+    <select id="selectOrgList" resultType="java.util.Map">
+        SELECT 
+            org_id,
+            org_name,
+            org_code,
+            parent_id,
+            parent_name,
+            org_level,
+            org_type,
+            leader,
+            contact,
+            phone,
+            email,
+            address,
+            status,
+            description,
+            create_by,
+            create_time,
+            update_by,
+            update_time
+        FROM finance_org
+        <where>
+            <if test="params.orgName != null and params.orgName != ''">
+                AND org_name LIKE '%' || #{params.orgName} || '%'
+            </if>
+            <if test="params.orgCode != null and params.orgCode != ''">
+                AND org_code = #{params.orgCode}
+            </if>
+            <if test="params.parentId != null and params.parentId != ''">
+                AND parent_id = #{params.parentId}
+            </if>
+            <if test="params.orgType != null and params.orgType != ''">
+                AND org_type = #{params.orgType}
+            </if>
+            <if test="params.status != null and params.status != ''">
+                AND status = #{params.status}
+            </if>
+        </where>
+        ORDER BY org_level, create_time
+    </select>
+    
+    <!-- 根据ID查询组织详情 -->
+    <select id="selectOrgById" resultType="java.util.Map">
+        SELECT 
+            org_id,
+            org_name,
+            org_code,
+            parent_id,
+            parent_name,
+            org_level,
+            org_type,
+            leader,
+            contact,
+            phone,
+            email,
+            address,
+            status,
+            description,
+            create_by,
+            create_time,
+            update_by,
+            update_time
+        FROM finance_org
+        WHERE org_id = #{orgId}
+    </select>
+    
+    <!-- 插入组织 -->
+    <insert id="insertOrg">
+        INSERT INTO finance_org (
+            org_id,
+            org_name,
+            org_code,
+            parent_id,
+            parent_name,
+            org_level,
+            org_type,
+            leader,
+            contact,
+            phone,
+            email,
+            address,
+            status,
+            description,
+            create_by,
+            create_time
+        ) VALUES (
+            #{org.orgId},
+            #{org.orgName},
+            #{org.orgCode},
+            #{org.parentId},
+            #{org.parentName},
+            #{org.orgLevel},
+            #{org.orgType},
+            #{org.leader},
+            #{org.contact},
+            #{org.phone},
+            #{org.email},
+            #{org.address},
+            #{org.status},
+            #{org.description},
+            #{org.createBy},
+            SYSDATE
+        )
+    </insert>
+    
+    <!-- 更新组织 -->
+    <update id="updateOrg">
+        UPDATE finance_org
+        SET 
+            org_name = #{org.orgName},
+            org_code = #{org.orgCode},
+            parent_id = #{org.parentId},
+            parent_name = #{org.parentName},
+            org_level = #{org.orgLevel},
+            org_type = #{org.orgType},
+            leader = #{org.leader},
+            contact = #{org.contact},
+            phone = #{org.phone},
+            email = #{org.email},
+            address = #{org.address},
+            status = #{org.status},
+            description = #{org.description},
+            update_by = #{org.updateBy},
+            update_time = SYSDATE
+        WHERE org_id = #{org.orgId}
+    </update>
+    
+    <!-- 删除组织 -->
+    <delete id="deleteOrg">
+        DELETE FROM finance_org WHERE org_id = #{orgId}
+    </delete>
+    
+    <!-- 查询组织树 -->
+    <select id="selectOrgTree" resultType="java.util.Map">
+        SELECT
+            org_id,
+            org_name,
+            org_code,
+            parent_id,
+            parent_name,
+            org_level,
+            org_type,
+            status
+        FROM finance_org
+        <where>
+            <if test="params.status != null and params.status != ''">
+                AND status = #{params.status}
+            </if>
+        </where>
+        ORDER BY org_level, org_code
+    </select>
+
+    <!-- ==================== 财务组织管理相关方法 ==================== -->
+
+    <!-- 查询财务组织列表 -->
+    <select id="selectCwzzList" resultType="java.util.Map">
+        SELECT
+            ORG_ID as orgId,
+            ORG_CODE as orgCode,
+            ORG_NAME as orgName,
+            PARENT_ORG_ID as parentOrgId,
+            ORG_LEVEL as orgLevel,
+            ORG_TYPE as orgType,
+            IS_ENABLED as isEnabled,
+            REMARK as remark,
+            BOOK_ID as bookId,
+            TENANT_ID as tenantId,
+            CREATE_TIME as createTime,
+            UPDATE_TIME as updateTime
+        FROM TBL_FINANCE_ORG
+        <where>
+            <if test="params.tenantId != null and params.tenantId != ''">
+                AND TENANT_ID = #{params.tenantId}
+            </if>
+            <if test="params.bookId != null and params.bookId != ''">
+                AND BOOK_ID = #{params.bookId}
+            </if>
+            <if test="params.orgName != null and params.orgName != ''">
+                AND ORG_NAME LIKE '%' || #{params.orgName} || '%'
+            </if>
+            <if test="params.orgCode != null and params.orgCode != ''">
+                AND ORG_CODE = #{params.orgCode}
+            </if>
+            <if test="params.parentOrgId != null and params.parentOrgId != ''">
+                AND PARENT_ORG_ID = #{params.parentOrgId}
+            </if>
+            <if test="params.orgType != null and params.orgType != ''">
+                AND ORG_TYPE = #{params.orgType}
+            </if>
+            <if test="params.isEnabled != null">
+                AND IS_ENABLED = #{params.isEnabled}
+            </if>
+            AND IS_DELETED = 0
+        </where>
+        ORDER BY ORG_LEVEL, ORG_CODE
+    </select>
+
+    <!-- 统计财务组织总数 -->
+    <select id="countCwzzList" resultType="int">
+        SELECT COUNT(1)
+        FROM TBL_FINANCE_ORG
+        <where>
+            <if test="params.tenantId != null and params.tenantId != ''">
+                AND TENANT_ID = #{params.tenantId}
+            </if>
+            <if test="params.bookId != null and params.bookId != ''">
+                AND BOOK_ID = #{params.bookId}
+            </if>
+            <if test="params.orgName != null and params.orgName != ''">
+                AND ORG_NAME LIKE '%' || #{params.orgName} || '%'
+            </if>
+            <if test="params.orgCode != null and params.orgCode != ''">
+                AND ORG_CODE = #{params.orgCode}
+            </if>
+            <if test="params.parentOrgId != null and params.parentOrgId != ''">
+                AND PARENT_ORG_ID = #{params.parentOrgId}
+            </if>
+            <if test="params.orgType != null and params.orgType != ''">
+                AND ORG_TYPE = #{params.orgType}
+            </if>
+            <if test="params.isEnabled != null">
+                AND IS_ENABLED = #{params.isEnabled}
+            </if>
+            AND IS_DELETED = 0
+        </where>
+    </select>
+
+    <!-- 查询财务组织树列表 -->
+    <select id="selectCwzzTreeList" resultType="java.util.Map">
+        SELECT
+            ORG_ID as orgId,
+            ORG_CODE as orgCode,
+            ORG_NAME as orgName,
+            PARENT_ORG_ID as parentOrgId,
+            ORG_LEVEL as orgLevel,
+            ORG_PATH as orgPath,
+            ORG_TYPE as orgType,
+            IS_ENABLED as isEnabled,
+            REMARK as remark,
+            BOOK_ID as bookId,
+            TENANT_ID as tenantId,
+            CREATE_TIME as createTime,
+            UPDATE_TIME as updateTime
+        FROM TBL_FINANCE_ORG
+        <where>
+            <if test="params.tenantId != null and params.tenantId != ''">
+                AND TENANT_ID = #{params.tenantId}
+            </if>
+            <if test="params.bookId != null and params.bookId != ''">
+                AND BOOK_ID = #{params.bookId}
+            </if>
+            <if test="params.isEnabled != null">
+                AND IS_ENABLED = #{params.isEnabled}
+            </if>
+            AND IS_DELETED = 0
+        </where>
+        ORDER BY ORG_LEVEL, ORG_CODE
+    </select>
+
+    <!-- 统计财务组织树总数 -->
+    <select id="countCwzzTreeList" resultType="int">
+        SELECT COUNT(1)
+        FROM TBL_FINANCE_ORG
+        <where>
+            <if test="params.tenantId != null and params.tenantId != ''">
+                AND TENANT_ID = #{params.tenantId}
+            </if>
+            <if test="params.bookId != null and params.bookId != ''">
+                AND BOOK_ID = #{params.bookId}
+            </if>
+            <if test="params.isEnabled != null">
+                AND IS_ENABLED = #{params.isEnabled}
+            </if>
+            AND IS_DELETED = 0
+        </where>
+    </select>
+
+    <!-- 关联公司 -->
+    <insert id="relateCompany">
+        INSERT INTO TBL_FINANCE_ORG_COMPANY (
+            ORG_ID,
+            COMPANY_ID,
+            COMPANY_NAME,
+            TENANT_ID,
+            CREATE_TIME
+        ) VALUES (
+            #{data.orgId},
+            #{data.companyId},
+            #{data.companyName},
+            #{data.tenantId},
+            SYSDATE
+        )
+    </insert>
+
+</mapper>

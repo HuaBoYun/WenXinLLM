@@ -1,0 +1,530 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.global.treasurer.mapper.TreasuryBankConnectLogMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.global.treasurer.entity.TreasuryBankConnectLog">
+        <id column="LOG_ID" property="logId" jdbcType="BIGINT"/>
+        <result column="CONFIG_ID" property="configId" jdbcType="BIGINT"/>
+        <result column="REQUEST_ID" property="requestId" jdbcType="VARCHAR"/>
+        <result column="INTERFACE_TYPE" property="interfaceType" jdbcType="VARCHAR"/>
+        <result column="REQUEST_TIME" property="requestTime" jdbcType="TIMESTAMP"/>
+        <result column="RESPONSE_TIME" property="responseTime" jdbcType="TIMESTAMP"/>
+        <result column="REQUEST_DATA" property="requestData" jdbcType="CLOB"/>
+        <result column="RESPONSE_DATA" property="responseData" jdbcType="CLOB"/>
+        <result column="STATUS_CODE" property="statusCode" jdbcType="VARCHAR"/>
+        <result column="STATUS_MESSAGE" property="statusMessage" jdbcType="VARCHAR"/>
+        <result column="EXECUTION_TIME" property="executionTime" jdbcType="INTEGER"/>
+        <result column="IS_SUCCESSFUL" property="isSuccessful" jdbcType="INTEGER"/>
+        <result column="ERROR_MESSAGE" property="errorMessage" jdbcType="CLOB"/>
+        <result column="BANK_CODE" property="bankCode" jdbcType="VARCHAR"/>
+        <result column="ACCOUNT_NUMBER" property="accountNumber" jdbcType="VARCHAR"/>
+        <result column="CLIENT_IP" property="clientIp" jdbcType="VARCHAR"/>
+        <result column="USER_AGENT" property="userAgent" jdbcType="CLOB"/>
+        <result column="SESSION_ID" property="sessionId" jdbcType="VARCHAR"/>
+        <result column="ORG_ID" property="orgId" jdbcType="BIGINT"/>
+        <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="CREATE_USER" property="createUser" jdbcType="BIGINT"/>
+        <result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="UPDATE_USER" property="updateUser" jdbcType="BIGINT"/>
+        <result column="IS_ENABLED" property="isEnabled" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        LOG_ID, CONFIG_ID, REQUEST_ID, INTERFACE_TYPE, REQUEST_TIME, RESPONSE_TIME,
+        REQUEST_DATA, RESPONSE_DATA, STATUS_CODE, STATUS_MESSAGE, EXECUTION_TIME,
+        IS_SUCCESSFUL, ERROR_MESSAGE, BANK_CODE, ACCOUNT_NUMBER, CLIENT_IP, USER_AGENT,
+        SESSION_ID, ORG_ID, CREATE_TIME, CREATE_USER, UPDATE_TIME, UPDATE_USER, IS_ENABLED
+    </sql>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_TREASURY_BANK_CONNECT_LOG
+        WHERE LOG_ID = #{logId}
+    </select>
+
+    <!-- 根据条件查询 -->
+    <select id="selectByCondition" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_TREASURY_BANK_CONNECT_LOG
+        WHERE 1=1
+        <if test="params.requestId != null and params.requestId != ''">
+            AND REQUEST_ID LIKE '%' || #{params.requestId} || '%'
+        </if>
+        <if test="params.interfaceType != null and params.interfaceType != ''">
+            AND INTERFACE_TYPE = #{params.interfaceType}
+        </if>
+        <if test="params.isSuccessful != null">
+            AND IS_SUCCESSFUL = #{params.isSuccessful}
+        </if>
+        <if test="params.bankCode != null and params.bankCode != ''">
+            AND BANK_CODE = #{params.bankCode}
+        </if>
+        <if test="params.accountNumber != null and params.accountNumber != ''">
+            AND ACCOUNT_NUMBER LIKE '%' || #{params.accountNumber} || '%'
+        </if>
+        <if test="params.startTime != null and params.startTime != ''">
+            AND REQUEST_TIME >= TO_TIMESTAMP(#{params.startTime}, 'YYYY-MM-DD HH24:MI:SS')
+        </if>
+        <if test="params.endTime != null and params.endTime != ''">
+            AND REQUEST_TIME <![CDATA[<=]]> TO_TIMESTAMP(#{params.endTime}, 'YYYY-MM-DD HH24:MI:SS')
+        </if>
+        <if test="params.orgId != null">
+            AND ORG_ID = #{params.orgId}
+        </if>
+        <if test="params.limit != null">
+            AND ROWNUM <![CDATA[<=]]> #{params.limit}
+        </if>
+        ORDER BY REQUEST_TIME DESC
+    </select>
+
+    <!-- 根据条件统计数量 -->
+    <select id="selectCountByCondition" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM TBL_TREASURY_BANK_CONNECT_LOG
+        WHERE 1=1
+        <if test="params.requestId != null and params.requestId != ''">
+            AND REQUEST_ID LIKE '%' || #{params.requestId} || '%'
+        </if>
+        <if test="params.interfaceType != null and params.interfaceType != ''">
+            AND INTERFACE_TYPE = #{params.interfaceType}
+        </if>
+        <if test="params.isSuccessful != null">
+            AND IS_SUCCESSFUL = #{params.isSuccessful}
+        </if>
+        <if test="params.bankCode != null and params.bankCode != ''">
+            AND BANK_CODE = #{params.bankCode}
+        </if>
+        <if test="params.accountNumber != null and params.accountNumber != ''">
+            AND ACCOUNT_NUMBER LIKE '%' || #{params.accountNumber} || '%'
+        </if>
+        <if test="params.startTime != null and params.startTime != ''">
+            AND REQUEST_TIME >= TO_TIMESTAMP(#{params.startTime}, 'YYYY-MM-DD HH24:MI:SS')
+        </if>
+        <if test="params.endTime != null and params.endTime != ''">
+            AND REQUEST_TIME <![CDATA[<=]]> TO_TIMESTAMP(#{params.endTime}, 'YYYY-MM-DD HH24:MI:SS')
+        </if>
+        <if test="params.orgId != null">
+            AND ORG_ID = #{params.orgId}
+        </if>
+    </select>
+
+    <!-- 新增 -->
+    <insert id="insert" parameterType="com.global.treasurer.entity.TreasuryBankConnectLog" useGeneratedKeys="true" keyProperty="logId">
+        INSERT INTO TBL_TREASURY_BANK_CONNECT_LOG (
+            CONFIG_ID, REQUEST_ID, INTERFACE_TYPE, REQUEST_TIME, RESPONSE_TIME,
+            REQUEST_DATA, RESPONSE_DATA, STATUS_CODE, STATUS_MESSAGE, EXECUTION_TIME,
+            IS_SUCCESSFUL, ERROR_MESSAGE, BANK_CODE, ACCOUNT_NUMBER, CLIENT_IP,
+            USER_AGENT, SESSION_ID, ORG_ID, CREATE_TIME, CREATE_USER,
+            UPDATE_TIME, UPDATE_USER, IS_ENABLED
+        ) VALUES (
+            #{configId}, #{requestId}, #{interfaceType}, #{requestTime}, #{responseTime},
+            #{requestData}, #{responseData}, #{statusCode}, #{statusMessage}, #{executionTime},
+            #{isSuccessful}, #{errorMessage}, #{bankCode}, #{accountNumber}, #{clientIp},
+            #{userAgent}, #{sessionId}, #{orgId}, #{createTime}, #{createUser},
+            #{updateTime}, #{updateUser}, #{isEnabled}
+        )
+    </insert>
+
+    <!-- 根据ID更新 -->
+    <update id="updateById" parameterType="com.global.treasurer.entity.TreasuryBankConnectLog">
+        UPDATE TBL_TREASURY_BANK_CONNECT_LOG
+        <set>
+            <if test="responseData != null">
+                RESPONSE_DATA = #{responseData},
+            </if>
+            <if test="statusCode != null">
+                STATUS_CODE = #{statusCode},
+            </if>
+            <if test="statusMessage != null">
+                STATUS_MESSAGE = #{statusMessage},
+            </if>
+            <if test="responseTime != null">
+                RESPONSE_TIME = #{responseTime},
+            </if>
+            <if test="executionTime != null">
+                EXECUTION_TIME = #{executionTime},
+            </if>
+            <if test="isSuccessful != null">
+                IS_SUCCESSFUL = #{isSuccessful},
+            </if>
+            <if test="errorMessage != null">
+                ERROR_MESSAGE = #{errorMessage},
+            </if>
+            <if test="updateTime != null">
+                UPDATE_TIME = #{updateTime},
+            </if>
+            <if test="updateUser != null">
+                UPDATE_USER = #{updateUser}
+            </if>
+        </set>
+        WHERE LOG_ID = #{logId}
+    </update>
+
+    <!-- 根据ID删除 -->
+    <delete id="deleteById">
+        DELETE FROM TBL_TREASURY_BANK_CONNECT_LOG
+        WHERE LOG_ID = #{logId}
+    </delete>
+
+    <!-- 批量删除 -->
+    <delete id="batchDeleteByIds">
+        DELETE FROM TBL_TREASURY_BANK_CONNECT_LOG
+        WHERE LOG_ID IN
+        <foreach item="logId" collection="logIds" open="(" separator="," close=")">
+            #{logId}
+        </foreach>
+    </delete>
+
+    <!-- 批量删除（带组织权限） -->
+    <delete id="batchDeleteByIdsWithOrg">
+        DELETE FROM TBL_TREASURY_BANK_CONNECT_LOG
+        WHERE LOG_ID IN
+        <foreach item="logId" collection="logIds" open="(" separator="," close=")">
+            #{logId}
+        </foreach>
+        AND ORG_ID = #{orgId}
+    </delete>
+
+    <!-- 根据创建时间删除历史记录 -->
+    <delete id="deleteByCreateTimeBefore">
+        DELETE FROM TBL_TREASURY_BANK_CONNECT_LOG
+        WHERE CREATE_TIME <![CDATA[<]]> #{cutoffDate}
+        AND ORG_ID = #{orgId}
+    </delete>
+
+    <!-- 获取平均执行时间 -->
+    <select id="selectAvgExecutionTime" resultType="java.lang.Integer">
+        SELECT AVG(EXECUTION_TIME)
+        FROM TBL_TREASURY_BANK_CONNECT_LOG
+        WHERE IS_SUCCESSFUL = 1
+        AND ORG_ID = #{orgId}
+    </select>
+
+    <!-- 获取最近失败日志 -->
+    <select id="selectRecentFailureLogs" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM (
+            SELECT <include refid="Base_Column_List"/>
+            FROM TBL_TREASURY_BANK_CONNECT_LOG
+            WHERE IS_SUCCESSFUL = 0
+            <if test="params.configId != null">
+                AND CONFIG_ID = #{params.configId}
+            </if>
+            <if test="params.orgId != null">
+                AND ORG_ID = #{params.orgId}
+            </if>
+            ORDER BY REQUEST_TIME DESC
+        )
+        WHERE ROWNUM <![CDATA[<=]]> #{params.limit}
+    </select>
+
+    <!-- 获取每日统计数据 -->
+    <select id="selectDailyStatistics" resultType="java.util.Map">
+        SELECT
+            TO_CHAR(REQUEST_TIME, 'YYYY-MM-DD') AS statDate,
+            COUNT(*) AS totalCount,
+            SUM(CASE WHEN IS_SUCCESSFUL = 1 THEN 1 ELSE 0 END) AS successCount,
+            SUM(CASE WHEN IS_SUCCESSFUL = 0 THEN 1 ELSE 0 END) AS failureCount,
+            AVG(EXECUTION_TIME) AS avgExecutionTime
+        FROM TBL_TREASURY_BANK_CONNECT_LOG
+        WHERE 1=1
+        <if test="params.orgId != null">
+            AND ORG_ID = #{params.orgId}
+        </if>
+        <if test="params.startDate != null and params.startDate != ''">
+            AND REQUEST_TIME >= TO_TIMESTAMP(#{params.startDate}, 'YYYY-MM-DD HH24:MI:SS')
+        </if>
+        <if test="params.endDate != null and params.endDate != ''">
+            AND REQUEST_TIME <![CDATA[<=]]> TO_TIMESTAMP(#{params.endDate}, 'YYYY-MM-DD HH24:MI:SS')
+        </if>
+        GROUP BY TO_CHAR(REQUEST_TIME, 'YYYY-MM-DD')
+        ORDER BY statDate DESC
+    </select>
+
+    <!-- 获取接口类型统计 -->
+    <select id="selectInterfaceTypeStatistics" resultType="java.util.Map">
+        SELECT
+            INTERFACE_TYPE AS interfaceType,
+            COUNT(*) AS totalCount,
+            SUM(CASE WHEN IS_SUCCESSFUL = 1 THEN 1 ELSE 0 END) AS successCount,
+            SUM(CASE WHEN IS_SUCCESSFUL = 0 THEN 1 ELSE 0 END) AS failureCount,
+            ROUND(SUM(CASE WHEN IS_SUCCESSFUL = 1 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS successRate
+        FROM TBL_TREASURY_BANK_CONNECT_LOG
+        WHERE 1=1
+        <if test="params.orgId != null">
+            AND ORG_ID = #{params.orgId}
+        </if>
+        <if test="params.startDate != null">
+            AND REQUEST_TIME >= #{params.startDate}
+        </if>
+        GROUP BY INTERFACE_TYPE
+        ORDER BY totalCount DESC
+    </select>
+
+    <!-- 获取响应时间统计 -->
+    <select id="selectResponseTimeStatistics" resultType="java.util.Map">
+        SELECT
+            BANK_CODE AS bankCode,
+            INTERFACE_TYPE AS interfaceType,
+            COUNT(*) AS totalCount,
+            AVG(EXECUTION_TIME) AS avgExecutionTime,
+            MIN(EXECUTION_TIME) AS minExecutionTime,
+            MAX(EXECUTION_TIME) AS maxExecutionTime
+        FROM TBL_TREASURY_BANK_CONNECT_LOG
+        WHERE IS_SUCCESSFUL = 1
+        <if test="params.orgId != null">
+            AND ORG_ID = #{params.orgId}
+        </if>
+        <if test="params.startDate != null">
+            AND REQUEST_TIME >= #{params.startDate}
+        </if>
+        GROUP BY BANK_CODE, INTERFACE_TYPE
+        ORDER BY avgExecutionTime ASC
+    </select>
+
+    <!-- 根据请求ID查询 -->
+    <select id="selectByRequestId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_TREASURY_BANK_CONNECT_LOG
+        WHERE REQUEST_ID = #{requestId}
+    </select>
+
+    <!-- 根据配置ID查询最新日志 -->
+    <select id="selectLatestByConfigId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM (
+            SELECT <include refid="Base_Column_List"/>
+            FROM TBL_TREASURY_BANK_CONNECT_LOG
+            WHERE CONFIG_ID = #{configId}
+            AND ORG_ID = #{orgId}
+            ORDER BY REQUEST_TIME DESC
+        )
+        WHERE ROWNUM = 1
+    </select>
+
+    <!-- 获取今日统计 -->
+    <select id="selectTodayStatistics" resultType="java.util.Map">
+        SELECT
+            COUNT(*) AS totalCount,
+            SUM(CASE WHEN IS_SUCCESSFUL = 1 THEN 1 ELSE 0 END) AS successCount,
+            SUM(CASE WHEN IS_SUCCESSFUL = 0 THEN 1 ELSE 0 END) AS failureCount,
+            AVG(EXECUTION_TIME) AS avgExecutionTime
+        FROM TBL_TREASURY_BANK_CONNECT_LOG
+        WHERE TRUNC(REQUEST_TIME) = TRUNC(SYSDATE)
+        AND ORG_ID = #{orgId}
+    </select>
+
+    <!-- 获取本月统计 -->
+    <select id="selectMonthlyStatistics" resultType="java.util.Map">
+        SELECT
+            COUNT(*) AS totalCount,
+            SUM(CASE WHEN IS_SUCCESSFUL = 1 THEN 1 ELSE 0 END) AS successCount,
+            SUM(CASE WHEN IS_SUCCESSFUL = 0 THEN 1 ELSE 0 END) AS failureCount,
+            AVG(EXECUTION_TIME) AS avgExecutionTime
+        FROM TBL_TREASURY_BANK_CONNECT_LOG
+        WHERE TO_CHAR(REQUEST_TIME, 'YYYY-MM') = TO_CHAR(SYSDATE, 'YYYY-MM')
+        AND ORG_ID = #{orgId}
+    </select>
+
+    <!-- 根据银行代码统计 -->
+    <select id="selectBankStatistics" resultType="java.util.Map">
+        SELECT
+            BANK_CODE AS bankCode,
+            COUNT(*) AS totalCount,
+            SUM(CASE WHEN IS_SUCCESSFUL = 1 THEN 1 ELSE 0 END) AS successCount,
+            SUM(CASE WHEN IS_SUCCESSFUL = 0 THEN 1 ELSE 0 END) AS failureCount,
+            ROUND(SUM(CASE WHEN IS_SUCCESSFUL = 1 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS successRate
+        FROM TBL_TREASURY_BANK_CONNECT_LOG
+        WHERE 1=1
+        AND ORG_ID = #{orgId}
+        <if test="days != null">
+            AND REQUEST_TIME >= SYSDATE - #{days}
+        </if>
+        GROUP BY BANK_CODE
+        ORDER BY totalCount DESC
+    </select>
+
+    <!-- 根据接口类型统计成功率 -->
+    <select id="selectSuccessRateByInterfaceType" resultType="java.util.Map">
+        SELECT
+            INTERFACE_TYPE AS interfaceType,
+            COUNT(*) AS totalCount,
+            SUM(CASE WHEN IS_SUCCESSFUL = 1 THEN 1 ELSE 0 END) AS successCount,
+            ROUND(SUM(CASE WHEN IS_SUCCESSFUL = 1 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS successRate
+        FROM TBL_TREASURY_BANK_CONNECT_LOG
+        WHERE 1=1
+        AND ORG_ID = #{orgId}
+        <if test="days != null">
+            AND REQUEST_TIME >= SYSDATE - #{days}
+        </if>
+        GROUP BY INTERFACE_TYPE
+        ORDER BY successRate DESC
+    </select>
+
+    <!-- 获取响应时间分布统计 -->
+    <select id="selectResponseTimeDistribution" resultType="java.util.Map">
+        SELECT
+            CASE
+                WHEN EXECUTION_TIME <![CDATA[<]]> 1000 THEN '快速(&lt;1s)'
+                WHEN EXECUTION_TIME <![CDATA[<]]> 3000 THEN '正常(1-3s)'
+                WHEN EXECUTION_TIME <![CDATA[<]]> 5000 THEN '较慢(3-5s)'
+                ELSE '很慢(&gt;5s)'
+            END AS responseTimeRange,
+            COUNT(*) AS count
+        FROM TBL_TREASURY_BANK_CONNECT_LOG
+        WHERE IS_SUCCESSFUL = 1
+        AND ORG_ID = #{orgId}
+        <if test="days != null">
+            AND REQUEST_TIME >= SYSDATE - #{days}
+        </if>
+        GROUP BY
+            CASE
+                WHEN EXECUTION_TIME <![CDATA[<]]> 1000 THEN '快速(&lt;1s)'
+                WHEN EXECUTION_TIME <![CDATA[<]]> 3000 THEN '正常(1-3s)'
+                WHEN EXECUTION_TIME <![CDATA[<]]> 5000 THEN '较慢(3-5s)'
+                ELSE '很慢(&gt;5s)'
+            END
+        ORDER BY count DESC
+    </select>
+
+    <!-- 根据错误类型统计 -->
+    <select id="selectErrorTypeStatistics" resultType="java.util.Map">
+        SELECT
+            STATUS_CODE AS statusCode,
+            COUNT(*) AS count
+        FROM TBL_TREASURY_BANK_CONNECT_LOG
+        WHERE IS_SUCCESSFUL = 0
+        AND ORG_ID = #{orgId}
+        <if test="days != null">
+            AND REQUEST_TIME >= SYSDATE - #{days}
+        </if>
+        GROUP BY STATUS_CODE
+        ORDER BY count DESC
+    </select>
+
+    <!-- 更新日志状态 -->
+    <update id="updateLogStatus">
+        UPDATE TBL_TREASURY_BANK_CONNECT_LOG
+        SET IS_SUCCESSFUL = #{params.isSuccessful},
+            STATUS_MESSAGE = #{params.statusMessage},
+            UPDATE_TIME = SYSDATE,
+            UPDATE_USER = #{params.updateUser}
+        WHERE LOG_ID = #{params.logId}
+    </update>
+
+    <!-- 获取异常日志列表 -->
+    <select id="selectExceptionLogs" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM TBL_TREASURY_BANK_CONNECT_LOG
+        WHERE IS_SUCCESSFUL = 0
+        <if test="params.orgId != null">
+            AND ORG_ID = #{params.orgId}
+        </if>
+        <if test="params.startTime != null and params.startTime != ''">
+            AND REQUEST_TIME >= TO_TIMESTAMP(#{params.startTime}, 'YYYY-MM-DD HH24:MI:SS')
+        </if>
+        <if test="params.endTime != null and params.endTime != ''">
+            AND REQUEST_TIME <![CDATA[<=]]> TO_TIMESTAMP(#{params.endTime}, 'YYYY-MM-DD HH24:MI:SS')
+        </if>
+        ORDER BY REQUEST_TIME DESC
+    </select>
+
+    <!-- 获取性能统计报表 -->
+    <select id="selectPerformanceReport" resultType="java.util.Map">
+        SELECT
+            TO_CHAR(REQUEST_TIME, 'YYYY-MM-DD HH24') AS hour,
+            BANK_CODE AS bankCode,
+            INTERFACE_TYPE AS interfaceType,
+            COUNT(*) AS totalCount,
+            SUM(CASE WHEN IS_SUCCESSFUL = 1 THEN 1 ELSE 0 END) AS successCount,
+            AVG(EXECUTION_TIME) AS avgExecutionTime
+        FROM TBL_TREASURY_BANK_CONNECT_LOG
+        WHERE 1=1
+        <if test="params.orgId != null">
+            AND ORG_ID = #{params.orgId}
+        </if>
+        <if test="params.startDate != null and params.startDate != ''">
+            AND REQUEST_TIME >= TO_TIMESTAMP(#{params.startDate}, 'YYYY-MM-DD HH24:MI:SS')
+        </if>
+        <if test="params.endDate != null and params.endDate != ''">
+            AND REQUEST_TIME <![CDATA[<=]]> TO_TIMESTAMP(#{params.endDate}, 'YYYY-MM-DD HH24:MI:SS')
+        </if>
+        GROUP BY TO_CHAR(REQUEST_TIME, 'YYYY-MM-DD HH24'), BANK_CODE, INTERFACE_TYPE
+        ORDER BY hour DESC, totalCount DESC
+    </select>
+
+    <!-- 获取银行接口可用性统计 -->
+    <select id="selectBankAvailabilityStatistics" resultType="java.util.Map">
+        SELECT
+            BANK_CODE AS bankCode,
+            COUNT(*) AS totalCount,
+            SUM(CASE WHEN IS_SUCCESSFUL = 1 THEN 1 ELSE 0 END) AS successCount,
+            ROUND(SUM(CASE WHEN IS_SUCCESSFUL = 1 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS availability
+        FROM TBL_TREASURY_BANK_CONNECT_LOG
+        WHERE 1=1
+        AND ORG_ID = #{orgId}
+        <if test="days != null">
+            AND REQUEST_TIME >= SYSDATE - #{days}
+        </if>
+        GROUP BY BANK_CODE
+        ORDER BY availability DESC
+    </select>
+
+    <!-- 根据时间范围查询日志数量 -->
+    <select id="selectCountByTimeRange" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM TBL_TREASURY_BANK_CONNECT_LOG
+        WHERE REQUEST_TIME >= #{startTime}
+        AND REQUEST_TIME <![CDATA[<=]]> #{endTime}
+        AND ORG_ID = #{orgId}
+    </select>
+
+    <!-- 获取最近N条日志 -->
+    <select id="selectRecentLogs" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM (
+            SELECT <include refid="Base_Column_List"/>
+            FROM TBL_TREASURY_BANK_CONNECT_LOG
+            WHERE ORG_ID = #{orgId}
+            ORDER BY REQUEST_TIME DESC
+        )
+        WHERE ROWNUM <![CDATA[<=]]> #{limit}
+    </select>
+
+    <!-- 根据业务类型统计 -->
+    <select id="selectBusinessTypeStatistics" resultType="java.util.Map">
+        SELECT
+            INTERFACE_TYPE AS businessType,
+            COUNT(*) AS totalCount,
+            SUM(CASE WHEN IS_SUCCESSFUL = 1 THEN 1 ELSE 0 END) AS successCount,
+            AVG(EXECUTION_TIME) AS avgExecutionTime
+        FROM TBL_TREASURY_BANK_CONNECT_LOG
+        WHERE 1=1
+        AND ORG_ID = #{orgId}
+        <if test="days != null">
+            AND REQUEST_TIME >= SYSDATE - #{days}
+        </if>
+        GROUP BY INTERFACE_TYPE
+        ORDER BY totalCount DESC
+    </select>
+
+    <!-- 获取高峰时段统计 -->
+    <select id="selectPeakHourStatistics" resultType="java.util.Map">
+        SELECT
+            TO_CHAR(REQUEST_TIME, 'HH24') AS hour,
+            COUNT(*) AS totalCount,
+            SUM(CASE WHEN IS_SUCCESSFUL = 1 THEN 1 ELSE 0 END) AS successCount
+        FROM TBL_TREASURY_BANK_CONNECT_LOG
+        WHERE 1=1
+        AND ORG_ID = #{orgId}
+        <if test="days != null">
+            AND REQUEST_TIME >= SYSDATE - #{days}
+        </if>
+        GROUP BY TO_CHAR(REQUEST_TIME, 'HH24')
+        ORDER BY totalCount DESC
+    </select>
+
+</mapper>
